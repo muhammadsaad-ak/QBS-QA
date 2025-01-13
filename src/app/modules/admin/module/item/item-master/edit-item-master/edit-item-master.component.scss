@@ -1,0 +1,132 @@
+.tab-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    /* medium */
+    cursor: pointer;
+    border: none;
+    background-color: #f3f4f6;
+    color: #4f46e5;
+    /* Text color */
+    border-radius: 0.375rem 0.375rem 0 0;
+    /* Rounded corners only on top */
+    position: relative;
+    /* For underline positioning */
+  }
+  
+  .tab-button.active {
+    color: #4f46e5;
+    /* Text color */
+    font-weight: 500;
+    /* Optional, to make active tab text slightly bolder */
+  }
+  
+  .tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #4f46e5;
+    /* Bottom line color */
+    border-radius: 1px;
+  }
+  
+  .tab-button:hover {
+    background-color: rgba(79, 70, 229, 0.1);
+    /* Light hover background with color tint */
+  }
+  
+  .tab-underline {
+    border: none;
+    /* Remove default border styling */
+    height: 1px;
+    /* Thin line */
+    background-color: #e5e7eb;
+    /* Light gray color for the line */
+    // background-color: #232425; /* Light gray color for the line */
+    margin-top: 0.2rem;
+    /* Space it below the tabs */
+    margin-bottom: 1rem;
+    /* Adjust if more space is needed below */
+    margin-left: 2.5rem;
+    margin-right: 4rem;
+  }
+  
+  
+  /* Constant blue glow effect */
+  .shadow-blue-glow {
+    box-shadow: 0px 3px 10px rgba(0, 112, 243, 0.6), 0px 0px 10px rgba(0, 112, 243, 0.4) !important;
+  }
+  
+  
+  .mat-icon-primary {
+    color: #4f46e5 !important;
+  }
+  
+  
+  .example-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+  }
+  
+  table {
+    width: 800px;
+  }
+  
+  td.mat-column-star {
+    width: 20px;
+    padding-right: 8px;
+  }
+  
+  th.mat-column-position,
+  td.mat-column-position {
+    padding-left: 8px;
+  }
+  
+  .mat-mdc-table-sticky-border-elem-right {
+    border-left: 1px solid #e0e0e0;
+  }
+  
+  .mat-mdc-table-sticky-border-elem-left {
+    border-right: 1px solid #e0e0e0;
+  }
+  
+  .tabs-container {
+    position: sticky;
+    top: 0 !important;
+    z-index: 100;
+    background-color: transparent;
+  }
+  
+  .example-full-width {
+    width: 100%;
+  }
+  
+  .single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  
+  .example-full-width {
+    width: 100%;
+  }
+  
+  table {
+    width: 100%;
+  }
+  
+  .icon-right {
+    margin-left: auto;
+  }
+
+  .view-mode {
+    pointer-events: none !important;
+}
+  .view-mode:hover {
+    pointer-events: none !important;
+}

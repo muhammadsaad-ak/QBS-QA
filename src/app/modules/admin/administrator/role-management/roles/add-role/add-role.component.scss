@@ -1,0 +1,43 @@
+.header-close-x:hover {
+    cursor: pointer;
+}
+
+
+.example-tree-invisible {
+    display: none;
+  }
+  
+.mat-mdc-dialog-container .mat-mdc-dialog-surface {
+    padding: 0 !important;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: space-between; /* Adjust spacing as needed */
+}
+
+.form-field {
+    flex: 1; /* Each field takes equal width */
+    margin-right: 16px; /* Optional: spacing between fields */
+}
+
+.form-field:last-child {
+    margin-right: 0; /* Remove margin from the last field */
+}
+
+
+.scrollable-dialog {
+  max-height: 80vh; /* Restrict height to 80% of the viewport height */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.example-viewport {
+    height: 400px;
+    width: 100%;
+}  
+
+
+.mat-mdc-checkbox.mat-mdc-checkbox-checked .mdc-checkbox__background, .mdc-checkbox__ripple {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+}

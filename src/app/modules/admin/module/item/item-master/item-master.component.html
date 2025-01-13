@@ -1,0 +1,107 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <div class="relative flex-0 flex-col px-6 py-2 md:px-8">
+        <div class="text-3xl font-extrabold tracking-tight">Item&nbsp;Master&nbsp;Data</div>
+
+        <div class="mt-4 flex flex-col sm:flex-row sm:justify-between">
+            <mat-form-field class="qbs-mat-dense qbs-mat-rounded min-w-64 sm:w-2/3 md:w-1/2"
+                style="padding-right: 3rem !important;">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [autocomplete]="'off'" [placeholder]="'Search... '"
+                    [formControl]="searchInputControl" />
+            </mat-form-field>
+            <div class="ml-auto flex">
+                <button class="custom-border-button" mat-flat-button [color]="'primary'" (click)="addbtn()">
+                    <button mat-flat-button [color]="'primary'">
+                        <mat-icon svgIcon="heroicons_outline:plus"></mat-icon>
+                        {{ addBtnHoveredTitle }}
+                    </button>
+                </button>
+            </div>
+        </div>
+    </div>
+    <section class="example-container shadow-xl shadow-gray-300">
+        <table mat-table [dataSource]="dataSource" class="py-0">
+            <ng-container matColumnDef="serial">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-100">
+                    S.No
+                </th>
+                <td mat-cell *matCellDef="let index = index"> {{index + 1}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="itemCode">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-100">Item&nbsp;No.</th>
+                <td mat-cell *matCellDef="let item" class="single-line text-sm"> {{item.itemCode}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="itemName">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-100 single-line">Item&nbsp;Description</th>
+                <td mat-cell *matCellDef="let item" class="single-line text-sm">
+                    {{item.itemName}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="itemType">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-100">Item&nbsp;Type</th>
+                <!-- <td mat-cell *matCellDef="let item" class="single-line text-sm"> {{item.itemId}} </td> -->
+                <td mat-cell *matCellDef="let item" class="single-line text-sm">
+                    {{item.itemType ? item.itemType : '-' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="itemsGroupCode">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-100">Item&nbsp;Group&nbsp;Name</th>
+                <td mat-cell *matCellDef="let item" class="single-line text-sm">
+                    {{item.itemsGroupCode ? item.itemsGroupCode : '-' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="uoMGroupEntry">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-100">UoM&nbsp;Group</th>
+                <td mat-cell *matCellDef="let item" class="single-line text-sm">
+                    {{item.uoMGroupEntry ? item.uoMGroupEntry : '-' }}
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-100">Actions</th>
+                <td mat-cell *matCellDef="let item">
+                    <button mat-icon-button [matMenuTriggerFor]="listCard01Menu">
+                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'">
+                        </mat-icon>
+                    </button>
+                    <mat-menu #listCard01Menu="matMenu">
+                        <!-- <a [routerLink]="['/item/item-master', item.itemNo]">
+                            <button mat-menu-item class="text-blue-500" (click)="actionEditItemData(item)">Edit
+                                <mat-icon svgIcon="heroicons_outline:pencil" class="text-blue-500"></mat-icon>
+                            </button>
+                        </a> -->
+                        <!-- <a [routerLink]="['/item/item-master-data-edit']"> -->
+                        <button mat-menu-item class="text-blue-500" (click)="actionEditItemData(item)">
+                            Edit
+                            <mat-icon svgIcon="heroicons_outline:pencil" class="text-blue-500"></mat-icon>
+                        </button>
+                        <!-- </a> -->
+
+                        <!-- <button mat-menu-item class="text-blue-500" (click)="actionEditItemData(item)">Edit
+                            <mat-icon svgIcon="heroicons_outline:pencil" class="text-blue-500"></mat-icon>
+                        </button> -->
+                        <button mat-menu-item class="text-red-400" (click)="actionDeleteItem(item.itemNo)">Delete
+                            <mat-icon svgIcon="heroicons_outline:trash" class="text-red-400"></mat-icon>
+                        </button>
+                    </mat-menu>
+                </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+        <mat-paginator 
+                    [pageSizeOptions]="[5, 10, 20]" 
+                    showFirstLastButtons
+                    aria-label="Select page of periodic elements" 
+                    style="background-color: #e2e8f0 !important;">
+        </mat-paginator>
+    </section>
+    <!-- <div *ngIf="matItemMasterDataSource.length === 0"
+        class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+        No records to show!
+    </div> -->
+</div>

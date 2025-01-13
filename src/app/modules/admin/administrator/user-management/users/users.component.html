@@ -1,0 +1,124 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent" (backdropClick)="onBackdropClicked()">
+        <mat-drawer class="w-full dark:bg-gray-900 sm:w-128" [mode]="drawerMode" [opened]="false" [position]="'end'"
+        [disableClose]="false" #matDrawer>
+            <router-outlet></router-outlet>
+        </mat-drawer>
+   
+        <mat-drawer-content>
+                <!-- Header Starts -->
+                <div class="relative flex-0 flex-col px-6 py-2 md:px-8">
+                <!-- Title -->
+                    <div class="text-3xl font-extrabold tracking-tight">
+                    User Management
+                    </div>
+                </div>
+                <!-- Actions - Search & Add button in the next line -->
+                <div class="mt-4 flex flex-col items-start space-y-4 sm:flex-row sm:justify-start sm:space-y-0" style="margin-left: 1.5rem !important;">
+                        <!-- Search Input Field -->
+                        <mat-form-field class="qbs-mat-dense qbs-mat-rounded min-w-64 sm:w-2/3 md:w-1/2" style="padding-right: 3rem !important;">
+                            <mat-icon class="icon-size-5" matPrefix
+                            [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                            <input matInput [autocomplete]="'off'" [placeholder]="'Search... '" [formControl]="searchInputControl"
+                             />
+                        </mat-form-field>
+
+                        <!-- Add User Button  -->
+                        <button class="mr-4" mat-flat-button [color]="'primary'" (click)="openAddUserDrawer('visitprofile')">
+                            <span class="ml-1 mr-1" >
+                                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                {{addUserBtn}}
+                            </span>
+                        </button>
+                </div>
+
+                <!-- Main Content -->
+                <div class="-mt-px flex flex-auto border-t pt-4 sm:pt-2 overflow-hidden" style="padding-top: 0px !important;">
+                    <div
+                    class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto"
+                    >
+                    <div class="mat-elevation-z8">
+                        <table mat-table [dataSource]="dataSource">
+                      
+                          <!-- Id Column -->
+                          <ng-container matColumnDef="id">
+                            <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Id. </th>
+                            <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                          </ng-container>
+
+                          <!-- Email Column -->
+                          <ng-container matColumnDef="email">
+                            <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Email </th>
+                            <td mat-cell *matCellDef="let element"> {{element.email ? element.email : '-'}} </td>
+                          </ng-container>
+                      
+                          <!-- Name Column -->
+                          <ng-container matColumnDef="userName">
+                            <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Name </th>
+                            <td mat-cell *matCellDef="let element"> {{element.userName ? element.userName : '-' }} </td>
+                          </ng-container>
+                      
+                      
+                          <!-- Phone Column -->
+                          <ng-container matColumnDef="phone">
+                            <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Phone </th>
+                            <td mat-cell *matCellDef="let element"> {{element.phone ? element.phone : '-'}} </td>
+                          </ng-container>
+
+                          <!-- Branch Column -->
+                          <ng-container matColumnDef="branch">
+                            <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Branch </th>
+                            <td mat-cell *matCellDef="let element"> {{element.branch ? element.branch : '-'}} </td>
+                          </ng-container>
+
+                           <!-- Role Column -->
+                           <ng-container matColumnDef="role">
+                            <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Role </th>
+                            <td mat-cell *matCellDef="let element"> {{element.role ? element.role : '-'}} </td>
+                          </ng-container>
+
+                          <!-- Department Column -->
+                          <ng-container matColumnDef="department">
+                            <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Department </th>
+                            <td mat-cell *matCellDef="let element"> {{element.department ? element.department : '-'}} </td>
+                          </ng-container>
+
+
+                           <!-- Action Column -->
+                           <ng-container matColumnDef="action">
+                            <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Action </th>
+                            <td mat-cell *matCellDef="let element">
+                                <button mat-icon-button [matMenuTriggerFor]="menu">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
+                                </button>
+                                <mat-menu #menu="matMenu">
+                                    <button mat-menu-item class="text-blue-400" (click)="openUpdateUserDrawer('visitprofile', element.id)">
+                                        Edit
+                                        <mat-icon svgIcon="heroicons_outline:pencil" class="text-blue-400"></mat-icon>
+                                    </button>
+                                    <button mat-menu-item class="text-red-400" (click)="deleteUser('visitprofile')">
+                                        Delete
+                                        <mat-icon svgIcon="heroicons_outline:trash" class="text-red-400"></mat-icon>
+                                    </button>
+                                </mat-menu>
+                            </td>
+                            
+                          </ng-container>
+                      
+                          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                        </table>
+                      
+                        <mat-paginator [pageSizeOptions]="[5, 10, 20]"
+                                       showFirstLastButtons
+                                       aria-label="Select page of periodic elements"
+                                       style="background-color: #e2e8f0 !important;"
+                                       >
+                        </mat-paginator>
+                      </div>
+                      
+                    </div>
+                </div>
+        </mat-drawer-content>
+    </mat-drawer-container>
+</div>

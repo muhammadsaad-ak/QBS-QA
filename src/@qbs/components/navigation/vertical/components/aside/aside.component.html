@@ -1,0 +1,102 @@
+<div
+    class="qbs-vertical-navigation-item-wrapper"
+    [class.qbs-vertical-navigation-item-has-subtitle]="!!item.subtitle"
+    [ngClass]="item.classes?.wrapper"
+>
+    <div
+        class="qbs-vertical-navigation-item"
+        [ngClass]="{
+            'qbs-vertical-navigation-item-active': active,
+            'qbs-vertical-navigation-item-disabled': item.disabled,
+            'qbs-vertical-navigation-item-active-forced': item.active,
+        }"
+        [matTooltip]="item.tooltip || ''"
+    >
+        <!-- Icon -->
+        @if (item.icon) {
+            <mat-icon
+                class="qbs-vertical-navigation-item-icon"
+                [ngClass]="item.classes?.icon"
+                [svgIcon]="item.icon"
+            ></mat-icon>
+        }
+
+        <!-- Title & Subtitle -->
+        <div class="qbs-vertical-navigation-item-title-wrapper">
+            <div class="qbs-vertical-navigation-item-title">
+                <span [ngClass]="item.classes?.title">
+                    {{ item.title }}
+                </span>
+            </div>
+            @if (item.subtitle) {
+                <div class="qbs-vertical-navigation-item-subtitle">
+                    <span [ngClass]="item.classes?.subtitle">
+                        {{ item.subtitle }}
+                    </span>
+                </div>
+            }
+        </div>
+
+        <!-- Badge -->
+        @if (item.badge) {
+            <div class="qbs-vertical-navigation-item-badge">
+                <div
+                    class="qbs-vertical-navigation-item-badge-content"
+                    [ngClass]="item.badge.classes"
+                >
+                    {{ item.badge.title }}
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (!skipChildren) {
+    <div class="qbs-vertical-navigation-item-children">
+        @for (item of item.children; track trackByFn($index, item)) {
+            <!-- Skip the hidden items -->
+            @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
+                <!-- Basic -->
+                @if (item.type === 'basic') {
+                    <qbs-vertical-navigation-basic-item
+                        [item]="item"
+                        [name]="name"
+                    ></qbs-vertical-navigation-basic-item>
+                }
+
+                <!-- Collapsable -->
+                @if (item.type === 'collapsable') {
+                    <qbs-vertical-navigation-collapsable-item
+                        [item]="item"
+                        [name]="name"
+                        [autoCollapse]="autoCollapse"
+                    ></qbs-vertical-navigation-collapsable-item>
+                }
+
+                <!-- Divider -->
+                @if (item.type === 'divider') {
+                    <qbs-vertical-navigation-divider-item
+                        [item]="item"
+                        [name]="name"
+                    ></qbs-vertical-navigation-divider-item>
+                }
+
+                <!-- Group -->
+                @if (item.type === 'group') {
+                    <qbs-vertical-navigation-group-item
+                        [item]="item"
+                        [name]="name"
+                    ></qbs-vertical-navigation-group-item>
+                }
+
+                <!-- Spacer -->
+                @if (item.type === 'spacer') {
+                    <qbs-vertical-navigation-spacer-item
+                        [item]="item"
+                        [name]="name"
+                    ></qbs-vertical-navigation-spacer-item>
+                }
+            }
+        }
+    </div>
+}

@@ -1,0 +1,233 @@
+<div class="flex w-full flex-col">
+        
+        <!-- Header -->
+        <div class="relative h-20 w-full bg-accent-100 px-8 dark:bg-accent-700 sm:h-18 sm:px-12" style="background-image: linear-gradient(#233041, #1E293B);">
+            <div class="mt-3 truncate text-4xl font-bold" style="color: aliceblue;">
+                Add User
+            </div>
+            <!-- Close button -->
+            <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-4">
+                <!-- [routerLink]="['../../projects']" -->
+                <a mat-icon-button [matTooltip]="'Close'">
+                    <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main -->
+
+    <div class="relative flex flex-auto flex-col items-center px-6 sm:px-12">
+        <div class="w-full max-w-3xl">
+            <form [formGroup]="addUsersForm">
+                <!-- Avatar -->
+                <!-- <div class="mt-2 flex flex-auto items-end">
+                    <div
+                        class="ring-bg-card relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full ring-4">
+                        <div class="absolute inset-0 z-10 bg-black bg-opacity-50"></div>
+                        <div class="absolute inset-0 z-20 flex items-center justify-center">
+                            <div>
+                                <input id="avatar-file-input"
+                                    class="pointer-events-none invisible absolute h-0 w-0 opacity-0" type="file"
+                                    [multiple]="false" [accept]="'image/jpeg, image/png'" (change)="
+                                    uploadAvatar(avatarFileInput.files)
+                                " #avatarFileInput />
+                                <label
+                                    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full hover:bg-hover"
+                                    for="avatar-file-input" matRipple>
+                                    <mat-icon class="text-white" [svgIcon]="
+                                        'heroicons_outline:camera'
+                                    "></mat-icon>
+                                </label>
+                            </div>
+                            <div>
+                                <button mat-icon-button (click)="removeAvatar()">
+                                    <mat-icon class="text-white" [svgIcon]="
+                                        'heroicons_outline:trash'
+                                    "></mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <img class="h-full w-full object-cover" src="images/avatars/male-04.jpg" alt="User avatar" />
+                        <div
+                            class="flex h-full w-full items-center justify-center overflow-hidden rounded bg-gray-200 text-8xl font-bold uppercase leading-none text-gray-600 dark:bg-gray-700 dark:text-gray-200">
+                            Shayan Sherwani
+                        </div>
+                    </div>                    
+                </div> -->
+
+                <!-- User Code and Name -->
+                <div class="mt-8">
+                    <!-- Name -->
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                        <mat-label>Name</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                        <input matInput [formControlName]="'userName'" [placeholder]="'Name'" [spellcheck]="false" />
+                    </mat-form-field>
+                    
+                    <!-- Code -->
+                    <!-- <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'">
+                        <mat-label>Code</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                        <input matInput [formControlName]="'code'" [placeholder]="'Code'" [spellcheck]="false" />
+                    </mat-form-field> -->
+
+                </div>
+
+                <!-- Password and Role -->
+                 <div class="mt-8">
+                    <!-- Password -->
+                    <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                        <mat-label>Password</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'mat_solid:password'"></mat-icon>
+                        <input type="password" matInput [formControlName]="'password'" [placeholder]="'Password'"
+                            [spellcheck]="false" />
+                    </mat-form-field>
+
+                    <!-- Role -->
+                    <mat-form-field class="w-1/2">
+                        <mat-label>Role</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                        <mat-select [formControlName]="'role'">
+                            <mat-option value="roleA">Role A</mat-option>
+                            <mat-option value="roleB">Role B</mat-option>
+                            <mat-option value="roleC">Role C</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <!-- Email and Department -->
+                <div class="mt-8">
+                    <!-- Email -->
+                    <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                        <mat-label>Email</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:envelope'"></mat-icon>
+                        <input matInput [formControlName]="'email'" [placeholder]="'Email'" [spellcheck]="false" />
+                    </mat-form-field>
+
+                    <!-- Department -->
+                    <mat-form-field class="w-1/2">
+                        <mat-label>Department</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                        <mat-select [formControlName]="'department'">
+                            <mat-option value="departmentA">Department A</mat-option>
+                            <mat-option value="departmentB">Department B</mat-option>
+                            <mat-option value="departmentC">Department C</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <!-- Country and Branch -->
+                <div class="mt-8"> 
+                    <!-- Country -->
+                    <mat-form-field class="w-1/2" style="padding: 0.2rem !important;">
+                        <mat-label>Country</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                        <mat-select [formControlName]="'country'">
+                            <mat-option value="pakistan">Pakistan</mat-option>
+                            <mat-option value="ksa">KSA</mat-option>
+                            <mat-option value="uk">United Kingdom</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!-- Branch -->
+                    <mat-form-field class="w-1/2">
+                        <mat-label>Branch</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                        <mat-select [formControlName]="'branch'">
+                            <mat-option value="branchA">Branch A</mat-option>
+                            <mat-option value="branchB">Branch B</mat-option>
+                            <mat-option value="branchC">Branch C</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <!-- User Tel1 and Tel2 -->
+                <div class="mt-8">
+                    <!-- Tel1 -->
+                    <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                        <mat-label>Phone 1</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:phone'"></mat-icon>
+                        <input matInput [formControlName]="'phone1'" [placeholder]="'Phone 1'" [spellcheck]="false" />
+                    </mat-form-field>
+                    
+                    <!-- Tel2 -->
+                    <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'">
+                        <mat-label>Phone 2</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:phone'"></mat-icon>
+                        <input matInput [formControlName]="'phone2'" [placeholder]="'Phone 2'" [spellcheck]="false" />
+                    </mat-form-field>
+                </div>
+
+                <!-- User Last login and Last Password Setup -->
+                <div class="mt-8">
+                    <!-- Last Login -->
+                    <!-- <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                        <mat-label>Last Login</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                        <input matInput [formControlName]="'lastLogin'" [placeholder]="'Last Login'" [spellcheck]="false" />
+                    </mat-form-field> -->
+                    
+                    <!-- Last Password Change -->
+                    <!-- <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'">
+                        <mat-label>Last Password Change</mat-label>
+                        <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
+                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                        <input matInput [formControlName]="'lastPasswordChange'" [placeholder]="'Last Password Change'" [spellcheck]="false" />
+                    </mat-form-field> -->
+                </div>
+
+                <!-- User Address -->
+                 <!-- Address -->
+                <div class="mt-8">
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Address</mat-label>
+                        <textarea matInput [formControlName]="'address'" placeholder="Address" spellcheck="false"> This is the address (y).
+                        </textarea>
+                    </mat-form-field>
+                </div>
+
+
+                <!-- Checkboxes Section -->
+                <div class="mt-8">
+                    <div class="flex items-center">
+                        <mat-checkbox [formControlName]="'isSuperUser'" class="mr-2"></mat-checkbox>
+                        <label for="isSuperUser" class="text-lg">Super User</label>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <mat-checkbox [formControlName]="'isLocked'" class="mr-2"></mat-checkbox>
+                        <label for="isLocked" class="text-lg">Locked</label>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <mat-checkbox [formControlName]="'isScreenLock'" class="mr-2"></mat-checkbox>
+                        <label for="isScreenLock" class="text-lg">Screen Lock</label>
+                    </div>
+                    <!-- <div class="flex items-center mt-2">
+                        <mat-checkbox [formControlName]="'allowSapPosting'" class="mr-2"></mat-checkbox>
+                        <label for="allowSapPosting" class="text-lg">Allow Sap Posting</label>
+                    </div> -->
+                </div>
+
+                <!-- Actions -->
+                <div
+                class="-mx-6 mt-10 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12"
+                >
+                <!-- Save -->
+                <button class="ml-2 w-1/3" mat-flat-button [color]="'primary'" [disabled]="" [matTooltip]="'Add'" (click)="addNewUser()">
+                    Add
+                </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

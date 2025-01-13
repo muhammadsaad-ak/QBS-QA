@@ -1,0 +1,25 @@
+/* ----------------------------------------------------------------------------------------------------- */
+/*  @ Import/write your custom styles here.
+/*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
+/* ----------------------------------------------------------------------------------------------------- */
+body .calendar_default_event_inner {
+  background: #564de6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 10pt;
+  padding: 5px;
+  opacity: 0.8;
+}
+
+body .month_default_event_inner {
+  background: #564de6;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 10pt;
+  padding: 5px;
+  opacity: 0.8;
+}
+
+

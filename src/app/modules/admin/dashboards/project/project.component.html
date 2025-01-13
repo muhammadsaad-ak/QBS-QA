@@ -1,0 +1,944 @@
+<div class="flex min-w-0 flex-auto flex-col">
+
+    <!-- Header -->
+    <div class="bg-card">
+        <div class="mx-auto flex w-full max-w-screen-xl flex-col px-6 sm:px-8">
+            <div
+                class="my-8 flex min-w-0 flex-auto flex-col sm:my-12 sm:flex-row sm:items-center"
+                style="margin-top: 1rem !important; margin-bottom: 1rem !important;"
+            >
+                <!-- Avatar and name -->
+                <div class="flex min-w-0 flex-auto items-center">
+                    <div class="ml-4 flex min-w-0 flex-col">
+                        <ng-container *transloco="let t">
+                            <div
+                                class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug"
+                            >
+                                <!-- {{ t('welcome-back') }}, Brian! -->
+                                  Dashboard
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="-mt-px flex-auto border-t pt-4 pb-10 sm:pt-6">
+        <div class="mx-auto w-full max-w-screen-xl">
+
+            <!-- Custom Tabs -->
+            <div class="flex space-x-4 sm:px-2" style="padding-left: 2.5rem !important;" >
+                <button
+                [ngClass]="{ active: activeTab === 'customers' }"
+                class="tab-button" (click)="scrollToSection('customers')">Customers</button>
+                <button 
+                [ngClass]="{ active: activeTab === 'vendors' }"
+                class="tab-button" (click)="scrollToSection('vendors')">Vendors</button>
+                <button 
+                [ngClass]="{ active: activeTab === 'projects' }"
+                class="tab-button" (click)="scrollToSection('projects')">Projects</button>
+                <button 
+                [ngClass]="{ active: activeTab === 'dff' }"
+                class="tab-button" (click)="scrollToSection('dff')">DFF</button>
+            
+            </div>
+            <hr class="tab-underline" />
+
+
+        <!-- Sections -->
+
+        <!-- Customers Section -->
+        <div #customersSection id="customers" class="pt-4 ml-9 mr-13">
+            <h2 class="text-xl font-semibold mb-4">Customers</h2>
+            <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+              <!-- Cards for Customers -->
+              <!-- Create Customers -->
+              <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200">
+                <div class="flex items-start justify-between">
+                  <div class="truncate text-lg font-medium leading-6 tracking-tight">Create Customers</div>
+                  <div class="-mr-3 -mt-2 ml-2">
+                    <button mat-icon-button [matMenuTriggerFor]="summaryMenu">
+                      <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                    </button>
+                    <mat-menu #summaryMenu="matMenu">
+                      <button mat-menu-item>Yesterday</button>
+                      <button mat-menu-item>2 days ago</button>
+                      <button mat-menu-item>3 days ago</button>
+                    </mat-menu>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">21</div>
+                  <div class="text-lg font-medium text-blue-600 dark:text-blue-500">Due Tasks</div>
+                  <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
+                    <div class="truncate text-md font-medium">Completed:</div>
+                    <div class="ml-1.5 text-lg font-semibold">13</div>
+                  </div>
+                </div>
+              </div>
+                <!-- No of Approval -->
+                <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+            >
+                <div class="flex items-start justify-between">
+                    <div
+                        class="truncate text-lg font-medium leading-6 tracking-tight"
+                    >
+                        No. of Approval
+                    </div>
+                    <div class="-mr-3 -mt-2 ml-2">
+                        <button
+                            mat-icon-button
+                            [matMenuTriggerFor]="overdueMenu"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="
+                                    'heroicons_mini:ellipsis-vertical'
+                                "
+                            ></mat-icon>
+                        </button>
+                        <mat-menu #overdueMenu="matMenu">
+                            <button mat-menu-item>
+                                Yesterday
+                            </button>
+                            <button mat-menu-item>
+                                2 days ago
+                            </button>
+                            <button mat-menu-item>
+                                3 days ago
+                            </button>
+                        </mat-menu>
+                    </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                    <div
+                        class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                    >
+                        17
+                    </div>
+                    <div
+                        class="text-lg font-medium text-red-600 dark:text-red-500"
+                    >
+                        Tasks
+                    </div>
+                    <div
+                        class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                    >
+                        <div
+                            class="truncate text-md font-medium"
+                        >
+                            From yesterday:
+                        </div>
+                        <div
+                            class="ml-1.5 text-lg font-semibold"
+                        >
+                            9
+                        </div>
+                    </div>
+                </div>
+            </div>
+              <!-- No of Pending Posts -->
+              <div
+              class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+          >
+              <div class="flex items-start justify-between">
+                  <div
+                      class="truncate text-lg font-medium leading-6 tracking-tight"
+                  >
+                      No. of Pending Post
+                  </div>
+                  <div class="-mr-3 -mt-2 ml-2">
+                      <button
+                          mat-icon-button
+                          [matMenuTriggerFor]="overdueMenu"
+                      >
+                          <mat-icon
+                              class="icon-size-5"
+                              [svgIcon]="
+                                  'heroicons_mini:ellipsis-vertical'
+                              "
+                          ></mat-icon>
+                      </button>
+                      <mat-menu #overdueMenu="matMenu">
+                          <button mat-menu-item>
+                              Yesterday
+                          </button>
+                          <button mat-menu-item>
+                              2 days ago
+                          </button>
+                          <button mat-menu-item>
+                              3 days ago
+                          </button>
+                      </mat-menu>
+                  </div>
+              </div>
+              <div class="mt-2 flex flex-col items-center">
+                  <div
+                      class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                  >
+                      17
+                  </div>
+                  <div
+                      class="text-lg font-medium text-red-600 dark:text-red-500"
+                  >
+                      Tasks
+                  </div>
+                  <div
+                      class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                  >
+                      <div
+                          class="truncate text-md font-medium"
+                      >
+                          From yesterday:
+                      </div>
+                      <div
+                          class="ml-1.5 text-lg font-semibold"
+                      >
+                          9
+                      </div>
+                  </div>
+              </div>
+          </div>
+            <!-- No of Customers -->
+            <div
+            class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+        >
+            <div class="flex items-start justify-between">
+                <div
+                    class="truncate text-lg font-medium leading-6 tracking-tight"
+                >
+                    No. of Customers
+                </div>
+                <div class="-mr-3 -mt-2 ml-2">
+                    <button
+                        mat-icon-button
+                        [matMenuTriggerFor]="overdueMenu"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="
+                                'heroicons_mini:ellipsis-vertical'
+                            "
+                        ></mat-icon>
+                    </button>
+                    <mat-menu #overdueMenu="matMenu">
+                        <button mat-menu-item>
+                            Yesterday
+                        </button>
+                        <button mat-menu-item>
+                            2 days ago
+                        </button>
+                        <button mat-menu-item>
+                            3 days ago
+                        </button>
+                    </mat-menu>
+                </div>
+            </div>
+            <div class="mt-2 flex flex-col items-center">
+                <div
+                    class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                >
+                    17
+                </div>
+                <div
+                    class="text-lg font-medium text-red-600 dark:text-red-500"
+                >
+                    Tasks
+                </div>
+                <div
+                    class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                >
+                    <div
+                        class="truncate text-md font-medium"
+                    >
+                        From yesterday:
+                    </div>
+                    <div
+                        class="ml-1.5 text-lg font-semibold"
+                    >
+                        9
+                    </div>
+                </div>
+            </div>
+        </div>
+              <!-- More Customer Cards... -->
+            </div>
+        </div>
+
+        <!-- Vendors Section -->
+        <div #vendorsSection id="vendors" class="pt-4 ml-9 mr-13">
+            <h2 class="text-xl font-semibold mb-4">Vendors</h2>
+            <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+              <!-- Cards for Vendors -->
+              <!-- Create Vendors -->
+              <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200">
+                <div class="flex items-start justify-between">
+                  <div class="truncate text-lg font-medium leading-6 tracking-tight">Create Vendors</div>
+                  <div class="-mr-3 -mt-2 ml-2">
+                    <button mat-icon-button [matMenuTriggerFor]="summaryMenu">
+                      <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                    </button>
+                    <mat-menu #summaryMenu="matMenu">
+                      <button mat-menu-item>Yesterday</button>
+                      <button mat-menu-item>2 days ago</button>
+                      <button mat-menu-item>3 days ago</button>
+                    </mat-menu>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">21</div>
+                  <div class="text-lg font-medium text-blue-600 dark:text-blue-500">Due Tasks</div>
+                  <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
+                    <div class="truncate text-md font-medium">Completed:</div>
+                    <div class="ml-1.5 text-lg font-semibold">13</div>
+                  </div>
+                </div>
+              </div>
+                <!-- No of Approval -->
+                <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+            >
+                <div class="flex items-start justify-between">
+                    <div
+                        class="truncate text-lg font-medium leading-6 tracking-tight"
+                    >
+                        No. of Approval
+                    </div>
+                    <div class="-mr-3 -mt-2 ml-2">
+                        <button
+                            mat-icon-button
+                            [matMenuTriggerFor]="overdueMenu"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="
+                                    'heroicons_mini:ellipsis-vertical'
+                                "
+                            ></mat-icon>
+                        </button>
+                        <mat-menu #overdueMenu="matMenu">
+                            <button mat-menu-item>
+                                Yesterday
+                            </button>
+                            <button mat-menu-item>
+                                2 days ago
+                            </button>
+                            <button mat-menu-item>
+                                3 days ago
+                            </button>
+                        </mat-menu>
+                    </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                    <div
+                        class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                    >
+                        17
+                    </div>
+                    <div
+                        class="text-lg font-medium text-red-600 dark:text-red-500"
+                    >
+                        Tasks
+                    </div>
+                    <div
+                        class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                    >
+                        <div
+                            class="truncate text-md font-medium"
+                        >
+                            From yesterday:
+                        </div>
+                        <div
+                            class="ml-1.5 text-lg font-semibold"
+                        >
+                            9
+                        </div>
+                    </div>
+                </div>
+            </div>
+              <!-- No of Pending Posts -->
+              <div
+              class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+          >
+              <div class="flex items-start justify-between">
+                  <div
+                      class="truncate text-lg font-medium leading-6 tracking-tight"
+                  >
+                      No. of Pending Posts
+                  </div>
+                  <div class="-mr-3 -mt-2 ml-2">
+                      <button
+                          mat-icon-button
+                          [matMenuTriggerFor]="overdueMenu"
+                      >
+                          <mat-icon
+                              class="icon-size-5"
+                              [svgIcon]="
+                                  'heroicons_mini:ellipsis-vertical'
+                              "
+                          ></mat-icon>
+                      </button>
+                      <mat-menu #overdueMenu="matMenu">
+                          <button mat-menu-item>
+                              Yesterday
+                          </button>
+                          <button mat-menu-item>
+                              2 days ago
+                          </button>
+                          <button mat-menu-item>
+                              3 days ago
+                          </button>
+                      </mat-menu>
+                  </div>
+              </div>
+              <div class="mt-2 flex flex-col items-center">
+                  <div
+                      class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                  >
+                      17
+                  </div>
+                  <div
+                      class="text-lg font-medium text-red-600 dark:text-red-500"
+                  >
+                      Tasks
+                  </div>
+                  <div
+                      class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                  >
+                      <div
+                          class="truncate text-md font-medium"
+                      >
+                          From yesterday:
+                      </div>
+                      <div
+                          class="ml-1.5 text-lg font-semibold"
+                      >
+                          9
+                      </div>
+                  </div>
+              </div>
+          </div>
+            <!-- No of Customers -->
+            <div
+            class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+        >
+            <div class="flex items-start justify-between">
+                <div
+                    class="truncate text-lg font-medium leading-6 tracking-tight"
+                >
+                    No. of Customers
+                </div>
+                <div class="-mr-3 -mt-2 ml-2">
+                    <button
+                        mat-icon-button
+                        [matMenuTriggerFor]="overdueMenu"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="
+                                'heroicons_mini:ellipsis-vertical'
+                            "
+                        ></mat-icon>
+                    </button>
+                    <mat-menu #overdueMenu="matMenu">
+                        <button mat-menu-item>
+                            Yesterday
+                        </button>
+                        <button mat-menu-item>
+                            2 days ago
+                        </button>
+                        <button mat-menu-item>
+                            3 days ago
+                        </button>
+                    </mat-menu>
+                </div>
+            </div>
+            <div class="mt-2 flex flex-col items-center">
+                <div
+                    class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                >
+                    17
+                </div>
+                <div
+                    class="text-lg font-medium text-red-600 dark:text-red-500"
+                >
+                    Tasks
+                </div>
+                <div
+                    class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                >
+                    <div
+                        class="truncate text-md font-medium"
+                    >
+                        From yesterday:
+                    </div>
+                    <div
+                        class="ml-1.5 text-lg font-semibold"
+                    >
+                        9
+                    </div>
+                </div>
+            </div>
+        </div>
+              <!-- More Customer Cards... -->
+            </div>
+        </div>
+
+        <!-- Projects Section -->
+        <div #projectsSection id="projects" class="pt-4 ml-9 mr-13">
+            <h2 class="text-xl font-semibold mb-4">Projects</h2>
+            <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+              <!-- Cards for Projects -->
+              <!-- Create Projects -->
+              <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200">
+                <div class="flex items-start justify-between">
+                  <div class="truncate text-lg font-medium leading-6 tracking-tight">Create Projects</div>
+                  <div class="-mr-3 -mt-2 ml-2">
+                    <button mat-icon-button [matMenuTriggerFor]="summaryMenu">
+                      <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                    </button>
+                    <mat-menu #summaryMenu="matMenu">
+                      <button mat-menu-item>Yesterday</button>
+                      <button mat-menu-item>2 days ago</button>
+                      <button mat-menu-item>3 days ago</button>
+                    </mat-menu>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">21</div>
+                  <div class="text-lg font-medium text-blue-600 dark:text-blue-500">Due Tasks</div>
+                  <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
+                    <div class="truncate text-md font-medium">Completed:</div>
+                    <div class="ml-1.5 text-lg font-semibold">13</div>
+                  </div>
+                </div>
+              </div>
+                <!-- No of Approval -->
+                <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+            >
+                <div class="flex items-start justify-between">
+                    <div
+                        class="truncate text-lg font-medium leading-6 tracking-tight"
+                    >
+                        No. of Approval
+                    </div>
+                    <div class="-mr-3 -mt-2 ml-2">
+                        <button
+                            mat-icon-button
+                            [matMenuTriggerFor]="overdueMenu"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="
+                                    'heroicons_mini:ellipsis-vertical'
+                                "
+                            ></mat-icon>
+                        </button>
+                        <mat-menu #overdueMenu="matMenu">
+                            <button mat-menu-item>
+                                Yesterday
+                            </button>
+                            <button mat-menu-item>
+                                2 days ago
+                            </button>
+                            <button mat-menu-item>
+                                3 days ago
+                            </button>
+                        </mat-menu>
+                    </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                    <div
+                        class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                    >
+                        17
+                    </div>
+                    <div
+                        class="text-lg font-medium text-red-600 dark:text-red-500"
+                    >
+                        Tasks
+                    </div>
+                    <div
+                        class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                    >
+                        <div
+                            class="truncate text-md font-medium"
+                        >
+                            From yesterday:
+                        </div>
+                        <div
+                            class="ml-1.5 text-lg font-semibold"
+                        >
+                            9
+                        </div>
+                    </div>
+                </div>
+            </div>
+              <!-- No of Pending Post -->
+              <div
+              class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+          >
+              <div class="flex items-start justify-between">
+                  <div
+                      class="truncate text-lg font-medium leading-6 tracking-tight"
+                  >
+                      No. of Pending Post
+                  </div>
+                  <div class="-mr-3 -mt-2 ml-2">
+                      <button
+                          mat-icon-button
+                          [matMenuTriggerFor]="overdueMenu"
+                      >
+                          <mat-icon
+                              class="icon-size-5"
+                              [svgIcon]="
+                                  'heroicons_mini:ellipsis-vertical'
+                              "
+                          ></mat-icon>
+                      </button>
+                      <mat-menu #overdueMenu="matMenu">
+                          <button mat-menu-item>
+                              Yesterday
+                          </button>
+                          <button mat-menu-item>
+                              2 days ago
+                          </button>
+                          <button mat-menu-item>
+                              3 days ago
+                          </button>
+                      </mat-menu>
+                  </div>
+              </div>
+              <div class="mt-2 flex flex-col items-center">
+                  <div
+                      class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                  >
+                      17
+                  </div>
+                  <div
+                      class="text-lg font-medium text-red-600 dark:text-red-500"
+                  >
+                      Tasks
+                  </div>
+                  <div
+                      class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                  >
+                      <div
+                          class="truncate text-md font-medium"
+                      >
+                          From yesterday:
+                      </div>
+                      <div
+                          class="ml-1.5 text-lg font-semibold"
+                      >
+                          9
+                      </div>
+                  </div>
+              </div>
+          </div>
+            <!-- No of Customers -->
+            <div
+            class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+        >
+            <div class="flex items-start justify-between">
+                <div
+                    class="truncate text-lg font-medium leading-6 tracking-tight"
+                >
+                    No. of Customers
+                </div>
+                <div class="-mr-3 -mt-2 ml-2">
+                    <button
+                        mat-icon-button
+                        [matMenuTriggerFor]="overdueMenu"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="
+                                'heroicons_mini:ellipsis-vertical'
+                            "
+                        ></mat-icon>
+                    </button>
+                    <mat-menu #overdueMenu="matMenu">
+                        <button mat-menu-item>
+                            Yesterday
+                        </button>
+                        <button mat-menu-item>
+                            2 days ago
+                        </button>
+                        <button mat-menu-item>
+                            3 days ago
+                        </button>
+                    </mat-menu>
+                </div>
+            </div>
+            <div class="mt-2 flex flex-col items-center">
+                <div
+                    class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                >
+                    17
+                </div>
+                <div
+                    class="text-lg font-medium text-red-600 dark:text-red-500"
+                >
+                    Tasks
+                </div>
+                <div
+                    class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                >
+                    <div
+                        class="truncate text-md font-medium"
+                    >
+                        From yesterday:
+                    </div>
+                    <div
+                        class="ml-1.5 text-lg font-semibold"
+                    >
+                        9
+                    </div>
+                </div>
+            </div>
+        </div>
+              <!-- More Customer Cards... -->
+            </div>
+        </div>
+
+        <!-- DFF Section -->
+        <div #dffSection id="dff" class="pt-4 ml-9 mr-13">
+            <h2 class="text-xl font-semibold mb-4">DFF</h2>
+            <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+              <!-- Cards for DFF -->
+              <!-- Create DFF -->
+              <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200">
+                <div class="flex items-start justify-between">
+                  <div class="truncate text-lg font-medium leading-6 tracking-tight">Create DFF</div>
+                  <div class="-mr-3 -mt-2 ml-2">
+                    <button mat-icon-button [matMenuTriggerFor]="summaryMenu">
+                      <mat-icon class="icon-size-5" [svgIcon]="'heroicons_mini:ellipsis-vertical'"></mat-icon>
+                    </button>
+                    <mat-menu #summaryMenu="matMenu">
+                      <button mat-menu-item>Yesterday</button>
+                      <button mat-menu-item>2 days ago</button>
+                      <button mat-menu-item>3 days ago</button>
+                    </mat-menu>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                  <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">21</div>
+                  <div class="text-lg font-medium text-blue-600 dark:text-blue-500">Due Tasks</div>
+                  <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
+                    <div class="truncate text-md font-medium">Completed:</div>
+                    <div class="ml-1.5 text-lg font-semibold">13</div>
+                  </div>
+                </div>
+              </div>
+                <!-- No of Approval -->
+                <div
+                class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+            >
+                <div class="flex items-start justify-between">
+                    <div
+                        class="truncate text-lg font-medium leading-6 tracking-tight"
+                    >
+                        No. of Approval
+                    </div>
+                    <div class="-mr-3 -mt-2 ml-2">
+                        <button
+                            mat-icon-button
+                            [matMenuTriggerFor]="overdueMenu"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="
+                                    'heroicons_mini:ellipsis-vertical'
+                                "
+                            ></mat-icon>
+                        </button>
+                        <mat-menu #overdueMenu="matMenu">
+                            <button mat-menu-item>
+                                Yesterday
+                            </button>
+                            <button mat-menu-item>
+                                2 days ago
+                            </button>
+                            <button mat-menu-item>
+                                3 days ago
+                            </button>
+                        </mat-menu>
+                    </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                    <div
+                        class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                    >
+                        17
+                    </div>
+                    <div
+                        class="text-lg font-medium text-red-600 dark:text-red-500"
+                    >
+                        Tasks
+                    </div>
+                    <div
+                        class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                    >
+                        <div
+                            class="truncate text-md font-medium"
+                        >
+                            From yesterday:
+                        </div>
+                        <div
+                            class="ml-1.5 text-lg font-semibold"
+                        >
+                            9
+                        </div>
+                    </div>
+                </div>
+            </div>
+              <!-- No of Pending Post -->
+              <div
+              class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+          >
+              <div class="flex items-start justify-between">
+                  <div
+                      class="truncate text-lg font-medium leading-6 tracking-tight"
+                  >
+                      No. of Pending Post
+                  </div>
+                  <div class="-mr-3 -mt-2 ml-2">
+                      <button
+                          mat-icon-button
+                          [matMenuTriggerFor]="overdueMenu"
+                      >
+                          <mat-icon
+                              class="icon-size-5"
+                              [svgIcon]="
+                                  'heroicons_mini:ellipsis-vertical'
+                              "
+                          ></mat-icon>
+                      </button>
+                      <mat-menu #overdueMenu="matMenu">
+                          <button mat-menu-item>
+                              Yesterday
+                          </button>
+                          <button mat-menu-item>
+                              2 days ago
+                          </button>
+                          <button mat-menu-item>
+                              3 days ago
+                          </button>
+                      </mat-menu>
+                  </div>
+              </div>
+              <div class="mt-2 flex flex-col items-center">
+                  <div
+                      class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                  >
+                      17
+                  </div>
+                  <div
+                      class="text-lg font-medium text-red-600 dark:text-red-500"
+                  >
+                      Tasks
+                  </div>
+                  <div
+                      class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                  >
+                      <div
+                          class="truncate text-md font-medium"
+                      >
+                          From yesterday:
+                      </div>
+                      <div
+                          class="ml-1.5 text-lg font-semibold"
+                      >
+                          9
+                      </div>
+                  </div>
+              </div>
+          </div>
+            <!-- No of Customers -->
+            <div
+            class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow hover:shadow-lg transition-shadow duration-200"
+        >
+            <div class="flex items-start justify-between">
+                <div
+                    class="truncate text-lg font-medium leading-6 tracking-tight"
+                >
+                    No. of Customers
+                </div>
+                <div class="-mr-3 -mt-2 ml-2">
+                    <button
+                        mat-icon-button
+                        [matMenuTriggerFor]="overdueMenu"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="
+                                'heroicons_mini:ellipsis-vertical'
+                            "
+                        ></mat-icon>
+                    </button>
+                    <mat-menu #overdueMenu="matMenu">
+                        <button mat-menu-item>
+                            Yesterday
+                        </button>
+                        <button mat-menu-item>
+                            2 days ago
+                        </button>
+                        <button mat-menu-item>
+                            3 days ago
+                        </button>
+                    </mat-menu>
+                </div>
+            </div>
+            <div class="mt-2 flex flex-col items-center">
+                <div
+                    class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl"
+                >
+                    17
+                </div>
+                <div
+                    class="text-lg font-medium text-red-600 dark:text-red-500"
+                >
+                    Tasks
+                </div>
+                <div
+                    class="text-secondary mt-5 flex w-full items-baseline justify-center"
+                >
+                    <div
+                        class="truncate text-md font-medium"
+                    >
+                        From yesterday:
+                    </div>
+                    <div
+                        class="ml-1.5 text-lg font-semibold"
+                    >
+                        9
+                    </div>
+                </div>
+            </div>
+        </div>
+              <!-- More Customer Cards... -->
+            </div>
+        </div>
+            
+        </div>
+    </div>
+
+    <button
+    (click)="scrollToTop()"
+    class="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-blue-600 text-white shadow-lg shadow-blue-glow transition-all duration-300 transform hover:translate-y-1"
+    title="Back to Top"
+    >
+    <mat-icon 
+        style="color: aliceblue;" 
+        [svgIcon]="'heroicons_solid:arrow-up'">
+    </mat-icon>
+    </button>
+
+
+
+</div>

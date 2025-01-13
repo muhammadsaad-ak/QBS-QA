@@ -1,0 +1,93 @@
+@if (!dismissible || (dismissible && !dismissed)) {
+    <div
+        class="qbs-alert-container"
+        [@fadeIn]="!dismissed"
+        [@fadeOut]="!dismissed"
+    >
+        <!-- Border -->
+        @if (appearance === 'border') {
+            <div class="qbs-alert-border"></div>
+        }
+
+        <!-- Icon -->
+        @if (showIcon) {
+            <div class="qbs-alert-icon">
+                <!-- Custom icon -->
+                <div class="qbs-alert-custom-icon">
+                    <ng-content select="[qbsAlertIcon]"></ng-content>
+                </div>
+
+                <!-- Default icons -->
+                <div class="qbs-alert-default-icon">
+                    @if (type === 'primary') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:check-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'accent') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:check-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'warn') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:x-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'basic') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:check-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'info') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:information-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'success') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:check-circle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'warning') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:exclamation-triangle'"
+                        ></mat-icon>
+                    }
+
+                    @if (type === 'error') {
+                        <mat-icon
+                            [svgIcon]="'heroicons_solid:x-circle'"
+                        ></mat-icon>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Content -->
+        <div class="qbs-alert-content">
+            <div class="qbs-alert-title">
+                <ng-content select="[qbsAlertTitle]"></ng-content>
+            </div>
+
+            <div class="qbs-alert-message">
+                <ng-content></ng-content>
+            </div>
+        </div>
+
+        <!-- Dismiss button -->
+        <button
+            class="qbs-alert-dismiss-button"
+            mat-icon-button
+            (click)="dismiss()"
+        >
+            <mat-icon [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+        </button>
+    </div>
+}

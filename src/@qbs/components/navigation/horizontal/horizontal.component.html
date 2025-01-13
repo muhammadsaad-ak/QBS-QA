@@ -1,0 +1,37 @@
+<div class="qbs-horizontal-navigation-wrapper">
+    @for (item of navigation; track trackByFn($index, item)) {
+        <!-- Skip the hidden items -->
+        @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
+            <!-- Basic -->
+            @if (item.type === 'basic') {
+                <qbs-horizontal-navigation-basic-item
+                    class="qbs-horizontal-navigation-menu-item"
+                    [item]="item"
+                    [name]="name"
+                ></qbs-horizontal-navigation-basic-item>
+            }
+
+            <!-- Branch: aside, collapsable, group -->
+            @if (
+                item.type === 'aside' ||
+                item.type === 'collapsable' ||
+                item.type === 'group'
+            ) {
+                <qbs-horizontal-navigation-branch-item
+                    class="qbs-horizontal-navigation-menu-item"
+                    [item]="item"
+                    [name]="name"
+                ></qbs-horizontal-navigation-branch-item>
+            }
+
+            <!-- Spacer -->
+            @if (item.type === 'spacer') {
+                <qbs-horizontal-navigation-spacer-item
+                    class="qbs-horizontal-navigation-menu-item"
+                    [item]="item"
+                    [name]="name"
+                ></qbs-horizontal-navigation-spacer-item>
+            }
+        }
+    }
+</div>

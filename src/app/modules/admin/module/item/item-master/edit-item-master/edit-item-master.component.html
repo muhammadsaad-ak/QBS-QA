@@ -1,0 +1,1166 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Main STARTS -->
+    <div class="-mt-px flex-auto border-t pt-4 pb-10 sm:pt-6">
+        <!-- Header STARTS -->
+        <div class="relative flex items-center justify-between px-6 py-0 md:px-8">
+            <!-- Title -->
+            <div class="text-3xl font-extrabold tracking-tight">
+                Item&nbsp;Master
+            </div>
+            <!-- BUTTONS -->
+            <div class="mb-1 flex items-center" *ngIf="!editMode">
+                <button mat-flat-button [color]="'primary'" (click)="toggleEditMode(true)">
+                    <mat-icon svgIcon="heroicons_solid:pencil-square" class="icon-size-5"></mat-icon>
+                    &nbsp;Edit
+                </button>
+            </div>
+            <div class="mb-1 flex items-center" *ngIf="editMode">
+                <button mat-flat-button [color]="'primary'" (click)="toggleEditMode(false)">
+                    <mat-icon svgIcon="heroicons_outline:eye" class="icon-size-1"></mat-icon>
+                </button>
+            </div>
+        </div>
+        <!-- Header ENDS -->
+        <!-- Custom Tabs STARTS -->
+        <div class="flex space-x-4 sm:px-2" style="padding-left: 2.5rem !important;">
+            <button [ngClass]="{ active: activeTab === 'general' }" class="tab-button"
+                (click)="scrollToSection('general')">
+                General
+            </button>
+            <button [ngClass]="{ active: activeTab === 'logistics' }" class="tab-button"
+                (click)="scrollToSection('logistics')">
+                Logistics
+            </button>
+            <button [ngClass]="{ active: activeTab === 'purchasing' }" class="tab-button"
+                (click)="scrollToSection('purchasing')">
+                Purchasing
+            </button>
+            <button [ngClass]="{ active: activeTab === 'sales' }" class="tab-button" (click)="scrollToSection('sales')">
+                Sales
+            </button>
+            <button [ngClass]="{ active: activeTab === 'tax' }" class="tab-button" (click)="scrollToSection('tax')">
+                Tax
+            </button>
+            <button [ngClass]="{ active: activeTab === 'inventory' }" class="tab-button"
+                (click)="scrollToSection('inventory')">
+                Inventory
+            </button>
+            <button [ngClass]="{ active: activeTab === 'pricing' }" class="tab-button"
+                (click)="scrollToSection('pricing')">
+                Pricing
+            </button>
+            <button [ngClass]="{ active: activeTab === 'properties' }" class="tab-button"
+                (click)="scrollToSection('properties')">
+                Properties
+            </button>
+            <button [ngClass]="{ active: activeTab === 'user-defined-fields' }" class="tab-button"
+                (click)="scrollToSection('user-defined-fields')">
+                User&nbsp;Defined&nbsp;Fields
+            </button>
+        </div>
+        <!-- Custom Tabs ENDS -->
+        <hr class="tab-underline" />
+        <!-- VIEW MODE STARTS -->
+        @if (!editMode) {
+        <div class="mx-auto w-full max-w-screen-xl bg-default" style="max-height: 600px; overflow-y: auto;">
+            <!-- Item Master Tabs -->
+            <form [formGroup]="generalForm">
+                <!-- generalSection STARTS -->
+                <div #generalSection id="general" class="pt-4 ml-9 mr-13" matTooltip="You are in view mode.">
+                    <qbs-card class="w-full px-8 pb-4 pt-6">
+                        <div class="w-full">
+                            <div class="text-2xl font-semibold leading-tight">GENERAL</div>
+                            <div class="flex flex-wrap">
+                                <!-- GENERAL - BASIC INFORMATION STARTS -->
+                                <div class="general-info w-full md:w-1/2 md:pr-10">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Basic&nbsp;Information</div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- SERIES -->
+                                            <div class="w-full">
+                                                <mat-label>Series:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Series"
+                                                        formControlName="seriesid">
+                                                        <mat-option class="text-sm" *ngFor="let series of seriesList"
+                                                            [value]="series.seriesid">
+                                                            {{ series.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- ITEM -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Item&nbsp;No.</mat-label>
+                                                    <input matInput class="text-sm" value="" formControlName="itemNo"
+                                                        readonly>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- DESCRIPTION -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Description:</mat-label>
+                                                    <input matInput type="text" formControlName="description" readonly>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- FOREIGN NAME -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Foreign&nbsp;Name:</mat-label>
+                                                    <input matInput type="text" formControlName="foreignName" readonly>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- ITEM GROUP -->
+                                            <div class="w-full">
+                                                <mat-label>Item&nbsp;Group:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Item Group"
+                                                        formControlName="itemGroupid">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let itemGroup of itemGroupList"
+                                                            [value]="itemGroup.itemGroupid">
+                                                            {{ itemGroup.label }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- UOM GROUP -->
+                                            <div class="w-full">
+                                                <mat-label class="text-md">UoM&nbsp;Group:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <!-- (click)="onUoMGroupClick()" -->
+                                                    <mat-icon matSuffix svgIcon="heroicons_outline:bars-3"></mat-icon>
+                                                    <input matInput type="text" class="text-sm"
+                                                        formControlName="uOMGroupId" readonly>
+                                                    <!-- <input matInput type="text" class="text-sm" [value]="uOMGroupId"
+                                                        formControlName="uOMGroupId"> -->
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- GENERAL - BASIC INFORMATION ENDS -->
+                                <!-- GENERAL - ITEM TYPE STARTS -->
+                                <div class="item-type w-full md:w-1/2 md:pl-5">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Item&nbsp;Type</div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- ITEM TYPE -->
+                                            <div class="w-full">
+                                                <mat-label>Item&nbsp;Type:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Item"
+                                                        formControlName="itemId">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let itemType of itemTypesList"
+                                                            [value]="itemType.itemId">
+                                                            {{ itemType.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- INVENTORY ITEM -->
+                                            <div class="w-full">
+                                                <mat-label>Inventory&nbsp;Item:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Value"
+                                                        formControlName="isInventoryItem">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let option of booleanOptions"
+                                                            [value]="option.value">
+                                                            {{ option.label }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- SALES ITEM -->
+                                            <div class="w-full">
+                                                <mat-label>Sales&nbsp;Item:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Foreign"
+                                                        formControlName="isSalesItem">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let option of booleanOptions"
+                                                            [value]="option.value">
+                                                            {{ option.label }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- PURCHASING ITEM -->
+                                            <div class="w-full">
+                                                <mat-label>Purchasing&nbsp;Item:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Value"
+                                                        formControlName="isPurchasingItem">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let option of booleanOptions"
+                                                            [value]="option.value">
+                                                            {{ option.label }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- GENERAL - ITEM TYPE ENDS -->
+                                <!-- GENERAL - PREFERENCES STARTS -->
+                                <div class="general-info w-full md:w-1/2 md:pr-10">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Preferences</div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- MANUFACTURER -->
+                                            <div class="w-full">
+                                                <mat-label>Manufacturer:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Manufacturer"
+                                                        formControlName="manufacturerId">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let manufacturer of manufacturersList"
+                                                            [value]="manufacturer.manufacturerId">
+                                                            {{ manufacturer.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- SHIPPING TYPE -->
+                                            <div class="w-full">
+                                                <mat-label>Shipping&nbsp;Type:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Shipping Type"
+                                                        formControlName="shippingType">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let shippingType of shippingTypeList"
+                                                            [value]="shippingType.shippingTypeId">
+                                                            {{ shippingType.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- ADVANCE RULE TYPE -->
+                                            <div class="w-full">
+                                                <mat-label>Advance&nbsp;Rule&nbsp;Type:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Advance Rule Type"
+                                                        formControlName="advanceRuleTypeId">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let advanceRuleType of advanceRuleTypeList"
+                                                            [value]="advanceRuleType.advanceRuleTypeId">
+                                                            {{ advanceRuleType.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- REGION -->
+                                            <div class="w-full">
+                                                <mat-label>Country/Region&nbsp;of&nbsp;Origin</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Region"
+                                                        formControlName="regionId">
+                                                        <mat-option class="text-sm" *ngFor="let region of regionsList"
+                                                            [value]="region.regionId">
+                                                            {{ region.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <div class="w-full">
+                                                <mat-label style="margin-right: 8px;">Active:</mat-label>
+                                                <div
+                                                    class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-4 md:flex-row md:space-x-4 view-mode">
+                                                    <div class="flex items-center mb-0 sm:mb-0">
+                                                        <mat-checkbox formControlName="isActive"></mat-checkbox>
+                                                    </div>
+                                                    <div class="w-full sm:w-1/2 md:w-1/2 mb-4 sm:mb-0">
+                                                        <mat-form-field class="w-full view-mode"
+                                                            [subscriptSizing]="'dynamic'"
+                                                            style="padding: 0.2rem !important;">
+                                                            <input matInput [matDatepicker]="isActiveFromDate"
+                                                                formControlName="isActiveFromDate">
+                                                        </mat-form-field>
+                                                    </div>
+                                                    <div class="w-full sm:w-1/2 md:w-1/2 mb-4 sm:mb-0">
+                                                        <mat-form-field class="w-full view-mode"
+                                                            [subscriptSizing]="'dynamic'"
+                                                            style="padding: 0.2rem !important;">
+                                                            <input matInput [matDatepicker]="isActiveToDate"
+                                                                formControlName="isActiveToDate">
+                                                        </mat-form-field>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- GENERAL PREFERENCES ACTIVE REMARKS -->
+                                            <div class="w-full">
+                                                <mat-label>Remarks</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <input matInput type="text" class="text-sm" value=""
+                                                        formControlName="isActiveRemarks" readonly>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- GENERAL PREFERENCES INACTIVE -->
+                                            <div class="w-full">
+                                                <mat-label style="margin-right: 8px;">Inactive:</mat-label>
+                                                <div
+                                                    class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-4 md:flex-row md:space-x-4 view-mode">
+                                                    <div class="flex items-center mb-0 sm:mb-0"> <!-- mb-4 -->
+                                                        <mat-checkbox formControlName="isInactive"
+                                                            (change)="isInactive = $event.checked ? true : false"></mat-checkbox>
+                                                    </div>
+                                                    <ng-container *ngIf="isInactive === true">
+                                                        <div class="w-full sm:w-1/2 md:w-1/2 mb-4 sm:mb-0">
+                                                            <mat-form-field class="w-full view-mode"
+                                                                [subscriptSizing]="'dynamic'"
+                                                                style="padding: 0.2rem !important;">
+                                                                <input matInput [matDatepicker]="isInactiveFromDate"
+                                                                    formControlName="isInactiveFromDate">
+                                                            </mat-form-field>
+                                                        </div>
+                                                        <div class="w-full sm:w-1/2 md:w-1/2 mb-4 sm:mb-0">
+                                                            <mat-form-field class="w-full view-mode"
+                                                                [subscriptSizing]="'dynamic'"
+                                                                style="padding: 0.2rem !important;">
+                                                                <input matInput [matDatepicker]="isInactiveToDate"
+                                                                    formControlName="isInactiveToDate">
+                                                            </mat-form-field>
+                                                        </div>
+                                                    </ng-container>
+                                                </div>
+                                            </div>
+                                            <!-- GENERAL PREFERENCES INACTIVE REMARKS -->
+                                            <ng-container *ngIf="isInactive === true">
+                                                <div class="w-full">
+                                                    <mat-label>Remarks</mat-label>
+                                                    <mat-form-field class="w-full view-mode"
+                                                        [subscriptSizing]="'dynamic'"
+                                                        style="padding: 0.2rem !important;">
+                                                        <input matInput type="text" class="text-sm" value=""
+                                                            formControlName="isInactiveRemarks" readonly>
+                                                    </mat-form-field>
+                                                </div>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- GENERAL - PREFERENCES ENDS -->
+                                <!-- ADDITIONAL INFORMATION STARTS -->
+                                <div class="additional-info w-full md:w-1/2 md:pl-5">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Additional&nbsp;Information
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- IMAGE -->
+                                            <div class="w-full">
+                                                <mat-label>Image:</mat-label>
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <input matInput readonly placeholder="upload">
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- ADDITIONAL INFORMATION ENDS -->
+                                <!-- GENERAL - ITEMS CLASSIFICATION STARTS -->
+                                <div class="general-info w-full md:w-1/2 md:pr-10">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Items&nbsp;Classification
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- STANDARD ITEM IDENTIFICATION -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Standard&nbsp;Item&nbsp;Identification:</mat-label>
+                                                    <mat-icon matSuffix svgIcon="heroicons_outline:bars-3"></mat-icon>
+                                                    <input matInput type="text" class="text-sm"
+                                                        formControlName="standardItemIdentificationId" readonly>
+                                                </mat-form-field>
+                                            </div>
+
+                                            <!-- COMMODITY CLASSIFICATION -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full view-mode" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label
+                                                        class="text-wrap">Commodity&nbsp;Classification:</mat-label>
+                                                    <mat-icon matSuffix svgIcon="heroicons_outline:bars-3"></mat-icon>
+                                                    <input matInput type="text" class="text-sm"
+                                                        formControlName="commodityClassificationId"
+                                                        [value]="commodityClassificationDescription" readonly>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- GENERAL - ITEMS CLASSIFICATION ENDS -->
+                            </div>
+                        </div>
+                    </qbs-card>
+                </div>
+                <!-- generalSection ENDS -->
+            </form>
+        </div>
+        }
+        <!-- VIEW MODE ENDS -->
+        <!-- EDIT MODE STARTS -->
+        @if (editMode) {
+        <div class="mx-auto w-full max-w-screen-xl bg-default" style="max-height: 600px; overflow-y: auto;">
+            <!-- Item Master Tabs -->
+            <form [formGroup]="generalFormUpdate" (ngSubmit)="updateForm()">
+                <!-- generalSection STARTS -->
+                <div #generalSection id="general" class="pt-4 ml-9 mr-13">
+                    <qbs-card class="w-full px-8 pb-4 pt-6">
+                        <div class="w-full">
+                            <div class="text-2xl font-semibold leading-tight">GENERAL</div>
+                            <div class="flex flex-wrap">
+                                <!-- GENERAL - BASIC INFORMATION STARTS -->
+                                <div class="general-info w-full md:w-1/2 md:pr-10">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Basic&nbsp;Information</div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- SERIES -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Series:</mat-label>
+                                                    <mat-select class="text-sm" placeholder="Select Series"
+                                                        formControlName="seriesid">
+                                                        <mat-option class="text-sm" *ngFor="let series of seriesList"
+                                                            [value]="series.seriesid">
+                                                            {{ series.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- ITEM -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Item&nbsp;No.</mat-label>
+                                                    <input matInput class="text-sm" value="ITM00087"
+                                                        formControlName="itemNo" readonly>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- DESCRIPTION -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Description:</mat-label>
+                                                    <input matInput type="text" formControlName="description">
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- FOREIGN NAME -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Foreign&nbsp;Name:</mat-label>
+                                                    <input matInput type="text" formControlName="foreignName">
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- ITEM GROUP -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Item&nbsp;Group:</mat-label>
+                                                    <mat-select class="text-sm" placeholder="Select Item Group"
+                                                        formControlName="itemGroupid">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let itemGroup of itemGroupList"
+                                                            [value]="itemGroup.itemGroupid">
+                                                            {{ itemGroup.label }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- UOM GROUP -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label class="text-md">UoM&nbsp;Group:</mat-label>
+                                                    <mat-icon matSuffix svgIcon="heroicons_outline:bars-3"
+                                                        (click)="onUoMGroupClick()"></mat-icon>
+                                                    <input matInput type="text" class="text-sm"
+                                                        formControlName="uOMGroupId" [value]="uOMGroupTitle" readonly>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- UOM GROUP NG TEMPLATE DIALOG STARTS -->
+                                            <ng-template #dialogTemplateUoMGroup let-data="data">
+                                                <div class="dialog-container flex flex-col h-full">
+                                                    <div class="dialog-container flex flex-col h-full">
+                                                        <div
+                                                            class="flex justify-between items-center p-4 border-b text-primary">
+                                                            <h2 class="text-lg font-semibold">
+                                                                UoM&nbsp;Groups</h2>
+                                                            <span (click)="closeDialog()" class="header-close-x">
+                                                                <mat-icon class="text-primary">close</mat-icon>
+                                                            </span>
+                                                        </div>
+                                                        <!-- UOM GROUP NG TEMPLATE TABLE STARTS -->
+                                                        <mat-table [dataSource]="dataSourceUoMGroup">
+                                                            <!-- CHECKBOX COLUMN -->
+                                                            <ng-container matColumnDef="select" class="w-full md:w-1/4">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="w-full md:w-1/4"></mat-header-cell>
+                                                                <mat-cell *matCellDef="let row" class="w-full md:w-1/4">
+                                                                    <mat-checkbox [checked]="row.isSelected"
+                                                                        (change)="onCheckboxChangeUoMGroup(row)"
+                                                                        class="w-full md:w-1/4">
+                                                                    </mat-checkbox>
+                                                                </mat-cell>
+                                                            </ng-container>
+                                                            <!-- GROUP COLUMN -->
+                                                            <ng-container matColumnDef="group">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="single-line text-sm">Group</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.group}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- GROUP DESCRIPTION COLUMN -->
+                                                            <ng-container matColumnDef="groupDescription">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="text-sm">Group&nbsp;Description</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.groupDescription}} </mat-cell>
+                                                            </ng-container>
+                                                            <mat-header-row
+                                                                *matHeaderRowDef="displayedColumnsUoMGroup"></mat-header-row>
+                                                            <mat-row
+                                                                *matRowDef="let row; columns: displayedColumnsUoMGroup;"></mat-row>
+                                                        </mat-table>
+                                                        <!-- UOM GROUP NG TEMPLATE TABLE ENDS -->
+                                                        <!-- UOM GROUP NG TEMPLATE SAVE & CLOSE -->
+                                                        <div class="flex justify-end mt-auto">
+                                                            <button mat-flat-button color="primary"
+                                                                (click)="addSelectedRowUoMGroup()">Save&nbsp;&&nbsp;Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                            <!-- UOM GROUP NG TEMPLATE DIALOG ENDS -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- GENERAL - BASIC INFORMATION ENDS -->
+                                <!-- GENERAL - ITEM TYPE STARTS -->
+                                <div class="item-type w-full md:w-1/2 md:pl-5">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Item&nbsp;Type</div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- ITEM TYPE -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Item&nbsp;Type:</mat-label>
+                                                    <mat-select class="text-sm" placeholder="Select Item"
+                                                        formControlName="itemId">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let itemType of itemTypesList"
+                                                            [value]="itemType.itemId">
+                                                            {{ itemType.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- INVENTORY ITEM -->
+                                            <div class="w-full">
+                                                <mat-label>Inventory&nbsp;Item:</mat-label>
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Value"
+                                                        formControlName="isInventoryItem">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let option of booleanOptions"
+                                                            [value]="option.value">
+                                                            {{ option.label }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- SALES ITEM -->
+                                            <div class="w-full">
+                                                <mat-label>Sales&nbsp;Item:</mat-label>
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Foreign"
+                                                        formControlName="isSalesItem">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let option of booleanOptions"
+                                                            [value]="option.value">
+                                                            {{ option.label }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- PURCHASING ITEM -->
+                                            <div class="w-full">
+                                                <mat-label>Purchasing&nbsp;Item:</mat-label>
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-select class="text-sm" placeholder="Select Value"
+                                                        formControlName="isPurchasingItem">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let option of booleanOptions"
+                                                            [value]="option.value">
+                                                            {{ option.label }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- GENERAL - ITEM TYPE ENDS -->
+                                <!-- GENERAL - PREFERENCES STARTS -->
+                                <div class="general-info w-full md:w-1/2 md:pr-10">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Preferences</div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- MANUFACTURER -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Manufacturer:</mat-label>
+                                                    <mat-select class="text-sm" placeholder="Select Manufacturer"
+                                                        formControlName="manufacturerId">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let manufacturer of manufacturersList"
+                                                            [value]="manufacturer.manufacturerId">
+                                                            {{ manufacturer.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- SHIPPING TYPE -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Shipping&nbsp;Type:</mat-label>
+                                                    <mat-select class="text-sm" placeholder="Select Shipping Type"
+                                                        formControlName="shippingType">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let shippingType of shippingTypeList"
+                                                            [value]="shippingType.shippingTypeId">
+                                                            {{ shippingType.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- ADVANCE RULE TYPE -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Advance&nbsp;Rule&nbsp;Type:</mat-label>
+                                                    <mat-select class="text-sm" placeholder="Select Advance Rule Type"
+                                                        formControlName="advanceRuleTypeId">
+                                                        <mat-option class="text-sm"
+                                                            *ngFor="let advanceRuleType of advanceRuleTypeList"
+                                                            [value]="advanceRuleType.advanceRuleTypeId">
+                                                            {{ advanceRuleType.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- REGION -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Country/Region&nbsp;of&nbsp;Origin</mat-label>
+                                                    <mat-select class="text-sm" placeholder="Select Region"
+                                                        formControlName="regionId">
+                                                        <mat-option class="text-sm" *ngFor="let region of regionsList"
+                                                            [value]="region.regionId">
+                                                            {{ region.value }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- GENERAL PREFERENCES ACTIVE -->
+                                            <div class="w-full">
+                                                <mat-label style="margin-right: 8px;">Active:</mat-label>
+                                                <div
+                                                    class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-4 md:flex-row md:space-x-4">
+                                                    <div class="flex items-center mb-0 sm:mb-0"> <!-- mb-4 -->
+                                                        <mat-checkbox formControlName="isActive"></mat-checkbox>
+                                                    </div>
+                                                    <div class="w-full sm:w-1/2 md:w-1/2 mb-4 sm:mb-0">
+                                                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                            style="padding: 0.2rem !important;">
+                                                            <input matInput [matDatepicker]="isActiveFromDate"
+                                                                formControlName="isActiveFromDate">
+                                                            <mat-datepicker-toggle matSuffix
+                                                                [for]="isActiveFromDate"></mat-datepicker-toggle>
+                                                            <mat-datepicker #isActiveFromDate></mat-datepicker>
+                                                        </mat-form-field>
+                                                    </div>
+                                                    <div class="w-full sm:w-1/2 md:w-1/2 mb-4 sm:mb-0">
+                                                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                            style="padding: 0.2rem !important;">
+                                                            <input matInput [matDatepicker]="isActiveToDate"
+                                                                formControlName="isActiveToDate">
+                                                            <mat-datepicker-toggle matSuffix
+                                                                [for]="isActiveToDate"></mat-datepicker-toggle>
+                                                            <mat-datepicker #isActiveToDate></mat-datepicker>
+                                                        </mat-form-field>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- GENERAL PREFERENCES ACTIVE REMARKS -->
+                                            <div class="w-full">
+                                                <mat-label>Remarks</mat-label>
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <input matInput type="text" class="text-sm" value=""
+                                                        formControlName="isActiveRemarks">
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- GENERAL PREFERENCES INACTIVE -->
+                                            <div class="w-full">
+                                                <mat-label style="margin-right: 8px;">Inactive:</mat-label>
+                                                <div
+                                                    class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-4 md:flex-row md:space-x-4">
+                                                    <div class="flex items-center mb-0 sm:mb-0"> <!-- mb-4 -->
+                                                        <mat-checkbox formControlName="isInactive"
+                                                            (change)="isInactive = $event.checked ? true : false"></mat-checkbox>
+                                                    </div>
+                                                    <ng-container *ngIf="isInactive === true">
+                                                        <div class="w-full sm:w-1/2 md:w-1/2 mb-4 sm:mb-0">
+                                                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                                style="padding: 0.2rem !important;">
+                                                                <input matInput [matDatepicker]="isInactiveFromDate"
+                                                                    formControlName="isInactiveFromDate">
+                                                                <mat-datepicker-toggle matSuffix
+                                                                    [for]="isInactiveFromDate"></mat-datepicker-toggle>
+                                                                <mat-datepicker #isInactiveFromDate></mat-datepicker>
+                                                            </mat-form-field>
+                                                        </div>
+                                                        <div class="w-full sm:w-1/2 md:w-1/2 mb-4 sm:mb-0">
+                                                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                                style="padding: 0.2rem !important;">
+                                                                <input matInput [matDatepicker]="isInactiveToDate"
+                                                                    formControlName="isInactiveToDate">
+                                                                <mat-datepicker-toggle matSuffix
+                                                                    [for]="isInactiveToDate"></mat-datepicker-toggle>
+                                                                <mat-datepicker #isInactiveToDate></mat-datepicker>
+                                                            </mat-form-field>
+                                                        </div>
+                                                    </ng-container>
+                                                </div>
+                                            </div>
+                                            <!-- GENERAL PREFERENCES INACTIVE REMARKS -->
+                                            <ng-container *ngIf="isInactive === true">
+                                                <div class="w-full">
+                                                    <mat-label>Remarks</mat-label>
+                                                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                        style="padding: 0.2rem !important;">
+                                                        <input matInput type="text" class="text-sm" value=""
+                                                            formControlName="isInactiveRemarks">
+                                                    </mat-form-field>
+                                                </div>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- GENERAL - PREFERENCES ENDS -->
+                                <!-- ADDITIONAL INFORMATION STARTS -->
+                                <div class="additional-info w-full md:w-1/2 md:pl-5">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Additional&nbsp;Information
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- IMAGE -->
+                                            <div class="w-full">
+                                                <mat-label>Image:</mat-label>
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <input matInput readonly placeholder="upload">
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- ADDITIONAL INFORMATION ENDS -->
+                                <!-- GENERAL - ITEMS CLASSIFICATION STARTS -->
+                                <div class="general-info w-full md:w-1/2 md:pr-10">
+                                    <div class="flex items-center justify-between py-2">
+                                        <div class="text-1xl font-semibold leading-tight">Items&nbsp;Classification
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="flex flex-wrap">
+                                            <!-- STANDARD ITEM IDENTIFICATION -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label>Standard&nbsp;Item&nbsp;Identification:</mat-label>
+                                                    <mat-icon matSuffix svgIcon="heroicons_outline:bars-3"
+                                                        (click)="onStandardItemIDClick()"></mat-icon>
+                                                    <input matInput type="text" class="text-sm"
+                                                        formControlName="standardItemIdentificationId"
+                                                        [value]="standardItemDescription" readonly>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- STANDARD ITEM NG TEMPLATE DIALOG STARTS -->
+                                            <ng-template #dialogTemplateStandardItem let-data="data">
+                                                <div class="dialog-container flex flex-col h-full">
+                                                    <div class="dialog-container flex flex-col h-full">
+                                                        <div
+                                                            class="flex justify-between items-center p-4 border-b text-primary">
+                                                            <h2 class="text-lg font-semibold">
+                                                                PEPPOL&nbsp;BIS&nbsp;Code&nbsp;Lists</h2>
+                                                            <span (click)="closeDialog()" class="header-close-x">
+                                                                <mat-icon class="text-primary">close</mat-icon>
+                                                            </span>
+                                                        </div>
+                                                        <!-- STANDARD ITEM NG TEMPLATE TABLE STARTS -->
+                                                        <mat-table [dataSource]="dataSourceStandardItem">
+                                                            <!-- CHECKBOX COLUMN -->
+                                                            <ng-container matColumnDef="select" class="w-full md:w-1/4">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="w-full md:w-1/4"></mat-header-cell>
+                                                                <mat-cell *matCellDef="let row" class="w-full md:w-1/4">
+                                                                    <mat-checkbox [checked]="row.isSelected"
+                                                                        (change)="onCheckboxChangeStandardItem(row)"
+                                                                        class="w-full md:w-1/4">
+                                                                    </mat-checkbox>
+                                                                </mat-cell>
+                                                            </ng-container>
+                                                            <!-- CODE LIST COLUMN -->
+                                                            <ng-container matColumnDef="codeList">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="single-line text-sm">Code&nbsp;List</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.codeList}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- CODE -->
+                                                            <ng-container matColumnDef="code">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="single-line text-sm">Code</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.code}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- DESCRIPTION COLUMN -->
+                                                            <ng-container matColumnDef="description">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="text-sm">Description</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.description}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- SCHEMA CODE COLUMN -->
+                                                            <ng-container matColumnDef="schemaCode">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="single-line text-sm">Schema&nbsp;Code</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.schemaCode}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- SCHEMA DESCRIPTION COLUMN -->
+                                                            <ng-container matColumnDef="shemaDescription">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="text-sm">Shema&nbsp;Description</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.shemaDescription}} </mat-cell>
+                                                            </ng-container>
+                                                            <mat-header-row
+                                                                *matHeaderRowDef="displayedColumnsStandardItem"></mat-header-row>
+                                                            <mat-row
+                                                                *matRowDef="let row; columns: displayedColumnsStandardItem;"></mat-row>
+                                                        </mat-table>
+                                                        <!-- STANDARD ITEM TEMPLATE TABLE ENDS -->
+                                                        <!-- STANDARD ITEM TEMPLATE SAVE & CLOSE -->
+                                                        <div class="flex justify-end mt-auto">
+                                                            <button mat-flat-button color="primary"
+                                                                (click)="addSelectedRowStandardItem()">Update</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                            <!-- STANDARD ITEM NG TEMPLATE DIALOG ENDS -->
+                                            <!-- COMMODITY CLASSIFICATION -->
+                                            <div class="w-full">
+                                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                                    style="padding: 0.2rem !important;">
+                                                    <mat-label
+                                                        class="text-wrap">Commodity&nbsp;Classification:</mat-label>
+                                                    <mat-icon matSuffix svgIcon="heroicons_outline:bars-3"
+                                                        (click)="onCommodityClassClick()"></mat-icon>
+                                                    <input matInput type="text" class="text-sm"
+                                                        formControlName="commodityClassificationId"
+                                                        [value]="commodityClassificationDescription" readonly>
+                                                </mat-form-field>
+                                            </div>
+                                            <!-- COMMODITY CLASSIFICATION NG TEMPLATE DIALOG STARTS -->
+                                            <ng-template #dialogTemplateCommodityClass let-data="data">
+                                                <div class="dialog-container flex flex-col h-full">
+                                                    <div class="dialog-container flex flex-col h-full">
+                                                        <div
+                                                            class="flex justify-between items-center p-4 border-b text-primary">
+                                                            <h2 class="text-lg font-semibold">
+                                                                PEPPOL&nbsp;BIS&nbsp;Code&nbsp;Lists</h2>
+                                                            <span (click)="closeDialog()" class="header-close-x">
+                                                                <mat-icon class="text-primary">close</mat-icon>
+                                                            </span>
+                                                        </div>
+                                                        <!-- COMMODITY CLASSIFICATION NG TEMPLATE TABLE STARTS -->
+                                                        <mat-table [dataSource]="dataSourceCommodityClass">
+                                                            <!-- CHECKBOX COLUMN -->
+                                                            <ng-container matColumnDef="select" class="w-full md:w-1/4">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="w-full md:w-1/4"></mat-header-cell>
+                                                                <mat-cell *matCellDef="let row" class="w-full md:w-1/4">
+                                                                    <mat-checkbox [checked]="row.isSelected"
+                                                                        (change)="onCheckboxChangeCommodityClass(row)"
+                                                                        class="w-full md:w-1/4"
+                                                                        [matTooltip]="row.commodityClassificationId">
+                                                                    </mat-checkbox>
+                                                                </mat-cell>
+                                                            </ng-container>
+                                                            <!-- CODE LIST COLUMN -->
+                                                            <ng-container matColumnDef="codeList">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="single-line text-sm">Code&nbsp;List</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.codeList}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- CODE -->
+                                                            <ng-container matColumnDef="code">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="single-line text-sm">Code</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.code}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- DESCRIPTION COLUMN -->
+                                                            <ng-container matColumnDef="description">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="text-sm">Description</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.description}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- SCHEMA CODE COLUMN -->
+                                                            <ng-container matColumnDef="schemaCode">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="single-line text-sm">Schema&nbsp;Code</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.schemaCode}} </mat-cell>
+                                                            </ng-container>
+                                                            <!-- SCHEMA DESCRIPTION COLUMN -->
+                                                            <ng-container matColumnDef="shemaDescription">
+                                                                <mat-header-cell *matHeaderCellDef
+                                                                    class="text-sm">Shema&nbsp;Description</mat-header-cell>
+                                                                <mat-cell *matCellDef="let element"
+                                                                    class="single-line text-sm">
+                                                                    {{element.shemaDescription}} </mat-cell>
+                                                            </ng-container>
+                                                            <mat-header-row
+                                                                *matHeaderRowDef="displayedColumnsCommodityClass"></mat-header-row>
+                                                            <mat-row
+                                                                *matRowDef="let row; columns: displayedColumnsCommodityClass;"></mat-row>
+                                                        </mat-table>
+                                                        <!-- COMMODITY CLASSIFICATION TEMPLATE TABLE ENDS -->
+                                                        <!-- COMMODITY CLASSIFICATION TEMPLATE SAVE & CLOSE -->
+                                                        <div class="flex justify-end mt-auto">
+                                                            <button mat-flat-button color="primary"
+                                                                (click)="addSelectedRowCommodityClass()">Update</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                            <!-- COMMODITY CLASSIFICATION NG TEMPLATE DIALOG ENDS -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- GENERAL - ITEMS CLASSIFICATION ENDS -->
+                            </div>
+                            <hr class="m-0 p-0 my-2">
+                            <!-- UPDATE FORM SUBMIT BUTTON -->
+                            <div class="flex justify-end">
+                                <button mat-raised-button color="primary" type="submit"
+                                    class="float-right">Update</button>
+                            </div>
+                        </div>
+                    </qbs-card>
+                </div>
+                <!-- generalSection ENDS -->
+            </form>
+            <!-- logisticsSection STARTS -->
+            <div #logisticsSection id="logistics" class="pt-4 ml-9 mr-13">
+                <qbs-card class="w-full px-8 pb-4 pt-6">
+                    <div class="w-full">
+                        <div class="flex-container">
+                            <div class="logistics-section w-full pr-10">
+                                <div class="flex flex-col py-2">
+                                    <div class="text-2xl font-semibold leading-tight">LOGISTICS</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </qbs-card>
+            </div>
+            <!-- logisticsSection ENDS -->
+            <!-- purchasingSection STARTS -->
+            <div #purchasingSection id="purchasing" class="pt-4 ml-9 mr-13">
+                <qbs-card class="w-full px-8 pb-4 pt-6">
+                    <div class="w-full">
+                        <div class="flex-container">
+                            <div class="purchasing-section w-full pr-10">
+                                <div class="flex flex-col py-2">
+                                    <div class="text-2xl font-semibold leading-tight">PURCHASING</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </qbs-card>
+            </div>
+            <!-- purchasingSection ENDS -->
+            <!-- salesSection STARTS -->
+            <div #salesSection id="sales" class="pt-4 ml-9 mr-13">
+                <qbs-card class="w-full px-8 pb-4 pt-6">
+                    <div class="w-full">
+                        <div class="flex-container">
+                            <div class="sales-section w-full pr-10">
+                                <div class="flex flex-col py-2">
+                                    <div class="text-2xl font-semibold leading-tight">SALES</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </qbs-card>
+            </div>
+            <!-- salesSection ENDS -->
+            <!-- taxSection STARTS -->
+            <div #taxSection id="tax" class="pt-4 ml-9 mr-13">
+                <qbs-card class="w-full px-8 pb-4 pt-6">
+                    <div class="w-full">
+                        <div class="text-2xl font-semibold leading-tight">TAX</div>
+                        <div class="flex flex-wrap">
+                            <!-- TAX - GENERAL TAX DATA STARTS -->
+                            <div class="general-info w-full md:w-1/2 pr-10">
+                                <div class="flex items-center justify-between py-2">
+                                    <div class="text-1xl font-semibold leading-tight">General&nbsp;Tax&nbsp;Data
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- TAX- GENERAL TAX DATA ENDS -->
+                            <!-- TAX - PURCHASING TAX DATA STARTS -->
+                            <div class="item-type w-full md:w-1/2 md:pl-5">
+                                <div class="flex items-center justify-between py-2">
+                                    <div class="text-1xl font-semibold leading-tight">Purchasing&nbsp;Tax&nbsp;Data
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- TAX - PURCHASING TAX DATA ENDS -->
+                            <!-- TAX - SALES TAX DATA STARTS -->
+                            <div class="preferences w-full md:w-1/2 pr-10">
+                                <div class="flex items-center justify-between py-2">
+                                    <div class="text-1xl font-semibold leading-tight">Sales&nbsp;Tax&nbsp;Data</div>
+                                </div>
+                            </div>
+                            <!-- SALES TAX DATA ENDS -->
+                        </div>
+                    </div>
+                </qbs-card>
+            </div>
+            <!-- taxSection ENDS -->
+            <!-- inventorySection STARTS -->
+            <div #inventorySection id="inventory" class="pt-4 ml-9 mr-13">
+                <qbs-card class="w-full px-8 pb-4 pt-6">
+                    <div class="w-full">
+                        <div class="inventory-section w-full pr-10">
+                            <div class="flex flex-col py-2">
+                                <div class="text-2xl font-semibold leading-tight">INVENTORY</div>
+                            </div>
+                        </div>
+                    </div>
+                </qbs-card>
+            </div>
+            <!-- inventorySection ENDS -->
+            <!-- pricingSection STARTS -->
+            <div #pricingSection id="pricing" class="pt-4 ml-9 mr-13">
+                <qbs-card class="w-full px-8 pb-4 pt-6">
+                    <div class="w-full">
+                        <div class="pricing-section w-full pr-10">
+                            <div class="flex flex-col py-2">
+                                <div class="text-2xl font-semibold leading-tight">PRICING</div>
+                            </div>
+                        </div>
+                    </div>
+                </qbs-card>
+            </div>
+            <!-- pricingSection ENDS -->
+            <!-- propertiesSection STARTS -->
+            <div #propertiesSection id="properties" class="pt-4 ml-9 mr-13">
+                <qbs-card class="w-full px-8 pb-4 pt-6">
+                    <div class="w-full">
+                        <div class="pricing-section w-full pr-10">
+                            <div class="flex flex-col py-2">
+                                <div class="text-2xl font-semibold leading-tight">PROPERTIES</div>
+                            </div>
+                        </div>
+                    </div>
+                </qbs-card>
+            </div>
+            <!-- propertiesSection ENDS -->
+            <!-- userDefinedFieldsSection STARTS -->
+            <div #userDefinedFieldsSection id="user-defined-fields" class="pt-4 ml-9 mr-13">
+                <qbs-card class="w-full px-8 pb-4 pt-6">
+                    <div class="w-full">
+                        <div class="user-defined-section w-full pr-10">
+                            <div class="flex flex-col py-2">
+                                <div class="text-2xl font-semibold leading-tight">USER&nbsp;DEFINED&nbsp;FIELDS
+                                </div>
+                                <div class="text-1xl font-semibold leading-tight py-2">General</div>
+                            </div>
+                        </div>
+                    </div>
+                </qbs-card>
+            </div>
+            <!-- userDefinedFieldsSection ENDS -->
+        </div>
+        }
+        <!-- EDIT MODE ENDS -->
+    </div>
+</div>
