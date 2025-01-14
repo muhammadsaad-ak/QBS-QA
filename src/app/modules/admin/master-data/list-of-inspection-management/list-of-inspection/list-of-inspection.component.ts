@@ -161,16 +161,16 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
   this._router.navigate(['./'], {relativeTo: this._activatedRoute});
   }
 
-  openDrawer(type: 'visitprofile'): void {
+  openAddInspectionDrawer(type: 'visitprofile'): void {
     this.matDrawer.open();
     this._router.navigate(['add-list-of-inspection'], { relativeTo: this._activatedRoute });
   }
 
-  //
-  // openUpdateUserDrawer(type: 'visitprofile', id: string): void {
-  //   this.matDrawer.open();
-  //   this._router.navigate(['edit-user', id], { relativeTo: this._activatedRoute });   
-  // }
+  
+  openUpdateInspectionDrawer(type: 'visitprofile', id: string): void {
+    this.matDrawer.open();
+    this._router.navigate(['edit-list-of-inspection', id], { relativeTo: this._activatedRoute });   
+  }
 
   /**
      * Open confirmation dialog
