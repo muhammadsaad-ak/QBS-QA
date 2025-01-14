@@ -125,6 +125,23 @@ export const compactNavigation: QbsNavigationItem[] = [
             
         ],
     },
+    {
+        id: 'list-of-inspection',
+        title: '',
+        subtitle: 'Unique dashboard designs',
+        type: 'aside',
+        icon: 'feather:database',
+        children: [
+            {
+                id: 'master-data.list-of-inspection-management',
+                title: 'List of Inspection 1.0',
+                type: 'basic',
+                icon: 'heroicons_outline:document-duplicate',
+                link: '/master-data/list-of-inspection-management',
+            }
+            
+        ],
+    },
     
 ];
 export const futuristicNavigation: QbsNavigationItem[] = [

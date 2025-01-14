@@ -91,6 +91,11 @@ export const appRoutes: Route[] = [
                     // { path: 'item-master-data-edit', loadChildren: () => import('app/modules/admin/module/item/item-master-data-edit/item-master-data-edit.routes') },
                 ]
             },
+            {
+                path: 'master-data', children: [
+                    { path: 'list-of-inspection-management', loadChildren: () => import('app/modules/admin/master-data/list-of-inspection-management/list-of-inspection-management.routes') },
+                ]        
+            },
 
             //using relative path instead of absolute path.
             {
