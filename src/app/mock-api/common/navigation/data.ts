@@ -138,10 +138,41 @@ export const compactNavigation: QbsNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:document-duplicate',
                 link: '/master-data/list-of-inspection-management',
+            },
+            {
+                id: 'master-data.list-of-qualitative-result',
+                title: 'Qualitative Result 0.1',
+                type: 'basic',
+                icon: 'feather:search',
+                link: '/master-data/list-of-qualitative-result',
+            },
+            {
+                id: 'master-data.list-of-unit-measure-setup',
+                title: 'Unit Measure-Setup 0.2',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/master-data/list-of-unit-measure-setup',
             }
             
         ],
     },
+    // {
+    //     id: 'list-of-qualitative-result',
+    //     title: '',
+    //     subtitle: 'Unique dashboard designs',
+    //     type: 'aside',
+    //     icon: 'feather:search',
+    //     children: [
+    //         {
+    //             id: 'master-data.list-of-qualitative-result',
+    //             title: 'Qualtitative Result 0.1',
+    //             type: 'basic',
+    //             icon: 'heroicons_outline:document-duplicate',
+    //             link: '/master-data/list-of-qualitative-result',
+    //         }
+            
+    //     ],
+    // },
     
 ];
 export const futuristicNavigation: QbsNavigationItem[] = [

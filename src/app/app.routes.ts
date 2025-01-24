@@ -94,6 +94,8 @@ export const appRoutes: Route[] = [
             {
                 path: 'master-data', children: [
                     { path: 'list-of-inspection-management', loadChildren: () => import('app/modules/admin/master-data/list-of-inspection-management/list-of-inspection-management.routes') },
+                    { path: 'list-of-qualitative-result', loadChildren: () => import('app/modules/admin/master-data/list-of-qualitative-result/list-of-qualitative-result.routes') },
+                    { path: 'list-of-unit-measure-setup', loadChildren: () => import('app/modules/admin/master-data/list-of-unit-measure-setup/list-of-unit-measure-setup.routes') },
                 ]        
             },
 
