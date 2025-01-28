@@ -78,51 +78,12 @@ export const appRoutes: Route[] = [
                 ]
             },
             {
-                path: 'administrator', children: [
-                    { path: 'role-management', loadChildren: () => import('app/modules/admin/administrator/role-management/role-management.routes') },
-                    { path: 'user-management', loadChildren: () => import('app/modules/admin/administrator/user-management/users-management.routes') },
-                    { path: 'approval-template-management', loadChildren: () => import('app/modules/admin/administrator/approval-template-management/approval-template-management.routes') },
-                ]
-            },
-            {
-                path: 'item', children: [
-                    { path: 'item-master', loadChildren: () => import('app/modules/admin/module/item/item-master/item-master.routes') },
-                    // { path: 'item-master-data-list', loadChildren: () => import('app/modules/admin/module/item/item-master-data-list/item-master-data-list.routes') },
-                    // { path: 'item-master-data-edit', loadChildren: () => import('app/modules/admin/module/item/item-master-data-edit/item-master-data-edit.routes') },
-                ]
-            },
-            {
                 path: 'master-data', children: [
                     { path: 'list-of-inspection-management', loadChildren: () => import('app/modules/admin/master-data/list-of-inspection-management/list-of-inspection-management.routes') },
                     { path: 'list-of-qualitative-result', loadChildren: () => import('app/modules/admin/master-data/list-of-qualitative-result/list-of-qualitative-result.routes') },
                     { path: 'list-of-unit-measure-setup', loadChildren: () => import('app/modules/admin/master-data/list-of-unit-measure-setup/list-of-unit-measure-setup.routes') },
                 ]        
             },
-
-            //using relative path instead of absolute path.
-            {
-                path: 'business-partner',
-                children: [
-                    {
-                        path: 'customers',
-                        loadChildren: () => import('./modules/admin/module/business-partner/customers/customer.routes').then(m => m.CustomerRoutes)
-                    },
-                    {
-                        path: 'vendor',
-                        loadChildren: () => import('./modules/admin/module/business-partner/vendor/vendor.routes').then(m => m.VendorRoutes)
-                    },
-                    {
-                        path: 'buyer',
-                        loadChildren: () => import('./modules/admin/module/business-partner/buyer/buyer.routes').then(m => m.BuyerRoutes)
-                    },
-                    {
-                        path: 'seller',
-                        loadChildren: () => import('./modules/admin/module/business-partner/seller/seller.routes').then(m => m.SellerRoutes)
-                    }
-                ]
-            }
-
-            // {path: 'customer-detail', loadChildren: () => import('app/modules/admin/customers/customers.routes')},
 
         ]
     },
