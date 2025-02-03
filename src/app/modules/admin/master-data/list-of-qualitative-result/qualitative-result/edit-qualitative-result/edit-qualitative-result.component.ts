@@ -1,7 +1,7 @@
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { AsyncPipe, CommonModule, DatePipe, NgClass, NgTemplateOutlet } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { FormArray, FormGroup, FormsModule, ReactiveFormsModule, UntypedFormBuilder } from '@angular/forms';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, UntypedFormBuilder } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -25,6 +25,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { QbsFindByKeyPipe } from '@qbs/pipes/find-by-key';
 import { QualitativeResultComponent } from '../qualitative-result.component';
+import { Location } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-edit-qualitative-result',
@@ -32,140 +34,74 @@ import { QualitativeResultComponent } from '../qualitative-result.component';
   templateUrl: './edit-qualitative-result.component.html',
   styleUrl: './edit-qualitative-result.component.scss',
   encapsulation: ViewEncapsulation.None,
-  imports: [
-    MatTooltipModule,
-    AsyncPipe,
-    CommonModule,
-    DatePipe,
-    QbsFindByKeyPipe,
-    FormsModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    MatCheckboxModule,
-    MatDatepickerModule,
-    MatDividerModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatMenuModule,
-    MatOptionModule,
-    MatPaginatorModule,
-    MatProgressBarModule,
-    MatRippleModule,
-    MatSelectModule,
-    MatSidenavModule,
-    MatSortModule,
-    MatSlideToggleModule,
-    MatTabsModule,
-    NgClass,
-    NgTemplateOutlet,
-    ReactiveFormsModule,
-    RouterLink,
-    RouterOutlet,
-    TextFieldModule,
-    MatAutocompleteModule,
-    MatRadioModule
-  ],
+  imports: [AsyncPipe, CommonModule, DatePipe, FormsModule, MatAutocompleteModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatDatepickerModule, MatDividerModule, MatFormFieldModule, MatIconModule, MatInputModule, MatMenuModule, MatOptionModule, MatPaginatorModule, MatProgressBarModule, MatRippleModule, MatSelectModule, MatSidenavModule, MatSortModule, MatSlideToggleModule, MatTabsModule, MatRadioModule, MatTooltipModule, NgClass, NgTemplateOutlet, ReactiveFormsModule, RouterLink, RouterOutlet, TextFieldModule, QbsFindByKeyPipe],
 })
 export class EditQualitativeResultComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
+  itemMasterForm: FormGroup;
+  editQualitativeResultsForm: FormGroup;
+  errorMessage: string | null = null;
+  editMode: boolean = false;
+  elementData: any;
 
-  
-      @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
-  
-  
-      editQualitativeResultForm: FormGroup;
-      errorMessage: string | null = null; 
-      editMode: boolean = false;
-  
-  
-      constructor(
-        private _formBuilder: UntypedFormBuilder,
-        private _router: Router,
-        private _activatedRoute: ActivatedRoute,
-        private _quanlitativeResultComponent: QualitativeResultComponent,
-      ) { 
-        // Add List of Inspection Form Group
-        this.editQualitativeResultForm = this._formBuilder.group({
-          inspectionCode: [''],
-          description: [''],
-          inspectionType: [''],
-          status: [''],
-          qualitativeCriteria: this._formBuilder.array([
-            this.createRow()
-          ]),
-        })
-      }
-  
-      createRow(): FormGroup {
-        return this.createUserRow();
-      }
-    
-      get qualitativeCriteria(): FormArray {
-        return this.editQualitativeResultForm.get('qualitativeCriteria') as FormArray;
-      }
-  
-      removeRow(index: number): void {
-        if (this.qualitativeCriteria.length > 1) {
-          this.qualitativeCriteria.removeAt(index);
-        }
-        this.errorMessage = null; 
-      }
-  
-      createUserRow(): FormGroup {
-        const row =  this._formBuilder.group({
-          id: [0],
-          name: [''],
-        });
-    
-        row.get('userName')?.valueChanges.subscribe(value => {
-          if (!value) {
-            const rowIndex = this.qualitativeCriteria.controls.indexOf(row) !== -1 
-              ? this.qualitativeCriteria.controls.indexOf(row) 
-              : this.qualitativeCriteria.controls.indexOf(row);
-    
-            if (rowIndex > -1) {
-              this.qualitativeCriteria.controls.indexOf(row) > -1
-                ? this.removeRow(rowIndex)
-                : this.removeRow(rowIndex);
-            }
-          }
-        });
-    
-        return row;
-        
-      }
-  
-      
-      ngOnInit(): void {
-        
-      }
-  
-      ngAfterViewInit(): void {
-        
-      }
-  
-      ngOnDestroy(): void {
-        
-      }
-    
-      onSubmit(): void {
-        this._quanlitativeResultComponent.matDrawer.close();
-        this._router.navigate(['../'], { relativeTo: this._activatedRoute });
-      }
-      
-      /**
-    * Toggle edit mode
-    *
-    * @param editMode
-    */
-    toggleEditMode(editMode: boolean): void {
-      if (editMode === null) {
-        console.log('editMode toggled');
-        this.editMode = !this.editMode;
-      } else {
-        console.log('editMode set to:', editMode);
-        this.editMode = editMode;
-      }
-    } 
+  constructor(
+    private _formBuilder: UntypedFormBuilder,
+    private _router: Router,
+    private _activatedRoute: ActivatedRoute,
+    private _quanlitativeResultComponent: QualitativeResultComponent,
+    private _location: Location,
+    private _changeDetectorRef: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private fb: FormBuilder,
+    private http: HttpClient,
+  ) {
+    this.editQualitativeResultsForm = new FormGroup({
+      qrCode: new FormControl(),
+      qrDescription: new FormControl(''),
+    });
+  }
+  ngOnInit(): void {
+    const navigation = this._location.getState() as { element: any };
+    if (navigation?.element) {
+      this.elementData = navigation.element;
+      // console.log(this.elementData);
+      this.populateQRFormWithStateData(this.elementData);
+    } else {
+      console.error('NO ELEMENT DATA FOUND IN ROUTE STATE');
+    }
+  }
+  populateQRFormWithStateData(data: any): void {
+    if (!data) {
+      console.error('NO DATA TO POPULATE THE FORM FIELDS.');
+      return;
+    }
+    // MAPPING RESPONSE 
+    // console.log(data);
+    this.editQualitativeResultsForm.patchValue({
+      qrCode: data.qualitativeCode || '',
+      qrDescription: data.description || '',
+    });
+    // console.log('RESPONSE:', this.editQualitativeResultsForm.value);
+  }
 
+  ngAfterViewInit(): void {
+  }
+  ngOnDestroy(): void {
+  }
+
+  onSubmit(): void {
+    console.log('UPDATED FORM VALUES:', this.editQualitativeResultsForm.value);
+    this._quanlitativeResultComponent.matDrawer.close();
+    this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
+  }
+
+  toggleEditMode(editMode: boolean): void {
+    if (editMode === null) {
+      console.log('editMode toggled');
+      this.editMode = !this.editMode;
+    } else {
+      console.log('editMode set to:', editMode);
+      this.editMode = editMode;
+    }
+  }
 }
