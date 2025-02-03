@@ -5,11 +5,10 @@
            Add UoM 0.2
        </div>
        <!-- Close button -->
-       <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-4">
-           <!-- [routerLink]="['../../projects']" -->
-           <a mat-icon-button [matTooltip]="'Close'">
-               <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
-           </a>
+       <div class="absolute right-4 top-4">
+        <a mat-icon-button [matTooltip]="'Close'" >
+            <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </a>
        </div>
    </div>
 
@@ -20,27 +19,24 @@
 
                <!-- Inspection Code -->
                <div class="mt-8">
-                   <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                       <mat-label>Inspection Code</mat-label>
+                   <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                       <mat-label>UoM Code</mat-label>
                        <!-- <mat-icon matPrefix class="hidden icon-size-5 sm:flex"
                            [svgIcon]="'heroicons_solid:user-circle'"></mat-icon> -->
-                       <input matInput [placeholder]="'Inspection Code'" [spellcheck]="false" />
+                       <input matInput [placeholder]="'UoM Code'" [spellcheck]="false" />
                    </mat-form-field>
                </div>
 
-                <!-- Description -->
-                <div class="mt-8">
-                   <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                       <mat-label>Description</mat-label>
-                       <textarea matInput placeholder="Description" spellcheck="false"> QA Description Test.
-                       </textarea>
-                   </mat-form-field>
-               </div>
+               <!-- UoM Name -->
+               <div class="mt-8">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>UoM Name</mat-label>
+                    <input matInput placeholder="Uom Name" spellcheck="false">
+                </mat-form-field>
+            </div>
 
                 <!-- Actions -->
-                <div
-                class="-mx-6 mt-40 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12"
-                >
+                <div class="sticky bottom-0 -mx-6 mt-40 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12">
                 <!-- Save -->
                 <button class="ml-2 w-1/3" mat-flat-button [color]="'primary'" [disabled]="" [matTooltip]="'Add'">
                     Add
