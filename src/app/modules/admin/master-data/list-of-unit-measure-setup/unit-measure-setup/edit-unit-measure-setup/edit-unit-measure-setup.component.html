@@ -5,13 +5,13 @@
             Edit UoM 0.2
        </div>
        <!-- Close button -->
-       <div class="absolute right-4 top-4">
+       <!-- <div class="absolute right-4 top-4">
         <a mat-icon-button [matTooltip]="'Close'" >
             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
         </a>
 
         
-       </div>
+       </div> -->
    </div>
 
    <!-- Main -->
@@ -19,12 +19,13 @@
    <div class="relative flex flex-auto flex-col items-center px-6 sm:px-12">
        <div class="w-full max-w-3xl">
            <form [formGroup]="editUnitMeasureSetupForm">
-            <div class="mb-1 mt-2 w-full flex justify-end pr-4">
-                <button mat-stroked-button (click)="toggleEditMode(true)">
-                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
-                    <span class="ml-2">Edit</span>
+            <div class="mb-1 mt-2 flex justify-end">
+                <button mat-flat-button [color]="'primary'" (click)="toggleEditMode(true)" class="flex items-center">
+                    <mat-icon class="icon-size-5 mat-icon-primary" [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
+                    <span class="ml-2">Edit</span> <!-- Fixed spacing -->
                 </button>
             </div>
+            
             
                <!-- Code -->
             <div class="mt-8 view-mode cursor-no-drop">
@@ -57,12 +58,13 @@
     <div class="relative flex flex-auto flex-col items-center px-6 sm:px-12">
         <div class="w-full max-w-3xl">
             <form [formGroup]="editUnitMeasureSetupForm">
-                <div class="mb-1 mt-2 mr-1 flex justify-end">
-                    <button mat-stroked-button (click)="toggleEditMode(false)">
-                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
-                        <span class="ml-2">View</span>
+                <div class="mb-1 mt-2 flex justify-end">
+                    <button mat-flat-button [color]="'primary'" (click)="toggleEditMode(false)" class="flex items-center">
+                        <mat-icon class="icon-size-5 mat-icon-primary" [svgIcon]="'heroicons_solid:eye'"></mat-icon>
+                        <span class="ml-2">View</span> <!-- Added small margin instead of 'ml-auto' -->
                     </button>
                 </div>
+                
                         <!-- Code -->
                         <div class="mt-8 view-mode cursor-no-drop">
                             <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
@@ -88,7 +90,7 @@
                         </div>
  
                  <!-- Actions -->
-                 <div class="sticky bottom-0 -mx-6 mt-40 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12">
+                 <div class="sticky bottom-0 -mx-6 mt-44 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12">
                  <!-- Save -->
                  <button 
                     class="ml-2 w-1/3" mat-flat-button  [color]="'primary'" [disabled]="false" [matTooltip]="'Add'"(click)="onUpdate()">

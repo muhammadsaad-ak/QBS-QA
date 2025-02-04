@@ -5,11 +5,11 @@
            Add UoM 0.2
        </div>
        <!-- Close button -->
-       <div class="absolute right-4 top-4">
+       <!-- <div class="absolute right-4 top-4">
         <a mat-icon-button [matTooltip]="'Close'" >
             <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
         </a>
-       </div>
+       </div> -->
    </div>
 
    <!-- Main -->
@@ -17,7 +17,7 @@
        <div class="w-full max-w-3xl">
            <form [formGroup]="addUnitMeasureSetupForm" (ngSubmit)="onSubmit()">
 
-               <!-- Inspection Code -->
+               <!-- UoM Code -->
                <div class="mt-8">
                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                        <mat-label>UoM Code</mat-label>
@@ -36,15 +36,14 @@
             </div>
 
                 <!-- Actions -->
-                <div class="sticky bottom-0 -mx-6 mt-40 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12">
+                <div class="sticky bottom-0 -mx-6 mt-60 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12">
                 <!-- Save -->
                 <button class="ml-2 w-1/3" mat-flat-button [color]="'primary'" [disabled]="" [matTooltip]="'Add'">
-                    Add
+                    Save
                 </button>
                 </div>
 
            </form>
        </div>
    </div>
-
 </div>
