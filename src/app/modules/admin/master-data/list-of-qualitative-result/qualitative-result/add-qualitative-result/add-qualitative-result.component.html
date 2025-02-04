@@ -6,11 +6,11 @@
             Qualitative Result
         </div>
         <!-- CLOSE BUTTON -->
-        <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-4">
+        <!-- <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-4">
             <a mat-icon-button [matTooltip]="'Close'">
                 <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
             </a>
-        </div>
+        </div> -->
     </div>
 
     <!-- MAIN -->
@@ -33,13 +33,17 @@
                     </mat-form-field>
                 </div>
                 <!-- ADD BUTTON  -->
-                <div
+                <div class="mt-1/3 flex justify-end ">
+                    <button mat-flat-button [color]="'primary'" [disabled]="">
+                        Save
+                    </button>
+                </div>
+                <!-- <div
                     class="sticky bottom-0 -mx-6 mt-40 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12">
-
                     <button class="ml-2 w-1/3" mat-flat-button [color]="'primary'" [disabled]="">
                         Add
                     </button>
-                </div>
+                </div> -->
 
             </form>
         </div>

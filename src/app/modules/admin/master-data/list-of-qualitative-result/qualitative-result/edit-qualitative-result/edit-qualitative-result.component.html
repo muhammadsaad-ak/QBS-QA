@@ -10,20 +10,20 @@
                     Qualitative Result
                 </div>
                 <!-- CLOSE BUTTON -->
-                <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-4">
+                <!-- <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-4">
                     <a mat-icon-button [matTooltip]="'Close'">
                         <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                     </a>
-                </div>
+                </div> -->
             </div>
             <!-- MAIN -->
             <div class="relative flex flex-auto flex-col items-center px-6 sm:px-12">
                 <div class="w-full max-w-3xl">
                     <div class="mb-1 mt-2 flex justify-end">
-                        <button mat-stroked-button (click)="toggleEditMode(true)">
+                        <button mat-flat-button [color]="'primary'" (click)="toggleEditMode(true)">
                             <mat-icon class="icon-size-5 mat-icon-primary"
                                 [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
-                            <span class="ml-2 text-primary-700">Edit</span>
+                            <span class="ml-auto">&nbsp;Edit</span>
                         </button>
                     </div>
                     <!-- Code -->
@@ -39,7 +39,8 @@
                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                             <mat-label>Code</mat-label>
                             <input matInput formControlName="qrDescription" [spellcheck]="false" class="cursor-no-drop"
-                                style="background-color: #F3F4F6; padding: 13px; border-radius: 1px !important " readonly />
+                                style="background-color: #F3F4F6; padding: 13px; border-radius: 1px !important "
+                                readonly />
                         </mat-form-field>
                     </div>
                 </div>
@@ -57,19 +58,19 @@
                     Qualitative Result
                 </div>
                 <!-- CLOSE BUTTON -->
-                <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-4">
+                <!-- <div class="mx-auto flex w-full max-w-3xl items-center justify-end pt-4">
                     <a mat-icon-button [matTooltip]="'Close'">
                         <mat-icon class="text-white" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                     </a>
-                </div>
+                </div> -->
             </div>
             <!-- MAIN -->
             <div class="relative flex flex-auto flex-col items-center px-6 sm:px-12">
                 <div class="w-full max-w-3xl">
                     <div class="mb-1 mt-2 flex justify-end">
-                        <button mat-stroked-button (click)="toggleEditMode(false)">
-                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:eye'"></mat-icon>
-                            <span class="ml-2">View</span>
+                        <button mat-flat-button [color]="'primary'" (click)="toggleEditMode(false)">
+                            <mat-icon class="icon-size-5 mat-icon-primary" [svgIcon]="'heroicons_solid:eye'"></mat-icon>
+                            <span class="ml-auto">&nbsp;View</span>
                         </button>
                     </div>
                     <!-- Code -->
@@ -90,12 +91,17 @@
                         </mat-form-field>
                     </div>
                     <!-- UPDATE BUTTON -->
-                    <div
+                    <div class="mt-1/4 flex justify-end ">
+                        <button mat-flat-button [color]="'primary'" [disabled]="">
+                            Update
+                        </button>
+                    </div>
+                    <!-- <div
                         class="sticky bottom-0 -mx-6 mt-40 flex items-center justify-end border-t bg-gray-50 py-4 pl-1 pr-4 dark:bg-transparent sm:-mx-12 sm:pl-7 sm:pr-12">
                         <button class="ml-2 w-1/3" mat-flat-button [color]="'primary'" [disabled]="">
                             Update
                         </button>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

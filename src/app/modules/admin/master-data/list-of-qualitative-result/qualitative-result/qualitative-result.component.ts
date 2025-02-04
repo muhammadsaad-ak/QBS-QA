@@ -61,6 +61,7 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
   searchInputControl: UntypedFormControl = new UntypedFormControl();
 
   addUserBtn = "Add Qualitative";
+  addBtnTitle = "Add";
 
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
   drawerMode: 'side' | 'over';
