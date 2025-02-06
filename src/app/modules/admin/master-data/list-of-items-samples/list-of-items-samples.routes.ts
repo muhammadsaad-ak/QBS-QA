@@ -2,6 +2,7 @@ import { Routes } from "@angular/router";
 import { ItemsSamplesComponent } from "./items-samples/items-samples.component";
 import { ListOfItemsSamplesComponent } from "./list-of-items-samples.component";
 import { AddItemSampleComponent } from "./items-samples/add-item-sample/add-item-sample.component";
+import { EditItemSampleComponent } from "./items-samples/edit-item-sample/edit-item-sample.component";
 
 
 
@@ -19,5 +20,9 @@ export default [
     {
         path: 'add-item-sample',
         component: AddItemSampleComponent
+    },
+    {
+        path: 'edit-item-sample',
+        component: EditItemSampleComponent
     },
 ] as Routes;

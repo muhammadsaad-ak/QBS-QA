@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-// 
 import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
 import { OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
@@ -28,7 +27,6 @@ import { debounceTime } from 'rxjs';
   standalone: true,
   templateUrl: './items-samples.component.html',
   styleUrl: './items-samples.component.scss',
-  // imports: [],
   imports: [
     AsyncPipe,
     CommonModule,
@@ -70,14 +68,115 @@ export class ItemsSamplesComponent {
   drawerMode: 'side' | 'over';
 
   List_Of_Inspection_Data = [
-    { sampleCode: 'IS001', itemCode: 'ITM0012561', itemDescription: 'Paint Bucket 3KG', flexibilty: true },
-    { sampleCode: 'IS002', itemCode: 'ITM0012562', itemDescription: 'Paint Bucket 5KG', flexibilty: true },
-    { sampleCode: 'IS003', itemCode: 'ITM0012563', itemDescription: 'Paint Bucket 10KG', flexibilty: false },
-    { sampleCode: 'IS004', itemCode: 'ITM0012564', itemDescription: 'Paint Bucket 12KG', flexibilty: true },
-    { sampleCode: 'IS005', itemCode: 'ITM0012565', itemDescription: 'Paint Bucket 15KG', flexibilty: false },
+    {
+      sampleCode: 'IS001', itemCode: 'ITM0012561', itemDescription: 'Paint Bucket 3KG', flexibility: true,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+
+      ]
+    },
+    {
+      sampleCode: 'IS002', itemCode: 'ITM0012562', itemDescription: 'Paint Bucket 5KG', flexibility: true,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+        {
+          lotSizeMin: "2",
+          lotSizeMax: "2",
+          sampleSize: "2",
+          criticalDefect: "2",
+          majorDefect: "2",
+          minorDefect: "2"
+        }
+      ]
+    },
+    {
+      sampleCode: 'IS003', itemCode: 'ITM0012563', itemDescription: 'Paint Bucket 10KG', flexibility: false,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+        {
+          lotSizeMin: "2",
+          lotSizeMax: "2",
+          sampleSize: "2",
+          criticalDefect: "2",
+          majorDefect: "2",
+          minorDefect: "2"
+        }
+      ]
+    },
+    {
+      sampleCode: 'IS004', itemCode: 'ITM0012564', itemDescription: 'Paint Bucket 12KG', flexibility: true,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+        {
+          lotSizeMin: "2",
+          lotSizeMax: "2",
+          sampleSize: "2",
+          criticalDefect: "2",
+          majorDefect: "2",
+          minorDefect: "2"
+        }
+      ]
+    },
+    {
+      sampleCode: 'IS005', itemCode: 'ITM0012565', itemDescription: 'Paint Bucket 15KG', flexibility: false,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+        {
+          lotSizeMin: "2",
+          lotSizeMax: "2",
+          sampleSize: "2",
+          criticalDefect: "2",
+          majorDefect: "2",
+          minorDefect: "2"
+        },
+        {
+          lotSizeMin: "3",
+          lotSizeMax: "3",
+          sampleSize: "3",
+          criticalDefect: "3",
+          majorDefect: "3",
+          minorDefect: "3"
+        },
+      ]
+    },
   ];
 
-  displayedColumns: string[] = ['serialId', 'sampleCode', 'itemCode', 'itemDescription', 'flexibilty', 'action'];
+  displayedColumns: string[] = ['serialId', 'sampleCode', 'itemCode', 'itemDescription', 'flexibility', 'action'];
   // dataSource = new MatTableDataSource<any>([]);
   dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
 
@@ -185,14 +284,12 @@ export class ItemsSamplesComponent {
   }
 
 
-
-
-
-
-
-
   addbtn(): void {
-      this._router.navigate(['add-item-sample'], { relativeTo: this._activatedRoute });
+    this._router.navigate(['add-item-sample'], { relativeTo: this._activatedRoute });
   }
 
+  actionEditItemData(itemData: any): void {
+    console.log(itemData);
+    this._router.navigate(['edit-item-sample'], { state: { data: itemData }, relativeTo: this._activatedRoute });
+  }
 }
