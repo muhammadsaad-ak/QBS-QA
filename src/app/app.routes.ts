@@ -83,6 +83,7 @@ export const appRoutes: Route[] = [
                     { path: 'list-of-qualitative-result', loadChildren: () => import('app/modules/admin/master-data/list-of-qualitative-result/list-of-qualitative-result.routes') },
                     { path: 'list-of-unit-measure-setup', loadChildren: () => import('app/modules/admin/master-data/list-of-unit-measure-setup/list-of-unit-measure-setup.routes') },
                     { path: 'list-of-items-samples', loadChildren: () => import('app/modules/admin/master-data/list-of-items-samples/list-of-items-samples.routes') },
+                    { path: 'list-of-items-inspection-cards', loadChildren: () => import('app/modules/admin/master-data/list-of-items-inspection-cards/list-of-items-inspection-cards.routes') },
                  
                 ]        
             },

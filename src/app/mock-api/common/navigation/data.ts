@@ -74,6 +74,13 @@ export const compactNavigation: QbsNavigationItem[] = [
                 icon: 'feather:server',
                 link: '/master-data/list-of-items-samples',
             },
+            {
+                id: 'master-data.list-of-items-inspection-cards',
+                title: 'Item Inspection Card 3.0',
+                type: 'basic',
+                icon: 'feather:search',
+                link: '/master-data/list-of-items-inspection-cards',
+            },
             
         ],
     },
