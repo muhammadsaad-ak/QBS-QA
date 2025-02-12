@@ -30,6 +30,8 @@ import {
     qualitativeInspectionIF,
     quantitativeInspectionIF,
 } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
+import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
+import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
 
 interface itemSamplingIF {
     lotSizeMin: string;
@@ -58,6 +60,7 @@ interface itemSamplingIF {
         MatTableModule,
         MatTabsModule,
         MatIconModule,
+        
     ],
     animations: qbsAnimations,
 
@@ -65,12 +68,20 @@ interface itemSamplingIF {
     styleUrl: './testing-stepper.component.scss',
 })
 export class TestingStepperComponent implements AfterViewInit {
+
+
     // private _formBuilder = inject(FormBuilder);
     private _activatedRoute = inject(ActivatedRoute);
+
+
+    unitOfMeasureLOV: any = [];
+
     constructor(
         private _formBuilder: FormBuilder,
         private dialog: MatDialog,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private _uommasterservice: UomMasterService,
+        private _qualitativeResultsService: QualitativeResultsService,
     ) {}
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
@@ -82,12 +93,12 @@ export class TestingStepperComponent implements AfterViewInit {
     @ViewChild(MatStepper) stepper!: MatStepper; // Correctly reference the MatStepper instance
 
     firstFormGroup = this._formBuilder.group({
-        firstCtrl: ['', Validators.required],
-        descriptionCtrl: ['', Validators.required],
+        // firstCtrl: ['', Validators.required],
+        resultDescription: ['', Validators.required],
     });
     secondFormGroup = this._formBuilder.group({
-        uomCodeCtrl: ['', Validators.required],
-        uomNameCtrl: ['', Validators.required],
+        uoMCode: ['', Validators.required],
+        description: ['', Validators.required],
     });
 
     //Item Sample
@@ -135,7 +146,7 @@ export class TestingStepperComponent implements AfterViewInit {
         },
         {
             itemId: 2,
-            itemCode: 'ITM0012562',
+            itemCode: 'ITM001   2562',
             itemDescription: 'Paint Bucket 5KG',
             itemGroup: '',
             isSelected: false,
@@ -1003,6 +1014,57 @@ export class TestingStepperComponent implements AfterViewInit {
 
         this.selectedControlAccountRowIndex = -1; // Reset index
     }
+
+    // onSubmitQualitativeResult(): void {
+    //     const qualitativePayload = {
+    //         resultDescription: this.firstFormGroup.value.resultDescription
+    //     }
+    //     const payload = {
+    //         uoMCode: this.secondFormGroup.value.uoMCode,
+    //         description: this.secondFormGroup.value.description
+    //     }
+    //    const qualitative = this._qualitativeResultsService.AddQualitativeResult(qualitativePayload).toPromise()
+    //     const unitofmeasure = this._uommasterservice.AddUnitOfMeasure(payload).toPromise()
+    //     Promise.all([qualitative, unitofmeasure])
+    //     .then(res => {
+    //         console.log(qualitative, unitofmeasure);
+            
+    //     })
+        
+    //   }
+
+      onSubmitQualitativeResult(): void {
+        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
+        const formValues = this.firstFormGroup.value;
+        const payload = {
+          ...formValues,
+      };
+        this._qualitativeResultsService.AddQualitativeResult(payload).subscribe(
+          (response) => {
+              if (response.succeeded) {
+                  console.log('API RUN SUCCESSFULLY.', payload);
+              }
+          }
+      );
+    }
+
+    onSubmitUnitOfMeasure(): void {
+        console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
+        const formValues = this.secondFormGroup.value;
+        const payload = {
+          ...formValues,
+      };
+        this._uommasterservice.AddUnitOfMeasure(payload).subscribe(
+          (response) => {
+              if (response.succeeded) {
+                  console.log('API RUN SUCCESSFULLY.', payload);
+              }
+          }
+      );
+
+    }
+
+      
 
     // onSubmit(): void {
     //   if (this.fourthFormGroup.valid) {
