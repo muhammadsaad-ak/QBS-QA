@@ -1,7 +1,7 @@
 import { TextFieldModule } from '@angular/cdk/text-field';
-import { AsyncPipe, CommonModule, DatePipe, NgClass, NgTemplateOutlet } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormArray, FormGroup, FormsModule, ReactiveFormsModule, UntypedFormBuilder } from '@angular/forms';
+import { AsyncPipe, CommonModule, DatePipe, NgClass, NgTemplateOutlet, Location } from '@angular/common';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { FormArray, FormGroup, FormControl, FormsModule, ReactiveFormsModule, UntypedFormBuilder } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -25,14 +25,17 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { QbsFindByKeyPipe } from '@qbs/pipes/find-by-key';
 import { ListOfInspectionComponent } from '../list-of-inspection.component';
+// import { inspect } from 'util';
+
 
 @Component({
   selector: 'app-edit-list-of-inspection',
   standalone: true,
   templateUrl: './edit-list-of-inspection.component.html',
   styleUrl: './edit-list-of-inspection.component.scss',
+  encapsulation: ViewEncapsulation.None,
   imports: [
-     MatTooltipModule,
+    MatTooltipModule,
     AsyncPipe,
     CommonModule,
     DatePipe,
@@ -67,103 +70,113 @@ import { ListOfInspectionComponent } from '../list-of-inspection.component';
   ],
 })
 export class EditListOfInspectionComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
 
-    @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
+  editInspectionForm: FormGroup;
+  editMode: boolean = false;
+  errorMessage: string | null = null;
+  private _changeDetectorRef: any;
+  element: any;
 
-
-    editInspectionForm: FormGroup;
-    errorMessage: string | null = null; 
-    editMode: boolean = false;
-
-
-    constructor(
-      private _formBuilder: UntypedFormBuilder,
-      private _router: Router,
-      private _activatedRoute: ActivatedRoute,
-      private _inspectionListComponent: ListOfInspectionComponent,
-    ) { 
-      // Add List of Inspection Form Group
-      this.editInspectionForm = this._formBuilder.group({
-        inspectionCode: [''],
-        description: [''],
-        inspectionType: [''],
-        status: [''],
-        qualitativeCriteria: this._formBuilder.array([
-          this.createRow()
-        ]),
-      })
-    }
-
-    createRow(): FormGroup {
-      return this.createUserRow();
-    }
   
-    get qualitativeCriteria(): FormArray {
-      return this.editInspectionForm.get('qualitativeCriteria') as FormArray;
-    }
 
-    removeRow(index: number): void {
-      if (this.qualitativeCriteria.length > 1) {
-        this.qualitativeCriteria.removeAt(index);
-      }
-      this.errorMessage = null; 
-    }
+  constructor(
+    private _formBuilder: UntypedFormBuilder,
+    private _router: Router,
+    private _activatedRoute: ActivatedRoute,
+    private _inspectionListComponent: ListOfInspectionComponent,
+    private _location: Location
+  ) {
+    this.editInspectionForm = this._formBuilder.group({
+      LICcode: [''],
+      LICdescription: [''],
+      isSuperUser: [''],
+      inspectionType: [''],
+      status: [false],
+      qualitativeCriteria: this._formBuilder.array([]),
+    });
+  }
 
-    createUserRow(): FormGroup {
-      const row =  this._formBuilder.group({
-        id: [0],
-        name: [''],
-      });
-  
-      row.get('userName')?.valueChanges.subscribe(value => {
-        if (!value) {
-          const rowIndex = this.qualitativeCriteria.controls.indexOf(row) !== -1 
-            ? this.qualitativeCriteria.controls.indexOf(row) 
-            : this.qualitativeCriteria.controls.indexOf(row);
-  
-          if (rowIndex > -1) {
-            this.qualitativeCriteria.controls.indexOf(row) > -1
-              ? this.removeRow(rowIndex)
-              : this.removeRow(rowIndex);
-          }
+  ngOnInit(): void {
+    // Initialize form with one row
+    this.addRow();
+
+      const navigation = this._location.getState() as { element: any };
+        if (navigation?.element) {
+            this.element = navigation.element;
+            // console.log(this.element);
+
+            this.populateFormWithData(this.element);
+        } else {
+            console.error('No element data found in route state');
         }
-      });
-  
-      return row;
-      
-    }
-
     
-    ngOnInit(): void {
+  }
+
+  populateFormWithData(data: any): void {
+    if (!data) {
+        console.error('NO DATA TO POPULATE THE FORM FIELDS.');
+        return;
+    }
+    console.log(data);
+    this.editInspectionForm.patchValue({
+      LICcode: data.inspectionCode || '',
+      LICdescription: data.description || '',
+      inspectionType: data.inspectionType || '',
       
+  });
+   
+}
+  ngAfterViewInit(): void {}
+
+  ngOnDestroy(): void {}
+
+  /** Getter for qualitativeCriteria FormArray */
+  get qualitativeCriteria(): FormArray {
+    return this.editInspectionForm.get('qualitativeCriteria') as FormArray;
+  }
+
+  /** Create a new FormGroup row */
+  createRow(): FormGroup {
+    return this._formBuilder.group({
+      userId: [''],
+      userName: [''],
+    });
+  }
+
+  /** Add a new row to the form */
+  addRow(): void {
+    this.qualitativeCriteria.push(this.createRow());
+  }
+
+  /** Remove a row by index */
+  removeRow(index: number): void {
+    if (this.qualitativeCriteria.length > 1) {
+      this.qualitativeCriteria.removeAt(index);
+    }
+  }
+
+  /** Toggle between edit and view modes */
+  toggleEditMode(editMode: boolean | null = null): void {
+    if (editMode === null) {
+        this.editMode = !this.editMode;
+    } else {
+        this.editMode = editMode;
     }
 
-    ngAfterViewInit(): void {
-      
+    if (this._changeDetectorRef) {
+        this._changeDetectorRef.detectChanges();
     }
+}
 
-    ngOnDestroy(): void {
-      
-    }
-  
-    onSubmit(): void {
+  /** Form submission logic */
+  onSubmit(): void {
+    if (this.editInspectionForm.valid) {
+      console.log('Form Submitted', this.editInspectionForm.value);
       this._inspectionListComponent.matDrawer.close();
       this._router.navigate(['../'], { relativeTo: this._activatedRoute });
-    }
-    
-    /**
-  * Toggle edit mode
-  *
-  * @param editMode
-  */
-  toggleEditMode(editMode: boolean): void {
-    if (editMode === null) {
-      console.log('editMode toggled');
-      this.editMode = !this.editMode;
     } else {
-      console.log('editMode set to:', editMode);
-      this.editMode = editMode;
+      this.errorMessage = 'Please fill all required fields correctly';
     }
-  } 
-
+  }
 }

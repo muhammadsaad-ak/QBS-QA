@@ -1,7 +1,6 @@
 <div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
     <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent" 
-    (backdropClick)="onBackdropClicked()"
-    >
+    (backdropClick)="onBackdropClicked()">
     <mat-drawer class="w-full dark:bg-gray-900 sm:w-128" [mode]="drawerMode" [opened]="false" [position]="'end'"
     [disableClose]="false" #matDrawer>
         <router-outlet></router-outlet>
@@ -16,23 +15,22 @@
             </div>
         </div>
         <!-- Actions - Search & Add button in the next line -->
-        <div class="mt-4 flex flex-col items-start space-y-4 sm:flex-row sm:justify-start sm:space-y-0" style="margin-left: 1.5rem !important; gap: 26rem !important">
-                <!-- Search Input Field -->
-                <mat-form-field class="qbs-mat-dense qbs-mat-rounded min-w-64 sm:w-2/3 md:w-1/2" style="padding-right: 3rem !important;">
-                    <mat-icon class="icon-size-5" matPrefix
-                    [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
-                    <input matInput [autocomplete]="'off'" [placeholder]="'Search... '" [formControl]="searchInputControl"
-                     />
-                </mat-form-field>
-
-                <!-- Add User Button  -->
-                <button class="mr-4" mat-flat-button [color]="'primary'" (click)="openAddInspectionDrawer('visitprofile')">
-                    <span class="ml-1 mr-1" >
-                        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                        {{addUserBtn}}
-                    </span>
-                </button>
+        <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between w-full px-4">
+            <!-- Search Input Field -->
+            <mat-form-field class="qbs-mat-dense qbs-mat-rounded w-full sm:w-2/3 md:w-1/2">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [autocomplete]="'off'" placeholder="Search..." [formControl]="searchInputControl" />
+            </mat-form-field>
+        
+            <!-- Add User Button -->
+            <button class="mb-3 sm:mt-0 sm:ml-auto" mat-flat-button [color]="'primary'" (click)="openAddInspectionDrawer('visitprofile')">
+                <span class="flex items-center">
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-1">{{ addUserBtn }}</span>
+                </span>
+            </button>
         </div>
+        
 
         <!-- Main Content -->
         <div class="-mt-px flex flex-auto border-t pt-4 sm:pt-2 overflow-hidden" style="padding-top: 0px !important;">
@@ -76,7 +74,7 @@
                             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
                         </button>
                         <mat-menu #menu="matMenu">
-                            <button mat-menu-item class="text-blue-400" (click)="openUpdateInspectionDrawer('visitprofile', element.uomCode)">
+                            <button mat-menu-item class="text-blue-400" (click)="openUpdateUoMDrawer('visitprofile', element)">
                                 Edit
                                 <mat-icon svgIcon="heroicons_outline:pencil" class="text-blue-400"></mat-icon>
                             </button>

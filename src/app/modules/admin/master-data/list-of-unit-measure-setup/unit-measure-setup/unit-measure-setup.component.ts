@@ -170,9 +170,9 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
       }
     
       
-      openUpdateInspectionDrawer(type: 'visitprofile', id: string): void {
+      openUpdateUoMDrawer(type: 'visitprofile', element: any): void {
         this.matDrawer.open();
-        this._router.navigate(['edit-unit-measure-setup', id], { relativeTo: this._activatedRoute });   
+        this._router.navigate(['edit-unit-measure-setup', element.uomCode], { relativeTo: this._activatedRoute, state: { element} });   
       }
     
       /**
