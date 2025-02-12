@@ -25,6 +25,7 @@ import { ActivatedRoute, Router, RouterLink, RouterOutlet } from '@angular/route
 import { QbsFindByKeyPipe } from '@qbs/pipes/find-by-key';
 import { ListOfQualitativeResultComponent } from '../../list-of-qualitative-result.component';
 import { QualitativeResultComponent } from '../qualitative-result.component';
+import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 
 @Component({
   selector: 'app-add-qualitative-result',
@@ -67,72 +68,24 @@ import { QualitativeResultComponent } from '../qualitative-result.component';
   ],
 })
 export class AddQualitativeResultComponent implements OnInit, AfterViewInit, OnDestroy {
-
+  addQualitativeForm: FormGroup;
 
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
 
-  addQualitativeForm: FormGroup;
   errorMessage: string | null = null;
-
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _qualitativeResultComponent: QualitativeResultComponent,
+    private _qualitativeResultsService: QualitativeResultsService,
   ) {
-    // Add List of Inspection Form Group
-    // this.addQualitativeForm = this._formBuilder.group({
-    //   inspectionCode: [''],
-    //   description: [''],
-    //   inspectionType: [''],
-    //   status: [''],
-    //   qualitativeCriteria: this._formBuilder.array([
-    //     this.createRow()
-    //   ]),
-    // })
     this.addQualitativeForm = new FormGroup({
-      qrCode: new FormControl(),
-      qrDescription: new FormControl(''),
+
+      resultDescription: new FormControl(''),
     });
   }
-
-  // createRow(): FormGroup {
-  //   return this.createUserRow();
-  // }
-
-  // get qualitativeCriteria(): FormArray {
-  //   return this.addQualitativeForm.get('qualitativeCriteria') as FormArray;
-  // }
-
-  // removeRow(index: number): void {
-  //   if (this.qualitativeCriteria.length > 1) {
-  //     this.qualitativeCriteria.removeAt(index);
-  //   }
-  //   this.errorMessage = null; 
-  // }
-
-  // createUserRow(): FormGroup {
-  //   const row =  this._formBuilder.group({
-  //     id: [0],
-  //     name: [''],
-  //   });
-
-  //   row.get('userName')?.valueChanges.subscribe(value => {
-  //     if (!value) {
-  //       const rowIndex = this.qualitativeCriteria.controls.indexOf(row) !== -1 
-  //         ? this.qualitativeCriteria.controls.indexOf(row) 
-  //         : this.qualitativeCriteria.controls.indexOf(row);
-
-  //       if (rowIndex > -1) {
-  //         this.qualitativeCriteria.controls.indexOf(row) > -1
-  //           ? this.removeRow(rowIndex)
-  //           : this.removeRow(rowIndex);
-  //       }
-  //     }
-  //   });  
-  //   return row;      
-  // }
 
   ngOnInit(): void { }
 
@@ -148,6 +101,22 @@ export class AddQualitativeResultComponent implements OnInit, AfterViewInit, OnD
 
   onSubmit(): void {
     console.log('UPDATED FORM VALUES:', this.addQualitativeForm.value);
+    const formValues = this.addQualitativeForm.value;
+    const payload = {
+      ...formValues,
+    };
+    this._qualitativeResultsService.AddQualitativeResult(payload).subscribe(
+      (response) => {
+        if (response.isRequestSuccess) {
+          console.log('API RUN SUCCESSFULLY.', payload);
+        } else {
+          console.error(
+            'ERROR WHILE ADDIND DATA.',
+            response.message
+          );
+        }
+      }
+    );
     this._qualitativeResultComponent.matDrawer.close();
     this._router.navigate(['../'], { relativeTo: this._activatedRoute });
   }

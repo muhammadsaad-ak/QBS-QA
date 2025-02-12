@@ -89,7 +89,7 @@ export class AuthService {
     //             console.log(response)
     //             // Store the access token in the local storage
     //             this.accessToken = response.data.token;
-                
+
     //             // Set the authenticated flag to true
     //             this._authenticated = true;
 
@@ -106,18 +106,23 @@ export class AuthService {
             return throwError('User is already logged in.');
         }
 
-        return this._httpClient.post('api/auth/sign-in', credentials).pipe(
+        // return this._httpClient.post('api/auth/sign-in', credentials).pipe(
+        // switchMap((response: any) => {
+        //     // Store the access token in the local storage
+        //     this.accessToken = response.accessToken;
+        //     // Set the authenticated flag to true
+        //     this._authenticated = true;
+        //     // Store the user on the user service
+        //     this._userService.user = response.user;
+        //     // Return a new observable with the response
+        //     return of(response);
+        // })
+        return this._httpClient.post(`${environment.authApiUrl}/Auth/IAuthFeature/Login`, credentials).pipe(
             switchMap((response: any) => {
-                // Store the access token in the local storage
-                this.accessToken = response.accessToken;
-
-                // Set the authenticated flag to true
+                console.log('Login response:', response);
+                this.accessToken = response.data.token;
                 this._authenticated = true;
-
-                // Store the user on the user service
-                this._userService.user = response.user;
-
-                // Return a new observable with the response
+                this._userService.user = response.data;
                 return of(response);
             })
         );
@@ -166,10 +171,10 @@ export class AuthService {
      * Sign out
      */
     signOut(): Observable<any> {
-       // Remove the access token from the local storage
-       localStorage.removeItem('accessToken');
+        // Remove the access token from the local storage
+        localStorage.removeItem('accessToken');
 
-       this._userService.clearUser();
+        this._userService.clearUser();
 
         // Set the authenticated flag to false
         this._authenticated = false;
@@ -224,7 +229,7 @@ export class AuthService {
             return of(false);
         }
 
-         // If the access token exists, and it didn't expire, sign in using it
+        // If the access token exists, and it didn't expire, sign in using it
         // return this.signInUsingToken();
         return of(true);
     }
