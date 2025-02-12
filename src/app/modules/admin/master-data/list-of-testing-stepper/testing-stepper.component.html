@@ -1,421 +1,1156 @@
 <div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
-    <div class="p-3 mt-4 h-auto overflow-y-auto padding-right: 8px;">
-        <mat-stepper [linear]="isLinear" #stepper class="custom-stepper mt-4" displayDefaultIndicatorType="false">
+  <div class="p-3 mt-4 h-auto overflow-y-auto padding-right: 8px;">
+    <mat-stepper [linear]="isLinear" #stepper class="custom-stepper mt-4" displayDefaultIndicatorType="false">
 
-            <!-- First Step -->
-            <mat-step [stepControl]="firstFormGroup"
-             label="Qualitative Result">
-                <form [formGroup]="firstFormGroup">
+      <!-- First Step -->
+      <mat-step [stepControl]="firstFormGroup" label="Qualitative Result">
+        <form [formGroup]="firstFormGroup">
 
-                    <!-- Custom Styled Heading -->
-                    <h1 class="custom-heading">Qualitative Result</h1>
+          <!-- Custom Styled Heading -->
+          <h1 class="custom-heading">Qualitative Result</h1>
 
-                    <!-- Responsive Flexbox Container -->
-                    <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
-                        <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                            <mat-label>Code</mat-label>
-                            <input matInput placeholder="Enter Inspection Code" formControlName="firstCtrl" required>
-                        </mat-form-field>
+          <!-- Responsive Flexbox Container -->
+          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+              <mat-label>Code</mat-label>
+              <input matInput placeholder="Enter Inspection Code" formControlName="firstCtrl" required>
+            </mat-form-field>
 
-                        <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
-                            <mat-label>Description</mat-label>
-                            <input matInput placeholder="Enter Description" formControlName="descriptionCtrl" required>
-                        </mat-form-field>
-                    </div>
+            <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
+              <mat-label>Description</mat-label>
+              <input matInput placeholder="Enter Description" formControlName="descriptionCtrl" required>
+            </mat-form-field>
+          </div>
 
-                    <div class="step-navigation">
-                        <button mat-button class="next-button" matStepperNext>Next</button>
-                    </div>
+          <div class="step-navigation">
+            <button mat-button class="next-button" matStepperNext>Next</button>
+          </div>
 
-                   
-                </form>
-            </mat-step>
 
-            <!-- Second Step -->
-            <mat-step [stepControl]="secondFormGroup" label="Unit Of Measure">
-                <form [formGroup]="secondFormGroup">
+        </form>
+      </mat-step>
 
-                    <!-- Custom Styled Heading -->
-                    <h1 class="custom-heading">Unit Of Measure</h1>
+      <!-- Second Step -->
+      <mat-step [stepControl]="secondFormGroup" label="Unit Of Measure">
+        <form [formGroup]="secondFormGroup">
 
-                    <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+          <!-- Custom Styled Heading -->
+          <h1 class="custom-heading">Unit Of Measure</h1>
 
-                        
+          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
 
-                        <!-- UOM Code Field -->
-                        <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
-                            <mat-label>UOM Code</mat-label>
-                            <input matInput formControlName="uomCodeCtrl" placeholder="Enter UOM Code" required>
-                        </mat-form-field>
 
-                        <!-- UOM Name Field -->
-                        <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
-                            <mat-label>UOM Name</mat-label>
-                            <input matInput formControlName="uomNameCtrl" placeholder="Enter UOM Name" required>
-                        </mat-form-field>
 
-                    </div>
+            <!-- UOM Code Field -->
+            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+              <mat-label>UOM Code</mat-label>
+              <input matInput formControlName="uomCodeCtrl" placeholder="Enter UOM Code" required>
+            </mat-form-field>
 
-                    <div class="step-navigation">
-                        <button mat-button class="back-button" matStepperPrevious>Back</button>
-                        <button mat-button class="next-button" matStepperNext>Next</button>
-                    </div>
-                </form>
-            </mat-step>
+            <!-- UOM Name Field -->
+            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+              <mat-label>UOM Name</mat-label>
+              <input matInput formControlName="uomNameCtrl" placeholder="Enter UOM Name" required>
+            </mat-form-field>
 
-            <!-- Third Step -->
-            <mat-step [stepControl]="thirdFormGroup" label="Item Sample">
-                <form [formGroup]="thirdFormGroup">
-                    <mat-form-field style="width: 100%;">
-                        <mat-label>Unit Of Measure</mat-label>
-                        <input matInput formControlName="thirdCtrl" placeholder="Ex. 1 Main St, New York, NY" required>
-                    </mat-form-field>
-                    <div class="step-navigation">
-                        <button mat-button class="back-button" matStepperPrevious>Back</button>
-                        <button mat-button class="next-button" matStepperNext>Next</button>
-                    </div>
-                </form>
-            </mat-step>
+          </div>
 
-            <!-- Fourth Step -->
-            <mat-step [stepControl]="fourthFormGroup" label="Inspection Characterisitic">
-                <form [formGroup]="fourthFormGroup">
+          <div class="step-navigation">
+            <button mat-button class="back-button" matStepperPrevious>Back</button>
+            <button mat-button class="next-button" matStepperNext>Next</button>
+          </div>
+        </form>
+      </mat-step>
 
-                    <!-- Custom Styled Heading -->
-                    <h1 class="custom-heading">Inspection Characterisitic</h1>
+      <!-- Third Step -->
+      <!-- ITEM SAMPLE -->
+      <mat-step [stepControl]="itemSamplingForm" label="Item Sample">
+        <form [formGroup]="itemSamplingForm">
+          <!-- Custom Styled Heading -->
+          <h1 class="custom-heading">Item Sample 0.3.1 </h1>
 
-                    <!-- Responsive Flexbox Container -->
-                    <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
-                        <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                            <mat-label>Inspection Code</mat-label>
-                            <input matInput placeholder="Enter Inspection Code" formControlName="inspectionCodethird"
-                                required>
-                        </mat-form-field>
+          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
 
-                        <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
-                            <mat-label>Description</mat-label>
-                            <input matInput placeholder="Enter Description" formControlName="inspectionDescription"
-                                required>
-                        </mat-form-field>
+            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+              <mat-label>Sample Code</mat-label>
+              <input matInput formControlName="sampleCode" required>
+            </mat-form-field>
 
-                        
+            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+              <mat-label>Item Code</mat-label>
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                (click)="onItemSampleItemCodeClick()"></mat-icon>
+              <input matInput formControlName="itemCode" required readonly
+                [value]="selectedItemSampleCode ? selectedItemSampleCode : ''">
+            </mat-form-field>
 
-                        <!-- Checkboxes Section -->
-                        <div class="flex flex-col w-full">
-                            <div class="flex items-center">
-                                <mat-checkbox class="mr-2"></mat-checkbox>
-                                <label for="isSuperUser" class="text-lg">Active</label>
-                            </div>
-                        </div>
+            <mat-form-field style="flex: 0 1 55%; min-width: 100px;">
+              <mat-label>Item Description</mat-label>
+              <input matInput formControlName="itemDescription" required readonly=""
+                [value]="selectedItemSampleDescription ? selectedItemSampleDescription : ''">
+            </mat-form-field>
 
-                        <!-- Qualitative and Quantitative Section -->
-                        <div class="mt-4">
-                            <mat-radio-group class="flex flex-row items-center gap-4" formControlName="inspectionType"
-                                [color]="'primary'" [value]="'just-good'">
-                                <mat-radio-button class="mb-2" [value]="'qualitative'" 
-                                [ngClass]="{
+            <!-- Checkboxes Section -->
+            <div class="flex flex-col w-full">
+              <div class="flex items-center">
+                <label for="" class="text-lg">Flexibility</label>
+                <mat-checkbox class="mr-2" formControlName="flexibility"></mat-checkbox>
+              </div>
+            </div>
+            <!-- ITEM SAMPLE ITEM CODE DIALOG -->
+            <ng-template #dialogTemplateItemSampleItems let-data="data">
+              <div class="dialog-container flex flex-col h-full">
+                <div class="flex justify-between items-center p-4 border-b text-primary">
+                  <h2 class="text-lg font-semibold">
+                    ITEMS</h2>
+                  <span (click)="closeDialog()" class="header-close-x">
+                    <mat-icon class="text-primary">close</mat-icon>
+                  </span>
+                </div>
+                <mat-form-field>
+                  <mat-label>Filter</mat-label>
+                  <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
+                </mat-form-field>
+                <!-- ITEMS TABLE STARTS -->
+                <mat-table [dataSource]="dataSourceItemSampleCode" class="flex-grow">
+                  <!-- ITEM CODE & CHECKBOX COLUMN -->
+                  <ng-container matColumnDef="itemCode">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Code</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemSampleCode(row)">
+                        <!-- [matTooltip]="row.itemDescription" -->
+                      </mat-checkbox> {{row.itemCode}} </mat-cell>
+                  </ng-container>
+                  <!-- ITEM DESCRIPTION COLUMN -->
+                  <ng-container matColumnDef="itemDescription">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      {{row.itemDescription}} </mat-cell>
+                  </ng-container>
+                  <!-- ITEM GROUP COLUMN -->
+                  <ng-container matColumnDef="itemGroup">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                      {{ row.itemGroup ? row.itemGroup : '-' }}
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="displayedColumnsItemSampleCode"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: displayedColumnsItemSampleCode;"></mat-row>
+
+                  <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="4">No data matched with
+                      "{{input.value}}"</td>
+                  </tr>
+                </mat-table>
+                <!-- ITEMS TABLE TABLE ENDS -->
+                <!-- SAVE & CLOSE -->
+                <div class="flex justify-end mt-auto">
+                  <button mat-flat-button color="primary" (click)="addSelectedRowItemSampleCode()">
+                    Save&nbsp;&&nbsp; Close
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="pt-4 lg:ml-9 lg:mr-13">
+            <div class="w-full">
+              <div class="w-full flex justify-between items-center m-0 p-0 py-2">
+                <div class="flex-1">
+                  <h1 class="text-xl font-semibold">Sampling Range</h1>
+                </div>
+                <div class="ml-auto flex space-x-2 sm:space-x-4">
+                  <div class="icon-size-4">
+                    <mat-icon class="mat-icon-primary" style="cursor: pointer;" svgIcon="feather:plus"
+                      (click)="addNewRowItemSampling()">
+                    </mat-icon>
+                  </div>
+                </div>
+              </div>
+              <!-- Sampling Range TABLE -->
+              <section class="mt-0 overflow-auto w-full">
+                <table mat-table [dataSource]="dataSourceItemSampling" class="w-full">
+                  <!-- Lot Size Min COLUMN -->
+                  <ng-container matColumnDef="lotSizeMin">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                      Lot Size Min
+                    </th>
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                      <input matInput [formControl]="samples.at(i).get('lotSizeMin')" placeholder="Minimum Lot Size">
+                    </td>
+                  </ng-container>
+                  <!-- Lot Size Max COLUMN -->
+                  <ng-container matColumnDef="lotSizeMax">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                      Lot Size Max
+                    </th>
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                      <input matInput [formControl]="samples.at(i).get('lotSizeMax')" placeholder="Maximum Lot Size">
+                    </td>
+                  </ng-container>
+                  <!-- Sample Size COLUMN -->
+                  <ng-container matColumnDef="sampleSize">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                      Sample Size
+                    </th>
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                      <input matInput [formControl]="samples.at(i).get('sampleSize')" placeholder="Enter Sample Size">
+                    </td>
+                  </ng-container>
+                  <!-- Critical Defect COLUMN -->
+                  <ng-container matColumnDef="criticalDefect">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                      Critical Defect
+                    </th>
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                      <input matInput [formControl]="samples.at(i).get('criticalDefect')" placeholder="Enter Value">
+                    </td>
+                  </ng-container>
+                  <!-- Major Defect COLUMN -->
+                  <ng-container matColumnDef="majorDefect">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                      Major Defect&nbsp;(>)
+                    </th>
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                      <input matInput [formControl]="samples.at(i).get('majorDefect')" placeholder="Enter Value">
+                    </td>
+                  </ng-container>
+                  <!-- Minor Defect COLUMN -->
+                  <ng-container matColumnDef="minorDefect">
+                    <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                      Minor Defect&nbsp;(<) </th>
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                      <input matInput [formControl]="samples.at(i).get('minorDefect')" placeholder="Enter Value">
+                    </td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="displayedColumnsItemSampling"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumnsItemSampling;"></tr>
+                </table>
+              </section>
+            </div>
+          </div>
+
+
+          <div class="step-navigation">
+            <button mat-button class="back-button" matStepperPrevious>Back</button>
+            <button mat-button class="next-button" matStepperNext>Next</button>
+          </div>
+        </form>
+      </mat-step>
+
+      <!-- Fourth Step -->
+      <mat-step [stepControl]="fourthFormGroup" label="Inspection Characterisitic">
+        <form [formGroup]="fourthFormGroup">
+
+          <!-- Custom Styled Heading -->
+          <h1 class="custom-heading">Inspection Characterisitic</h1>
+
+          <!-- Responsive Flexbox Container -->
+          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+              <mat-label>Inspection Code</mat-label>
+              <input matInput placeholder="Enter Inspection Code" formControlName="inspectionCodethird" required>
+            </mat-form-field>
+
+            <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
+              <mat-label>Description</mat-label>
+              <input matInput placeholder="Enter Description" formControlName="inspectionDescription" required>
+            </mat-form-field>
+
+
+
+            <!-- Checkboxes Section -->
+            <div class="flex flex-col w-full">
+              <div class="flex items-center">
+                <mat-checkbox class="mr-2"></mat-checkbox>
+                <label for="isSuperUser" class="text-lg">Active</label>
+              </div>
+            </div>
+
+            <!-- Qualitative and Quantitative Section -->
+            <div class="mt-4">
+              <mat-radio-group class="flex flex-row items-center gap-4" formControlName="inspectionType"
+                [color]="'primary'" [value]="'just-good'">
+                <mat-radio-button class="mb-2" [value]="'qualitative'" [ngClass]="{
                                     'text-blue-500 font-bold': fourthFormGroup.get('inspectionType')?.value === 'qualitative'
                                   }">
-                                    Qualitative Inspection
-                                </mat-radio-button>
+                  Qualitative Inspection
+                </mat-radio-button>
 
-                                <mat-radio-button class="mb-2" [value]="'quantitative'" 
-                                [ngClass]="{
+                <mat-radio-button class="mb-2" [value]="'quantitative'" [ngClass]="{
                                     'text-blue-500 font-bold': fourthFormGroup.get('inspectionType')?.value === 'quantitative'
                                   }">
-                                    Quantitative Inspection
-                                </mat-radio-button>
-                            </mat-radio-group>
-                        </div>
+                  Quantitative Inspection
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
 
 
-                        <!-- Main Card Section -->
-                        <div class="mt-4 w-full" *ngIf="fourthFormGroup.get('inspectionType')?.value === 'qualitative'">
-                            <table class="w-full border border-gray-200 border-collapse">
-                                <thead>
-                                    <tr>
-                                        <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th>
-                                        <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
-                                    </tr>
-                                </thead>
-                                <tbody formArrayName="qualitativeCriteria">
-                                    <tr *ngFor="let row of qualitativeCriteria.controls; let i = index"
-                                        [formGroupName]="i">
-                                        <td class="px-4 py-2 text-sm border-b border-r text-center">
-                                            <input type="text" placeholder="Enter S.No" matInput
-                                                formControlName="userName" class="w-full" />
-                                        </td>
-                                        <td class="px-4 py-2 text-sm border-b border-r text-center">
-                                            <input type="text" placeholder="Enter Criteria" formControlName="userId"
-                                                class="w-full" />
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+            <!-- Main Card Section -->
+            <div class="mt-4 w-full" *ngIf="fourthFormGroup.get('inspectionType')?.value === 'qualitative'">
+              <table class="w-full border border-gray-200 border-collapse">
+                <thead>
+                  <tr>
+                    <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th>
+                    <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="qualitativeCriteria">
+                  <tr *ngFor="let row of qualitativeCriteria.controls; let i = index" [formGroupName]="i">
+                    <td class="px-4 py-2 text-sm border-b border-r text-center">
+                      <input type="text" placeholder="Enter S.No" matInput formControlName="userName" class="w-full" />
+                    </td>
+                    <td class="px-4 py-2 text-sm border-b border-r text-center">
+                      <input type="text" placeholder="Enter Criteria" formControlName="userId" class="w-full" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-                    </div>
-                    <div class="step-navigation">
-                        <button mat-button class="back-button" matStepperPrevious>Back</button>
-                        <button mat-button class="next-button" matStepperNext>Next</button>
-                                                <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
+          </div>
+          <div class="step-navigation">
+            <button mat-button class="back-button" matStepperPrevious>Back</button>
+            <button mat-button class="next-button" matStepperNext>Next</button>
+            <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
 
-                    </div>
+          </div>
 
-                    
-                </form>
-            </mat-step>
 
-            <!-- Fifth Step -->
-            <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
-                <form [formGroup]="fifthFormGroup" >
-                    <!-- (ngSubmit)="onSubmit()" -->
-                    <!-- Custom Styled Heading -->
-                    <h1 class="custom-heading">Inspection Card</h1>
+        </form>
+      </mat-step>
 
-                    <!-- Responsive Flexbox Container -->
-                    <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
-                        <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                            <mat-label>Card Code</mat-label>
-                            <input matInput placeholder="Enter Inspection Code" formControlName="cardCode"
-                                required>
-                        </mat-form-field>
+      <!-- Fifth Step -->
+      <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
+        <form [formGroup]="fifthFormGroup">
+          <!-- (ngSubmit)="onSubmit()" -->
+          <!-- Custom Styled Heading -->
+          <h1 class="custom-heading">Inspection Card</h1>
 
-                        <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
-                            <mat-label>Description</mat-label>
-                            <input matInput placeholder="Enter Description" formControlName="cardDescription"
-                                required>
-                        </mat-form-field>
+          <!-- Responsive Flexbox Container -->
+          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+              <mat-label>Card Code</mat-label>
+              <input matInput placeholder="Enter Inspection Code" formControlName="cardCode" required>
+            </mat-form-field>
 
-                        <!-- Checkboxes Section -->
-                        <div class="flex flex-col w-full">
-                            <div class="flex items-center">
-                                <mat-checkbox formControlName="isActivefifth" class="mr-2"></mat-checkbox>
-                                <label for="isSuperUser" class="text-lg">Active</label>
-                            </div>
-                        </div>
-                        
-                        <mat-tab-group class="w-full">
-                            <!-- Qualitative Inspection Tab -->
-                            <mat-tab label="Qualitative Inspection">
-                                <div class="w-full overflow-x-auto">
-                                  <table class="w-full border-collapse border border-gray-300 mt-2">
-                                    <thead class="bg-gray-800 text-white">
-                                      <tr>
-                                        <th class="p-2 text-left w-full">
-                                          <div class="flex justify-between">
-                                            <span>Parameters</span>
-                                            <mat-icon class="mat-icon-primary cursor-pointer" svgIcon="feather:plus" (click)="addTableRow()"></mat-icon>
-                                          </div>
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody formArrayName="qualitativeTableCriteria">
-                                      <tr *ngFor="let control of qualitativeTableCriteria.controls; let i = index" [formGroupName]="i">
-                                        <td class="p-2 border border-gray-300">
-                                          <div class="flex justify-between items-center">
-                                            <input matInput formControlName="parameter" placeholder="Enter Parameter Name" class="w-full" />
-                                            <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClick(i)"
-                                            svgIcon="heroicons_outline:bars-3">
-                                          </mat-icon>
-                                            <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn" (click)="removeRow(i)">delete</mat-icon>
-                                            
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
+            <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
+              <mat-label>Description</mat-label>
+              <input matInput placeholder="Enter Description" formControlName="cardDescription" required>
+            </mat-form-field>
 
-                                  <ng-template #dialogTemplateItems let-data="data">
-                                    <div class="dialog-container flex flex-col h-full">
-                                      <div class="flex justify-between items-center p-4 border-b text-primary">
-                                        <h2 class="text-lg font-semibold">
-                                          ITEMS</h2>
-                                        <span (click)="closeDialog()" class="header-close-x">
-                                          <mat-icon class="text-primary">close</mat-icon>
-                                        </span>
-                                      </div>
-                                      <mat-form-field>
-                                        <mat-label>Filter</mat-label>
-                                        <input matInput (keyup)="applyFilterItems($event)" #input>
-                                      </mat-form-field>
-                                      <!-- ITEMS TABLE STARTS -->
-                                      <mat-table [dataSource]="dataSourceItems" class="flex-grow">
-                                        <!-- ITEM CODE & CHECKBOX COLUMN -->
-                                        <ng-container matColumnDef="inspectionCode">
-                                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
-                                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                            <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItems(row)">
-                                              <!-- [matTooltip]="row.itemDescription" -->
-                                              <!-- [matTooltip]="selectedItemDescription" -->
-                                            </mat-checkbox> {{row.inspectionCode}} </mat-cell>
-                                        </ng-container>
-                                        <!-- ITEM DESCRIPTION COLUMN -->
-                                        <ng-container matColumnDef="itemDescription">
-                                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
-                                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                            {{row.itemDescription}} </mat-cell>
-                                        </ng-container>
-                                        <!-- ITEM GROUP COLUMN -->
-                                        <ng-container matColumnDef="itemGroup">
-                                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
-                                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                                            {{ row.itemGroup ? row.itemGroup : '-' }}
-                                          </mat-cell>
-                                        </ng-container>
+            <!-- Checkboxes Section -->
+            <div class="flex flex-col w-full">
+              <div class="flex items-center">
+                <mat-checkbox formControlName="isActivefifth" class="mr-2"></mat-checkbox>
+                <label for="isSuperUser" class="text-lg">Active</label>
+              </div>
+            </div>
 
-                                        <ng-container matColumnDef="status">
-                                            <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
-                                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                                              {{ row.status ? row.status : '-' }}
-                                            </mat-cell>
-                                          </ng-container>
-                    
-                                        <mat-header-row *matHeaderRowDef="displayedColumnsItems"></mat-header-row>
-                                        <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
-                                        <!-- <tr class="mat-row" *matNoDataRow>
+            <mat-tab-group class="w-full">
+              <!-- Qualitative Inspection Tab -->
+              <mat-tab label="Qualitative Inspection">
+                <div class="w-full overflow-x-auto">
+                  <table class="w-full border-collapse border border-gray-300 mt-2">
+                    <thead class="bg-gray-800 text-white">
+                      <tr>
+                        <th class="p-2 text-left w-full">
+                          <div class="flex justify-between">
+                            <span>Parameters</span>
+                            <mat-icon class="mat-icon-primary cursor-pointer" svgIcon="feather:plus"
+                              (click)="addTableRow()"></mat-icon>
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody formArrayName="qualitativeTableCriteria">
+                      <tr *ngFor="let control of qualitativeTableCriteria.controls; let i = index" [formGroupName]="i">
+                        <td class="p-2 border border-gray-300">
+                          <div class="flex justify-between items-center">
+                            <input matInput formControlName="parameter" placeholder="Enter Parameter Name"
+                              class="w-full" />
+                            <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClick(i)"
+                              svgIcon="heroicons_outline:bars-3">
+                            </mat-icon>
+                            <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
+                              (click)="removeRow(i)">delete</mat-icon>
+
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <ng-template #dialogTemplateItems let-data="data">
+                    <div class="dialog-container flex flex-col h-full">
+                      <div class="flex justify-between items-center p-4 border-b text-primary">
+                        <h2 class="text-lg font-semibold">
+                          ITEMS</h2>
+                        <span (click)="closeDialog()" class="header-close-x">
+                          <mat-icon class="text-primary">close</mat-icon>
+                        </span>
+                      </div>
+                      <mat-form-field>
+                        <mat-label>Filter</mat-label>
+                        <input matInput (keyup)="applyFilterItems($event)" #input>
+                      </mat-form-field>
+                      <!-- ITEMS TABLE STARTS -->
+                      <mat-table [dataSource]="dataSourceItems" class="flex-grow">
+                        <!-- ITEM CODE & CHECKBOX COLUMN -->
+                        <ng-container matColumnDef="inspectionCode">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm">
+                            <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItems(row)">
+                              <!-- [matTooltip]="row.itemDescription" -->
+                              <!-- [matTooltip]="selectedItemDescription" -->
+                            </mat-checkbox> {{row.inspectionCode}} </mat-cell>
+                        </ng-container>
+                        <!-- ITEM DESCRIPTION COLUMN -->
+                        <ng-container matColumnDef="itemDescription">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm">
+                            {{row.itemDescription}} </mat-cell>
+                        </ng-container>
+                        <!-- ITEM GROUP COLUMN -->
+                        <ng-container matColumnDef="itemGroup">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                            {{ row.itemGroup ? row.itemGroup : '-' }}
+                          </mat-cell>
+                        </ng-container>
+
+                        <ng-container matColumnDef="status">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                            {{ row.status ? row.status : '-' }}
+                          </mat-cell>
+                        </ng-container>
+
+                        <mat-header-row *matHeaderRowDef="displayedColumnsItems"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
+                        <!-- <tr class="mat-row" *matNoDataRow>
                                                 <td class="mat-cell" colspan="4">No data matched with
                                                     "{{input.value}}"</td>
                                             </tr> -->
-                                      </mat-table>
-                                      <!-- ITEMS TABLE TABLE ENDS -->
-                                      <!-- SAVE & CLOSE -->
-                                      <div class="flex justify-end mt-auto">
-                                        <button mat-flat-button color="primary" (click)="addSelectedRowItem()">
-                                          Save&nbsp;&&nbsp;Close
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </ng-template>
-                                </div>
-                              </mat-tab>
-                              
-                      
-                            <!-- Quantitative Inspection Tab -->
-                            <mat-tab label="Quantitative Inspection">
-                                <div class="w-full overflow-x-auto">
-                                  <table class="w-full border-collapse border border-gray-300 mt-2">
-                                    <thead class="bg-gray-800 text-white">
-                                      <tr>
-                                        <th class="p-2 text-left w-full">
-                                          <div class="flex justify-between">
-                                            <span>Parameters</span>
-                                            <mat-icon class="mat-icon-primary cursor-pointer" svgIcon="feather:plus" (click)="addTableRowX()"></mat-icon>
-                                          </div>
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody formArrayName="quantitativeTableCriteria">
-                                      <tr *ngFor="let control of quantitativeTableCriteria.controls; let i = index" [formGroupName]="i">
-                                        <td class="p-2 border border-gray-300">
-                                          <div class="flex justify-between items-center">
-                                            <input matInput formControlName="parameterX" placeholder="Enter Parameter Name" class="w-full" />
-                                            <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)" svgIcon="heroicons_outline:bars-3"></mat-icon>
-                                            <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn" (click)="removeRowX(i)">delete</mat-icon>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                              
-                                  <ng-template #dialogTemplateItemsX let-data="data">
-                                    <div class="dialog-container flex flex-col h-full">
-                                      <div class="flex justify-between items-center p-4 border-b text-primary">
-                                        <h2 class="text-lg font-semibold">ITEMS</h2>
-                                        <span (click)="closeDialog()" class="header-close-x">
-                                          <mat-icon class="text-primary">close</mat-icon>
-                                        </span>
-                                      </div>
-                                      <mat-form-field>
-                                        <mat-label>Filter</mat-label>
-                                        <input matInput (keyup)="applyFilterItemsX($event)" #input>
-                                      </mat-form-field>
-                                      <!-- ITEMS TABLE STARTS -->
-                                      <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
-                                        <!-- ITEM CODE COLUMN -->
-                                        <ng-container matColumnDef="inspectionCode">
-                                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Code</mat-header-cell>
-                                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                            <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemsX(row)"></mat-checkbox>
-                                            {{ row.inspectionCode }}
-                                          </mat-cell>
-                                        </ng-container>
-                                        <!-- ITEM DESCRIPTION COLUMN -->
-                                        <ng-container matColumnDef="itemDescription">
-                                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
-                                          <mat-cell *matCellDef="let row" class="single-line text-sm">{{ row.itemDescription }}</mat-cell>
-                                        </ng-container>
-                                        <!-- ITEM GROUP COLUMN -->
-                                        <ng-container matColumnDef="itemGroup">
-                                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
-                                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                                            {{ row.itemGroup ? row.itemGroup : '-' }}
-                                          </mat-cell>
-                                        </ng-container>
-                              
-                                        <mat-header-row *matHeaderRowDef="displayedColumnsItemsX"></mat-header-row>
-                                        <mat-row *matRowDef="let row; columns: displayedColumnsItemsX;"></mat-row>
-                                      </mat-table>
-                                      <!-- SAVE & CLOSE -->
-                                      <div class="flex justify-end mt-auto">
-                                        <button mat-flat-button color="primary" (click)="addSelectedRowItemX()">Save&nbsp;&&nbsp;Close</button>
-                                      </div>
-                                    </div>
-                                  </ng-template>
-                                </div>
-                              </mat-tab>
-                              
-                          </mat-tab-group>
-
-                          
+                      </mat-table>
+                      <!-- ITEMS TABLE TABLE ENDS -->
+                      <!-- SAVE & CLOSE -->
+                      <div class="flex justify-end mt-auto">
+                        <button mat-flat-button color="primary" (click)="addSelectedRowItem()">
+                          Save&nbsp;&&nbsp;Close
+                        </button>
+                      </div>
                     </div>
-                    <div class="step-navigation">
-                        <button mat-button class="back-button" matStepperPrevious>Back</button>
-                        <button mat-button class="next-button" matStepperNext>Next</button>
-                        <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
-
-                    </div>
-
-                    
-                </form>
-            </mat-step>
-
-            <!-- Sixth Step -->
-            <mat-step [stepControl]="sixthFormGroup" label="Item Inspection Card">
-                <form [formGroup]="sixthFormGroup">
-
-                    <!-- Custom Styled Heading -->
-                    <h1 class="custom-heading">Item Inspection Card</h1>
-
-                    <!-- Responsive Flexbox Container -->
-                    <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
-                        <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                            <mat-label>Item Inspection Card</mat-label>
-                            <input matInput placeholder="Enter Inspection Code" formControlName="iteminspectionCard" required>
-                        </mat-form-field>
-                    </div>
-
-                    <div class="step-navigation">
-                        <button mat-button class="back-button" matStepperPrevious>Back</button>
-                        <button mat-button class="next-button" matStepperNext>Next</button>
-                    </div>
-
-                   
-                </form>
-            </mat-step>
-
-            <!-- Done Step -->
-            <mat-step>
-                <ng-template matStepLabel>Done</ng-template>
-                <p>You are now done.</p>
-                <div>
-                    <!-- <button mat-button matStepperPrevious>Back</button> -->
-                    <button mat-button class="back-button" matStepperPrevious>Back</button>
-
-                    <button mat-button (click)="stepper.reset()">Reset</button>
+                  </ng-template>
                 </div>
-            </mat-step>
+              </mat-tab>
 
-        </mat-stepper>
-    </div>
+
+              <!-- Quantitative Inspection Tab -->
+              <mat-tab label="Quantitative Inspection">
+                <div class="w-full overflow-x-auto">
+                  <table class="w-full border-collapse border border-gray-300 mt-2">
+                    <thead class="bg-gray-800 text-white">
+                      <tr>
+                        <th class="p-2 text-left w-full">
+                          <div class="flex justify-between">
+                            <span>Parameters</span>
+                            <mat-icon class="mat-icon-primary cursor-pointer" svgIcon="feather:plus"
+                              (click)="addTableRowX()"></mat-icon>
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody formArrayName="quantitativeTableCriteria">
+                      <tr *ngFor="let control of quantitativeTableCriteria.controls; let i = index" [formGroupName]="i">
+                        <td class="p-2 border border-gray-300">
+                          <div class="flex justify-between items-center">
+                            <input matInput formControlName="parameterX" placeholder="Enter Parameter Name"
+                              class="w-full" />
+                            <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
+                              svgIcon="heroicons_outline:bars-3"></mat-icon>
+                            <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
+                              (click)="removeRowX(i)">delete</mat-icon>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <ng-template #dialogTemplateItemsX let-data="data">
+                    <div class="dialog-container flex flex-col h-full">
+                      <div class="flex justify-between items-center p-4 border-b text-primary">
+                        <h2 class="text-lg font-semibold">ITEMS</h2>
+                        <span (click)="closeDialog()" class="header-close-x">
+                          <mat-icon class="text-primary">close</mat-icon>
+                        </span>
+                      </div>
+                      <mat-form-field>
+                        <mat-label>Filter</mat-label>
+                        <input matInput (keyup)="applyFilterItemsX($event)" #input>
+                      </mat-form-field>
+                      <!-- ITEMS TABLE STARTS -->
+                      <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
+                        <!-- ITEM CODE COLUMN -->
+                        <ng-container matColumnDef="inspectionCode">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Code</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm">
+                            <mat-checkbox [checked]="row.isSelected"
+                              (change)="onRowCheckboxChangeItemsX(row)"></mat-checkbox>
+                            {{ row.inspectionCode }}
+                          </mat-cell>
+                        </ng-container>
+                        <!-- ITEM DESCRIPTION COLUMN -->
+                        <ng-container matColumnDef="itemDescription">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm">{{ row.itemDescription
+                            }}</mat-cell>
+                        </ng-container>
+                        <!-- ITEM GROUP COLUMN -->
+                        <ng-container matColumnDef="itemGroup">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                            {{ row.itemGroup ? row.itemGroup : '-' }}
+                          </mat-cell>
+                        </ng-container>
+
+                        <mat-header-row *matHeaderRowDef="displayedColumnsItemsX"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: displayedColumnsItemsX;"></mat-row>
+                      </mat-table>
+                      <!-- SAVE & CLOSE -->
+                      <div class="flex justify-end mt-auto">
+                        <button mat-flat-button color="primary"
+                          (click)="addSelectedRowItemX()">Save&nbsp;&&nbsp;Close</button>
+                      </div>
+                    </div>
+                  </ng-template>
+                </div>
+              </mat-tab>
+
+            </mat-tab-group>
+
+
+          </div>
+          <div class="step-navigation">
+            <button mat-button class="back-button" matStepperPrevious>Back</button>
+            <button mat-button class="next-button" matStepperNext>Next</button>
+            <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
+
+          </div>
+
+
+        </form>
+      </mat-step>
+
+      <!-- Sixth Step -->
+      <mat-step [stepControl]="itemsInspectionForm" label="Item Inspection Card">
+        <form [formGroup]="itemsInspectionForm">
+
+          <!-- Custom Styled Heading -->
+          <h1 class="custom-heading">Item Inspection Card</h1>
+
+          <!-- Responsive Flexbox Container -->
+          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+
+
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+              <mat-label>Item Code</mat-label>
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                (click)="onItemInspectionCardCodeClick()"></mat-icon>
+              <input matInput formControlName="itemCode" required readonly
+                [value]="selectedItemCodeItemInspectionCardItemCode ? selectedItemCodeItemInspectionCardItemCode : ''">
+            </mat-form-field>
+
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
+              <mat-label>Item Description</mat-label>
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                (click)="onCardCodeClick()"></mat-icon>
+              <input matInput placeholder="Enter Description" formControlName="itemDescription" required readonly
+                [value]="selectedItemCodeItemInspectionCardItemDescription ? selectedItemCodeItemInspectionCardItemDescription : ''">
+            </mat-form-field>
+
+
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
+              <mat-label>Card Code</mat-label>
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                (click)="onCardCodeClick()"></mat-icon>
+              <input matInput placeholder="Enter Description" formControlName="cardCode" required readonly
+                [value]="selectedCardCode ? selectedCardCode : ''">
+            </mat-form-field>
+
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
+              <mat-label>Item Description</mat-label>
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                (click)="onCardCodeClick()"></mat-icon>
+              <input matInput placeholder="Enter Description" formControlName="cardDescription" required readonly
+                [value]="selectedCardDescription ? selectedCardDescription : ''">
+            </mat-form-field>
+
+            <!-- ITEM CODE NG TEMPLATE DIALOG STARTS -->
+            <ng-template #dialogTemplateItemInspectionCardItems let-data="data">
+              <div class="dialog-container flex flex-col h-full">
+                <div class="flex justify-between items-center p-4 border-b text-primary">
+                  <h2 class="text-lg font-semibold">
+                    ITEMS</h2>
+                  <span (click)="closeDialog()" class="header-close-x">
+                    <mat-icon class="text-primary">close</mat-icon>
+                  </span>
+                </div>
+                <mat-form-field>
+                  <mat-label>Filter</mat-label>
+                  <input matInput (keyup)="applyFilterItemInspectionCardItems($event)" #input>
+                </mat-form-field>
+                <!-- ITEMS TABLE STARTS -->
+                <mat-table [dataSource]="dataSourceItemInspectionCardItems" class="flex-grow">
+                  <!-- ITEM CODE & CHECKBOX COLUMN -->
+                  <ng-container matColumnDef="itemCode">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Code</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      <mat-checkbox [checked]="row.isSelected"
+                        (change)="onRowCheckboxChangeItemInspectionCardItems(row)">
+                        <!-- [matTooltip]="row.itemDescription" -->
+                      </mat-checkbox> {{row.itemCode}} </mat-cell>
+                  </ng-container>
+                  <!-- ITEM DESCRIPTION COLUMN -->
+                  <ng-container matColumnDef="itemDescription">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      {{row.itemDescription}} </mat-cell>
+                  </ng-container>
+                  <!-- ITEM GROUP COLUMN -->
+                  <ng-container matColumnDef="itemGroup">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                      {{ row.itemGroup ? row.itemGroup : '-' }}
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="displayedColumnsItemInspectionCardItems"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: displayedColumnsItemInspectionCardItems;"></mat-row>
+
+                  <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="4">No data matched with
+                      "{{input.value}}"</td>
+                  </tr>
+                </mat-table>
+                <!-- ITEMS TABLE ENDS -->
+                <!-- SAVE & CLOSE -->
+                <div class="flex justify-end mt-auto">
+                  <button mat-flat-button color="primary" (click)="addSelectedRowItemInspectionCardItem()">
+                    Save&nbsp;&&nbsp; Close
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+            <!-- ITEM CODE NG TEMPLATE DIALOG ENDS -->
+            <!-- CARD CODE NG TEMPLATE DIALOG STARTS -->
+            <ng-template #dialogTemplateCardsItemInspectionCard let-data="data">
+              <div class="dialog-container flex flex-col h-full">
+                <div class="flex justify-between items-center p-4 border-b text-primary">
+                  <h2 class="text-lg font-semibold">
+                    CARDS</h2>
+                  <span (click)="closeDialog()" class="header-close-x">
+                    <mat-icon class="text-primary">close</mat-icon>
+                  </span>
+                </div>
+                <mat-form-field>
+                  <mat-label>Filter</mat-label>
+                  <input matInput (keyup)="applyFilterCards($event)" #input>
+                </mat-form-field>
+                <!-- CARDS TABLE STARTS -->
+                <mat-table [dataSource]="dataSourceCardsCardsItemInspectionCard" class="flex-grow">
+                  <!-- CARD CODE & CHECKBOX COLUMN -->
+                  <ng-container matColumnDef="cardCode">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Card&nbsp;Code</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeCards(row)">
+                      </mat-checkbox> {{row.cardCode}} </mat-cell>
+                  </ng-container>
+                  <!-- CARD DESCRIPTION COLUMN -->
+                  <ng-container matColumnDef="cardDescription">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Card&nbsp;Description</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      {{row.cardDescription}} </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="displayedColumnsCards"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: displayedColumnsCards;"></mat-row>
+
+                  <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="4">No data matched with
+                      "{{input.value}}"</td>
+                  </tr>
+                </mat-table>
+                <!-- CARD CODE TABLE ENDS -->
+                <!-- SAVE & CLOSE -->
+                <div class="flex justify-end mt-auto">
+                  <button mat-flat-button color="primary" (click)="addSelectedRowCard()">
+                    Save&nbsp;&&nbsp; Close
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+            <!-- CARD CODE NG TEMPLATE DIALOG ENDS -->
+
+
+          </div>
+
+          <!-- TABS STARTS -->
+          <mat-tab-group class="sm:px-2" mat-stretch-tabs="true" [animationDuration]="'0'">
+            <!-- QUALITATIVE INSPECTION TAB STARTS -->
+            <mat-tab label="Qualitative Inspection">
+              <ng-template matTabContent>
+                <div class="pt-0 lg:ml-9 lg:mr-13">
+                  <div class="w-full">
+                    <div class="w-full flex justify-between items-center m-0 p-0 px-0 py-0">
+                      <div class="ml-auto flex space-x-2 sm:space-x-4">
+                        <div class="icon-size-4">
+                          <mat-icon class="mat-icon-primary" style="cursor: pointer;" svgIcon="feather:plus"
+                            (click)="onAddQualitativeClick()" matTooltip="Add Inspection" aria-label="Add Inspection">
+                          </mat-icon>
+                        </div>
+
+                      </div>
+                    </div>
+                    <!-- QUALITATIVE INSPECTION SECTION STARTS -->
+                    <section class="m-0 p-0 px-0 py-0 overflow-auto w-full">
+                      <!-- QUALITATIVE INSPECTION TABLE STARTS -->
+                      <table mat-table [dataSource]="dataSourceQualitativeInspection" class="w-full">
+                        <!-- parameter COLUMN -->
+                        <ng-container matColumnDef="parameter">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Parameters
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/5  whitespace-nowrap"
+                            [formGroup]="qualitativeArry.controls[i]">
+                            <input matInput formControlName="parameter" readonly>
+                          </td>
+                        </ng-container>
+                        <!-- passCriteria COLUMN -->
+                        <ng-container matColumnDef="passCriteria">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Pass
+                            Criteria</th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/5 whitespace-nowrap"
+                            [formGroup]="qualitativeArry.controls[i]">
+                            <input matInput formControlName="passCriteria" readonly>
+                          </td>
+                        </ng-container>
+                        <!-- mandatory COLUMN -->
+                        <ng-container matColumnDef="mandatory">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Mandatory
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/5"
+                            [formGroup]="qualitativeArry.controls[i]">
+                            <mat-checkbox formControlName="mandatory"></mat-checkbox>
+                          </td>
+                        </ng-container>
+                        <!-- pass COLUMN -->
+                        <ng-container matColumnDef="pass">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm">Pass</th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/5"
+                            [formGroup]="qualitativeArry.controls[i]">
+                            <input matInput type="text" class="text-sm w-full" readonly formControlName="pass"
+                              placeholder="Y,M">
+                            <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                              (click)="onPassClick(i)">
+                            </mat-icon>
+                          </td>
+                        </ng-container>
+                        <!-- fail COLUMN -->
+                        <ng-container matColumnDef="fail">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm">
+                            Fail</th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/5"
+                            [formGroup]="qualitativeArry.controls[i]">
+                            <input matInput type="text" class="text-sm w-full" readonly formControlName="fail"
+                              placeholder="N,P">
+                            <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                              (click)="onFailClick(i)">
+                            </mat-icon>
+                          </td>
+                        </ng-container>
+
+                        <!-- Table Rows -->
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsQualitative"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumnsQualitative;">
+                        </tr>
+                      </table>
+                      <!-- QUALITATIVE INSPECTION TABLE ENDS -->
+                    </section>
+                    <!-- QUALITATIVE INSPECTION SECTION ENDS -->
+                    <!-- PASS NG TEMPLATE DIALOG STARTS -->
+                    <ng-template #dialogTemplatePass let-data="data">
+                      <div class="dialog-container flex flex-col h-full">
+                        <div class="flex justify-between items-center p-4 border-b text-primary">
+                          <h2 class="text-lg font-semibold">
+                            CARDS</h2>
+                          <span (click)="closeDialog()" class="header-close-x">
+                            <mat-icon class="text-primary">close</mat-icon>
+                          </span>
+                        </div>
+                        <!-- PASS TABLE STARTS -->
+                        <mat-table [dataSource]="dataSourcePass" class="flex-grow">
+                          <!-- CODE & CHECKBOX COLUMN -->
+                          <ng-container matColumnDef="code">
+                            <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangePass(row)">
+                              </mat-checkbox> {{row.code}} </mat-cell>
+                          </ng-container>
+                          <!--  DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="description">
+                            <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              {{row.description}} </mat-cell>
+                          </ng-container>
+
+                          <mat-header-row *matHeaderRowDef="displayedColumnsPass"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsPass;"></mat-row>
+
+                          <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" colspan="4">No data matched with
+                              "{{input.value}}"</td>
+                          </tr>
+                        </mat-table>
+                        <!-- PASS TABLE ENDS -->
+                        <!-- SAVE & CLOSE -->
+                        <div class="flex justify-end mt-auto">
+                          <!-- <button mat-flat-button color="primary" (click)="addSelectedRowPass()">
+                                            Save&nbsp;&&nbsp; Close
+                                        </button> -->
+                          <button mat-flat-button color="primary" (click)="addSelectedRowPass(selectedPassRowIndex)">
+                            Save&nbsp;&&nbsp; Close
+                          </button>
+                        </div>
+                      </div>
+                    </ng-template>
+                    <!-- PASS NG TEMPLATE DIALOG ENDS -->
+                    <!-- FAIL NG TEMPLATE DIALOG STARTS -->
+                    <ng-template #dialogTemplateFail let-data="data">
+                      <div class="dialog-container flex flex-col h-full">
+                        <div class="flex justify-between items-center p-4 border-b text-primary">
+                          <h2 class="text-lg font-semibold">
+                            Fail</h2>
+                          <span (click)="closeDialog()" class="header-close-x">
+                            <mat-icon class="text-primary">close</mat-icon>
+                          </span>
+                        </div>
+                        <!-- FAIL TABLE STARTS -->
+                        <mat-table [dataSource]="dataSourceFail" class="flex-grow">
+                          <!-- CODE & CHECKBOX COLUMN -->
+                          <ng-container matColumnDef="code">
+                            <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeFail(row)">
+                              </mat-checkbox> {{row.code}} </mat-cell>
+                          </ng-container>
+                          <!--  DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="description">
+                            <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              {{row.description}} </mat-cell>
+                          </ng-container>
+
+                          <mat-header-row *matHeaderRowDef="displayedColumnsFail"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsFail;"></mat-row>
+
+                          <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" colspan="4">No data matched with
+                              "{{input.value}}"</td>
+                          </tr>
+                        </mat-table>
+                        <!-- FAIL TABLE ENDS -->
+                        <!-- SAVE & CLOSE -->
+                        <div class="flex justify-end mt-auto">
+                          <button mat-flat-button color="primary" (click)="addSelectedRowFail()">
+                            Save&nbsp;&&nbsp; Close
+                          </button>
+                        </div>
+                      </div>
+                    </ng-template>
+                    <!-- FAIL NG TEMPLATE DIALOG ENDS -->
+
+                    <!-- ADD QUALITATIVE INSPECTION NG TEMPLATE DIALOG STARTS -->
+                    <ng-template #dialogTemplateAddQualitative let-data="data">
+                      <div class="dialog-container flex flex-col h-full">
+                        <div class="flex justify-between items-center p-4 border-b text-primary">
+                          <h2 class="text-lg font-semibold">
+                            Add Inspection Characteristics</h2>
+                          <span (click)="closeDialog()" class="header-close-x">
+                            <mat-icon class="text-primary">close</mat-icon>
+                          </span>
+                        </div>
+                        <mat-form-field>
+                          <mat-label>Filter</mat-label>
+                          <input matInput (keyup)="applyFilterAddQualitative($event)" #input>
+                        </mat-form-field>
+                        <!-- CARDS TABLE STARTS -->
+                        <mat-table [dataSource]="dataSourceAddQualitative" class="flex-grow">
+                          <!-- INSPECTION CODE & CHECKBOX COLUMN -->
+                          <ng-container matColumnDef="inspectionCode">
+                            <mat-header-cell *matHeaderCellDef
+                              class="single-line">Inspection&nbsp;Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected"
+                                (change)="onRowCheckboxChangeAddQualitative(row)">
+                              </mat-checkbox> {{row.inspectionCode}} </mat-cell>
+                          </ng-container>
+                          <!-- INSPECTION DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="inspectionDescription">
+                            <mat-header-cell *matHeaderCellDef
+                              class="single-line">Inspection&nbsp;Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              {{row.inspectionDescription}} </mat-cell>
+                          </ng-container>
+                          <!-- INSPECTION CRITERIA COLUMN -->
+                          <ng-container matColumnDef="inspectionCriteria">
+                            <mat-header-cell *matHeaderCellDef
+                              class="single-line">Inspection&nbsp;Criteria</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              {{row.inspectionCriteria}} </mat-cell>
+                          </ng-container>
+
+                          <mat-header-row *matHeaderRowDef="displayedColumnsAddQualitative"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsAddQualitative;"></mat-row>
+
+                          <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" colspan="4">No data matched with
+                              "{{input.value}}"</td>
+                          </tr>
+                        </mat-table>
+                        <!-- CARD CODE TABLE ENDS -->
+                        <!-- SAVE & CLOSE -->
+                        <div class="flex justify-end mt-auto">
+                          <button mat-flat-button color="primary" (click)="addSelectedRowAddQualitative()">
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                    </ng-template>
+                    <!-- ADD QUALITATIVE INSPECTION NG TEMPLATE DIALOG ENDS -->
+                  </div>
+                </div>
+              </ng-template>
+            </mat-tab>
+            <!-- QUALITATIVE INSPECTION TAB ENDS -->
+
+            <!-- QUANTITATIVE INSPECTION TAB STARTS -->
+            <mat-tab label="Quantitative Inspection">
+              <ng-template matTabContent>
+                <div class="pt-0 lg:ml-9 lg:mr-13">
+                  <div class="w-full">
+                    <div class="w-full flex justify-between items-center m-0 p-0 px-0 py-0">
+                      <div class="ml-auto flex space-x-2 sm:space-x-4">
+                        <div class="icon-size-4">
+                          <mat-icon class="mat-icon-primary" style="cursor: pointer;" svgIcon="feather:plus"
+                            (click)="onAddQuantitativeClick()" matTooltip="Add Inspection" aria-label="Add Inspection">
+                          </mat-icon>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- QUANTITATIVE INSPECTION SECTION STARTS -->
+                    <section class="m-0 p-0 px-0 py-0 overflow-auto w-full">
+                      <!-- QUANTITATIVE INSPECTION TABLE STARTS -->
+                      <table mat-table [dataSource]="dataSourceQuantitativeInspection" class="w-full">
+                        <!-- parameterQty COLUMN -->
+                        <ng-container matColumnDef="parameterQty">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Parameters
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
+                            [formGroup]="quantitativeArry.controls[i]">
+                            <input matInput formControlName="parameterQty" readonly>
+                          </td>
+                        </ng-container>
+                        <!-- uomQty COLUMN -->
+                        <ng-container matColumnDef="uomQty">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm">UOM</th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6"
+                            [formGroup]="quantitativeArry.controls[i]">
+                            <input matInput type="text" class="text-sm w-full" readonly formControlName="uomQty">
+                            <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                              (click)="onUoMQtyClick(i)">
+                            </mat-icon>
+                          </td>
+                        </ng-container>
+
+
+                        <!-- mandatoryQty COLUMN -->
+                        <ng-container matColumnDef="mandatoryQty">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Mandatory
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6"
+                            [formGroup]="quantitativeArry.controls[i]">
+                            <mat-checkbox formControlName="mandatoryQty"></mat-checkbox>
+                          </td>
+                        </ng-container>
+                        <!-- passCriteriaTarget COLUMN -->
+                        <ng-container matColumnDef="passCriteriaTarget">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Target
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
+                            [formGroup]="quantitativeArry.controls[i]">
+                            <input matInput formControlName="passCriteriaTarget" placeholder="Enter Target value">
+                          </td>
+                        </ng-container>
+                        <!-- passCriteriaMax COLUMN -->
+                        <ng-container matColumnDef="passCriteriaMax">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Max
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
+                            [formGroup]="quantitativeArry.controls[i]">
+                            <input matInput formControlName="passCriteriaMax" placeholder="Enter Max value">
+                          </td>
+                        </ng-container>
+                        <!-- passCriteriaMin COLUMN -->
+                        <ng-container matColumnDef="passCriteriaMin">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Min
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
+                            [formGroup]="quantitativeArry.controls[i]">
+                            <input matInput formControlName="passCriteriaMin" placeholder="Enter Min value">
+                          </td>
+                        </ng-container>
+
+                        <!-- Table Rows -->
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsQuantitative"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumnsQuantitative;">
+                        </tr>
+                      </table>
+                      <!-- QUANTITATIVE INSPECTION TABLE ENDS -->
+                    </section>
+                    <!-- UoM NG TEMPLATE DIALOG STARTS -->
+                    <ng-template #dialogTemplateUoM let-data="data">
+                      <div class="dialog-container flex flex-col h-full">
+                        <div class="flex justify-between items-center p-4 border-b text-primary">
+                          <h2 class="text-lg font-semibold">
+                            UoM</h2>
+                          <span (click)="closeDialog()" class="header-close-x">
+                            <mat-icon class="text-primary">close</mat-icon>
+                          </span>
+                        </div>
+                        <!-- UoM TABLE STARTS -->
+                        <mat-table [dataSource]="dataSourceUoM" class="flex-grow">
+                          <!-- CODE & CHECKBOX COLUMN -->
+                          <ng-container matColumnDef="code">
+                            <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeUoM(row)">
+                              </mat-checkbox> {{row.code}} </mat-cell>
+                          </ng-container>
+                          <!--  DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="description">
+                            <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              {{row.description}} </mat-cell>
+                          </ng-container>
+
+                          <mat-header-row *matHeaderRowDef="displayedColumnsUoM"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsUoM;"></mat-row>
+
+                          <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" colspan="4">No data matched with
+                              "{{input.value}}"</td>
+                          </tr>
+                        </mat-table>
+                        <!-- PASS TABLE ENDS -->
+                        <!-- SAVE & CLOSE -->
+                        <div class="flex justify-end mt-auto">
+                          <button mat-flat-button color="primary" (click)="addSelectedRowUoM(selectedRowIndexUoM)">
+                            Save&nbsp;&&nbsp; Close
+                          </button>
+                        </div>
+                      </div>
+                    </ng-template>
+                    <!-- PASS NG TEMPLATE DIALOG ENDS -->
+
+                    <!-- ADD QUANTITATIVE INSPECTION NG TEMPLATE DIALOG STARTS -->
+                    <ng-template #dialogTemplateAddQuantitative let-data="data">
+                      <div class="dialog-container flex flex-col h-full">
+                        <div class="flex justify-between items-center p-4 border-b text-primary">
+                          <h2 class="text-lg font-semibold">
+                            Add Inspection Characteristics</h2>
+                          <span (click)="closeDialog()" class="header-close-x">
+                            <mat-icon class="text-primary">close</mat-icon>
+                          </span>
+                        </div>
+                        <mat-form-field>
+                          <mat-label>Filter</mat-label>
+                          <input matInput (keyup)="applyFilterAddQuantitative($event)" #input>
+                        </mat-form-field>
+                        <!-- CARDS TABLE STARTS -->
+                        <mat-table [dataSource]="dataSourceAddQuantitative" class="flex-grow">
+                          <!-- INSPECTION CODE & CHECKBOX COLUMN -->
+                          <ng-container matColumnDef="inspectionCode">
+                            <mat-header-cell *matHeaderCellDef
+                              class="single-line">Inspection&nbsp;Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected"
+                                (change)="onRowCheckboxChangeAddQuantitative(row)">
+                              </mat-checkbox> {{row.inspectionCode}} </mat-cell>
+                          </ng-container>
+                          <!-- INSPECTION DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="inspectionDescription">
+                            <mat-header-cell *matHeaderCellDef
+                              class="single-line">Inspection&nbsp;Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              {{row.inspectionDescription}} </mat-cell>
+                          </ng-container>
+
+                          <mat-header-row *matHeaderRowDef="displayedColumnsAddQuantitative"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsAddQuantitative;"></mat-row>
+
+                          <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" colspan="4">No data matched with
+                              "{{input.value}}"</td>
+                          </tr>
+                        </mat-table>
+                        <!-- CARD CODE TABLE ENDS -->
+                        <!-- SAVE & CLOSE -->
+                        <div class="flex justify-end mt-auto">
+                          <button mat-flat-button color="primary" (click)="addSelectedRowAddQuantitative()">
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                    </ng-template>
+                    <!-- ADD QUANTITATIVE INSPECTION NG TEMPLATE DIALOG ENDS -->
+                    <!-- QUANTITATIVE INSPECTION SECTION ENDS -->
+                  </div>
+                </div>
+              </ng-template>
+            </mat-tab>
+          </mat-tab-group>
+          <!-- TABS ENDS -->
+
+
+          <div class="step-navigation">
+            <button mat-button class="next-button" matStepperNext>Next</button>
+          </div>
+
+
+        </form>
+      </mat-step>
+
+      <!-- Done Step -->
+      <mat-step>
+        <ng-template matStepLabel>Done</ng-template>
+        <p>You are now done.</p>
+        <div>
+          <!-- <button mat-button matStepperPrevious>Back</button> -->
+          <button mat-button class="back-button" matStepperPrevious>Back</button>
+
+          <button mat-button (click)="stepper.reset()">Reset</button>
+        </div>
+      </mat-step>
+
+    </mat-stepper>
+  </div>
 </div>

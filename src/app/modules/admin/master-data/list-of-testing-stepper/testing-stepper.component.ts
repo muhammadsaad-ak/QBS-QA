@@ -1,327 +1,1018 @@
-import {Component, inject, ViewEncapsulation, ViewChild, AfterViewInit,OnInit } from '@angular/core';
-import {FormBuilder, Validators, FormsModule, ReactiveFormsModule, FormArray, FormGroup} from '@angular/forms';
-import {MatInputModule} from '@angular/material/input';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatStepperModule} from '@angular/material/stepper';
-import {MatButtonModule} from '@angular/material/button';
-import { ActivatedRoute } from '@angular/router';
-import { MatTab } from '@angular/material/tabs';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatStepper } from '@angular/material/stepper';
-import { MatRadioModule } from '@angular/material/radio';
 import { CommonModule } from '@angular/common';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatIconModule } from '@angular/material/icon';
-
-
-
-@Component({
-  selector: 'app-testing-stepper',
-  standalone: true,
-  encapsulation: ViewEncapsulation.None,
-  
-  imports: [
-    MatButtonModule,
-    MatStepperModule,
+import {
+    AfterViewInit,
+    Component,
+    ViewChild,
+    ViewEncapsulation,
+    inject,
+} from '@angular/core';
+import {
+    FormArray,
+    FormBuilder,
+    FormGroup,
     FormsModule,
     ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatCheckboxModule,
-    MatRadioModule,
-    CommonModule,
-    MatTableModule,
-    MatTabsModule, 
-    MatIconModule, 
-  ],
-  templateUrl: './testing-stepper.component.html',
-  styleUrl: './testing-stepper.component.scss'
+    Validators,
+} from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute } from '@angular/router';
+import { qbsAnimations } from '@qbs/animations';
+import {
+    qualitativeInspectionIF,
+    quantitativeInspectionIF,
+} from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
+
+interface itemSamplingIF {
+    lotSizeMin: string;
+    lotSizeMax: string;
+    sampleSize: string;
+    criticalDefect: string;
+    majorDefect: string;
+    minorDefect: string;
+}
+
+@Component({
+    selector: 'app-testing-stepper',
+    standalone: true,
+    encapsulation: ViewEncapsulation.None,
+
+    imports: [
+        MatButtonModule,
+        MatStepperModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatCheckboxModule,
+        MatRadioModule,
+        CommonModule,
+        MatTableModule,
+        MatTabsModule,
+        MatIconModule,
+    ],
+    animations: qbsAnimations,
+
+    templateUrl: './testing-stepper.component.html',
+    styleUrl: './testing-stepper.component.scss',
 })
 export class TestingStepperComponent implements AfterViewInit {
-  // private _formBuilder = inject(FormBuilder);
-  private _activatedRoute = inject(ActivatedRoute);
-  constructor(private _formBuilder: FormBuilder, private dialog: MatDialog) {}
-  qualitativeData = [
-    { parameter: 'Sample Parameter 1' }, // Initial row
-    { parameter: 'Sample Parameter 2' }];  
+    // private _formBuilder = inject(FormBuilder);
+    private _activatedRoute = inject(ActivatedRoute);
+    constructor(
+        private _formBuilder: FormBuilder,
+        private dialog: MatDialog,
+        private fb: FormBuilder
+    ) {}
+    qualitativeData = [
+        { parameter: 'Sample Parameter 1' }, // Initial row
+        { parameter: 'Sample Parameter 2' },
+    ];
     displayedColumns: string[] = ['parameter'];
-    firstRowAdded: boolean = false; 
+    firstRowAdded: boolean = false;
 
-  
+    @ViewChild(MatStepper) stepper!: MatStepper; // Correctly reference the MatStepper instance
 
-
-  @ViewChild(MatStepper) stepper!: MatStepper;  // Correctly reference the MatStepper instance
-
-
-  firstFormGroup = this._formBuilder.group({
-    firstCtrl: ['', Validators.required],
-    descriptionCtrl: ['', Validators.required],
-  });
-  secondFormGroup = this._formBuilder.group({
-    uomCodeCtrl: ['', Validators.required],
-    uomNameCtrl: ['', Validators.required],
-
-  });
-  thirdFormGroup = this._formBuilder.group({
-    thirdCtrl: ['', Validators.required],
-  });
-  fourthFormGroup = this._formBuilder.group({
-    inspectionCodethird: ['', Validators.required],
-    inspectionDescription: ['', Validators.required],
-    inspectionType: ['', Validators.required],
-    qualitativeCriteria: this._formBuilder.array([]),
-  });
-  fifthFormGroup = this._formBuilder.group({
-    cardCode: ['', Validators.required],
-    cardDescription: ['', Validators.required],
-    isActivefifth: [false],
-    qualitativeTableCriteria: this._formBuilder.array([]) ,
-    quantitativeTableCriteria: this._formBuilder.array([])  // Quantitative Data
-  });
-
-  sixthFormGroup = this._formBuilder.group({
-    iteminspectionCard: ['', Validators.required],
-  });
-  isLinear = false;
-
-  ngOnInit(): void {
-    
-    this.fourthFormGroup.get('inspectionType')?.valueChanges.subscribe((value) => {
-      if (value === 'qualitative') {
-        this.initializeQualitativeRow();
-      } else {
-        this.clearQualitativeCriteria();
-      }
+    firstFormGroup = this._formBuilder.group({
+        firstCtrl: ['', Validators.required],
+        descriptionCtrl: ['', Validators.required],
+    });
+    secondFormGroup = this._formBuilder.group({
+        uomCodeCtrl: ['', Validators.required],
+        uomNameCtrl: ['', Validators.required],
     });
 
-    this.initializeTableWithDefaultRow();  // Initialize table with one row on load
-    this.initializeTableWithDefaultRowX();  // Initialize table with one row on load
-
-  }
-
-  ngAfterViewInit(): void {
-    this._activatedRoute.queryParams.subscribe((params) => {
-      const stepIndex = params['step'] ? +params['step'] : 0;
-      Promise.resolve().then(() => this.stepper.selectedIndex = stepIndex);  // Ensure stepper is initialized
+    //Item Sample
+    itemSamplingForm = this._formBuilder.group({
+        sampleCode: ['', Validators.required],
+        itemCode: ['', Validators.required],
+        itemDescription: ['', Validators.required],
+        flexibility: [false],
+        samples: this._formBuilder.array([]),
     });
-  }
-/** Getter for qualitativeCriteria FormArray */
-  get qualitativeCriteria(): FormArray {
-    return this.fourthFormGroup.get('qualitativeCriteria') as FormArray;
-  }
-  /** Initialize one row in qualitativeCriteria */
-  initializeQualitativeRow(): void {
-    if (this.qualitativeCriteria.length === 0) {
-      this.qualitativeCriteria.push(
-        this._formBuilder.group({
-          userName: [''],
-          userId: [''],
-        })
-      );
+    displayedColumnsItemSampling = [
+        'lotSizeMin',
+        'lotSizeMax',
+        'sampleSize',
+        'criticalDefect',
+        'majorDefect',
+        'minorDefect',
+    ];
+    dataSourceItemSampling = new MatTableDataSource<itemSamplingIF>();
+    get samples(): FormArray {
+        return this.itemSamplingForm.get('samples') as FormArray;
     }
-  }
-
-  /** Clear all rows in qualitativeCriteria */
-  clearQualitativeCriteria(): void {
-    while (this.qualitativeCriteria.length !== 0) {
-      this.qualitativeCriteria.removeAt(0);
+    addNewRowItemSampling(): void {
+        const itemSamplingFormGroup = this.fb.group({
+            lotSizeMin: [''],
+            lotSizeMax: [''],
+            sampleSize: [''],
+            criticalDefect: [''],
+            majorDefect: [''],
+            minorDefect: [''],
+        });
+        this.samples.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
+        this.dataSourceItemSampling.data = [...this.samples.value]; // Update the table data source
     }
-  }
-
-
-  get qualitativeTableCriteria(): FormArray {
-    return this.fifthFormGroup.get('qualitativeTableCriteria') as FormArray;
-  }
-
-  get quantitativeTableCriteria(): FormArray {
-    return this.fifthFormGroup.get('quantitativeTableCriteria') as FormArray;
-  }
-
-  /** Initialize the table with one default row */
-  initializeTableWithDefaultRow(): void {
-    if (this.qualitativeTableCriteria.length === 0) {
-      this.addTableRow();
+    // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
+    @ViewChild('dialogTemplateItemSampleItems') dialogTemplateItemSampleItems;
+    // dataSourceItemSampleCode!: MatTableDataSource<any>;
+    dataSourceItemSampleCode = new MatTableDataSource([
+        {
+            itemId: 1,
+            itemCode: 'ITM0012561',
+            itemDescription: 'Paint Bucket 3KG',
+            itemGroup: 'Item Group A',
+            isSelected: false,
+        },
+        {
+            itemId: 2,
+            itemCode: 'ITM0012562',
+            itemDescription: 'Paint Bucket 5KG',
+            itemGroup: '',
+            isSelected: false,
+        },
+    ]);
+    //
+    onItemSampleItemCodeClick() {
+        const dialogRef = this.dialog.open(this.dialogTemplateItemSampleItems, {
+            width: '75%',
+            height: '75vh',
+            data: this.dataSourceItemSampleCode,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
     }
-  }
-
-  /** Initialize the table with one default row */
-  initializeTableWithDefaultRowX(): void {
-    if (this.quantitativeTableCriteria.length === 0) {
-      this.addTableRowX();
+    displayedColumnsItemSampleCode: string[] = [
+        'itemCode',
+        'itemDescription',
+        'itemGroup',
+    ];
+    selectedItemSampleCode: string = '';
+    selectedItemSampleDescription: string = '';
+    //
+    onRowCheckboxChangeItemSampleCode(selectedRow: any): void {
+        this.dataSourceItemSampleCode.data.forEach(
+            (row) => (row.isSelected = false)
+        );
+        selectedRow.isSelected = true;
     }
-  }
-  
+    //
+    addSelectedRowItemSampleCode(): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceItemSampleCode.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            this.itemSamplingForm
+                .get('itemCode')
+                .setValue(selectedRow.itemCode);
+            this.itemSamplingForm
+                .get('itemDescription')
+                .setValue(selectedRow.itemDescription);
+            this.selectedItemSampleCode = selectedRow.itemCode;
+            this.selectedItemSampleDescription = selectedRow.itemDescription;
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+    //
+    applyFilterItemSampleCode(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceItemSampleCode.filter = filterValue.trim().toLowerCase();
+    }
+    // ITEM SAMPLE ITEM CODE NG TEMPLATE ENDS
 
-  /** Add a new row to the qualitative table */
-  addTableRow(): void {
-    const row = this._formBuilder.group({
-      parameter: [''],
+    //
+    fourthFormGroup = this._formBuilder.group({
+        inspectionCodethird: ['', Validators.required],
+        inspectionDescription: ['', Validators.required],
+        inspectionType: ['', Validators.required],
+        qualitativeCriteria: this._formBuilder.array([]),
     });
-    this.qualitativeTableCriteria.push(row);
-  }
+    fifthFormGroup = this._formBuilder.group({
+        cardCode: ['', Validators.required],
+        cardDescription: ['', Validators.required],
+        isActivefifth: [false],
+        qualitativeTableCriteria: this._formBuilder.array([]),
+        quantitativeTableCriteria: this._formBuilder.array([]), // Quantitative Data
+    });
 
-  /** Remove a specific row by index */
-  removeRow(index: number): void {
-    this.qualitativeTableCriteria.removeAt(index);
-  }
+    // ITEM INSPECTION CARD 3.1 STARTS
+    itemsInspectionForm = this._formBuilder.group({
+        firstCtrl: ['', Validators.required],
+        descriptionCtrl: ['', Validators.required],
+        itemCode: ['', Validators.required],
+        itemDescription: ['', Validators.required],
+        cardCode: ['', Validators.required],
+        cardDescription: ['', Validators.required],
+        qualitativeArry: this.fb.array([]),
+        quantitativeArry: this.fb.array([]),
+    });
+    displayedColumnsQualitative = [
+        'parameter',
+        'passCriteria',
+        'mandatory',
+        'pass',
+        'fail',
+    ];
+    displayedColumnsQuantitative = [
+        'parameterQty',
+        'uomQty',
+        'mandatoryQty',
+        'passCriteriaTarget',
+        'passCriteriaMax',
+        'passCriteriaMin',
+    ];
+    qualitativeInspectionItems: qualitativeInspectionIF[] = [
+        {
+            parameter: 'Color Shade',
+            passCriteria: 'As per standard',
+            mandatory: false,
+            pass: '',
+            fail: '',
+        },
+        {
+            parameter: 'Dental Damage',
+            passCriteria: 'Essential',
+            mandatory: false,
+            pass: '',
+            fail: '',
+        },
+    ];
+    quantitativeInspectionItems: quantitativeInspectionIF[] = [
+        {
+            parameterQty: 'Color Shade',
+            uomQty: '',
+            mandatoryQty: false,
+            passCriteriaTarget: '',
+            passCriteriaMax: '',
+            passCriteriaMin: '',
+        },
+        {
+            parameterQty: 'Dental Damage',
+            uomQty: '',
+            mandatoryQty: false,
+            passCriteriaTarget: '',
+            passCriteriaMax: '',
+            passCriteriaMin: '',
+        },
+    ];
+    dataSourceQualitativeInspection =
+        new MatTableDataSource<qualitativeInspectionIF>(
+            this.qualitativeInspectionItems
+        );
+    dataSourceQuantitativeInspection =
+        new MatTableDataSource<quantitativeInspectionIF>(
+            this.quantitativeInspectionItems
+        );
 
-  @ViewChild('dialogTemplateItems') dialogTemplateItems;
-  dataSourceItems = new MatTableDataSource([
-      {
-          itemId: 1,
-          inspectionCode: 'ITM0012561',
-          itemDescription: 'Paint Bucket 3KG',
-          itemGroup: 'Item Group A',
-          status: 'Active',
-          isSelected: false,
-      },
-      {
-          itemId: 2,
-          inspectionCode: 'ITM0012562',
-          itemDescription: 'Paint Bucket 5KG',
-          itemGroup: '',
-          status: 'In Active',
-          isSelected: false,
-      },
-  ]);
-  //
-  selectedControlAccountRowIndex: number = -1;
-  onItemCodeClick(rowIndex: number): void {
-      console.log('Row Index:', rowIndex);
-      this.selectedControlAccountRowIndex = rowIndex;
-      console.log(this.selectedControlAccountRowIndex);
-      const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-          width: '70%',
-          height: '75vh',
-          data: this.dataSourceItems,
-      });
-      dialogRef.afterClosed().subscribe((result) => {
-          console.log('DIALOG CLOSED');
-      });
-  }
-  displayedColumnsItems: string[] = [
-      'inspectionCode',
-      'itemDescription',
-      'itemGroup',
-      'status',
-  ];
-  selectedInspectionCode: string = '';
-  selectedItemDescription: string = '';
-  //
-  onRowCheckboxChangeItems(selectedRow: any): void {
-      this.dataSourceItems.data.forEach((row) => (row.isSelected = false));
-      selectedRow.isSelected = true;
-  }
-  applyFilterItems(event: Event) {
-      const filterValue = (event.target as HTMLInputElement).value;
-      this.dataSourceItems.filter = filterValue.trim().toLowerCase();
-  }
-
-
-  addSelectedRowItem(): void {
-    this.dialog.closeAll();
-  
-    const selectedRow = this.dataSourceItems.data.find((row) => row.isSelected);
-    if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
-      const rowFormGroup = this.qualitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;
-      rowFormGroup.get('parameter')?.setValue(selectedRow.itemDescription); // Set the value for this row's parameter
-      this.selectedInspectionCode = selectedRow.inspectionCode;
-      this.selectedItemDescription = selectedRow.itemDescription;
-  
-      console.log('SELECTED ROW:', selectedRow);
-      console.log('UPDATED ROW INDEX:', this.selectedControlAccountRowIndex);
-    } else {
-      console.log('NO ROW SELECTED');
+    initializeTableDataItemInspectionCard(): void {
+        // QUALITATIVE INSPECTION FormArray
+        const formArrayQualitative = this.qualitativeArry;
+        this.qualitativeInspectionItems.forEach((qualitativeItem) => {
+            formArrayQualitative.push(
+                this.fb.group({
+                    parameter: [qualitativeItem.parameter],
+                    passCriteria: [qualitativeItem.passCriteria],
+                    mandatory: [qualitativeItem.mandatory], //  Checkbox bound here
+                    pass: [qualitativeItem.pass],
+                    fail: [qualitativeItem.fail],
+                })
+            );
+        });
+        // QUANTITATIVE INSPECTION FormArray
+        const formArrayQuantitative = this.quantitativeArry;
+        this.quantitativeInspectionItems.forEach((quantitativeItem) => {
+            formArrayQuantitative.push(
+                this.fb.group({
+                    parameterQty: [quantitativeItem.parameterQty],
+                    uomQty: [quantitativeItem.uomQty],
+                    mandatoryQty: [quantitativeItem.mandatoryQty], //  Checkbox bound here
+                    passCriteriaTarget: [quantitativeItem.passCriteriaTarget],
+                    passCriteriaMax: [quantitativeItem.passCriteriaMax],
+                    passCriteriaMin: [quantitativeItem.passCriteriaMin],
+                })
+            );
+        });
+        // Convert formArray.controls to raw values for MatTableDataSource
+        this.dataSourceQualitativeInspection.data =
+            formArrayQualitative.value as qualitativeInspectionIF[];
+        this.dataSourceQuantitativeInspection.data =
+            formArrayQuantitative.value as quantitativeInspectionIF[];
     }
-  
-    // Reset the index after selection
-    this.selectedControlAccountRowIndex = -1;
-  }
-
-  //Quantitative Column
-
-  addTableRowX(): void {
-    const row = this._formBuilder.group({
-      parameterX: [''],
-    });
-    this.quantitativeTableCriteria.push(row);
-  }
-  
-  removeRowX(index: number): void {
-    this.quantitativeTableCriteria.removeAt(index);
-  }
-  
-  @ViewChild('dialogTemplateItemsX') dialogTemplateItemsX;
-  dataSourceItemsX = new MatTableDataSource([
-    {
-      itemId: 1,
-      inspectionCode: 'ITM0012561',
-      itemDescription: 'Paint Bucket 3KG',
-      itemGroup: 'Item Group A',
-      isSelected: false,
-    },
-    {
-      itemId: 2,
-      inspectionCode: 'ITM0012562',
-      itemDescription: 'Paint Bucket 5KG',
-      itemGroup: '',
-      isSelected: false,
-    },
-  ]);
-  
-  onItemCodeClickX(rowIndex: number): void {
-    this.selectedControlAccountRowIndex = rowIndex;
-    const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
-      width: '39%',
-      height: '75vh',
-      data: this.dataSourceItemsX,
-    });
-    dialogRef.afterClosed().subscribe(() => {
-      console.log('Dialog closed');
-    });
-  }
-  
-  displayedColumnsItemsX: string[] = ['inspectionCode', 'itemDescription', 'itemGroup'];
-  
-  onRowCheckboxChangeItemsX(selectedRow: any): void {
-    this.dataSourceItemsX.data.forEach((row) => (row.isSelected = false));
-    selectedRow.isSelected = true;
-  }
-  
-  applyFilterItemsX(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSourceItemsX.filter = filterValue.trim().toLowerCase();
-  }
-  
-  addSelectedRowItemX(): void {
-    this.dialog.closeAll();
-  
-    const selectedRow = this.dataSourceItemsX.data.find((row) => row.isSelected);
-    if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
-      const rowFormGroup = this.quantitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;
-      rowFormGroup.get('parameterX')?.setValue(selectedRow.itemDescription);
-  
-      console.log('Selected row:', selectedRow);
+    // QUALITATIVE  -   ITEM INSPECTION CARD 3.1
+    get qualitativeArry(): FormArray {
+        return this.itemsInspectionForm.get('qualitativeArry') as FormArray;
     }
-  
-    this.selectedControlAccountRowIndex = -1; // Reset index
-  }
-  
-  // onSubmit(): void {
-  //   if (this.fourthFormGroup.valid) {
-  //     console.log('Form Submitted:', this.fourthFormGroup.value);
-  //   } else {
-  //     console.log('Form is invalid');
-  //   }
-  // }
-  
+    // QUANTITATIVE -   ITEM INSPECTION CARD 3.1
+    get quantitativeArry(): FormArray {
+        return this.itemsInspectionForm.get('quantitativeArry') as FormArray;
+    }
+    addQualitativeInspectionRow(description: string, criteria: string): void {
+        const qualitativeFormGroup = this.fb.group({
+            parameter: [description], // Set selectedInspectionDescription
+            passCriteria: [criteria], // Set selectedInspectionCriteria
+            mandatory: [false],
+            pass: [''],
+            fail: [''],
+        });
 
+        this.qualitativeArry.push(qualitativeFormGroup); // Add a new FormGroup to FormArray
+        this.dataSourceQualitativeInspection.data = [
+            ...this.qualitativeArry.value,
+        ];
+    }
+    addQuantitativeInspectionRow(description: string): void {
+        const quantitativeInspectionFormGroup = this.fb.group({
+            parameterQty: [description],
+            uomQty: [''],
+            mandatoryQty: [false],
+            passCriteriaTarget: [''],
+            passCriteriaMax: [''],
+            passCriteriaMin: [''],
+        });
 
+        this.quantitativeArry.push(quantitativeInspectionFormGroup); // Add a new FormGroup to FormArray
+        this.dataSourceQuantitativeInspection.data = [
+            ...this.quantitativeArry.value,
+        ];
+    }
+    // ITEM CODE NG TEMPLATE
+    @ViewChild('dialogTemplateItemInspectionCardItems')
+    dialogTemplateItemInspectionCardItems;
+    dataSourceItemInspectionCardItems = new MatTableDataSource([
+        {
+            itemId: 1,
+            itemCode: 'ITM0012561',
+            itemDescription: 'Paint Bucket 3KG',
+            itemGroup: 'Item Group A',
+            isSelected: false,
+        },
+        {
+            itemId: 2,
+            itemCode: 'ITM0012562',
+            itemDescription: 'Paint Bucket 5KG',
+            itemGroup: 'Item Group B',
+            isSelected: false,
+        },
+    ]);
+    onItemInspectionCardCodeClick() {
+        const dialogRef = this.dialog.open(
+            this.dialogTemplateItemInspectionCardItems,
+            {
+                width: '75%',
+                height: '75vh',
+                data: this.dataSourceItemInspectionCardItems,
+            }
+        );
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsItemInspectionCardItems: string[] = [
+        'itemCode',
+        'itemDescription',
+        'itemGroup',
+    ];
+    selectedItemCodeItemInspectionCardItemCode: string = '';
+    selectedItemCodeItemInspectionCardItemDescription: string = '';
+    onRowCheckboxChangeItemInspectionCardItems(selectedRow: any): void {
+        this.dataSourceItemInspectionCardItems.data.forEach(
+            (row) => (row.isSelected = false)
+        );
+        selectedRow.isSelected = true;
+    }
+    addSelectedRowItemInspectionCardItem(): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceItemInspectionCardItems.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            this.itemsInspectionForm
+                .get('itemCode')
+                .setValue(selectedRow.itemCode);
+            this.itemsInspectionForm
+                .get('itemDescription')
+                .setValue(selectedRow.itemDescription);
+            this.selectedItemCodeItemInspectionCardItemCode =
+                selectedRow.itemCode;
+            this.selectedItemCodeItemInspectionCardItemDescription =
+                selectedRow.itemDescription;
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+    applyFilterItemInspectionCardItems(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceItemInspectionCardItems.filter = filterValue
+            .trim()
+            .toLowerCase();
+    }
+    // CARD CODE NG TEMPLATE STARTS
+    @ViewChild('dialogTemplateCardsItemInspectionCard')
+    dialogTemplateCardsItemInspectionCard;
+    dataSourceCardsCardsItemInspectionCard = new MatTableDataSource([
+        {
+            cardCode: 'C001',
+            cardDescription: 'Card Description C001',
+            isSelected: false,
+        },
+        {
+            cardCode: 'C002',
+            cardDescription: 'Card Description C002',
+            isSelected: false,
+        },
+    ]);
+    onCardCodeClick() {
+        const dialogRef = this.dialog.open(
+            this.dialogTemplateCardsItemInspectionCard,
+            {
+                width: '75%',
+                height: '75vh',
+                data: this.dataSourceCardsCardsItemInspectionCard,
+            }
+        );
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsCards: string[] = ['cardCode', 'cardDescription'];
+    selectedCardCode: string = '';
+    selectedCardDescription: string = '';
+    onRowCheckboxChangeCards(selectedRow: any): void {
+        this.dataSourceCardsCardsItemInspectionCard.data.forEach(
+            (row) => (row.isSelected = false)
+        );
+        selectedRow.isSelected = true;
+    }
+    addSelectedRowCard(): void {
+        this.dialog.closeAll();
+        const selectedRow =
+            this.dataSourceCardsCardsItemInspectionCard.data.find(
+                (row) => row.isSelected
+            );
+        if (selectedRow) {
+            this.itemsInspectionForm
+                .get('cardCode')
+                .setValue(selectedRow.cardCode);
+            this.itemsInspectionForm
+                .get('cardDescription')
+                .setValue(selectedRow.cardDescription);
+            this.selectedCardCode = selectedRow.cardCode;
+            this.selectedCardDescription = selectedRow.cardDescription;
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+    applyFilterCards(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceCardsCardsItemInspectionCard.filter = filterValue
+            .trim()
+            .toLowerCase();
+    }
+    // CARD CODE NG TEMPLATE ENDS
 
-  closeDialog(): void {
-    this.dialog.closeAll();
-}
-  
+    // QUALITATIVE NG TEMPLATES
+    // PASS NG TEMPLATE STARTS
+    @ViewChild('dialogTemplatePass') dialogTemplatePass;
+    dataSourcePass = new MatTableDataSource([
+        { code: 'QR002', description: 'Moderate', isSelected: false },
+        { code: 'QR003', description: 'Yes', isSelected: false },
+    ]);
+    selectedPassRowIndex: number = -1; // Store the clicked row index
+    onPassClick(index: number) {
+        this.selectedPassRowIndex = index; // Save index
+        const dialogRef = this.dialog.open(this.dialogTemplatePass, {
+            width: '75%',
+            height: '75vh',
+            data: this.dataSourcePass,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsPass: string[] = ['code', 'description'];
+    selectedPassCode: string = '';
+    selectedPassDescription: string = '';
+    onRowCheckboxChangePass(selectedRow: any): void {
+        this.dataSourcePass.data.forEach((row) => (row.isSelected = false));
+        selectedRow.isSelected = true;
+    }
+    addSelectedRowPass(index: number): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourcePass.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            // Set value in the correct row of FormArray
+            this.qualitativeArry.controls[index]
+                .get('pass')
+                ?.setValue(selectedRow.description);
+            // Store selected values for debugging
+            this.selectedPassCode = selectedRow.code;
+            this.selectedPassDescription = selectedRow.description;
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+    // FAIL NG TEMPLATE STARTS
+    @ViewChild('dialogTemplateFail') dialogTemplateFail;
+
+    dataSourceFail = new MatTableDataSource([
+        { code: 'QR001', description: 'Pathetic', isSelected: false },
+        { code: 'QR004', description: 'No', isSelected: false },
+    ]);
+    onFailClick(index: number) {
+        this.selectedFailRowIndex = index; // Save index
+        const dialogRef = this.dialog.open(this.dialogTemplateFail, {
+            width: '75%',
+            height: '75vh',
+            data: this.dataSourceFail,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsFail: string[] = ['code', 'description'];
+    selectedFailCode: string = '';
+    selectedFailDescription: string = '';
+    onRowCheckboxChangeFail(selectedRow: any): void {
+        this.dataSourceFail.data.forEach((row) => (row.isSelected = false));
+        selectedRow.isSelected = true;
+    }
+    selectedFailRowIndex: number = -1; // Store the clicked row index
+    addSelectedRowFail(): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceFail.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow && this.selectedFailRowIndex !== -1) {
+            // Set value in the correct row of FormArray
+            this.qualitativeArry.controls[this.selectedFailRowIndex]
+                .get('fail')
+                ?.setValue(selectedRow.description);
+            // Store selected values for debugging
+            this.selectedFailCode = selectedRow.code;
+            this.selectedFailDescription = selectedRow.description;
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED OR INVALID INDEX');
+        }
+    }
+    // QUANTITATIVE INSPECTION NG TEMPLATES
+    // UOM NG TEMPLATE STARTS
+    @ViewChild('dialogTemplateUoM') dialogTemplateUoM;
+    dataSourceUoM = new MatTableDataSource([
+        { code: 'KG', description: 'Kilogram', isSelected: false },
+        { code: 'GM', description: 'Gram', isSelected: false },
+        { code: 'LTR', description: 'Liter', isSelected: false },
+        { code: 'ML', description: 'Millilitre', isSelected: false },
+    ]);
+    selectedRowIndexUoM: number = -1; // Store the clicked row index
+    onUoMQtyClick(index: number) {
+        this.selectedRowIndexUoM = index; //  Save index
+        const dialogRef = this.dialog.open(this.dialogTemplateUoM, {
+            width: '75%',
+            height: '75vh',
+            data: this.dataSourceUoM,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsUoM: string[] = ['code', 'description'];
+    selectedUoMCode: string = '';
+    selectedUoMDescription: string = '';
+    onRowCheckboxChangeUoM(selectedRow: any): void {
+        this.dataSourceUoM.data.forEach((row) => (row.isSelected = false));
+        selectedRow.isSelected = true;
+    }
+    addSelectedRowUoM(index: number): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceUoM.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            //  Set value in the correct row of FormArray
+            this.quantitativeArry.controls[index]
+                .get('uomQty')
+                ?.setValue(selectedRow.code);
+            //  Store selected values for debugging
+            this.selectedUoMCode = selectedRow.code;
+            this.selectedUoMDescription = selectedRow.description;
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+    // ADD QUALITATIVE INSPECTION NG TEMPLATE STARTS
+    @ViewChild('dialogTemplateAddQualitative') dialogTemplateAddQualitative;
+    dataSourceAddQualitative = new MatTableDataSource([
+        {
+            inspectionCode: 'T001',
+            inspectionDescription: 'Color Shade',
+            inspectionCriteria: 'As per standard',
+            isSelected: false,
+        },
+        {
+            inspectionCode: 'T002',
+            inspectionDescription: 'Dental Damage',
+            inspectionCriteria: 'Essential',
+            isSelected: false,
+        },
+        {
+            inspectionCode: 'T003',
+            inspectionDescription: 'Parameter 3',
+            inspectionCriteria: 'Criteria 3',
+            isSelected: false,
+        },
+        {
+            inspectionCode: 'T004',
+            inspectionDescription: 'Parameter 4',
+            inspectionCriteria: 'Criteria 4',
+            isSelected: false,
+        },
+    ]);
+    onAddQualitativeClick() {
+        const dialogRef = this.dialog.open(this.dialogTemplateAddQualitative, {
+            width: '75%',
+            height: '75vh',
+            data: this.dataSourceAddQualitative,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsAddQualitative: string[] = [
+        'inspectionCode',
+        'inspectionDescription',
+        'inspectionCriteria',
+    ];
+    selectedInspectionDescription: string = '';
+    selectedInspectionCriteria: string = '';
+    onRowCheckboxChangeAddQualitative(selectedRow: any): void {
+        this.dataSourceAddQualitative.data.forEach(
+            (row) => (row.isSelected = false)
+        );
+        selectedRow.isSelected = true;
+    }
+    addSelectedRowAddQualitative(): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceAddQualitative.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            // Set the selected values
+            this.selectedInspectionDescription =
+                selectedRow.inspectionDescription;
+            this.selectedInspectionCriteria = selectedRow.inspectionCriteria;
+
+            console.log('SELECTED ROW:', selectedRow);
+
+            // Call addQualitativeInspectionRow and pass the selected values
+            this.addQualitativeInspectionRow(
+                this.selectedInspectionDescription,
+                this.selectedInspectionCriteria
+            );
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+    applyFilterAddQualitative(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceAddQualitative.filter = filterValue.trim().toLowerCase();
+    }
+    // ADD QUALITATIVE INSPECTION NG TEMPLATE ENDS
+    // ADD QUANTITATIVE INSPECTION NG TEMPLATE STARTS
+    @ViewChild('dialogTemplateAddQuantitative') dialogTemplateAddQuantitative;
+    dataSourceAddQuantitative = new MatTableDataSource([
+        {
+            inspectionCode: 'T005',
+            inspectionDescription: 'Bubbles',
+            isSelected: false,
+        },
+    ]);
+    onAddQuantitativeClick() {
+        const dialogRef = this.dialog.open(this.dialogTemplateAddQuantitative, {
+            width: '75%',
+            height: '75vh',
+            data: this.dataSourceAddQuantitative,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsAddQuantitative: string[] = [
+        'inspectionCode',
+        'inspectionDescription',
+    ];
+    selectedQualitativeDescription: string = '';
+    onRowCheckboxChangeAddQuantitative(selectedRow: any): void {
+        this.dataSourceAddQuantitative.data.forEach(
+            (row) => (row.isSelected = false)
+        );
+        selectedRow.isSelected = true;
+    }
+    addSelectedRowAddQuantitative(): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceAddQuantitative.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            // Set the selected values
+            this.selectedQualitativeDescription =
+                selectedRow.inspectionDescription;
+            console.log('SELECTED ROW:', selectedRow);
+            // Call addQuantitativeInspectionRow and pass the selected values
+            this.addQuantitativeInspectionRow(
+                this.selectedQualitativeDescription
+            );
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+    applyFilterAddQuantitative(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceAddQuantitative.filter = filterValue
+            .trim()
+            .toLowerCase();
+    }
+    // ADD QUANTITATIVE INSPECTION NG TEMPLATE ENDS
+
+    // ITEM INSPECTION CARD 3.1 ENDS
+    isLinear = false;
+
+    ngOnInit(): void {
+        //Item Sample
+        this.addNewRowItemSampling();
+        // ITEM INSPECTION CARD 3.1
+        this.initializeTableDataItemInspectionCard();
+
+        this.fourthFormGroup
+            .get('inspectionType')
+            ?.valueChanges.subscribe((value) => {
+                if (value === 'qualitative') {
+                    this.initializeQualitativeRow();
+                } else {
+                    this.clearQualitativeCriteria();
+                }
+            });
+
+        this.initializeTableWithDefaultRow(); // Initialize table with one row on load
+        this.initializeTableWithDefaultRowX(); // Initialize table with one row on load
+    }
+
+    ngAfterViewInit(): void {
+        this._activatedRoute.queryParams.subscribe((params) => {
+            const stepIndex = params['step'] ? +params['step'] : 0;
+            Promise.resolve().then(
+                () => (this.stepper.selectedIndex = stepIndex)
+            ); // Ensure stepper is initialized
+        });
+    }
+    /** Getter for qualitativeCriteria FormArray */
+    get qualitativeCriteria(): FormArray {
+        return this.fourthFormGroup.get('qualitativeCriteria') as FormArray;
+    }
+    /** Initialize one row in qualitativeCriteria */
+    initializeQualitativeRow(): void {
+        if (this.qualitativeCriteria.length === 0) {
+            this.qualitativeCriteria.push(
+                this._formBuilder.group({
+                    userName: [''],
+                    userId: [''],
+                })
+            );
+        }
+    }
+
+    /** Clear all rows in qualitativeCriteria */
+    clearQualitativeCriteria(): void {
+        while (this.qualitativeCriteria.length !== 0) {
+            this.qualitativeCriteria.removeAt(0);
+        }
+    }
+
+    get qualitativeTableCriteria(): FormArray {
+        return this.fifthFormGroup.get('qualitativeTableCriteria') as FormArray;
+    }
+
+    get quantitativeTableCriteria(): FormArray {
+        return this.fifthFormGroup.get(
+            'quantitativeTableCriteria'
+        ) as FormArray;
+    }
+
+    /** Initialize the table with one default row */
+    initializeTableWithDefaultRow(): void {
+        if (this.qualitativeTableCriteria.length === 0) {
+            this.addTableRow();
+        }
+    }
+
+    /** Initialize the table with one default row */
+    initializeTableWithDefaultRowX(): void {
+        if (this.quantitativeTableCriteria.length === 0) {
+            this.addTableRowX();
+        }
+    }
+
+    /** Add a new row to the qualitative table */
+    addTableRow(): void {
+        const row = this._formBuilder.group({
+            parameter: [''],
+        });
+        this.qualitativeTableCriteria.push(row);
+    }
+
+    /** Remove a specific row by index */
+    removeRow(index: number): void {
+        this.qualitativeTableCriteria.removeAt(index);
+    }
+
+    @ViewChild('dialogTemplateItems') dialogTemplateItems;
+    dataSourceItems = new MatTableDataSource([
+        {
+            itemId: 1,
+            inspectionCode: 'ITM0012561',
+            itemDescription: 'Paint Bucket 3KG',
+            itemGroup: 'Item Group A',
+            status: 'Active',
+            isSelected: false,
+        },
+        {
+            itemId: 2,
+            inspectionCode: 'ITM0012562',
+            itemDescription: 'Paint Bucket 5KG',
+            itemGroup: '',
+            status: 'In Active',
+            isSelected: false,
+        },
+    ]);
+    //
+    selectedControlAccountRowIndex: number = -1;
+    onItemCodeClick(rowIndex: number): void {
+        console.log('Row Index:', rowIndex);
+        this.selectedControlAccountRowIndex = rowIndex;
+        console.log(this.selectedControlAccountRowIndex);
+        const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+            width: '70%',
+            height: '75vh',
+            data: this.dataSourceItems,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsItems: string[] = [
+        'inspectionCode',
+        'itemDescription',
+        'itemGroup',
+        'status',
+    ];
+    selectedInspectionCode: string = '';
+    selectedItemDescription: string = '';
+    //
+    onRowCheckboxChangeItems(selectedRow: any): void {
+        this.dataSourceItems.data.forEach((row) => (row.isSelected = false));
+        selectedRow.isSelected = true;
+    }
+    applyFilterItems(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceItems.filter = filterValue.trim().toLowerCase();
+    }
+
+    addSelectedRowItem(): void {
+        this.dialog.closeAll();
+
+        const selectedRow = this.dataSourceItems.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
+            const rowFormGroup = this.qualitativeTableCriteria.at(
+                this.selectedControlAccountRowIndex
+            ) as FormGroup;
+            rowFormGroup
+                .get('parameter')
+                ?.setValue(selectedRow.itemDescription); // Set the value for this row's parameter
+            this.selectedInspectionCode = selectedRow.inspectionCode;
+            this.selectedItemDescription = selectedRow.itemDescription;
+
+            console.log('SELECTED ROW:', selectedRow);
+            console.log(
+                'UPDATED ROW INDEX:',
+                this.selectedControlAccountRowIndex
+            );
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+
+        // Reset the index after selection
+        this.selectedControlAccountRowIndex = -1;
+    }
+
+    //Quantitative Column
+
+    addTableRowX(): void {
+        const row = this._formBuilder.group({
+            parameterX: [''],
+        });
+        this.quantitativeTableCriteria.push(row);
+    }
+
+    removeRowX(index: number): void {
+        this.quantitativeTableCriteria.removeAt(index);
+    }
+
+    @ViewChild('dialogTemplateItemsX') dialogTemplateItemsX;
+    dataSourceItemsX = new MatTableDataSource([
+        {
+            itemId: 1,
+            inspectionCode: 'ITM0012561',
+            itemDescription: 'Paint Bucket 3KG',
+            itemGroup: 'Item Group A',
+            isSelected: false,
+        },
+        {
+            itemId: 2,
+            inspectionCode: 'ITM0012562',
+            itemDescription: 'Paint Bucket 5KG',
+            itemGroup: '',
+            isSelected: false,
+        },
+    ]);
+
+    onItemCodeClickX(rowIndex: number): void {
+        this.selectedControlAccountRowIndex = rowIndex;
+        const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
+            width: '39%',
+            height: '75vh',
+            data: this.dataSourceItemsX,
+        });
+        dialogRef.afterClosed().subscribe(() => {
+            console.log('Dialog closed');
+        });
+    }
+
+    displayedColumnsItemsX: string[] = [
+        'inspectionCode',
+        'itemDescription',
+        'itemGroup',
+    ];
+
+    onRowCheckboxChangeItemsX(selectedRow: any): void {
+        this.dataSourceItemsX.data.forEach((row) => (row.isSelected = false));
+        selectedRow.isSelected = true;
+    }
+
+    applyFilterItemsX(event: Event): void {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceItemsX.filter = filterValue.trim().toLowerCase();
+    }
+
+    addSelectedRowItemX(): void {
+        this.dialog.closeAll();
+
+        const selectedRow = this.dataSourceItemsX.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
+            const rowFormGroup = this.quantitativeTableCriteria.at(
+                this.selectedControlAccountRowIndex
+            ) as FormGroup;
+            rowFormGroup
+                .get('parameterX')
+                ?.setValue(selectedRow.itemDescription);
+
+            console.log('Selected row:', selectedRow);
+        }
+
+        this.selectedControlAccountRowIndex = -1; // Reset index
+    }
+
+    // onSubmit(): void {
+    //   if (this.fourthFormGroup.valid) {
+    //     console.log('Form Submitted:', this.fourthFormGroup.value);
+    //   } else {
+    //     console.log('Form is invalid');
+    //   }
+    // }
+
+    closeDialog(): void {
+        this.dialog.closeAll();
+    }
 }
