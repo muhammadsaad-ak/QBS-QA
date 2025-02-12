@@ -24,9 +24,9 @@
                                 style="padding: 0.2rem !important;">
                                 <mat-label>Item Code</mat-label>
                                 <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
-                                    (click)="onItemCodeClick()"></mat-icon>
+                                    (click)="onItemSampleItemCodeClick()"></mat-icon>
                                 <input matInput type="text" class="text-sm" formControlName="itemCode" readonly
-                                    [value]="selectedItemCode ? selectedItemCode : ''">
+                                    [value]="selectedItemSampleCode ? selectedItemSampleCode : ''">
                             </mat-form-field>
                         </div>
                         <!-- ITEM DESCRIPTION -->
@@ -35,12 +35,12 @@
                                 style="padding: 0.2rem !important;">
                                 <mat-label>Item Description</mat-label>
                                 <input matInput type="text" class="text-sm" formControlName="itemDescription" readonly
-                                    [value]="selectedItemDescription ? selectedItemDescription : ''">
+                                    [value]="selectedItemSampleDescription ? selectedItemSampleDescription : ''">
                             </mat-form-field>
                         </div>
 
                         <!-- ITEMS NG TEMPLATE DIALOG STARTS -->
-                        <ng-template #dialogTemplateItems let-data="data">
+                        <ng-template #dialogTemplateItemSampleItems let-data="data">
                             <div class="dialog-container flex flex-col h-full">
                                 <div class="flex justify-between items-center p-4 border-b text-primary">
                                     <h2 class="text-lg font-semibold">
@@ -51,17 +51,17 @@
                                 </div>
                                 <mat-form-field>
                                     <mat-label>Filter</mat-label>
-                                    <input matInput (keyup)="applyFilterItems($event)" #input>
+                                    <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
                                 </mat-form-field>
                                 <!-- ITEMS TABLE STARTS -->
-                                <mat-table [dataSource]="dataSourceItems" class="flex-grow">
+                                <mat-table [dataSource]="dataSourceItemSampleCode" class="flex-grow">
                                     <!-- ITEM CODE & CHECKBOX COLUMN -->
                                     <ng-container matColumnDef="itemCode">
                                         <mat-header-cell *matHeaderCellDef
                                             class="single-line">Item&nbsp;Code</mat-header-cell>
                                         <mat-cell *matCellDef="let row" class="single-line text-sm">
                                             <mat-checkbox [checked]="row.isSelected"
-                                                (change)="onRowCheckboxChangeItems(row)">
+                                                (change)="onRowCheckboxChangeItemSampleCode(row)">
                                                 <!-- [matTooltip]="row.itemDescription" -->
                                             </mat-checkbox> {{row.itemCode}} </mat-cell>
                                     </ng-container>
@@ -81,8 +81,8 @@
                                         </mat-cell>
                                     </ng-container>
 
-                                    <mat-header-row *matHeaderRowDef="displayedColumnsItems"></mat-header-row>
-                                    <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
+                                    <mat-header-row *matHeaderRowDef="displayedColumnsItemSampleCode"></mat-header-row>
+                                    <mat-row *matRowDef="let row; columns: displayedColumnsItemSampleCode;"></mat-row>
 
                                     <tr class="mat-row" *matNoDataRow>
                                         <td class="mat-cell" colspan="4">No data matched with
@@ -92,7 +92,7 @@
                                 <!-- ITEMS TABLE TABLE ENDS -->
                                 <!-- SAVE & CLOSE -->
                                 <div class="flex justify-end mt-auto">
-                                    <button mat-flat-button color="primary" (click)="addSelectedRowItem()">
+                                    <button mat-flat-button color="primary" (click)="addSelectedRowItemSampleCode()">
                                         Save&nbsp;&&nbsp; Close
                                     </button>
                                 </div>

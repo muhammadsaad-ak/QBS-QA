@@ -77,10 +77,10 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.initializeTableData();
+    this.initializeTableDataItemInspectionCard();
   }
 
-  initializeTableData(): void {
+  initializeTableDataItemInspectionCard(): void {
     // QUALITATIVE INSPECTION FormArray
     const formArrayQualitative = this.qualitativeArry;
     this.qualitativeInspectionItems.forEach((qualitativeItem) => {
@@ -168,63 +168,63 @@ export class AddItemsInspectionCardsComponent implements OnInit {
 
 
   // ITEM CODE NG TEMPLATE
-  @ViewChild('dialogTemplateItems') dialogTemplateItems;
-  dataSourceItems = new MatTableDataSource([
+  @ViewChild('dialogTemplateItemInspectionCardItems') dialogTemplateItemInspectionCardItems;
+  dataSourceItemInspectionCardItems = new MatTableDataSource([
     { itemId: 1, itemCode: 'ITM0012561', itemDescription: 'Paint Bucket 3KG', itemGroup: 'Item Group A', isSelected: false, },
     { itemId: 2, itemCode: 'ITM0012562', itemDescription: 'Paint Bucket 5KG', itemGroup: 'Item Group B', isSelected: false, },
   ]);
 
-  onItemCodeClick() {
-    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+  onItemInspectionCardCodeClick() {
+    const dialogRef = this.dialog.open(this.dialogTemplateItemInspectionCardItems, {
       width: '75%',
       height: '75vh',
-      data: this.dataSourceItems,
+      data: this.dataSourceItemInspectionCardItems,
     });
     dialogRef.afterClosed().subscribe(result => {
       console.log('DIALOG CLOSED');
     });
   }
 
-  displayedColumnsItems: string[] = ['itemCode', 'itemDescription', 'itemGroup'];
-  selectedItemCode: string = '';
-  selectedItemDescription: string = '';
+  displayedColumnsItemInspectionCardItems: string[] = ['itemCode', 'itemDescription', 'itemGroup'];
+  selectedItemCodeItemInspectionCardItemCode: string = '';
+  selectedItemCodeItemInspectionCardItemDescription: string = '';
 
-  onRowCheckboxChangeItems(selectedRow: any): void {
-    this.dataSourceItems.data.forEach(row => (row.isSelected = false));
+  onRowCheckboxChangeItemInspectionCardItems(selectedRow: any): void {
+    this.dataSourceItemInspectionCardItems.data.forEach(row => (row.isSelected = false));
     selectedRow.isSelected = true;
   }
 
-  addSelectedRowItem(): void {
+  addSelectedRowItemInspectionCardItem(): void {
     this.dialog.closeAll();
-    const selectedRow = this.dataSourceItems.data.find(row => row.isSelected);
+    const selectedRow = this.dataSourceItemInspectionCardItems.data.find(row => row.isSelected);
     if (selectedRow) {
       this.itemsInspectionForm.get('itemCode').setValue(selectedRow.itemCode);
       this.itemsInspectionForm.get('itemDescription').setValue(selectedRow.itemDescription);
-      this.selectedItemCode = selectedRow.itemCode;
-      this.selectedItemDescription = selectedRow.itemDescription;
+      this.selectedItemCodeItemInspectionCardItemCode = selectedRow.itemCode;
+      this.selectedItemCodeItemInspectionCardItemDescription = selectedRow.itemDescription;
       console.log('SELECTED ROW:', selectedRow);
     } else {
       console.log('NO ROW SELECTED');
     }
   }
 
-  applyFilterItems(event: Event) {
+  applyFilterItemInspectionCardItems(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSourceItems.filter = filterValue.trim().toLowerCase();
+    this.dataSourceItemInspectionCardItems.filter = filterValue.trim().toLowerCase();
   }
 
   // CARD CODE NG TEMPLATE STARTS
-  @ViewChild('dialogTemplateCards') dialogTemplateCards;
-  dataSourceCards = new MatTableDataSource([
+  @ViewChild('dialogTemplateCardsItemInspectionCard') dialogTemplateCardsItemInspectionCard;
+  dataSourceCardsCardsItemInspectionCard = new MatTableDataSource([
     { cardCode: 'C001', cardDescription: 'Card Description C001', isSelected: false, },
     { cardCode: 'C002', cardDescription: 'Card Description C002', isSelected: false, },
   ]);
 
   onCardCodeClick() {
-    const dialogRef = this.dialog.open(this.dialogTemplateCards, {
+    const dialogRef = this.dialog.open(this.dialogTemplateCardsItemInspectionCard, {
       width: '75%',
       height: '75vh',
-      data: this.dataSourceCards,
+      data: this.dataSourceCardsCardsItemInspectionCard,
     });
     dialogRef.afterClosed().subscribe(result => {
       console.log('DIALOG CLOSED');
@@ -236,13 +236,13 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   selectedCardDescription: string = '';
 
   onRowCheckboxChangeCards(selectedRow: any): void {
-    this.dataSourceCards.data.forEach(row => (row.isSelected = false));
+    this.dataSourceCardsCardsItemInspectionCard.data.forEach(row => (row.isSelected = false));
     selectedRow.isSelected = true;
   }
 
   addSelectedRowCard(): void {
     this.dialog.closeAll();
-    const selectedRow = this.dataSourceCards.data.find(row => row.isSelected);
+    const selectedRow = this.dataSourceCardsCardsItemInspectionCard.data.find(row => row.isSelected);
     if (selectedRow) {
       this.itemsInspectionForm.get('cardCode').setValue(selectedRow.cardCode);
       this.itemsInspectionForm.get('cardDescription').setValue(selectedRow.cardDescription);
@@ -256,7 +256,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
 
   applyFilterCards(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSourceCards.filter = filterValue.trim().toLowerCase();
+    this.dataSourceCardsCardsItemInspectionCard.filter = filterValue.trim().toLowerCase();
   }
   // CARD CODE NG TEMPLATE ENDS
 
@@ -269,10 +269,10 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     { code: 'QR003', description: 'Yes', isSelected: false, },
   ]);
 
-  selectedRowIndex: number = -1; // Store the clicked row index
+  selectedPassRowIndex: number = -1; // Store the clicked row index
 
   onPassClick(index: number) {
-    this.selectedRowIndex = index; // Save index
+    this.selectedPassRowIndex = index; // Save index
     const dialogRef = this.dialog.open(this.dialogTemplatePass, {
       width: '75%',
       height: '75vh',
@@ -284,8 +284,8 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   }
 
   displayedColumnsPass: string[] = ['code', 'description'];
-  selectedCode: string = '';
-  selectedDescription: string = '';
+  selectedPassCode: string = '';
+  selectedPassDescription: string = '';
 
   onRowCheckboxChangePass(selectedRow: any): void {
     this.dataSourcePass.data.forEach(row => (row.isSelected = false));
@@ -296,15 +296,11 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     this.dialog.closeAll();
     const selectedRow = this.dataSourcePass.data.find(row => row.isSelected);
     if (selectedRow) {
-      // this.itemsInspectionForm.get('pass').setValue(selectedRow.code);
-
       // Set value in the correct row of FormArray
       this.qualitativeArry.controls[index].get('pass')?.setValue(selectedRow.description);
-
       // Store selected values for debugging
-      this.selectedCode = selectedRow.code;
-      this.selectedDescription = selectedRow.description;
-
+      this.selectedPassCode = selectedRow.code;
+      this.selectedPassDescription = selectedRow.description;
       console.log('SELECTED ROW:', selectedRow);
     } else {
       console.log('NO ROW SELECTED');
@@ -339,38 +335,31 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     this.dataSourceFail.data.forEach(row => (row.isSelected = false));
     selectedRow.isSelected = true;
   }
-
   selectedFailRowIndex: number = -1; // Store the clicked row index
 
   addSelectedRowFail(): void {
     this.dialog.closeAll();
     const selectedRow = this.dataSourceFail.data.find(row => row.isSelected);
     if (selectedRow && this.selectedFailRowIndex !== -1) {
-
       // Set value in the correct row of FormArray
       this.qualitativeArry.controls[this.selectedFailRowIndex].get('fail')?.setValue(selectedRow.description);
-
       // Store selected values for debugging
       this.selectedFailCode = selectedRow.code;
       this.selectedFailDescription = selectedRow.description;
-
       console.log('SELECTED ROW:', selectedRow);
     } else {
       console.log('NO ROW SELECTED OR INVALID INDEX');
     }
   }
-
   // QUANTITATIVE INSPECTION NG TEMPLATES
   // UOM NG TEMPLATE STARTS
   @ViewChild('dialogTemplateUoM') dialogTemplateUoM;
-
   dataSourceUoM = new MatTableDataSource([
     { code: 'KG', description: 'Kilogram', isSelected: false, },
     { code: 'GM', description: 'Gram', isSelected: false, },
     { code: 'LTR', description: 'Liter', isSelected: false, },
     { code: 'ML', description: 'Millilitre', isSelected: false, },
   ]);
-
   selectedRowIndexUoM: number = -1; // Store the clicked row index
 
   onUoMQtyClick(index: number) {
@@ -398,14 +387,11 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     this.dialog.closeAll();
     const selectedRow = this.dataSourceUoM.data.find(row => row.isSelected);
     if (selectedRow) {
-
       //  Set value in the correct row of FormArray
       this.quantitativeArry.controls[index].get('uomQty')?.setValue(selectedRow.code);
-
       //  Store selected values for debugging
       this.selectedUoMCode = selectedRow.code;
       this.selectedUoMDescription = selectedRow.description;
-
       console.log('SELECTED ROW:', selectedRow);
     } else {
       console.log('NO ROW SELECTED');

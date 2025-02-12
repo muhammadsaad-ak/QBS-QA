@@ -17,9 +17,9 @@
                                 style="padding: 0.2rem !important;">
                                 <mat-label>Item Code</mat-label>
                                 <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
-                                    (click)="onItemCodeClick()"></mat-icon>
+                                    (click)="onItemInspectionCardCodeClick()"></mat-icon>
                                 <input matInput type="text" class="text-sm" formControlName="itemCode" readonly
-                                    [value]="selectedItemCode ? selectedItemCode : ''">
+                                    [value]="selectedItemCodeItemInspectionCardItemCode ? selectedItemCodeItemInspectionCardItemCode : ''">
                             </mat-form-field>
                         </div>
                         <!-- ITEM DESCRIPTION -->
@@ -28,7 +28,7 @@
                                 style="padding: 0.2rem !important;">
                                 <mat-label>Item Description</mat-label>
                                 <input matInput type="text" class="text-sm" formControlName="itemDescription" readonly
-                                    [value]="selectedItemDescription ? selectedItemDescription : ''">
+                                    [value]="selectedItemCodeItemInspectionCardItemDescription ? selectedItemCodeItemInspectionCardItemDescription : ''">
                             </mat-form-field>
                         </div>
                         <!-- CARD CODE -->
@@ -52,7 +52,7 @@
                             </mat-form-field>
                         </div>
                         <!-- ITEM CODE NG TEMPLATE DIALOG STARTS -->
-                        <ng-template #dialogTemplateItems let-data="data">
+                        <ng-template #dialogTemplateItemInspectionCardItems let-data="data">
                             <div class="dialog-container flex flex-col h-full">
                                 <div class="flex justify-between items-center p-4 border-b text-primary">
                                     <h2 class="text-lg font-semibold">
@@ -63,17 +63,17 @@
                                 </div>
                                 <mat-form-field>
                                     <mat-label>Filter</mat-label>
-                                    <input matInput (keyup)="applyFilterItems($event)" #input>
+                                    <input matInput (keyup)="applyFilterItemInspectionCardItems($event)" #input>
                                 </mat-form-field>
                                 <!-- ITEMS TABLE STARTS -->
-                                <mat-table [dataSource]="dataSourceItems" class="flex-grow">
+                                <mat-table [dataSource]="dataSourceItemInspectionCardItems" class="flex-grow">
                                     <!-- ITEM CODE & CHECKBOX COLUMN -->
                                     <ng-container matColumnDef="itemCode">
                                         <mat-header-cell *matHeaderCellDef
                                             class="single-line">Item&nbsp;Code</mat-header-cell>
                                         <mat-cell *matCellDef="let row" class="single-line text-sm">
                                             <mat-checkbox [checked]="row.isSelected"
-                                                (change)="onRowCheckboxChangeItems(row)">
+                                                (change)="onRowCheckboxChangeItemInspectionCardItems(row)">
                                                 <!-- [matTooltip]="row.itemDescription" -->
                                             </mat-checkbox> {{row.itemCode}} </mat-cell>
                                     </ng-container>
@@ -93,8 +93,8 @@
                                         </mat-cell>
                                     </ng-container>
 
-                                    <mat-header-row *matHeaderRowDef="displayedColumnsItems"></mat-header-row>
-                                    <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
+                                    <mat-header-row *matHeaderRowDef="displayedColumnsItemInspectionCardItems"></mat-header-row>
+                                    <mat-row *matRowDef="let row; columns: displayedColumnsItemInspectionCardItems;"></mat-row>
 
                                     <tr class="mat-row" *matNoDataRow>
                                         <td class="mat-cell" colspan="4">No data matched with
@@ -104,7 +104,7 @@
                                 <!-- ITEMS TABLE ENDS -->
                                 <!-- SAVE & CLOSE -->
                                 <div class="flex justify-end mt-auto">
-                                    <button mat-flat-button color="primary" (click)="addSelectedRowItem()">
+                                    <button mat-flat-button color="primary" (click)="addSelectedRowItemInspectionCardItem()">
                                         Save&nbsp;&&nbsp; Close
                                     </button>
                                 </div>
@@ -112,7 +112,7 @@
                         </ng-template>
                         <!-- ITEM CODE NG TEMPLATE DIALOG ENDS -->
                         <!-- CARD CODE NG TEMPLATE DIALOG STARTS -->
-                        <ng-template #dialogTemplateCards let-data="data">
+                        <ng-template #dialogTemplateCardsItemInspectionCard let-data="data">
                             <div class="dialog-container flex flex-col h-full">
                                 <div class="flex justify-between items-center p-4 border-b text-primary">
                                     <h2 class="text-lg font-semibold">
@@ -126,7 +126,7 @@
                                     <input matInput (keyup)="applyFilterCards($event)" #input>
                                 </mat-form-field>
                                 <!-- CARDS TABLE STARTS -->
-                                <mat-table [dataSource]="dataSourceCards" class="flex-grow">
+                                <mat-table [dataSource]="dataSourceCardsCardsItemInspectionCard" class="flex-grow">
                                     <!-- CARD CODE & CHECKBOX COLUMN -->
                                     <ng-container matColumnDef="cardCode">
                                         <mat-header-cell *matHeaderCellDef
@@ -298,7 +298,7 @@
                                                     Save&nbsp;&&nbsp; Close
                                                 </button> -->
                                                 <button mat-flat-button color="primary"
-                                                    (click)="addSelectedRowPass(selectedRowIndex)">
+                                                    (click)="addSelectedRowPass(selectedPassRowIndex)">
                                                     Save&nbsp;&&nbsp; Close
                                                 </button>
                                             </div>

@@ -53,56 +53,55 @@
                                 <td mat-cell *matCellDef="let index = index"> {{index + 1}} </td>
                             </ng-container>
 
-                            <!-- Inspection Code Column -->
-                            <ng-container matColumnDef="qualitativeCode">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Inspection Code </th>
-                                <td mat-cell *matCellDef="let element"> {{element.qualitativeCode ?
-                                    element.qualitativeCode : '-'}} </td>
-                            </ng-container>
+                  <!-- Code Column -->
+                  <ng-container matColumnDef="code">
+                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Code </th>
+                    <td mat-cell *matCellDef="let element"> {{element.code ? element.code : '-'}} </td>
+                  </ng-container>
+              
+                  <!-- Description Column -->
+                  <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Description </th>
+                    <td mat-cell *matCellDef="let element"> {{element.description ? element.description : '-' }} </td>
+                  </ng-container>
+              
 
-                            <!-- Description Column -->
-                            <ng-container matColumnDef="description">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Description </th>
-                                <td mat-cell *matCellDef="let element"> {{element.description ? element.description :
-                                    '-' }} </td>
-                            </ng-container>
-
-
-                            <!-- Action Column -->
-                            <ng-container matColumnDef="action">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Action </th>
-                                <td mat-cell *matCellDef="let element">
-                                    <button mat-icon-button [matMenuTriggerFor]="menu">
-                                        <mat-icon class="icon-size-5"
-                                            [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
-                                    </button>
-                                    <mat-menu #menu="matMenu">
-                                        <button mat-menu-item class="text-blue-400"
-                                            (click)="openUpdateQRDrawer('visitprofile', element)">
-                                            Edit
-                                            <mat-icon svgIcon="heroicons_outline:pencil"
-                                                class="text-blue-400"></mat-icon>
-                                        </button>
-                                    </mat-menu>
-                                </td>
-
-                            </ng-container>
-
-                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                        </table>
-
-                        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
-                            aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">
-                        </mat-paginator>
-                    </div>
-
-                </div>
+                   <!-- Action Column -->
+                   <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Action </th>
+                    <td mat-cell *matCellDef="let element">
+                        <button mat-icon-button [matMenuTriggerFor]="menu">
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
+                        </button>
+                        <mat-menu #menu="matMenu">
+                            <button mat-menu-item class="text-blue-400" (click)="openUpdateInspectionDrawer('visitprofile', element.code)">
+                                Edit
+                                <mat-icon svgIcon="heroicons_outline:pencil" class="text-blue-400"></mat-icon>
+                            </button>
+                            <button mat-menu-item class="text-red-400" >
+                                Delete
+                                <mat-icon svgIcon="heroicons_outline:trash" class="text-red-400"></mat-icon>
+                            </button>
+                        </mat-menu>
+                    </td>
+                    
+                  </ng-container>
+              
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+              
+                <mat-paginator [pageSizeOptions]="[5, 10, 20]"
+                               showFirstLastButtons
+                               aria-label="Select page of periodic elements"
+                               style="background-color: #e2e8f0 !important;"
+                               >
+                </mat-paginator>
+              </div>
+              
             </div>
-        </mat-drawer-content>
-
+        </div>
+</mat-drawer-content>
+        
     </mat-drawer-container>
 </div>

@@ -39,10 +39,10 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime } from 'rxjs';
 
 @Component({
-    selector: 'app-qualitative-result',
+    selector: 'app-list-of-inspection-card',
     standalone: true,
-    templateUrl: './qualitative-result.component.html',
-    styleUrl: './qualitative-result.component.scss',
+    templateUrl: './list-of-inspection-card.component.html',
+    styleUrl: './list-of-inspection-card.component.scss',
     encapsulation: ViewEncapsulation.None,
     imports: [
         RouterOutlet,
@@ -72,24 +72,54 @@ import { debounceTime } from 'rxjs';
         MatTableModule,
     ],
 })
-export class QualitativeResultComponent implements OnInit, OnDestroy {
+export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
     configForm: UntypedFormGroup;
     searchInputControl: UntypedFormControl = new UntypedFormControl();
 
-    addUserBtn = 'Add Qualitative';
+    addUserBtn = 'Add';
 
     @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
     drawerMode: 'side' | 'over';
 
-    listAllQualitativeResult = [
-        { code: 'QR001', description: 'Pathetic' },
-        { code: 'QR002', description: 'Moderate' },
-        { code: 'QR003', description: 'Yes' },
-        { code: 'QR004', description: 'No' },
+    List_Of_Inspection_Data = [
+        // { cardCode: 'T001', description: 'Weight',  status: true },
+        // { cardCode: 'T002', description: 'Transparency Level',  status: false },
+        {
+            cardCode: 'T001',
+            description: 'Weight Inspection',
+            status: true,
+            qualitativeCriteria: [
+                { parameter: 'Color1', selected: true },
+                { parameter: 'Texture1', selected: false },
+            ],
+            quantitativeCriteria: [
+                { parameter: 'Weight1', selected: true },
+                { parameter: 'Length1', selected: false },
+            ],
+        },
+        {
+            cardCode: 'T002',
+            description: 'Transparency Level',
+            status: true,
+            qualitativeCriteria: [
+                { parameter: 'Color2', selected: true },
+                { parameter: 'Texture2', selected: false },
+            ],
+            quantitativeCriteria: [
+                { parameter: 'Weight2', selected: true },
+                { parameter: 'Length2', selected: false },
+            ],
+        },
     ];
 
-    displayedColumns: string[] = ['serialId', 'code', 'description', 'action'];
-    dataSource = new MatTableDataSource<any>(this.listAllQualitativeResult);
+    displayedColumns: string[] = [
+        'serialId',
+        'cardCode',
+        'description',
+        'status',
+        'action',
+    ];
+    dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
     // dataSource = new MatTableDataSource<any>([]);
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -172,16 +202,26 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
 
     openAddInspectionDrawer(type: 'visitprofile'): void {
         this.matDrawer.open();
-        this._router.navigate(['add-qualitative-result'], {
+        this._router.navigate(['add-inspection-card'], {
             relativeTo: this._activatedRoute,
         });
     }
 
-    openUpdateInspectionDrawer(type: 'visitprofile', id: string): void {
+    // openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
+    //   console.log(element)
+    //   this.matDrawer.open();
+    //   this._router.navigate(['edit-inspection-card', element], { relativeTo: this._activatedRoute,state: { element} });
+    // }
+
+    openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
         this.matDrawer.open();
-        this._router.navigate(['edit-qualitative-result', id], {
+        // console.log(element.cardCode);
+        // console.log(element);
+        this._router.navigate(['edit-inspection-card', element.cardCode], {
             relativeTo: this._activatedRoute,
+            state: { element },
         });
+        return;
     }
 
     /**
