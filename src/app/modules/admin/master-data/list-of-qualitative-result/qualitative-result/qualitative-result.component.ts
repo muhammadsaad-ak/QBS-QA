@@ -63,7 +63,7 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
   drawerMode: 'side' | 'over';
 
-  displayedColumns: string[] = ['serialNo', 'itemCode', 'description', 'action'];
+  displayedColumns: string[] = ['serialNo', 'intCode', 'description', 'action'];
   dataSource = new MatTableDataSource<any>([]);
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -91,7 +91,7 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
       const updatedData = navigationState;
       // Now update the with the new data
       this.dataSource.data = this.dataSource.data.map(item =>
-        item.itemCode === updatedData.itemCode ? updatedData : item
+        item.intCode === updatedData.intCode ? updatedData : item
       );
       // Refresh the table data source
       this.dataSource = new MatTableDataSource<any>(this.dataSource.data);
@@ -128,7 +128,7 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
   openUpdateQRDrawer(type: 'visitprofile', element: any): void {
     this.matDrawer.open();
     console.log(`SENDING DATA: ${JSON.stringify(element)}`);
-    this._router.navigate(['edit-qualitative-result', element.itemCode], {
+    this._router.navigate(['edit-qualitative-result', element.intCode], {
       relativeTo: this._activatedRoute,
       state: { element }
     });
