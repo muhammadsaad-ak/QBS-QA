@@ -1,7 +1,6 @@
 <div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
     <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent" 
-    (backdropClick)="onBackdropClicked()"
-    >
+    (backdropClick)="onBackdropClicked()">
     <mat-drawer class="w-full dark:bg-gray-900 sm:w-128" [mode]="drawerMode" [opened]="false" [position]="'end'"
     [disableClose]="false" #matDrawer>
         <router-outlet></router-outlet>
@@ -10,33 +9,33 @@
     <mat-drawer-content>
         <!-- Header Starts -->
         <div class="relative flex-0 flex-col px-6 py-2 md:px-8">
-          <!-- Title -->
-              <div class="text-3xl font-extrabold tracking-tight">
-                List of Inspection Characteristics 1.0
-              </div>
-          </div>
-          <!-- Actions - Search & Add button in the next line -->
-          <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between w-full px-4">
-              <!-- Search Input Field -->
-              <mat-form-field class="qbs-mat-dense qbs-mat-rounded w-full sm:w-2/3 md:w-1/2">
-                  <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
-                  <input matInput [autocomplete]="'off'" placeholder="Search..." [formControl]="searchInputControl" />
-              </mat-form-field>
-          
-              <!-- Add User Button -->
-              <button class="mb-3 sm:mt-0 sm:ml-auto" mat-flat-button [color]="'primary'" (click)="openAddInspectionDrawer('visitprofile')">
-                  <span class="flex items-center">
-                      <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                      <span class="ml-1">{{ addUserBtn }}</span>
-                  </span>
-              </button>
-          </div>
+        <!-- Title -->
+            <div class="text-3xl font-extrabold tracking-tight">
+            List Of Inspection Card 2.0
+            </div>
+        </div>
+        <!-- Actions - Search & Add button in the next line -->
+        <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between w-full px-4">
+            <!-- Search Input Field -->
+            <mat-form-field class="ml-4 custom-input qbs-mat-dense qbs-mat-rounded w-full sm:w-1/3 md:w-1/6">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [autocomplete]="'off'" placeholder="Search..." [formControl]="searchInputControl" />
+            </mat-form-field>
+        
+            <!-- Add User Button -->
+            <button class="mb-3 sm:mt-0 sm:ml-auto w-[169px]" mat-flat-button [color]="'primary'" (click)="openAddInspectionDrawer('visitprofile')">
+                <span class="flex items-center">
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-1">{{ addUserBtn }}</span>
+                </span>
+            </button>
+        </div>
+        
 
         <!-- Main Content -->
         <div class="-mt-px flex flex-auto border-t pt-4 sm:pt-2 overflow-hidden" style="padding-top: 0px !important;">
             <div
-            class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto"
-            >
+            class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
             <div class="mat-elevation-z8">
                 <table mat-table [dataSource]="dataSource">
               
@@ -47,41 +46,36 @@
                       </ng-container> -->
                      
 
-                    <!-- Serial Id Column -->
-                  <ng-container matColumnDef="serialId">
-                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> S.No </th>
-                    <td mat-cell *matCellDef="let index = index"> {{index + 1}} </td>
+                 <!-- Serial Id Column -->
+                 <ng-container matColumnDef="serialId">
+                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center; font-weight: 600;"> S.No </th>
+                    <td mat-cell *matCellDef="let index = index" style="text-align: center; font-weight: 600;"> {{index + 1}} </td>
                   </ng-container>
+                  
 
                   <!-- Inspection Code Column -->
-                  <ng-container matColumnDef="inspectionCode">
-                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Inspection Code </th>
-                    <td mat-cell *matCellDef="let element"> {{element.inspectionCode ? element.inspectionCode : '-'}} </td>
+                  <ng-container matColumnDef="cardCode">
+                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center; font-weight: 600;"> Card Code </th>
+                    <td mat-cell *matCellDef="let element" style="text-align: center;"> {{element.cardCode ? element.cardCode : '-'}} </td>
                   </ng-container>
               
                   <!-- Description Column -->
                   <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Description </th>
-                    <td mat-cell *matCellDef="let element"> {{element.description ? element.description : '-' }} </td>
+                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center; font-weight: 600;"> Description </th>
+                    <td mat-cell *matCellDef="let element" style="text-align: center;"> {{element.description ? element.description : '-' }} </td>
                   </ng-container>
-              
-              
-                  <!-- Inspection Type Column -->
-                  <ng-container matColumnDef="inspectionType">
-                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Inspection Type </th>
-                    <td mat-cell *matCellDef="let element"> {{element.inspectionType ? element.inspectionType : '-'}} </td>
-                  </ng-container>
+
 
                   <!-- Inspection Type Column -->
                   <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Status </th>
-                    <td mat-cell *matCellDef="let element"> {{element.status ? element.status : '-'}} </td>
+                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center"> Status </th>
+                    <td mat-cell *matCellDef="let element" style="text-align: center;"> {{element.status ? 'Active' : 'Inactive'}} </td>
                   </ng-container>
 
                    <!-- Action Column -->
                    <ng-container matColumnDef="action">
-                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Action </th>
-                    <td mat-cell *matCellDef="let element">
+                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center"> Action </th>
+                    <td mat-cell *matCellDef="let element" style="text-align: center;">
                         <button mat-icon-button [matMenuTriggerFor]="menu">
                             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
                         </button>

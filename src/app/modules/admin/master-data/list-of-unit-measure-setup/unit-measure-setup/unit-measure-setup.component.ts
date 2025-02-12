@@ -21,6 +21,7 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime } from 'rxjs';
 
+
 @Component({
   selector: 'app-unit-measure-setup',
   standalone: true,
@@ -88,6 +89,7 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
         private _formBuilder: UntypedFormBuilder,
         private _qbsConfirmationService: QbsConfirmationService,
         private _router: Router,
+        private router: Router,
         private _activatedRoute: ActivatedRoute,
       ) { } 
     
@@ -146,6 +148,11 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
        
          
        }
+       goToStepper() {
+        this.router.navigate(['/master-data/list-of-testing-stepper'], {
+          queryParams: { step: 1 },  // Pass step index (0-based)
+        });
+      }
        ngOnDestroy(): void {
     
           
@@ -166,13 +173,13 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
     
       openAddInspectionDrawer(type: 'visitprofile'): void {
         this.matDrawer.open();
-        this._router.navigate(['add-unit-measure-setup'], { relativeTo: this._activatedRoute });
+        this._router.navigate(['/master-data/list-of-testing-stepper'], { queryParams: { step: 1 } });
       }
     
       
-      openUpdateInspectionDrawer(type: 'visitprofile', id: string): void {
+      openUpdateUoMDrawer(type: 'visitprofile', element: any): void {
         this.matDrawer.open();
-        this._router.navigate(['edit-unit-measure-setup', id], { relativeTo: this._activatedRoute });   
+        this._router.navigate(['edit-unit-measure-setup', element.uomCode], { relativeTo: this._activatedRoute, state: { element} });   
       }
     
       /**

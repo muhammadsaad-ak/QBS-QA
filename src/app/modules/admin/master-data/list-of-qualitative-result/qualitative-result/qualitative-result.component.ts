@@ -1,6 +1,23 @@
-import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import {
+    AsyncPipe,
+    CommonModule,
+    NgClass,
+    NgTemplateOutlet,
+} from '@angular/common';
+import {
+    Component,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+    ViewEncapsulation,
+} from '@angular/core';
+import {
+    FormsModule,
+    ReactiveFormsModule,
+    UntypedFormBuilder,
+    UntypedFormControl,
+    UntypedFormGroup,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -23,54 +40,54 @@ import { QualitativeResultsService } from 'app/core/other-core-services/module/q
 import { debounceTime } from 'rxjs';
 
 @Component({
-  selector: 'app-qualitative-result',
-  standalone: true,
-  templateUrl: './qualitative-result.component.html',
-  styleUrl: './qualitative-result.component.scss',
-  encapsulation: ViewEncapsulation.None,
-  imports: [
-    RouterOutlet,
-    MatDrawer,
-    MatSidenavModule,
-    AsyncPipe,
-    CommonModule,
-    FormsModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    MatCheckboxModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatMenuModule,
-    MatOptionModule,
-    MatPaginatorModule,
-    MatProgressBarModule,
-    MatRippleModule,
-    MatSelectModule,
-    MatSlideToggleModule,
-    MatSortModule,
-    MatTabsModule,
-    NgClass,
-    NgTemplateOutlet,
-    ReactiveFormsModule,
-    MatTableModule
-  ],
+    selector: 'app-qualitative-result',
+    standalone: true,
+    templateUrl: './qualitative-result.component.html',
+    styleUrl: './qualitative-result.component.scss',
+    encapsulation: ViewEncapsulation.None,
+    imports: [
+        RouterOutlet,
+        MatDrawer,
+        MatSidenavModule,
+        AsyncPipe,
+        CommonModule,
+        FormsModule,
+        MatButtonModule,
+        MatButtonToggleModule,
+        MatCheckboxModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatMenuModule,
+        MatOptionModule,
+        MatPaginatorModule,
+        MatProgressBarModule,
+        MatRippleModule,
+        MatSelectModule,
+        MatSlideToggleModule,
+        MatSortModule,
+        MatTabsModule,
+        NgClass,
+        NgTemplateOutlet,
+        ReactiveFormsModule,
+        MatTableModule,
+    ],
 })
 export class QualitativeResultComponent implements OnInit, OnDestroy {
   searchInputControl: UntypedFormControl = new UntypedFormControl();
   addBtnTitle = "Add";
 
-  @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
-  drawerMode: 'side' | 'over';
+    @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
+    drawerMode: 'side' | 'over';
 
   displayedColumns: string[] = ['serialNo', 'intCode', 'description', 'action'];
   dataSource = new MatTableDataSource<any>([]);
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+    @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-  }
+    ngAfterViewInit() {
+        this.dataSource.paginator = this.paginator;
+    }
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
@@ -114,16 +131,18 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
     this.dataSource.filter = searchTerm; 
   }
 
-  onBackdropClicked(): void {
-    console.log('On Back Drop Clicked')
-    this.matDrawer.close();
-    this._router.navigate(['./'], { relativeTo: this._activatedRoute });
-  }
+    onBackdropClicked(): void {
+        console.log('On Back Drop Clicked');
+        this.matDrawer.close();
+        this._router.navigate(['./'], { relativeTo: this._activatedRoute });
+    }
 
-  openAddInspectionDrawer(type: 'visitprofile'): void {
-    this.matDrawer.open();
-    this._router.navigate(['add-qualitative-result'], { relativeTo: this._activatedRoute });
-  }
+    openAddInspectionDrawer(type: 'visitprofile'): void {
+        this.matDrawer.open();
+        this._router.navigate(['add-qualitative-result'], {
+            relativeTo: this._activatedRoute,
+        });
+    }
 
   openUpdateQRDrawer(type: 'visitprofile', element: any): void {
     this.matDrawer.open();

@@ -66,6 +66,34 @@ export const compactNavigation: QbsNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:clipboard-document-check',
                 link: '/master-data/list-of-unit-measure-setup',
+            },
+            {
+                id: 'master-data.list-of-items-samples',
+                title: 'Item Sample 0.3',
+                type: 'basic',
+                icon: 'feather:server',
+                link: '/master-data/list-of-items-samples',
+            },
+            {
+                id: 'master-data.list-of-items-inspection-cards',
+                title: 'Item Inspection Card 3.0',
+                type: 'basic',
+                icon: 'feather:search',
+                link: '/master-data/list-of-items-inspection-cards',
+            },
+            {
+                id: 'master-data.list-of-inspection-card',
+                title: 'List of Inspection Card',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/master-data/list-of-inspection-card',
+            },
+            {
+                id: 'master-data.list-of-testing-stepper',
+                title: 'Testing Stepper 1.0',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/master-data/list-of-testing-stepper',
             }
             
         ],
