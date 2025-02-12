@@ -1,5 +1,6 @@
+import { Component } from '@angular/core';
 import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -22,21 +23,18 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime } from 'rxjs';
 
 @Component({
-  selector: 'app-qualitative-result',
+  selector: 'app-items-samples',
   standalone: true,
-  templateUrl: './qualitative-result.component.html',
-  styleUrl: './qualitative-result.component.scss',
-  encapsulation: ViewEncapsulation.None,
+  templateUrl: './items-samples.component.html',
+  styleUrl: './items-samples.component.scss',
   imports: [
-    RouterOutlet,
-    MatDrawer,
-    MatSidenavModule,
     AsyncPipe,
     CommonModule,
     FormsModule,
     MatButtonModule,
     MatButtonToggleModule,
     MatCheckboxModule,
+    MatDrawer,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -48,14 +46,17 @@ import { debounceTime } from 'rxjs';
     MatSelectModule,
     MatSlideToggleModule,
     MatSortModule,
+    MatSidenavModule,
+    MatTableModule,
     MatTabsModule,
     NgClass,
     NgTemplateOutlet,
     ReactiveFormsModule,
-    MatTableModule
+    RouterOutlet
   ],
+  encapsulation: ViewEncapsulation.None,
 })
-export class QualitativeResultComponent implements OnInit, OnDestroy {
+export class ItemsSamplesComponent {
 
   configForm: UntypedFormGroup;
   searchInputControl: UntypedFormControl = new UntypedFormControl();
@@ -66,17 +67,118 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
   drawerMode: 'side' | 'over';
 
-
   List_Of_Inspection_Data = [
-    { qualitativeCode: 'QR001', description: 'Pathetic' },
-    { qualitativeCode: 'QR002', description: 'Moderate' },
-    { qualitativeCode: 'QR003', description: 'Yes' },
-    { qualitativeCode: 'QR004', description: 'No' },
+    {
+      sampleCode: 'IS001', itemCode: 'ITM0012561', itemDescription: 'Paint Bucket 3KG', flexibility: true,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+
+      ]
+    },
+    {
+      sampleCode: 'IS002', itemCode: 'ITM0012562', itemDescription: 'Paint Bucket 5KG', flexibility: true,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+        {
+          lotSizeMin: "2",
+          lotSizeMax: "2",
+          sampleSize: "2",
+          criticalDefect: "2",
+          majorDefect: "2",
+          minorDefect: "2"
+        }
+      ]
+    },
+    {
+      sampleCode: 'IS003', itemCode: 'ITM0012563', itemDescription: 'Paint Bucket 10KG', flexibility: false,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+        {
+          lotSizeMin: "2",
+          lotSizeMax: "2",
+          sampleSize: "2",
+          criticalDefect: "2",
+          majorDefect: "2",
+          minorDefect: "2"
+        }
+      ]
+    },
+    {
+      sampleCode: 'IS004', itemCode: 'ITM0012564', itemDescription: 'Paint Bucket 12KG', flexibility: true,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+        {
+          lotSizeMin: "2",
+          lotSizeMax: "2",
+          sampleSize: "2",
+          criticalDefect: "2",
+          majorDefect: "2",
+          minorDefect: "2"
+        }
+      ]
+    },
+    {
+      sampleCode: 'IS005', itemCode: 'ITM0012565', itemDescription: 'Paint Bucket 15KG', flexibility: false,
+      samples: [
+        {
+          lotSizeMin: "1",
+          lotSizeMax: "1",
+          sampleSize: "1",
+          criticalDefect: "1",
+          majorDefect: "1",
+          minorDefect: "1"
+        },
+        {
+          lotSizeMin: "2",
+          lotSizeMax: "2",
+          sampleSize: "2",
+          criticalDefect: "2",
+          majorDefect: "2",
+          minorDefect: "2"
+        },
+        {
+          lotSizeMin: "3",
+          lotSizeMax: "3",
+          sampleSize: "3",
+          criticalDefect: "3",
+          majorDefect: "3",
+          minorDefect: "3"
+        },
+      ]
+    },
   ];
 
-  displayedColumns: string[] = ['serialId', 'qualitativeCode', 'description', 'action'];
-  dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
+  displayedColumns: string[] = ['serialId', 'sampleCode', 'itemCode', 'itemDescription', 'flexibility', 'action'];
   // dataSource = new MatTableDataSource<any>([]);
+  dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -99,7 +201,7 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
       const updatedData = navigationState;
       // Now update the List_Of_Inspection_Data with the new data
       this.List_Of_Inspection_Data = this.List_Of_Inspection_Data.map(item =>
-        item.qualitativeCode === updatedData.qualitativeCode ? updatedData : item
+        item.sampleCode === updatedData.sampleCode ? updatedData : item
       );
       // Refresh the table data source
       this.dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
@@ -182,37 +284,12 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
   }
 
 
-  XopenUpdateQRDrawer(type: 'visitprofile', id: string): void {
-    this.matDrawer.open();
-    this._router.navigate(['edit-qualitative-result', id], { relativeTo: this._activatedRoute });
+  addbtn(): void {
+    this._router.navigate(['add-item-sample'], { relativeTo: this._activatedRoute });
   }
 
-  openUpdateQRDrawer(type: 'visitprofile', element: any): void {
-    this.matDrawer.open();
-    // console.log(`SENDING DATA: ${JSON.stringify(element)}`);
-    this._router.navigate(['edit-qualitative-result', element.qualitativeCode], {
-      relativeTo: this._activatedRoute,
-      state: { element }
-    });
+  actionEditItemData(itemData: any): void {
+    console.log(itemData);
+    this._router.navigate(['edit-item-sample'], { state: { data: itemData }, relativeTo: this._activatedRoute });
   }
-
-
-  /**
-     * Open confirmation dialog
-     */
-  //   deleteUser(type: 'visitprofile'): void {
-  //     // Open the dialog and save the reference of it
-  //     const dialogRef = this._qbsConfirmationService.open(
-  //         this.configForm.value
-  //     );
-
-  //     // Subscribe to afterClosed from the dialog reference
-  //     dialogRef.afterClosed().subscribe((result) => {
-  //         console.log(result);
-  //     });
-  // }
-
-
-
-
 }

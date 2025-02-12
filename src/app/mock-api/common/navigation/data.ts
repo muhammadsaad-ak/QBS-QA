@@ -66,7 +66,21 @@ export const compactNavigation: QbsNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:clipboard-document-check',
                 link: '/master-data/list-of-unit-measure-setup',
-            }
+            },
+            {
+                id: 'master-data.list-of-items-samples',
+                title: 'Item Sample 0.3',
+                type: 'basic',
+                icon: 'feather:server',
+                link: '/master-data/list-of-items-samples',
+            },
+            {
+                id: 'master-data.list-of-items-inspection-cards',
+                title: 'Item Inspection Card 3.0',
+                type: 'basic',
+                icon: 'feather:search',
+                link: '/master-data/list-of-items-inspection-cards',
+            },
             
         ],
     },
