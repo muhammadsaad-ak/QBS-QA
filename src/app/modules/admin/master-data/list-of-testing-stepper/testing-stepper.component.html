@@ -73,7 +73,7 @@
 
             <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
               <mat-label>Sample Code</mat-label>
-              <input matInput formControlName="sampleCode" required>
+              <input matInput formControlName="sampleCodeIS" required>
             </mat-form-field>
 
             <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
@@ -81,13 +81,22 @@
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                 (click)="onItemSampleItemCodeClick()"></mat-icon>
               <input matInput formControlName="itemCode" required readonly
-                [value]="selectedItemSampleCode ? selectedItemSampleCode : ''">
+                [value]="selectedItemCodeIS ? selectedItemCodeIS : ''">
             </mat-form-field>
+
+            <!-- intCode -->
+            <div class="w-1/2 hidden">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>intCode</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="itemId" readonly
+                  [value]="selectedIntCodeIS ? selectedIntCodeIS : ''">
+              </mat-form-field>
+            </div>
 
             <mat-form-field style="flex: 0 1 55%; min-width: 100px;">
               <mat-label>Item Description</mat-label>
               <input matInput formControlName="itemDescription" required readonly=""
-                [value]="selectedItemSampleDescription ? selectedItemSampleDescription : ''">
+                [value]="selectedItemDescriptionIS ? selectedItemDescriptionIS : ''">
             </mat-form-field>
 
             <!-- Checkboxes Section -->
@@ -97,6 +106,65 @@
                 <mat-checkbox class="mr-2" formControlName="flexibility"></mat-checkbox>
               </div>
             </div>
+
+            <!-- ITEM CODE IS NG TEMPLATE DIALOG STARTS -->
+            <ng-template #dialogTemplateItemCodeIS>
+              <div class="dialog-container flex flex-col h-full">
+                <div class="flex justify-between items-center p-4 border-b text-primary">
+                  <h2 class="text-lg font-semibold">ITEMS</h2>
+                  <span (click)="dialog.closeAll()" class="header-close-x">
+                    <mat-icon class="text-primary">close</mat-icon>
+                  </span>
+                </div>
+                <mat-form-field>
+                  <mat-label>Filter</mat-label>
+                  <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
+                </mat-form-field>
+                <!-- ITEM CODE TABLE STARTS -->
+                <mat-table [dataSource]="dataSourceItemCodeIS" class="flex-grow">
+                  <!-- Item Code -->
+                  <ng-container matColumnDef="itemCode">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item
+                      Code</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemCodeIS(row)"
+                        [matTooltip]="row.name">
+                      </mat-checkbox> {{ row.itemCode }}
+                    </mat-cell>
+                  </ng-container>
+                  <!-- Item Description -->
+                  <ng-container matColumnDef="itemDescription">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item
+                      Description</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      {{ row.name }}
+                    </mat-cell>
+                  </ng-container>
+                  <!-- Item Group -->
+                  <ng-container matColumnDef="itemGroup">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item
+                      Group</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      {{ row.uoMGroupEntry ?? '-' }}
+                    </mat-cell>
+                  </ng-container>
+
+                  <mat-header-row *matHeaderRowDef="displayedColumnsItemCodeIS"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: displayedColumnsItemCodeIS;"></mat-row>
+
+                  <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="4">No data matched with "{{input.value}}"</td>
+                  </tr>
+                </mat-table>
+                <!-- Save & Close -->
+                <div class="flex justify-end mt-auto">
+                  <button mat-flat-button color="primary" (click)="addSelectedRowItemCodeIS()">Save &
+                    Close</button>
+                </div>
+              </div>
+            </ng-template>
+            <!-- ITEM CODE IS NG TEMPLATE DIALOG ENDS -->
+
             <!-- ITEM SAMPLE ITEM CODE DIALOG -->
             <ng-template #dialogTemplateItemSampleItems let-data="data">
               <div class="dialog-container flex flex-col h-full">
@@ -177,7 +245,7 @@
                       Lot Size Min
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
-                      <input matInput [formControl]="samples.at(i).get('lotSizeMin')" placeholder="Minimum Lot Size">
+                      <input matInput [formControl]="samplingRangeObjects.at(i).get('lotSizeMin')" placeholder="Minimum Lot Size">
                     </td>
                   </ng-container>
                   <!-- Lot Size Max COLUMN -->
@@ -186,7 +254,7 @@
                       Lot Size Max
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
-                      <input matInput [formControl]="samples.at(i).get('lotSizeMax')" placeholder="Maximum Lot Size">
+                      <input matInput [formControl]="samplingRangeObjects.at(i).get('lotSizeMax')" placeholder="Maximum Lot Size">
                     </td>
                   </ng-container>
                   <!-- Sample Size COLUMN -->
@@ -195,37 +263,37 @@
                       Sample Size
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
-                      <input matInput [formControl]="samples.at(i).get('sampleSize')" placeholder="Enter Sample Size">
+                      <input matInput [formControl]="samplingRangeObjects.at(i).get('sampleSize')" placeholder="Enter Sample Size">
                     </td>
                   </ng-container>
                   <!-- Critical Defect COLUMN -->
-                  <ng-container matColumnDef="criticalDefect">
+                  <ng-container matColumnDef="criticalDefects">
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Critical Defect
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
-                      <input matInput [formControl]="samples.at(i).get('criticalDefect')" placeholder="Enter Value">
+                      <input matInput [formControl]="samplingRangeObjects.at(i).get('criticalDefects')" placeholder="Enter Value">
                     </td>
                   </ng-container>
                   <!-- Major Defect COLUMN -->
-                  <ng-container matColumnDef="majorDefect">
+                  <ng-container matColumnDef="majorDefects">
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Major Defect&nbsp;(>)
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
-                      <input matInput [formControl]="samples.at(i).get('majorDefect')" placeholder="Enter Value">
+                      <input matInput [formControl]="samplingRangeObjects.at(i).get('majorDefects')" placeholder="Enter Value">
                     </td>
                   </ng-container>
                   <!-- Minor Defect COLUMN -->
-                  <ng-container matColumnDef="minorDefect">
+                  <ng-container matColumnDef="minorDefects">
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Minor Defect&nbsp;(<) </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
-                      <input matInput [formControl]="samples.at(i).get('minorDefect')" placeholder="Enter Value">
+                      <input matInput [formControl]="samplingRangeObjects.at(i).get('minorDefects')" placeholder="Enter Value">
                     </td>
                   </ng-container>
-                  <tr mat-header-row *matHeaderRowDef="displayedColumnsItemSampling"></tr>
-                  <tr mat-row *matRowDef="let row; columns: displayedColumnsItemSampling;"></tr>
+                  <tr mat-header-row *matHeaderRowDef="displayedColumnsItemSamplingRange"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumnsItemSamplingRange;"></tr>
                 </table>
               </section>
             </div>
@@ -234,7 +302,7 @@
 
           <div class="step-navigation">
             <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" matStepperNext>Next</button>
+            <button mat-button class="next-button" matStepperNext (click)="onSubmititemSamplingForm()">Next</button>
           </div>
         </form>
       </mat-step>

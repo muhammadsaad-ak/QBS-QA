@@ -47,14 +47,15 @@ import {
 import { qbsAnimations } from '@qbs/animations';
 import { QbsCardComponent } from '@qbs/components/card';
 import { QbsFindByKeyPipe } from '@qbs/pipes/find-by-key';
+import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 
-interface itemSamplingIF {
-    lotSizeMin: string;
-    lotSizeMax: string;
-    sampleSize: string;
-    criticalDefect: string;
-    majorDefect: string;
-    minorDefect: string;
+interface itemSamplingRangeIF {
+    lotSizeMin: number;
+    lotSizeMax: number;
+    sampleQty: number;
+    criticalDefects: number;
+    majorDefects: number;
+    minorDefects: number;
 }
 
 @Component({
@@ -102,143 +103,164 @@ interface itemSamplingIF {
     encapsulation: ViewEncapsulation.None,
     providers: [DatePipe],
 })
+
 export class AddItemSampleComponent {
     itemSamplingForm: FormGroup;
+    dataSourceItemCodeIS!: MatTableDataSource<any>;
 
-    displayedColumnsItemSampling = [
+    displayedColumnsItemSamplingRange = [
         'lotSizeMin',
         'lotSizeMax',
         'sampleSize',
-        'criticalDefect',
-        'majorDefect',
-        'minorDefect',
+        'criticalDefects',
+        'majorDefects',
+        'minorDefects',
     ];
-    dataSourceItemSampling = new MatTableDataSource<itemSamplingIF>();
-    selectionItemSampling = new SelectionModel<itemSamplingIF>(true, []);
+    dataSourceItemSampling = new MatTableDataSource<itemSamplingRangeIF>();
+    selectionItemSampling = new SelectionModel<itemSamplingRangeIF>(true, []);
 
     constructor(
         private fb: FormBuilder,
         private _formBuilder: UntypedFormBuilder,
         private _router: Router,
         private _activatedRoute: ActivatedRoute,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private _itemSamplesService: ItemSamplesService,
     ) {
         this.itemSamplingForm = this.fb.group({
-            sampleCode: new FormControl(),
-            itemCode: new FormControl(''),
+            sampleCodeIS: new FormControl(),
+            itemId: new FormControl(''),
             itemDescription: new FormControl(''),
             flexibility: new FormControl(false),
-            samples: this.fb.array([]),
+            samplingRangeObjects: this.fb.array([]),
+            itemCode: new FormControl(''),
         });
     }
 
     ngOnInit(): void {
+        this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
+            const fetchedCodeIS = sampleCodeIS.data;
+            console.log('FETCHED CODE:', fetchedCodeIS);
+            if (fetchedCodeIS) {
+                const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`
+                this.itemSamplingForm.get('sampleCodeIS')?.setValue(formattedSampleCodeIS);
+            }
+        });
         this.addNewRow();
+        this.fetchListAllItems();
     }
 
-    get samples(): FormArray {
-        return this.itemSamplingForm.get('samples') as FormArray;
+    fetchListAllItems(): void {
+        this._itemSamplesService.getListAllItems().subscribe({
+            next: (response) => {
+                if (response && response.isRequestSuccess && response.data) {
+                    this.dataSourceItemCodeIS = new MatTableDataSource(response.data);
+                    console.log('FETCHED ITEMS:', this.dataSourceItemCodeIS.data);
+                } else {
+                    console.warn('INVALID API RESPONSE:', response);
+                    this.dataSourceItemCodeIS = new MatTableDataSource([]);
+                }
+            },
+            error: (err) => {
+                console.error('ERROR FETCHING ITEMS:', err);
+            },
+        });
+    }
+
+    get samplingRangeObjects(): FormArray {
+        return this.itemSamplingForm.get('samplingRangeObjects') as FormArray;
     }
 
     addNewRow(): void {
         const itemSamplingFormGroup = this.fb.group({
-            lotSizeMin: [''],
-            lotSizeMax: [''],
-            sampleSize: [''],
-            criticalDefect: [''],
-            majorDefect: [''],
-            minorDefect: [''],
+            lotSizeMin: [],
+            lotSizeMax: [],
+            sampleQty: [],
+            criticalDefects: [],
+            majorDefects: [],
+            minorDefects: [],
         });
-
-        this.samples.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
-        this.dataSourceItemSampling.data = [...this.samples.value]; // Update the table data source
+        this.samplingRangeObjects.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
+        this.dataSourceItemSampling.data = [...this.samplingRangeObjects.value]; // Update the table data source
     }
 
     submitForm(): void {
         if (this.itemSamplingForm.valid) {
             const formValues = this.itemSamplingForm.value;
-            const payload = {
-                ...formValues,
-            };
+            // const payload = { ...formValues, };
+            const { itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
             console.log('FORM SUBMISSION PAYLOAD:', payload);
             // this.itemSamplingForm.reset();
+            this._itemSamplesService.AddSampleWithRanges(payload).subscribe(
+                (response) => {
+                  if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                  } else {
+                    console.error(
+                      'ERROR WHILE ADDIND DATA.',
+                      response.message
+                    );
+                  }
+                }
+              );
+
         } else {
             console.log('FORM IS INVALID!');
         }
     }
 
+    closeDialog(): void {
+        this.dialog.closeAll();
+    }
+
     // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
-    @ViewChild('dialogTemplateItemSampleItems') dialogTemplateItemSampleItems;
-    // dataSourceItemSampleCode = [];
-    // dataSourceItemSampleCode!: MatTableDataSource<any>;
-    dataSourceItemSampleCode = new MatTableDataSource([
-        {
-            itemId: 1,
-            itemCode: 'ITM0012561',
-            itemDescription: 'Paint Bucket 3KG',
-            itemGroup: 'Item Group A',
-            isSelected: false,
-        },
-        {
-            itemId: 2,
-            itemCode: 'ITM0012562',
-            itemDescription: 'Paint Bucket 5KG',
-            itemGroup: '',
-            isSelected: false,
-        },
-    ]);
-    //
+    @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
     onItemSampleItemCodeClick() {
-        const dialogRef = this.dialog.open(this.dialogTemplateItemSampleItems, {
-            width: '75%',
+        const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
+            width: '80%',
             height: '75vh',
-            data: this.dataSourceItemSampleCode,
+            data: this.dataSourceItemCodeIS,
         });
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.afterClosed().subscribe(result => {
             console.log('DIALOG CLOSED');
         });
     }
-    displayedColumnsItemSampleCode: string[] = [
+    displayedColumnsItemCodeIS: string[] = [
         'itemCode',
         'itemDescription',
         'itemGroup',
     ];
-    selectedItemSampleCode: string = '';
-    selectedItemSampleDescription: string = '';
-    //
-    onRowCheckboxChangeItemSampleCode(selectedRow: any): void {
-        this.dataSourceItemSampleCode.data.forEach(
-            (row) => (row.isSelected = false)
-        );
+    selectedIntCodeIS: number;
+    selectedItemCodeIS: string;
+    selectedItemDescriptionIS: string = '';
+    // 
+    onRowCheckboxChangeItemCodeIS(selectedRow: any): void {
+        this.dataSourceItemCodeIS.data.forEach(row => (row.isSelected = false));
         selectedRow.isSelected = true;
     }
-    //
-    addSelectedRowItemSampleCode(): void {
+    // 
+    addSelectedRowItemCodeIS(): void {
         this.dialog.closeAll();
-        const selectedRow = this.dataSourceItemSampleCode.data.find(
-            (row) => row.isSelected
-        );
+        const selectedRow = this.dataSourceItemCodeIS.data.find(row => row.isSelected);
         if (selectedRow) {
-            this.itemSamplingForm
-                .get('itemCode')
-                .setValue(selectedRow.itemCode);
-            this.itemSamplingForm
-                .get('itemDescription')
-                .setValue(selectedRow.itemDescription);
-            this.selectedItemSampleCode = selectedRow.itemCode;
-            this.selectedItemSampleDescription = selectedRow.itemDescription;
+            this.itemSamplingForm.get('itemCode').setValue(selectedRow.itemCode);
+            this.itemSamplingForm.get('itemId').setValue(selectedRow.id);
+            this.itemSamplingForm.get('itemDescription').setValue(selectedRow.name);
+
+            this.selectedIntCodeIS = selectedRow.intCode;
+            this.selectedItemCodeIS = selectedRow.itemCode;
+            this.selectedItemDescriptionIS = selectedRow.name;
+
             console.log('SELECTED ROW:', selectedRow);
         } else {
             console.log('NO ROW SELECTED');
         }
     }
-    //
+
     applyFilterItemSampleCode(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSourceItemSampleCode.filter = filterValue.trim().toLowerCase();
+        this.dataSourceItemCodeIS.filter = filterValue.trim().toLowerCase();
     }
     // ITEM SAMPLE ITEM CODE NG TEMPLATE ENDS
-    closeDialog(): void {
-        this.dialog.closeAll();
-    }
+
 }
