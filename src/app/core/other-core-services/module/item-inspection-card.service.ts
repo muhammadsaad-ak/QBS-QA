@@ -62,6 +62,28 @@ export class ItemInspectionCardService {
                 })
             );
     }
+    // GET ALL SAP ITEMS API
+    getListAllItems(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IItemCardFeature/ListAllItems`, {
+                headers,
+            })
+            .pipe(
+                tap((itemsSAP) => {
+                    const listAllItemsSAP = (itemsSAP as any) ?? [];
+                    this._listAllItems.next(listAllItemsSAP);
+                    console.log('FETCHED ITEMS:', listAllItemsSAP);
+                }),
+                catchError((error) => {
+                    console.error('ERROR FETCHING ITEMS', error);
+                    return throwError(error);
+                })
+            );
+    }
     // GET ALL INSPECTION CARDS API
     ListAllInspectionCards(): Observable<any> {
         const headers = new HttpHeaders({
