@@ -40,6 +40,7 @@ export class ItemInspectionCardService {
     }
 
     // ADD API
+
     // GET ALL ITEM INSPECTION CARDS API
     ListAllItemsInspectionCards(): Observable<any> {
         const headers = new HttpHeaders({
