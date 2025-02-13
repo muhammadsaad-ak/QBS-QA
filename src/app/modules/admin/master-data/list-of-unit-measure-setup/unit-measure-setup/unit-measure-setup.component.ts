@@ -69,7 +69,7 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
       @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
       drawerMode: 'side' | 'over';
           
-      displayedColumns: string[] = ['serialId', 'uoMCode', 'description', 'action'];
+      displayedColumns: string[] = ['serialId', 'intCode', 'description', 'action'];
       dataSource = new MatTableDataSource<any>([]);
       
       @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -92,7 +92,7 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
         //Get API CALLS
         this._uommasterservice.getUnitOfMeasure().subscribe((unitOfMeasure) => {
           this.dataSource = unitOfMeasure.data
-          console.log(unitOfMeasure.data, '............');
+          // console.log(unitOfMeasure.data, '............');
           
       });
 

@@ -54,9 +54,9 @@
                   </ng-container>
 
                   <!-- Inspection Code Column -->
-                  <ng-container matColumnDef="inspectionCode">
+                  <ng-container matColumnDef=intCode>
                     <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Inspection Code </th>
-                    <td mat-cell *matCellDef="let element"> {{element.inspectionCode ? element.inspectionCode : '-'}} </td>
+                    <td mat-cell *matCellDef="let element"> ICH - {{element.intCode ? element.intCode : '-'}} </td>
                   </ng-container>
               
                   <!-- Description Column -->
@@ -67,15 +67,15 @@
               
               
                   <!-- Inspection Type Column -->
-                  <ng-container matColumnDef="inspectionType">
+                  <ng-container matColumnDef="type">
                     <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Inspection Type </th>
-                    <td mat-cell *matCellDef="let element"> {{element.inspectionType ? element.inspectionType : '-'}} </td>
+                    <td mat-cell *matCellDef="let element"> {{element.type ? element.type : '-'}} </td>
                   </ng-container>
 
                   <!-- Inspection Type Column -->
-                  <ng-container matColumnDef="status">
+                  <ng-container matColumnDef="isActive">
                     <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;"> Status </th>
-                    <td mat-cell *matCellDef="let element"> {{element.status ? element.status : '-'}} </td>
+                    <td mat-cell *matCellDef="let element"> {{element.isActive ? 'true' : 'false'}} </td>
                   </ng-container>
 
                    <!-- Action Column -->
