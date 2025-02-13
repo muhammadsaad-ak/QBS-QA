@@ -106,4 +106,26 @@ export class ItemInspectionCardService {
                 })
             );
     }
+    // GET CARD CHARACTERISTICS 
+    getCardCharacteristicsDataByCardId(inspectionCardId): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        // const inspectionCardIdStatic = 'c5cfda17-7d45-4ad4-9a8f-963d12e7f9b2';
+        const getItemDataByCodeapiUrl = `${environment.appApiUrl}/CSAPI/IInspectionCardFeature/GetCardByIdWithCharacteristicsWithCriteria?inspectionCardId=${inspectionCardId}`;
+
+        console.log('Constructed API URL:', getItemDataByCodeapiUrl);
+        console.log('Authorization Header:', headers.get('Authorization'));
+
+        return this._httpClient.get(getItemDataByCodeapiUrl, { headers }).pipe(
+            tap((listAllItemsSAP) => {
+                console.log('FETCHED ITEM DATA:', listAllItemsSAP);
+            }),
+            catchError((error) => {
+                console.error('ERROR FETCHING ITEM DATA', error);
+                return throwError(error);
+            })
+        );
+    }
 }
