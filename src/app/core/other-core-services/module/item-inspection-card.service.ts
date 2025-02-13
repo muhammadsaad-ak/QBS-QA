@@ -40,51 +40,6 @@ export class ItemInspectionCardService {
     }
 
     // ADD API
-
-    // GET ALL ITEM INSPECTION CARDS API
-    ListAllItemsInspectionCards(): Observable<any> {
-        const headers = new HttpHeaders({
-            Authorization: `Bearer ${this.accessToken}`,
-            Accept: 'text/plain',
-        });
-        return this._httpClient
-            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/ListAllItemInspectionCards`, {
-                headers,
-            })
-            .pipe(
-                tap((results) => {
-                    const itemsInspectionCards = (results as any).data ?? [];
-                    this._listItemsInspectionCards.next(itemsInspectionCards);
-                    console.log('FETCHED RESULTS', itemsInspectionCards);
-                }),
-                catchError((error) => {
-                    console.error('ERROR FETCHING ITEM SAMPLES', error);
-                    return throwError(error);
-                })
-            );
-    }
-    // GET ALL SAP ITEMS API
-    getListAllItems(): Observable<any> {
-        const headers = new HttpHeaders({
-            Authorization: `Bearer ${this.accessToken}`,
-            Accept: 'text/plain',
-        });
-        return this._httpClient
-            .get(`${environment.appApiUrl}/CSAPI/IItemCardFeature/ListAllItems`, {
-                headers,
-            })
-            .pipe(
-                tap((itemsSAP) => {
-                    const listAllItemsSAP = (itemsSAP as any) ?? [];
-                    this._listAllItems.next(listAllItemsSAP);
-                    console.log('FETCHED ITEMS:', listAllItemsSAP);
-                }),
-                catchError((error) => {
-                    console.error('ERROR FETCHING ITEMS', error);
-                    return throwError(error);
-                })
-            );
-    }
     // GET ALL INSPECTION CARDS API
     ListAllInspectionCards(): Observable<any> {
         const headers = new HttpHeaders({
