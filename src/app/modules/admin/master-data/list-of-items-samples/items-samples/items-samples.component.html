@@ -44,8 +44,10 @@
                             <ng-container matColumnDef="sampleCode">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Sample Code </th>
-                                <td mat-cell *matCellDef="let element">
-                                    {{element.sampleCode ? element.sampleCode : '-'}} </td>
+                                    <td mat-cell *matCellDef="let element">
+                                        {{ element.intCode ? 'IS-000' + element.intCode : '-' }}
+                                      </td>
+                                      
                             </ng-container>
                             <!-- itemCode COLUMN -->
                             <ng-container matColumnDef="itemCode">
