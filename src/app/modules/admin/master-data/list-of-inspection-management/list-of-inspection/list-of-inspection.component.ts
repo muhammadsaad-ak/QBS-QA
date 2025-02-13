@@ -19,6 +19,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
+import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
 import { debounceTime } from 'rxjs';
 
 @Component({
@@ -66,14 +67,14 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
   drawerMode: 'side' | 'over';
 
 
-  List_Of_Inspection_Data= [
-    { inspectionCode: 'T001', description: 'Weight', inspectionType: 'Qualitative', status: 'Active' },
-    { inspectionCode: 'T002', description: 'Transparency Level', inspectionType: 'Quantitative', status: 'Inactive' },
-  ];
+  // List_Of_Inspection_Data= [
+  //   { inspectionCode: 'T001X', description: 'Weight', inspectionType: 'Qualitative', status: 'Active' },
+  //   { inspectionCode: 'T002', description: 'Transparency Level', inspectionType: 'Quantitative', status: 'Inactive' },
+  // ];
   
-  displayedColumns: string[] = ['serialId', 'inspectionCode', 'description', 'inspectionType', 'status', 'action'];
-  dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
-  // dataSource = new MatTableDataSource<any>([]);
+  displayedColumns: string[] = ['serialId', 'intCode' , 'description', 'type', 'isActive', 'action'];
+  // dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
+  dataSource = new MatTableDataSource<any>([]);
   
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -86,9 +87,16 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
     private _qbsConfirmationService: QbsConfirmationService,
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
+    private _inspectionCharateristics: InspectionCharacteristicsService,
+    
+    
   ) { } 
 
    ngOnInit(): void {
+
+    this._inspectionCharateristics.getInspectionCharacteristics().subscribe((inspectionCharacteristic) => {
+      this.dataSource = inspectionCharacteristic.data          
+  });
 
       // Build the config form
       this.configForm = this._formBuilder.group({
@@ -143,9 +151,7 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
    
      
    }
-   ngOnDestroy(): void {
-
-      
+   ngOnDestroy(): void {  
    }
 
      // Method to apply filter on the dataSource

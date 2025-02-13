@@ -13,17 +13,17 @@
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Code</mat-label>
-              <input matInput placeholder="Enter Inspection Code" formControlName="firstCtrl" required>
+              <input matInput placeholder="Enter Inspection Code" required>
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
-              <input matInput placeholder="Enter Description" formControlName="descriptionCtrl" required>
+              <input matInput placeholder="Enter Description" formControlName="resultDescription" required>
             </mat-form-field>
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="next-button" matStepperNext>Next</button>
+            <button mat-button class="next-button" (click)="onSubmitQualitativeResult()" matStepperNext>Next</button>
           </div>
 
 
@@ -44,20 +44,20 @@
             <!-- UOM Code Field -->
             <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
               <mat-label>UOM Code</mat-label>
-              <input matInput formControlName="uomCodeCtrl" placeholder="Enter UOM Code" required>
+              <input matInput formControlName="uoMCode" placeholder="Enter UOM Code" required>
             </mat-form-field>
 
             <!-- UOM Name Field -->
             <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
               <mat-label>UOM Name</mat-label>
-              <input matInput formControlName="uomNameCtrl" placeholder="Enter UOM Name" required>
+              <input matInput formControlName="description" placeholder="Enter UOM Name" required>
             </mat-form-field>
 
           </div>
 
           <div class="step-navigation">
             <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" matStepperNext>Next</button>
+            <button mat-button class="next-button"(click)="onSubmitUnitOfMeasure()" matStepperNext>Next</button>
           </div>
         </form>
       </mat-step>
@@ -316,14 +316,21 @@
 
           <!-- Responsive Flexbox Container -->
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
-            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-              <mat-label>Inspection Code</mat-label>
-              <input matInput placeholder="Enter Inspection Code" formControlName="inspectionCodethird" required>
+            <mat-form-field  style="flex: 1 1 calc(25% - 16px); min-width: 100px; ">
+              <mat-label >Inspection Code</mat-label>
+              <input class="view-mode-bg-grey"
+                matInput 
+                placeholder="Enter Inspection Code" 
+                formControlName="intCode" 
+                required 
+                readonly 
+                
+                style=" cursor: not-allowed;">
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
-              <input matInput placeholder="Enter Description" formControlName="inspectionDescription" required>
+              <input matInput placeholder="Enter Description" formControlName="description" required>
             </mat-form-field>
 
 
@@ -331,24 +338,20 @@
             <!-- Checkboxes Section -->
             <div class="flex flex-col w-full">
               <div class="flex items-center">
-                <mat-checkbox class="mr-2"></mat-checkbox>
-                <label for="isSuperUser" class="text-lg">Active</label>
+                <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
+                <label  class="text-lg">Active</label>
               </div>
             </div>
 
             <!-- Qualitative and Quantitative Section -->
             <div class="mt-4">
-              <mat-radio-group class="flex flex-row items-center gap-4" formControlName="inspectionType"
+              <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type"
                 [color]="'primary'" [value]="'just-good'">
-                <mat-radio-button class="mb-2" [value]="'qualitative'" [ngClass]="{
-                                    'text-blue-500 font-bold': fourthFormGroup.get('inspectionType')?.value === 'qualitative'
-                                  }">
+                <mat-radio-button class="mb-2" [value]="'qualitative'" [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
                   Qualitative Inspection
                 </mat-radio-button>
 
-                <mat-radio-button class="mb-2" [value]="'quantitative'" [ngClass]="{
-                                    'text-blue-500 font-bold': fourthFormGroup.get('inspectionType')?.value === 'quantitative'
-                                  }">
+                <mat-radio-button class="mb-2" [value]="'quantitative'" [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'quantitative'}">
                   Quantitative Inspection
                 </mat-radio-button>
               </mat-radio-group>
@@ -356,7 +359,7 @@
 
 
             <!-- Main Card Section -->
-            <div class="mt-4 w-full" *ngIf="fourthFormGroup.get('inspectionType')?.value === 'qualitative'">
+            <div class="mt-4 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
               <table class="w-full border border-gray-200 border-collapse">
                 <thead>
                   <tr>
@@ -364,13 +367,14 @@
                     <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
                   </tr>
                 </thead>
-                <tbody formArrayName="qualitativeCriteria">
-                  <tr *ngFor="let row of qualitativeCriteria.controls; let i = index" [formGroupName]="i">
+                <tbody formArrayName="qualitativeCriteriaObjects">
+                  <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
                     <td class="px-4 py-2 text-sm border-b border-r text-center">
-                      <input type="text" placeholder="Enter S.No" matInput formControlName="userName" class="w-full" />
+                      <input type="text" placeholder="Enter S.No" matInput class="w-full" />
+                      <!-- formControlName="serialno" -->
                     </td>
                     <td class="px-4 py-2 text-sm border-b border-r text-center">
-                      <input type="text" placeholder="Enter Criteria" formControlName="userId" class="w-full" />
+                      <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
                     </td>
                   </tr>
                 </tbody>
@@ -380,7 +384,7 @@
           </div>
           <div class="step-navigation">
             <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" matStepperNext>Next</button>
+            <button mat-button class="next-button"(click)="onSubmitInspectionCharacteristics()" matStepperNext>Next</button>
             <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
 
           </div>
@@ -390,7 +394,7 @@
       </mat-step>
 
       <!-- Fifth Step -->
-      <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
+      <mat-step [stepControl]="fifthFormGroup" label="Inspection Card " >
         <form [formGroup]="fifthFormGroup">
           <!-- (ngSubmit)="onSubmit()" -->
           <!-- Custom Styled Heading -->

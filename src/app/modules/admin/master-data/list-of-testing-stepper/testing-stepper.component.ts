@@ -1,19 +1,6 @@
 import { CommonModule } from '@angular/common';
-import {
-    AfterViewInit,
-    Component,
-    ViewChild,
-    ViewEncapsulation,
-    inject,
-} from '@angular/core';
-import {
-    FormArray,
-    FormBuilder,
-    FormGroup,
-    FormsModule,
-    ReactiveFormsModule,
-    Validators,
-} from '@angular/forms';
+import {AfterViewInit,Component,ViewChild,ViewEncapsulation,inject,} from '@angular/core';
+import {FormArray,FormBuilder,FormGroup,FormsModule,ReactiveFormsModule,Validators} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -32,6 +19,9 @@ import {
 } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 import { SelectionModel } from '@angular/cdk/collections';
+import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
+import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
+import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
 
 interface itemSamplingRangeIF {
     lotSizeMin: number;
@@ -46,7 +36,6 @@ interface itemSamplingRangeIF {
     selector: 'app-testing-stepper',
     standalone: true,
     encapsulation: ViewEncapsulation.None,
-
     imports: [
         MatButtonModule,
         MatStepperModule,
@@ -59,22 +48,31 @@ interface itemSamplingRangeIF {
         CommonModule,
         MatTableModule,
         MatTabsModule,
-        MatIconModule,
+        MatIconModule,  
     ],
     animations: qbsAnimations,
-
     templateUrl: './testing-stepper.component.html',
     styleUrl: './testing-stepper.component.scss',
+    
 })
 export class TestingStepperComponent implements AfterViewInit {
+
+
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
     private _activatedRoute = inject(ActivatedRoute);
+
+
+    unitOfMeasureLOV: any = [];
+
     constructor(
         private _formBuilder: FormBuilder,
         private dialog: MatDialog,
         private fb: FormBuilder,
-        private _itemSamplesService: ItemSamplesService,
+        private _itemSamplesService: ItemSamplesService,,
+        private _uommasterservice: UomMasterService,
+        private _inspectionCharateristics: InspectionCharacteristicsService,
+        private _qualitativeResultsService: QualitativeResultsService,
     ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
@@ -86,12 +84,12 @@ export class TestingStepperComponent implements AfterViewInit {
     @ViewChild(MatStepper) stepper!: MatStepper; // Correctly reference the MatStepper instance
 
     firstFormGroup = this._formBuilder.group({
-        firstCtrl: ['', Validators.required],
-        descriptionCtrl: ['', Validators.required],
+        // firstCtrl: ['', Validators.required],
+        resultDescription: ['', Validators.required],
     });
     secondFormGroup = this._formBuilder.group({
-        uomCodeCtrl: ['', Validators.required],
-        uomNameCtrl: ['', Validators.required],
+        uoMCode: ['', Validators.required],
+        description: ['', Validators.required],
     });
 
     // ITEM SAMPLE
@@ -205,7 +203,7 @@ export class TestingStepperComponent implements AfterViewInit {
         },
         {
             itemId: 2,
-            itemCode: 'ITM0012562',
+            itemCode: 'ITM001   2562',
             itemDescription: 'Paint Bucket 5KG',
             itemGroup: '',
             isSelected: false,
@@ -265,10 +263,11 @@ export class TestingStepperComponent implements AfterViewInit {
 
     //
     fourthFormGroup = this._formBuilder.group({
-        inspectionCodethird: ['', Validators.required],
-        inspectionDescription: ['', Validators.required],
-        inspectionType: ['', Validators.required],
-        qualitativeCriteria: this._formBuilder.array([]),
+        intCode: [''],
+        description: ['', Validators.required],
+        isActive:[false],
+        type: ['', Validators.required],
+        qualitativeCriteriaObjects: this._formBuilder.array([]),
     });
     fifthFormGroup = this._formBuilder.group({
         cardCode: ['', Validators.required],
@@ -827,6 +826,17 @@ export class TestingStepperComponent implements AfterViewInit {
     isLinear = false;
 
     ngOnInit(): void {
+        //
+        this._inspectionCharateristics.getInspectionCharacteristicsCode().subscribe((inspectionCharacteristicCode) => {
+  const x = inspectionCharacteristicCode.data;  // 13 mil raha hai
+  console.log('Fetched Code:', x);  // Check for debugging
+
+  if (x) {
+    const fullCode = `ICH-000${x}`;  // Combine 'ICH - ' with the fetched code
+    this.fourthFormGroup.get('intCode')?.setValue(fullCode);  // Set the combined value in the form
+  }
+});
+        
         //  Item Sample
         this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
             const fetchedCodeIS = sampleCodeIS.data;
@@ -842,7 +852,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.initializeTableDataItemInspectionCard();
 
         this.fourthFormGroup
-            .get('inspectionType')
+            .get('type')
             ?.valueChanges.subscribe((value) => {
                 if (value === 'qualitative') {
                     this.initializeQualitativeRow();
@@ -884,16 +894,16 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
     /** Getter for qualitativeCriteria FormArray */
-    get qualitativeCriteria(): FormArray {
-        return this.fourthFormGroup.get('qualitativeCriteria') as FormArray;
+    get qualitativeCriteriaObjects(): FormArray {
+        return this.fourthFormGroup.get('qualitativeCriteriaObjects') as FormArray;
     }
     /** Initialize one row in qualitativeCriteria */
     initializeQualitativeRow(): void {
-        if (this.qualitativeCriteria.length === 0) {
-            this.qualitativeCriteria.push(
+        if (this.qualitativeCriteriaObjects.length === 0) {
+            this.qualitativeCriteriaObjects.push(
                 this._formBuilder.group({
-                    userName: [''],
-                    userId: [''],
+                    // serialno: [''],
+                    description: [''],
                 })
             );
         }
@@ -901,8 +911,8 @@ export class TestingStepperComponent implements AfterViewInit {
 
     /** Clear all rows in qualitativeCriteria */
     clearQualitativeCriteria(): void {
-        while (this.qualitativeCriteria.length !== 0) {
-            this.qualitativeCriteria.removeAt(0);
+        while (this.qualitativeCriteriaObjects.length !== 0) {
+            this.qualitativeCriteriaObjects.removeAt(0);
         }
     }
 
@@ -1102,6 +1112,73 @@ export class TestingStepperComponent implements AfterViewInit {
 
         this.selectedControlAccountRowIndex = -1; // Reset index
     }
+
+    // onSubmitQualitativeResult(): void {
+    //     const qualitativePayload = {
+    //         resultDescription: this.firstFormGroup.value.resultDescription
+    //     }
+    //     const payload = {
+    //         uoMCode: this.secondFormGroup.value.uoMCode,
+    //         description: this.secondFormGroup.value.description
+    //     }
+    //    const qualitative = this._qualitativeResultsService.AddQualitativeResult(qualitativePayload).toPromise()
+    //     const unitofmeasure = this._uommasterservice.AddUnitOfMeasure(payload).toPromise()
+    //     Promise.all([qualitative, unitofmeasure])
+    //     .then(res => {
+    //         console.log(qualitative, unitofmeasure);
+            
+    //     })
+        
+    //   }
+
+      onSubmitQualitativeResult(): void {
+        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
+        const formValues = this.firstFormGroup.value;
+        const payload = {
+          ...formValues,
+      };
+        this._qualitativeResultsService.AddQualitativeResult(payload).subscribe(
+          (response) => {
+              if (response.succeeded) {
+                  console.log('API RUN SUCCESSFULLY.', payload);
+              }
+          }
+      );
+    }
+
+    onSubmitUnitOfMeasure(): void {
+        console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
+        const formValues = this.secondFormGroup.value;
+        const payload = {
+          ...formValues,
+      };
+        this._uommasterservice.AddUnitOfMeasure(payload).subscribe(
+          (response) => {
+              if (response.succeeded) {
+                  console.log('API RUN SUCCESSFULLY.', payload);
+              }
+          }
+      );
+    }
+
+    onSubmitInspectionCharacteristics(): void {
+        console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
+        const formValues = this.fourthFormGroup.value;
+        const { intCode,  ...payload } = formValues; // EXCLUDING intCode
+        console.log('UPDATED FORM VALUES:', payload);
+
+        this._inspectionCharateristics.AddInspectionCharacteristics(payload).subscribe(
+          (response) => {
+              if (response.succeeded) {
+                  console.log('API RUN SUCCESSFULLY.', payload);
+              }
+          }
+      );
+    }
+
+    
+
+      
 
     // onSubmit(): void {
     //   if (this.fourthFormGroup.valid) {

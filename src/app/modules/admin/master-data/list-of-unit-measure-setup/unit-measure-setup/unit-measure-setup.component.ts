@@ -19,6 +19,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
+import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
 import { debounceTime } from 'rxjs';
 
 
@@ -58,7 +59,8 @@ import { debounceTime } from 'rxjs';
 })
 export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
 
-  
+  unitOfMeasureLOV: any = [];
+
       configForm: UntypedFormGroup;
       searchInputControl: UntypedFormControl = new UntypedFormControl();
     
@@ -66,18 +68,9 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
     
       @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
       drawerMode: 'side' | 'over';
-    
-    
-      List_Of_Inspection_Data= [
-        { uomCode: 'KG', uomName: 'Kilogram' },
-        { uomCode: 'GM', uomName: 'Gram' },
-        { uomCode: 'LTR', uomName: 'Liter' },
-        { uomCode: 'ML', uomName: 'MilliLiter' },
-      ];
-      
-      displayedColumns: string[] = ['serialId', 'uomCode', 'uomName', 'action'];
-      dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
-      // dataSource = new MatTableDataSource<any>([]);
+          
+      displayedColumns: string[] = ['serialId', 'intCode', 'description', 'action'];
+      dataSource = new MatTableDataSource<any>([]);
       
       @ViewChild(MatPaginator) paginator: MatPaginator;
     
@@ -91,9 +84,19 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
         private _router: Router,
         private router: Router,
         private _activatedRoute: ActivatedRoute,
+        private _uommasterservice: UomMasterService,
+        
       ) { } 
     
        ngOnInit(): void {
+        //Get API CALLS
+        this._uommasterservice.getUnitOfMeasure().subscribe((unitOfMeasure) => {
+          this.dataSource = unitOfMeasure.data
+          // console.log(unitOfMeasure.data, '............');
+          
+      });
+
+      
     
           // Build the config form
           this.configForm = this._formBuilder.group({
@@ -117,7 +120,9 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
                 }),
             }),
             dismissible: true,
-        });
+        
+        
+          });
       
       
         //Search with complete payload values

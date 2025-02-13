@@ -48,7 +48,7 @@ export class ItemMasterService {
         });
 
         return this._httpClient
-            .get(`${environment.apiUrl}/api/ItemMaster/ListAllItems`, {
+            .get(`${environment.appApiUrl}/api/ItemMaster/ListAllItems`, {
                 headers,
             })
             .pipe(
