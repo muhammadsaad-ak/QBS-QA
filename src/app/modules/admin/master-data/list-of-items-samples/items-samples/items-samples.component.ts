@@ -21,6 +21,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime } from 'rxjs';
+import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 
 @Component({
   selector: 'app-items-samples',
@@ -191,9 +192,16 @@ export class ItemsSamplesComponent {
     private _qbsConfirmationService: QbsConfirmationService,
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
+    private _itemSamplesService: ItemSamplesService,
+
+    
   ) { }
 
   ngOnInit(): void {
+
+    this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
+      this.dataSource.data = items.data;
+    })
 
     // Check if there is updated data from navigation
     const navigationState = history.state.updatedData;
