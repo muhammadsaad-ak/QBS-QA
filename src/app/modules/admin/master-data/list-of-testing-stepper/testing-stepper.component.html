@@ -395,7 +395,7 @@
 
       <!-- Fifth Step -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card " >
-        <form [formGroup]="fifthFormGroup" (ngSubmit)="onSubmit()">
+        <form [formGroup]="fifthFormGroup">
           <!-- (ngSubmit)="onSubmit()" -->
           <!-- Custom Styled Heading -->
           <h1 class="custom-heading">Inspection Card</h1>
@@ -409,14 +409,14 @@
 
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
-              <input matInput placeholder="Enter Description" formControlName="cardDescription" required>
+              <input matInput placeholder="Enter Description" formControlName="description" required>
             </mat-form-field>
 
             <!-- Checkboxes Section -->
             <div class="flex flex-col w-full">
               <div class="flex items-center">
-                <mat-checkbox formControlName="isActivefifth" class="mr-2"></mat-checkbox>
-                <label for="isSuperUser" class="text-lg">Active</label>
+                <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
+                <label class="text-lg">Active</label>
               </div>
             </div>
 
@@ -470,32 +470,32 @@
                       <!-- ITEMS TABLE STARTS -->
                       <mat-table [dataSource]="dataSourceItems" class="flex-grow">
                         <!-- ITEM CODE & CHECKBOX COLUMN -->
-                        <ng-container matColumnDef="inspectionCode">
+                        <ng-container matColumnDef="intCode">
                           <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
                           <mat-cell *matCellDef="let row" class="single-line text-sm">
                             <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItems(row)">
                               <!-- [matTooltip]="row.itemDescription" -->
                               <!-- [matTooltip]="selectedItemDescription" -->
-                            </mat-checkbox> {{row.inspectionCode}} </mat-cell>
+                            </mat-checkbox> {{row.intCode}} </mat-cell>
                         </ng-container>
                         <!-- ITEM DESCRIPTION COLUMN -->
-                        <ng-container matColumnDef="itemDescription">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
+                        <ng-container matColumnDef="description">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
                           <mat-cell *matCellDef="let row" class="single-line text-sm">
-                            {{row.itemDescription}} </mat-cell>
+                            {{row.description}} </mat-cell>
                         </ng-container>
                         <!-- ITEM GROUP COLUMN -->
-                        <ng-container matColumnDef="itemGroup">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
+                        <ng-container matColumnDef="type">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Type</mat-header-cell>
                           <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.itemGroup ? row.itemGroup : '-' }}
+                            {{ row.type ? row.type : '-' }}
                           </mat-cell>
                         </ng-container>
 
-                        <ng-container matColumnDef="status">
+                        <ng-container matColumnDef="isActive">
                           <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                           <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.status ? row.status : '-' }}
+                            {{ row.isActive ? row.isActive : '-' }}
                           </mat-cell>
                         </ng-container>
 
@@ -553,7 +553,7 @@
                   <ng-template #dialogTemplateItemsX let-data="data">
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
-                        <h2 class="text-lg font-semibold">ITEMS</h2>
+                        <div class="text-lg font-semibold">Inspection Characterisitics </div>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
@@ -565,25 +565,32 @@
                       <!-- ITEMS TABLE STARTS -->
                       <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
                         <!-- ITEM CODE COLUMN -->
-                        <ng-container matColumnDef="inspectionCode">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Code</mat-header-cell>
+                        <ng-container matColumnDef="intCode">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
                           <mat-cell *matCellDef="let row" class="single-line text-sm">
                             <mat-checkbox [checked]="row.isSelected"
                               (change)="onRowCheckboxChangeItemsX(row)"></mat-checkbox>
-                            {{ row.inspectionCode }}
+                            {{ row.intCode }}
                           </mat-cell>
                         </ng-container>
                         <!-- ITEM DESCRIPTION COLUMN -->
-                        <ng-container matColumnDef="itemDescription">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">{{ row.itemDescription
+                        <ng-container matColumnDef="description">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm">{{ row.description
                             }}</mat-cell>
                         </ng-container>
                         <!-- ITEM GROUP COLUMN -->
-                        <ng-container matColumnDef="itemGroup">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
+                        <ng-container matColumnDef="type">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Type</mat-header-cell>
                           <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.itemGroup ? row.itemGroup : '-' }}
+                            {{ row.type ? row.type : '-' }}
+                          </mat-cell>
+                        </ng-container>
+
+                        <ng-container matColumnDef="isActive">
+                          <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                            {{ row.isActive ? row.isActive : '-' }}
                           </mat-cell>
                         </ng-container>
 
@@ -607,7 +614,8 @@
           <div class="step-navigation">
             <button mat-button class="back-button" matStepperPrevious>Back</button>
             <button mat-button class="next-button" matStepperNext>Next</button>
-            <button mat-flat-button color="primary" type="submit">Submit</button>
+            <!-- <button mat-button class="next-button"(click)="onSubmitInspectionCard()" matStepperNext>Next</button> -->
+
 
           </div>
 

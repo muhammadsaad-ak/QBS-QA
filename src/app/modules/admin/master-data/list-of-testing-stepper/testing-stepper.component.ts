@@ -63,6 +63,8 @@ export class TestingStepperComponent implements AfterViewInit {
         private _formBuilder: FormBuilder,
         private dialog: MatDialog,
         private fb: FormBuilder,
+        private _inspectionCardModal: InspectionCardService,
+        private _inspectionCard: InspectionCardService,
         private _itemSamplesService: ItemSamplesService,
         private _uommasterservice: UomMasterService,
         private _inspectionCharateristics: InspectionCharacteristicsService,
@@ -272,10 +274,11 @@ export class TestingStepperComponent implements AfterViewInit {
     });
     fifthFormGroup = this._formBuilder.group({
         intCode: ['', Validators.required],
-        cardDescription: ['', Validators.required],
-        isActivefifth: [false],
-        qualitativeTableCriteria: this._formBuilder.array([]),
-        quantitativeTableCriteria: this._formBuilder.array([]), // Quantitative Data
+        description: ['', Validators.required],
+        isActive: [false],
+        // type: ['', Validators.required],
+        qualitativeTableCriteria: this._formBuilder.array([] as { parameter: string }[]),
+        quantitativeTableCriteria: this._formBuilder.array([] as { parameterX: string }[]),
     });
 
     // ITEM INSPECTION CARD 3.1 STARTS
@@ -851,7 +854,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 }
             });
 
-        //  Item Sample
+        //  Item Sample Service
         this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
             const fetchedCodeIS = sampleCodeIS.data;
             console.log('FETCHED CODE:', fetchedCodeIS);
@@ -862,6 +865,17 @@ export class TestingStepperComponent implements AfterViewInit {
                     ?.setValue(formattedSampleCodeIS);
             }
         });
+
+        this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
+            const qualitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'qualitative');
+            const quantitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'quantitative');
+          
+            this.dataSourceItems = new MatTableDataSource(qualitativeData);  // Qualitative data
+            this.dataSourceItemsX = new MatTableDataSource(quantitativeData);  // Quantitative data
+        });
+        
+
+
         this.fetchListAllItems();
         this.addNewRowItemSampling();
         // ITEM INSPECTION CARD 3.1
@@ -973,24 +987,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     @ViewChild('dialogTemplateItems') dialogTemplateItems;
-    dataSourceItems = new MatTableDataSource([
-        {
-            itemId: 1,
-            inspectionCode: 'ITM0012561',
-            itemDescription: 'Paint Bucket 3KG',
-            itemGroup: 'Item Group A',
-            status: 'Active',
-            isSelected: false,
-        },
-        {
-            itemId: 2,
-            inspectionCode: 'ITM0012562',
-            itemDescription: 'Paint Bucket 5KG',
-            itemGroup: '',
-            status: 'In Active',
-            isSelected: false,
-        },
-    ]);
+    dataSourceItems = new MatTableDataSource([]);
     //
     selectedControlAccountRowIndex: number = -1;
     onItemCodeClick(rowIndex: number): void {
@@ -1007,18 +1004,20 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
     displayedColumnsItems: string[] = [
-        'inspectionCode',
-        'itemDescription',
-        'itemGroup',
-        'status',
+        'intCode',
+        'description',
+        'type',
+        'isActive',
     ];
     selectedInspectionCode: string = '';
     selectedItemDescription: string = '';
     //
     onRowCheckboxChangeItems(selectedRow: any): void {
-        this.dataSourceItems.data.forEach((row) => (row.isSelected = false));
-        selectedRow.isSelected = true;
-    }
+        if (this.dataSourceItems.data) {
+          this.dataSourceItems.data.forEach((row) => (row.isSelected = false));
+          selectedRow.isSelected = true; }}
+
+
     applyFilterItems(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSourceItems.filter = filterValue.trim().toLowerCase();
@@ -1031,14 +1030,9 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
-            const rowFormGroup = this.qualitativeTableCriteria.at(
-                this.selectedControlAccountRowIndex
-            ) as FormGroup;
-            rowFormGroup
-                .get('parameter')
-                ?.setValue(selectedRow.itemDescription); // Set the value for this row's parameter
-            this.selectedInspectionCode = selectedRow.inspectionCode;
-            this.selectedItemDescription = selectedRow.itemDescription;
+            const rowFormGroup = this.qualitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;rowFormGroup.get('parameter')?.setValue(selectedRow.intCode); // Set the value for this row's parameter
+            this.selectedInspectionCode = selectedRow.intCode;
+            this.selectedItemDescription = selectedRow.description;
 
             console.log('SELECTED ROW:', selectedRow);
             console.log(
@@ -1067,27 +1061,12 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     @ViewChild('dialogTemplateItemsX') dialogTemplateItemsX;
-    dataSourceItemsX = new MatTableDataSource([
-        {
-            itemId: 1,
-            inspectionCode: 'ITM0012561',
-            itemDescription: 'Paint Bucket 3KG',
-            itemGroup: 'Item Group A',
-            isSelected: false,
-        },
-        {
-            itemId: 2,
-            inspectionCode: 'ITM0012562',
-            itemDescription: 'Paint Bucket 5KG',
-            itemGroup: '',
-            isSelected: false,
-        },
-    ]);
+    dataSourceItemsX = new MatTableDataSource([]);
 
     onItemCodeClickX(rowIndex: number): void {
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
-            width: '39%',
+            width: '70%',
             height: '75vh',
             data: this.dataSourceItemsX,
         });
@@ -1097,9 +1076,10 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     displayedColumnsItemsX: string[] = [
-        'inspectionCode',
-        'itemDescription',
-        'itemGroup',
+        'intCode',
+        'description',
+        'type',
+        'isActive',
     ];
 
     onRowCheckboxChangeItemsX(selectedRow: any): void {
@@ -1119,16 +1099,8 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
-            const rowFormGroup = this.quantitativeTableCriteria.at(
-                this.selectedControlAccountRowIndex
-            ) as FormGroup;
-            rowFormGroup
-                .get('parameterX')
-                ?.setValue(selectedRow.itemDescription);
-
-            console.log('Selected row:', selectedRow);
-        }
-
+        const rowFormGroup = this.quantitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;rowFormGroup.get('parameterX')?.setValue(selectedRow.intCode);
+        console.log('Selected row:', selectedRow);}
         this.selectedControlAccountRowIndex = -1; // Reset index
     }
 
@@ -1195,13 +1167,13 @@ export class TestingStepperComponent implements AfterViewInit {
             });
     }
 
-    onSubmit(): void {
-        if (this.fifthFormGroup.valid) {
-            console.log('Form Submitted:', this.fifthFormGroup.value);
-        } else {
-            console.log('Form is invalid');
-        }
-    }
+    // onSubmit(): void {
+    //     if (this.fifthFormGroup.valid) {
+    //         console.log('Form Submitted:', this.fifthFormGroup.value);
+    //     } else {
+    //         console.log('Form is invalid');
+    //     }
+    // }
 
     onSubmititemSamplingForm(): void {
         if (this.itemSamplingForm.valid) {
@@ -1210,9 +1182,7 @@ export class TestingStepperComponent implements AfterViewInit {
             const { itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
             console.log('FORM SUBMISSION PAYLOAD:', payload);
             // this.itemSamplingForm.reset();
-            this._itemSamplesService
-                .AddSampleWithRanges(payload)
-                .subscribe((response) => {
+            this._itemSamplesService.AddSampleWithRanges(payload).subscribe((response) => {
                     if (response.isRequestSuccess) {
                         console.log('API RUN SUCCESSFULLY.', payload);
                     } else {
@@ -1226,6 +1196,34 @@ export class TestingStepperComponent implements AfterViewInit {
             console.log('FORM IS INVALID!');
         }
     }
+
+    // onSubmitInspectionCard() {
+    //     console.log('Form Value:', this.fifthFormGroup.value);
+      
+    //     const { intCode, ...formValue } = this.fifthFormGroup.value; // EXCLUDE intCode from payload
+      
+    //     const apiPayload = {
+    //       description: formValue.description,
+    //       type: 'Qualitative',
+    //       isActive: formValue.isActive,
+    //       characteristicsIds: [
+    //         ...formValue.qualitativeTableCriteria.map((item) => item.parameter),
+    //         ...formValue.quantitativeTableCriteria.map((item) => item.parameterX),
+    //       ],
+    //     };
+      
+    //     console.log('API Payload:', apiPayload);
+      
+    //     this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
+    //       (response) => {
+    //         console.log('API Response:', response);
+    //       },
+    //       (error) => {
+    //         console.error('API Error:', error);
+    //       }
+    //     );
+    //   }
+      
 
     closeDialog(): void {
         this.dialog.closeAll();
