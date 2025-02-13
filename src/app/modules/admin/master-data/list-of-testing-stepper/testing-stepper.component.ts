@@ -18,7 +18,8 @@ import { QualitativeResultsService } from 'app/core/other-core-services/module/q
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
 import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
 
-interface itemSamplingIF {
+interface itemSamplingIF 
+{
     lotSizeMin: string;
     lotSizeMax: string;
     sampleSize: string;
@@ -31,7 +32,6 @@ interface itemSamplingIF {
     selector: 'app-testing-stepper',
     standalone: true,
     encapsulation: ViewEncapsulation.None,
-
     imports: [
         MatButtonModule,
         MatStepperModule,
@@ -44,13 +44,12 @@ interface itemSamplingIF {
         CommonModule,
         MatTableModule,
         MatTabsModule,
-        MatIconModule,
-        
+        MatIconModule,  
     ],
     animations: qbsAnimations,
-
     templateUrl: './testing-stepper.component.html',
     styleUrl: './testing-stepper.component.scss',
+    
 })
 export class TestingStepperComponent implements AfterViewInit {
 
@@ -192,7 +191,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     //
     fourthFormGroup = this._formBuilder.group({
-        intCode: ['', Validators.required],
+        intCode: [''],
         description: ['', Validators.required],
         isActive:[false],
         type: ['', Validators.required],
@@ -761,7 +760,7 @@ export class TestingStepperComponent implements AfterViewInit {
   console.log('Fetched Code:', x);  // Check for debugging
 
   if (x) {
-    const fullCode = `ICH - ${x}`;  // Combine 'ICH - ' with the fetched code
+    const fullCode = `ICH-000${x}`;  // Combine 'ICH - ' with the fetched code
     this.fourthFormGroup.get('intCode')?.setValue(fullCode);  // Set the combined value in the form
   }
 });
@@ -1064,10 +1063,9 @@ export class TestingStepperComponent implements AfterViewInit {
     onSubmitInspectionCharacteristics(): void {
         console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
         const formValues = this.fourthFormGroup.value;
-        const payload = {
-          ...formValues,
-          
-      };
+        const { intCode,  ...payload } = formValues; // EXCLUDING intCode
+        console.log('UPDATED FORM VALUES:', payload);
+
         this._inspectionCharateristics.AddInspectionCharacteristics(payload).subscribe(
           (response) => {
               if (response.succeeded) {

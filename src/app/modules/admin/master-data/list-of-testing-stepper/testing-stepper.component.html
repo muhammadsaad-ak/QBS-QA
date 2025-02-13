@@ -248,9 +248,16 @@
 
           <!-- Responsive Flexbox Container -->
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
-            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-              <mat-label>Inspection Code</mat-label>
-              <input matInput placeholder="Enter Inspection Code" formControlName="intCode" required readonly>
+            <mat-form-field  style="flex: 1 1 calc(25% - 16px); min-width: 100px; ">
+              <mat-label >Inspection Code</mat-label>
+              <input class="view-mode-bg-grey"
+                matInput 
+                placeholder="Enter Inspection Code" 
+                formControlName="intCode" 
+                required 
+                readonly 
+                
+                style=" cursor: not-allowed;">
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
@@ -319,7 +326,7 @@
       </mat-step>
 
       <!-- Fifth Step -->
-      <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
+      <mat-step [stepControl]="fifthFormGroup" label="Inspection Card " >
         <form [formGroup]="fifthFormGroup">
           <!-- (ngSubmit)="onSubmit()" -->
           <!-- Custom Styled Heading -->

@@ -425,7 +425,11 @@
             align-items: stretch;
             border-radius: 6px;
             padding: 0 16px;
+            // .inspection-char{
+            //     background: black !important;
 
+            // }
+            
             .mat-mdc-form-field-icon-prefix,
             .mat-mdc-form-field-text-prefix {
                 padding: 0 !important;
@@ -582,6 +586,10 @@
                 }
             }
         }
+        
+// ::ng-deep .inspection-char {
+//   background: black !important;
+// }
 
         /* Remove the underline */
         .mdc-line-ripple {
