@@ -33,7 +33,7 @@
                 style="padding-top: 0px !important;">
                 <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
                     <div class="mat-elevation-z8">
-                        <table mat-table [dataSource]="dataSource_ItemsInspectionCards">
+                        <table mat-table [dataSource]="dataSourceItemsInspectionCards">
                             <!-- Serial Id COLUMN -->
                             <ng-container matColumnDef="serialId">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
@@ -80,8 +80,8 @@
                                     </mat-menu>
                                 </td>
                             </ng-container>
-                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                            <tr mat-header-row *matHeaderRowDef="displayedColumnsItemsInspectionCards"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumnsItemsInspectionCards;"></tr>
                         </table>
                         <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
                             aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">

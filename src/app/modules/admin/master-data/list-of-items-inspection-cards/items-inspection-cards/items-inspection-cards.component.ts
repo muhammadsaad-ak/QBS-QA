@@ -20,7 +20,8 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
-import { debounceTime } from 'rxjs';
+import { debounceTime, forkJoin } from 'rxjs';
+import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 
 @Component({
   selector: 'app-items-inspection-cards',
@@ -62,82 +63,20 @@ export class ItemsInspectionCardsComponent {
 
   addBtnTitle = "Add";
 
+
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
   drawerMode: 'side' | 'over';
 
-  dataList_ItemsInspectionCards = [
-    {
-      itemCode: 'ITM0000001', itemDescription: 'itemDescription1', cardCode: 'cardCode001', cardDescription: 'cardDescription1', isActive: true,
-      qualitativeInspectionArray: [
-        {
-          parameter: "Color Shade",
-          passCriteria: "As per standard",
-          isMandotary: false,
-          pass: "Moderate",
-          fail: "Pathetic",
-          minorDefect: "1"
-        },
-        {
-          parameter: "Dental Damage",
-          passCriteria: "Essential",
-          sampleSize: true,
-          pass: "Yes",
-          fail: "No",
-        },
-      ],
-      quantitativeInspectionArray: [
-        {
-          parameter: "Color Shade",
-          uom: "KG",
-          isMandotary: false,
-          target: 30,
-          max: +5,
-          min: -2,
-          // passCriteria: { target: 30, max: +5, min: -2, }
-        },
-      ]
-    },
-    {
-      itemCode: 'ITM0000002', itemDescription: 'itemDescription2', cardCode: 'cardCode002', cardDescription: 'cardDescription2', isActive: true,
-      qualitativeInspectionArray: [
-        {
-          parameter: "Color Shade",
-          passCriteria: "As per standard",
-          isMandotary: false,
-          pass: "Moderate",
-          fail: "Pathetic",
-          minorDefect: "1"
-        },
-        {
-          parameter: "Dental Damage",
-          passCriteria: "Essential",
-          sampleSize: true,
-          pass: "Yes",
-          fail: "No",
-        },
-      ],
-      quantitativeInspectionArray: [
-        {
-          parameter: "Color Shade",
-          uom: "KG",
-          isMandotary: false,
-          target: 30,
-          max: +5,
-          min: -2,
-          // passCriteria: { target: 30, max: +5, min: -2, }
-        },
-      ]
-    },
+  ListIAlltemsInspectionCards = [];
 
-  ];
-
-  displayedColumns: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'action'];
-  dataSource_ItemsInspectionCards = new MatTableDataSource<any>(this.dataList_ItemsInspectionCards);
+  displayedColumnsItemsInspectionCards: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'action'];
+  dataSourceItemsInspectionCards = new MatTableDataSource<any>(this.ListIAlltemsInspectionCards);
+  // dataSource = new MatTableDataSource<any>([]);
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   ngAfterViewInit() {
-    this.dataSource_ItemsInspectionCards.paginator = this.paginator;
+    this.dataSourceItemsInspectionCards.paginator = this.paginator;
   }
 
   constructor(
@@ -145,21 +84,53 @@ export class ItemsInspectionCardsComponent {
     private _qbsConfirmationService: QbsConfirmationService,
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
+    private _itemInspectionCardService: ItemInspectionCardService,
+
   ) { }
 
   ngOnInit(): void {
+    forkJoin({
+      inspectionCards: this._itemInspectionCardService.ListAllItemsInspectionCards(),
+      items: this._itemInspectionCardService.getListAllItems()
+    }).subscribe(({ inspectionCards, items }) => {
+
+      // Convert item list to a map for quick lookup
+      const itemMap = new Map(items.data.map(item => [item.id, item.itemCode]));
+
+      // Map itemId to itemCode in the inspectionCards response
+      this.ListIAlltemsInspectionCards = inspectionCards.data.map(card => ({
+        ...card,
+        itemCode: itemMap.get(card.itemId) || 'N/A' // Default to 'N/A' if not found
+      }));
+
+      // Assign updated data to table
+      this.dataSourceItemsInspectionCards.data = this.ListIAlltemsInspectionCards;
+    });
+
+    this.searchInputControl.valueChanges
+      .pipe(debounceTime(300))
+      .subscribe((searchTerm: string) => {
+        this.applyFilter(searchTerm);
+      });
+  }
+
+
+  XngOnInit(): void {
+    this._itemInspectionCardService.ListAllItemsInspectionCards().subscribe((items) => {
+      this.dataSourceItemsInspectionCards.data = items.data;
+    })
+
     // Check if there is updated data from navigation
     const navigationState = history.state.updatedData;
     if (navigationState) {
       const updatedData = navigationState;
-      // Now update the dataList_ItemsInspectionCards with the new data
-      this.dataList_ItemsInspectionCards = this.dataList_ItemsInspectionCards.map(item =>
+      // Now update the ListIAlltemsInspectionCards with the new data
+      this.ListIAlltemsInspectionCards = this.ListIAlltemsInspectionCards.map(item =>
         item.cardCode === updatedData.cardCode ? updatedData : item
       );
       // Refresh the table data source
-      this.dataSource_ItemsInspectionCards = new MatTableDataSource<any>(this.dataList_ItemsInspectionCards);
+      this.dataSourceItemsInspectionCards = new MatTableDataSource<any>(this.ListIAlltemsInspectionCards);
     }
-
 
     this.searchInputControl.valueChanges
       .pipe(debounceTime(300))
@@ -170,10 +141,9 @@ export class ItemsInspectionCardsComponent {
 
   ngOnDestroy(): void { }
 
-
   applyFilter(searchTerm: string): void {
     searchTerm = searchTerm.trim().toLowerCase();
-    this.dataSource_ItemsInspectionCards.filter = searchTerm;
+    this.dataSourceItemsInspectionCards.filter = searchTerm;
   }
 
   addItemsInspectionCards(): void {
@@ -186,6 +156,5 @@ export class ItemsInspectionCardsComponent {
         relativeTo: this._activatedRoute,
         state: { itemData }
       });
-
   }
 }
