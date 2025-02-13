@@ -40,6 +40,28 @@ export class ItemInspectionCardService {
     }
 
     // ADD API
+    // GET ALL ITEM INSPECTION CARDS API
+    ListAllItemsInspectionCards(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/ListAllItemInspectionCards`, {
+                headers,
+            })
+            .pipe(
+                tap((results) => {
+                    const itemsInspectionCards = (results as any).data ?? [];
+                    this._listItemsInspectionCards.next(itemsInspectionCards);
+                    console.log('FETCHED RESULTS', itemsInspectionCards);
+                }),
+                catchError((error) => {
+                    console.error('ERROR FETCHING ITEM SAMPLES', error);
+                    return throwError(error);
+                })
+            );
+    }
     // GET ALL INSPECTION CARDS API
     ListAllInspectionCards(): Observable<any> {
         const headers = new HttpHeaders({
@@ -61,5 +83,5 @@ export class ItemInspectionCardService {
                     return throwError(error);
                 })
             );
-    }  
+    }
 }
