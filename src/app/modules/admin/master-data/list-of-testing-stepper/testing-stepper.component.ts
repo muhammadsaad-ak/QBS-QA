@@ -1,6 +1,7 @@
+import { SelectionModel } from '@angular/cdk/collections';
 import { CommonModule } from '@angular/common';
 import {AfterViewInit,Component,ViewChild,ViewEncapsulation,inject,} from '@angular/core';
-import {FormArray,FormBuilder,FormGroup,FormsModule,ReactiveFormsModule,Validators} from '@angular/forms';
+import {FormArray,FormBuilder,FormGroup,FormsModule,ReactiveFormsModule,Validators,} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,15 +14,12 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute } from '@angular/router';
 import { qbsAnimations } from '@qbs/animations';
-import {
-    qualitativeInspectionIF,
-    quantitativeInspectionIF,
-} from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
+import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
-import { SelectionModel } from '@angular/cdk/collections';
 import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
-import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
+import { qualitativeInspectionIF,quantitativeInspectionIF,} from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
+import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 
 interface itemSamplingRangeIF {
     lotSizeMin: number;
@@ -48,20 +46,16 @@ interface itemSamplingRangeIF {
         CommonModule,
         MatTableModule,
         MatTabsModule,
-        MatIconModule,  
+        MatIconModule,
     ],
     animations: qbsAnimations,
     templateUrl: './testing-stepper.component.html',
     styleUrl: './testing-stepper.component.scss',
-    
 })
 export class TestingStepperComponent implements AfterViewInit {
-
-
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
     private _activatedRoute = inject(ActivatedRoute);
-
 
     unitOfMeasureLOV: any = [];
 
@@ -72,8 +66,9 @@ export class TestingStepperComponent implements AfterViewInit {
         private _itemSamplesService: ItemSamplesService,
         private _uommasterservice: UomMasterService,
         private _inspectionCharateristics: InspectionCharacteristicsService,
-        private _qualitativeResultsService: QualitativeResultsService,
-    ) { }
+        private _inspectionCardsCode: InspectionCardService,
+        private _qualitativeResultsService: QualitativeResultsService
+    ) {}
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
         { parameter: 'Sample Parameter 2' },
@@ -114,7 +109,6 @@ export class TestingStepperComponent implements AfterViewInit {
     dataSourceItemSampling = new MatTableDataSource<itemSamplingRangeIF>();
     selectionItemSampling = new SelectionModel<itemSamplingRangeIF>(true, []);
 
-
     // dataSourceItemSampling = new MatTableDataSource<itemSamplingIF>();
     // get samples(): FormArray {
     //     return this.itemSamplingForm.get('samples') as FormArray;
@@ -137,58 +131,65 @@ export class TestingStepperComponent implements AfterViewInit {
         // this.dataSourceItemSampling.data = [...this.samples.value]; // Update the table data source
         this.samplingRangeObjects.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
         this.dataSourceItemSampling.data = [...this.samplingRangeObjects.value]; // Update the table data source
-
     }
 
-      // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
-      @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
-      onItemSampleItemCodeClick() {
-          const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
-              width: '80%',
-              height: '75vh',
-              data: this.dataSourceItemCodeIS,
-          });
-          dialogRef.afterClosed().subscribe(result => {
-              console.log('DIALOG CLOSED');
-          });
-      }
-      displayedColumnsItemCodeIS: string[] = [
-          'itemCode',
-          'itemDescription',
-          'itemGroup',
-      ];
-      selectedIntCodeIS: number;
-      selectedItemCodeIS: string;
-      selectedItemDescriptionIS: string = '';
-      // 
-      onRowCheckboxChangeItemCodeIS(selectedRow: any): void {
-          this.dataSourceItemCodeIS.data.forEach(row => (row.isSelected = false));
-          selectedRow.isSelected = true;
-      }
-      // 
-      addSelectedRowItemCodeIS(): void {
-          this.dialog.closeAll();
-          const selectedRow = this.dataSourceItemCodeIS.data.find(row => row.isSelected);
-          if (selectedRow) {
-              this.itemSamplingForm.get('itemCode').setValue(selectedRow.itemCode);
-              this.itemSamplingForm.get('itemId').setValue(selectedRow.id);
-              this.itemSamplingForm.get('itemDescription').setValue(selectedRow.name);
-  
-              this.selectedIntCodeIS = selectedRow.intCode;
-              this.selectedItemCodeIS = selectedRow.itemCode;
-              this.selectedItemDescriptionIS = selectedRow.name;
-  
-              console.log('SELECTED ROW:', selectedRow);
-          } else {
-              console.log('NO ROW SELECTED');
-          }
-      }
-  
-      applyFilterItemSampleCode(event: Event) {
-          const filterValue = (event.target as HTMLInputElement).value;
-          this.dataSourceItemCodeIS.filter = filterValue.trim().toLowerCase();
-      }
-      // ITEM SAMPLE ITEM CODE NG TEMPLATE ENDS
+    // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
+    @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
+    onItemSampleItemCodeClick() {
+        const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
+            width: '80%',
+            height: '75vh',
+            data: this.dataSourceItemCodeIS,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+    displayedColumnsItemCodeIS: string[] = [
+        'itemCode',
+        'itemDescription',
+        'itemGroup',
+    ];
+    selectedIntCodeIS: number;
+    selectedItemCodeIS: string;
+    selectedItemDescriptionIS: string = '';
+    //
+    onRowCheckboxChangeItemCodeIS(selectedRow: any): void {
+        this.dataSourceItemCodeIS.data.forEach(
+            (row) => (row.isSelected = false)
+        );
+        selectedRow.isSelected = true;
+    }
+    //
+    addSelectedRowItemCodeIS(): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceItemCodeIS.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            this.itemSamplingForm
+                .get('itemCode')
+                .setValue(selectedRow.itemCode);
+            this.itemSamplingForm.get('itemId').setValue(selectedRow.id);
+            this.itemSamplingForm
+                .get('itemDescription')
+                .setValue(selectedRow.name);
+
+            this.selectedIntCodeIS = selectedRow.intCode;
+            this.selectedItemCodeIS = selectedRow.itemCode;
+            this.selectedItemDescriptionIS = selectedRow.name;
+
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+
+    applyFilterItemSampleCode(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceItemCodeIS.filter = filterValue.trim().toLowerCase();
+    }
+    // ITEM SAMPLE ITEM CODE NG TEMPLATE ENDS
 
     // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
     @ViewChild('dialogTemplateItemSampleItems') dialogTemplateItemSampleItems;
@@ -265,12 +266,12 @@ export class TestingStepperComponent implements AfterViewInit {
     fourthFormGroup = this._formBuilder.group({
         intCode: [''],
         description: ['', Validators.required],
-        isActive:[false],
+        isActive: [false],
         type: ['', Validators.required],
         qualitativeCriteriaObjects: this._formBuilder.array([]),
     });
     fifthFormGroup = this._formBuilder.group({
-        cardCode: ['', Validators.required],
+        intCode: ['', Validators.required],
         cardDescription: ['', Validators.required],
         isActivefifth: [false],
         qualitativeTableCriteria: this._formBuilder.array([]),
@@ -826,24 +827,39 @@ export class TestingStepperComponent implements AfterViewInit {
     isLinear = false;
 
     ngOnInit(): void {
-        //
-        this._inspectionCharateristics.getInspectionCharacteristicsCode().subscribe((inspectionCharacteristicCode) => {
-  const x = inspectionCharacteristicCode.data;  // 13 mil raha hai
-  console.log('Fetched Code:', x);  // Check for debugging
+        // Inspection Characteristics API.
+        this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCharacteristicCode) => {
+                const y = inspectionCharacteristicCode.data; // 13 mil raha hai
+                console.log('Fetched Code:', y); // Check for debugging
 
-  if (x) {
-    const fullCode = `ICH-000${x}`;  // Combine 'ICH - ' with the fetched code
-    this.fourthFormGroup.get('intCode')?.setValue(fullCode);  // Set the combined value in the form
-  }
-});
-        
+                if (y) {
+                    const fullCode = `QR-000${y}`; // Combine 'ICH - ' with the fetched code
+                    this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+                }
+            });
+
+        // Inspection Card API -> Fifth Form
+        this._inspectionCharateristics
+            .getInspectionCharacteristicsCode()
+            .subscribe((inspectionCharacteristicCode) => {
+                const x = inspectionCharacteristicCode.data; // 13 mil raha hai
+                console.log('Fetched Code:', x); // Check for debugging
+
+                if (x) {
+                    const fullCode = `ICH-000${x}`; // Combine 'ICH - ' with the fetched code
+                    this.fourthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+                }
+            });
+
         //  Item Sample
         this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
             const fetchedCodeIS = sampleCodeIS.data;
             console.log('FETCHED CODE:', fetchedCodeIS);
             if (fetchedCodeIS) {
-                const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`
-                this.itemSamplingForm.get('sampleCodeIS')?.setValue(formattedSampleCodeIS);
+                const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
+                this.itemSamplingForm
+                    .get('sampleCodeIS')
+                    ?.setValue(formattedSampleCodeIS);
             }
         });
         this.fetchListAllItems();
@@ -851,15 +867,13 @@ export class TestingStepperComponent implements AfterViewInit {
         // ITEM INSPECTION CARD 3.1
         this.initializeTableDataItemInspectionCard();
 
-        this.fourthFormGroup
-            .get('type')
-            ?.valueChanges.subscribe((value) => {
-                if (value === 'qualitative') {
-                    this.initializeQualitativeRow();
-                } else {
-                    this.clearQualitativeCriteria();
-                }
-            });
+        this.fourthFormGroup.get('type')?.valueChanges.subscribe((value) => {
+            if (value === 'qualitative') {
+                this.initializeQualitativeRow();
+            } else {
+                this.clearQualitativeCriteria();
+            }
+        });
 
         this.initializeTableWithDefaultRow(); // Initialize table with one row on load
         this.initializeTableWithDefaultRowX(); // Initialize table with one row on load
@@ -878,8 +892,13 @@ export class TestingStepperComponent implements AfterViewInit {
         this._itemSamplesService.getListAllItems().subscribe({
             next: (response) => {
                 if (response && response.isRequestSuccess && response.data) {
-                    this.dataSourceItemCodeIS = new MatTableDataSource(response.data);
-                    console.log('FETCHED ITEMS:', this.dataSourceItemCodeIS.data);
+                    this.dataSourceItemCodeIS = new MatTableDataSource(
+                        response.data
+                    );
+                    console.log(
+                        'FETCHED ITEMS:',
+                        this.dataSourceItemCodeIS.data
+                    );
                 } else {
                     console.warn('INVALID API RESPONSE:', response);
                     this.dataSourceItemCodeIS = new MatTableDataSource([]);
@@ -891,11 +910,11 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
 
-
-
     /** Getter for qualitativeCriteria FormArray */
     get qualitativeCriteriaObjects(): FormArray {
-        return this.fourthFormGroup.get('qualitativeCriteriaObjects') as FormArray;
+        return this.fourthFormGroup.get(
+            'qualitativeCriteriaObjects'
+        ) as FormArray;
     }
     /** Initialize one row in qualitativeCriteria */
     initializeQualitativeRow(): void {
@@ -1126,67 +1145,63 @@ export class TestingStepperComponent implements AfterViewInit {
     //     Promise.all([qualitative, unitofmeasure])
     //     .then(res => {
     //         console.log(qualitative, unitofmeasure);
-            
+
     //     })
-        
+
     //   }
 
-      onSubmitQualitativeResult(): void {
+    onSubmitQualitativeResult(): void {
         console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
         const formValues = this.firstFormGroup.value;
         const payload = {
-          ...formValues,
-      };
-        this._qualitativeResultsService.AddQualitativeResult(payload).subscribe(
-          (response) => {
-              if (response.succeeded) {
-                  console.log('API RUN SUCCESSFULLY.', payload);
-              }
-          }
-      );
+            ...formValues,
+        };
+        this._qualitativeResultsService
+            .AddQualitativeResult(payload)
+            .subscribe((response) => {
+                if (response.succeeded) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                }
+            });
     }
 
     onSubmitUnitOfMeasure(): void {
         console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
         const formValues = this.secondFormGroup.value;
         const payload = {
-          ...formValues,
-      };
-        this._uommasterservice.AddUnitOfMeasure(payload).subscribe(
-          (response) => {
-              if (response.succeeded) {
-                  console.log('API RUN SUCCESSFULLY.', payload);
-              }
-          }
-      );
+            ...formValues,
+        };
+        this._uommasterservice
+            .AddUnitOfMeasure(payload)
+            .subscribe((response) => {
+                if (response.succeeded) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                }
+            });
     }
 
     onSubmitInspectionCharacteristics(): void {
         console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
         const formValues = this.fourthFormGroup.value;
-        const { intCode,  ...payload } = formValues; // EXCLUDING intCode
+        const { intCode, ...payload } = formValues; // EXCLUDING intCode
         console.log('UPDATED FORM VALUES:', payload);
 
-        this._inspectionCharateristics.AddInspectionCharacteristics(payload).subscribe(
-          (response) => {
-              if (response.succeeded) {
-                  console.log('API RUN SUCCESSFULLY.', payload);
-              }
-          }
-      );
+        this._inspectionCharateristics
+            .AddInspectionCharacteristics(payload)
+            .subscribe((response) => {
+                if (response.succeeded) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                }
+            });
     }
 
-    
-
-      
-
-    // onSubmit(): void {
-    //   if (this.fourthFormGroup.valid) {
-    //     console.log('Form Submitted:', this.fourthFormGroup.value);
-    //   } else {
-    //     console.log('Form is invalid');
-    //   }
-    // }
+    onSubmit(): void {
+        if (this.fifthFormGroup.valid) {
+            console.log('Form Submitted:', this.fifthFormGroup.value);
+        } else {
+            console.log('Form is invalid');
+        }
+    }
 
     onSubmititemSamplingForm(): void {
         if (this.itemSamplingForm.valid) {
@@ -1195,8 +1210,9 @@ export class TestingStepperComponent implements AfterViewInit {
             const { itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
             console.log('FORM SUBMISSION PAYLOAD:', payload);
             // this.itemSamplingForm.reset();
-            this._itemSamplesService.AddSampleWithRanges(payload).subscribe(
-                (response) => {
+            this._itemSamplesService
+                .AddSampleWithRanges(payload)
+                .subscribe((response) => {
                     if (response.isRequestSuccess) {
                         console.log('API RUN SUCCESSFULLY.', payload);
                     } else {
@@ -1205,9 +1221,7 @@ export class TestingStepperComponent implements AfterViewInit {
                             response.message
                         );
                     }
-                }
-            );
-
+                });
         } else {
             console.log('FORM IS INVALID!');
         }

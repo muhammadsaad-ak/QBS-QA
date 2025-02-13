@@ -395,7 +395,7 @@
 
       <!-- Fifth Step -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card " >
-        <form [formGroup]="fifthFormGroup">
+        <form [formGroup]="fifthFormGroup" (ngSubmit)="onSubmit()">
           <!-- (ngSubmit)="onSubmit()" -->
           <!-- Custom Styled Heading -->
           <h1 class="custom-heading">Inspection Card</h1>
@@ -404,7 +404,7 @@
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Card Code</mat-label>
-              <input matInput placeholder="Enter Inspection Code" formControlName="cardCode" required>
+              <input matInput placeholder="Enter Inspection Code" formControlName="intCode" required>
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
@@ -607,7 +607,7 @@
           <div class="step-navigation">
             <button mat-button class="back-button" matStepperPrevious>Back</button>
             <button mat-button class="next-button" matStepperNext>Next</button>
-            <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
+            <button mat-flat-button color="primary" type="submit">Submit</button>
 
           </div>
 
