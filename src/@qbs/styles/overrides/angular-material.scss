@@ -418,7 +418,7 @@
             border-radius: 6px;
         }
         .mat-mdc-form-field-flex:has(.view-mode-bg-grey) {
-            padding-left: 0 !important;
+            padding: 0px  !important;
           }
         
         /* Form field */
@@ -427,7 +427,7 @@
             display: flex;
             align-items: stretch;
             border-radius: 6px;
-            padding-left: 16px;
+            padding: 0px 16px 0px 16px;
                 
                   
             .view-mode-bg-grey {
