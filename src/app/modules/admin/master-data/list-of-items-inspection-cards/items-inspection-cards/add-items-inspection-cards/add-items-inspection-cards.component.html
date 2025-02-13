@@ -7,7 +7,8 @@
                     Item Inspection Card 3.1
                 </div>
             </div>
-            <form [formGroup]="itemsInspectionForm" (ngSubmit)="submitItemsInspectionForm()">
+            <form [formGroup]="itemsInspectionCardsForm" (ngSubmit)="submitItemsInspectionCardsForm()">
+
                 <div class="w-full mt-4">
                     <!-- UPPER FIELDS SECTION STARTS -->
                     <div class="px-6 flex space-x-10">
@@ -17,7 +18,9 @@
                                 style="padding: 0.2rem !important;">
                                 <mat-label>Item Code</mat-label>
                                 <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
-                                    (click)="onItemInspectionCardCodeClick()"></mat-icon>
+                                    (click)="onItemSampleItemCodeClick()">
+                                    <!-- (click)="onItemInspectionCardCodeClick()" -->
+                                </mat-icon>
                                 <input matInput type="text" class="text-sm" formControlName="itemCode" readonly
                                     [value]="selectedItemCodeItemInspectionCardItemCode ? selectedItemCodeItemInspectionCardItemCode : ''">
                             </mat-form-field>
@@ -38,7 +41,7 @@
                                 <mat-label>Card Code</mat-label>
                                 <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                                     (click)="onCardCodeClick()"></mat-icon>
-                                <input matInput type="text" class="text-sm" formControlName="cardCode" readonly
+                                <input matInput type="text" class="text-sm" formControlName="intCode" readonly
                                     [value]="selectedCardCode ? selectedCardCode : ''">
                             </mat-form-field>
                         </div>
@@ -46,125 +49,204 @@
                         <div class="w-full">
                             <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
                                 style="padding: 0.2rem !important;">
-                                <mat-label>Item Description</mat-label>
-                                <input matInput type="text" class="text-sm" formControlName="cardDescription" readonly
+                                <mat-label>Card Description</mat-label>
+                                <input matInput type="text" class="text-sm" formControlName="description" readonly
                                     [value]="selectedCardDescription ? selectedCardDescription : ''">
                             </mat-form-field>
                         </div>
-                        <!-- ITEM CODE NG TEMPLATE DIALOG STARTS -->
-                        <ng-template #dialogTemplateItemInspectionCardItems let-data="data">
-                            <div class="dialog-container flex flex-col h-full">
-                                <div class="flex justify-between items-center p-4 border-b text-primary">
-                                    <h2 class="text-lg font-semibold">
-                                        ITEMS</h2>
-                                    <span (click)="closeDialog()" class="header-close-x">
-                                        <mat-icon class="text-primary">close</mat-icon>
-                                    </span>
-                                </div>
-                                <mat-form-field>
-                                    <mat-label>Filter</mat-label>
-                                    <input matInput (keyup)="applyFilterItemInspectionCardItems($event)" #input>
-                                </mat-form-field>
-                                <!-- ITEMS TABLE STARTS -->
-                                <mat-table [dataSource]="dataSourceItemInspectionCardItems" class="flex-grow">
-                                    <!-- ITEM CODE & CHECKBOX COLUMN -->
-                                    <ng-container matColumnDef="itemCode">
-                                        <mat-header-cell *matHeaderCellDef
-                                            class="single-line">Item&nbsp;Code</mat-header-cell>
-                                        <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                            <mat-checkbox [checked]="row.isSelected"
-                                                (change)="onRowCheckboxChangeItemInspectionCardItems(row)">
-                                                <!-- [matTooltip]="row.itemDescription" -->
-                                            </mat-checkbox> {{row.itemCode}} </mat-cell>
-                                    </ng-container>
-                                    <!-- ITEM DESCRIPTION COLUMN -->
-                                    <ng-container matColumnDef="itemDescription">
-                                        <mat-header-cell *matHeaderCellDef
-                                            class="single-line">Item&nbsp;Description</mat-header-cell>
-                                        <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                            {{row.itemDescription}} </mat-cell>
-                                    </ng-container>
-                                    <!-- ITEM GROUP COLUMN -->
-                                    <ng-container matColumnDef="itemGroup">
-                                        <mat-header-cell *matHeaderCellDef
-                                            class="single-line">Item&nbsp;Group</mat-header-cell>
-                                        <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                                            {{ row.itemGroup ? row.itemGroup : '-' }}
-                                        </mat-cell>
-                                    </ng-container>
-
-                                    <mat-header-row *matHeaderRowDef="displayedColumnsItemInspectionCardItems"></mat-header-row>
-                                    <mat-row *matRowDef="let row; columns: displayedColumnsItemInspectionCardItems;"></mat-row>
-
-                                    <tr class="mat-row" *matNoDataRow>
-                                        <td class="mat-cell" colspan="4">No data matched with
-                                            "{{input.value}}"</td>
-                                    </tr>
-                                </mat-table>
-                                <!-- ITEMS TABLE ENDS -->
-                                <!-- SAVE & CLOSE -->
-                                <div class="flex justify-end mt-auto">
-                                    <button mat-flat-button color="primary" (click)="addSelectedRowItemInspectionCardItem()">
-                                        Save&nbsp;&&nbsp; Close
-                                    </button>
-                                </div>
-                            </div>
-                        </ng-template>
-                        <!-- ITEM CODE NG TEMPLATE DIALOG ENDS -->
-                        <!-- CARD CODE NG TEMPLATE DIALOG STARTS -->
-                        <ng-template #dialogTemplateCardsItemInspectionCard let-data="data">
-                            <div class="dialog-container flex flex-col h-full">
-                                <div class="flex justify-between items-center p-4 border-b text-primary">
-                                    <h2 class="text-lg font-semibold">
-                                        CARDS</h2>
-                                    <span (click)="closeDialog()" class="header-close-x">
-                                        <mat-icon class="text-primary">close</mat-icon>
-                                    </span>
-                                </div>
-                                <mat-form-field>
-                                    <mat-label>Filter</mat-label>
-                                    <input matInput (keyup)="applyFilterCards($event)" #input>
-                                </mat-form-field>
-                                <!-- CARDS TABLE STARTS -->
-                                <mat-table [dataSource]="dataSourceCardsCardsItemInspectionCard" class="flex-grow">
-                                    <!-- CARD CODE & CHECKBOX COLUMN -->
-                                    <ng-container matColumnDef="cardCode">
-                                        <mat-header-cell *matHeaderCellDef
-                                            class="single-line">Card&nbsp;Code</mat-header-cell>
-                                        <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                            <mat-checkbox [checked]="row.isSelected"
-                                                (change)="onRowCheckboxChangeCards(row)">
-                                            </mat-checkbox> {{row.cardCode}} </mat-cell>
-                                    </ng-container>
-                                    <!-- CARD DESCRIPTION COLUMN -->
-                                    <ng-container matColumnDef="cardDescription">
-                                        <mat-header-cell *matHeaderCellDef
-                                            class="single-line">Card&nbsp;Description</mat-header-cell>
-                                        <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                            {{row.cardDescription}} </mat-cell>
-                                    </ng-container>
-
-                                    <mat-header-row *matHeaderRowDef="displayedColumnsCards"></mat-header-row>
-                                    <mat-row *matRowDef="let row; columns: displayedColumnsCards;"></mat-row>
-
-                                    <tr class="mat-row" *matNoDataRow>
-                                        <td class="mat-cell" colspan="4">No data matched with
-                                            "{{input.value}}"</td>
-                                    </tr>
-                                </mat-table>
-                                <!-- CARD CODE TABLE ENDS -->
-                                <!-- SAVE & CLOSE -->
-                                <div class="flex justify-end mt-auto">
-                                    <button mat-flat-button color="primary" (click)="addSelectedRowCard()">
-                                        Save&nbsp;&&nbsp; Close
-                                    </button>
-                                </div>
-                            </div>
-                        </ng-template>
-                        <!-- CARD CODE NG TEMPLATE DIALOG ENDS -->
                     </div>
-                    <!-- UPPER FIELDS SECTION ENDS -->
+                    <!-- ITEM CODE IS NG TEMPLATE DIALOG STARTS -->
+                    <ng-template #dialogTemplateItemCodeIS>
+                        <div class="dialog-container flex flex-col h-full">
+                            <div class="flex justify-between items-center p-4 border-b text-primary">
+                                <h2 class="text-lg font-semibold">ITEMSXXXXX</h2>
+                                <span (click)="dialog.closeAll()" class="header-close-x">
+                                    <mat-icon class="text-primary">close</mat-icon>
+                                </span>
+                            </div>
+                            <!-- <mat-form-field>
+                                <mat-label>Filter</mat-label>
+                                <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
+                            </mat-form-field> -->
+                            <!-- ITEM CODE TABLE STARTS -->
+                            <mat-table [dataSource]="dataSourceItemCodeIS" class="flex-grow">
+                                <!-- Item Code -->
+                                <ng-container matColumnDef="itemCode">
+                                    <mat-header-cell *matHeaderCellDef class="single-line">Item
+                                        Code</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                                        <mat-checkbox [checked]="row.isSelected"
+                                            (change)="onRowCheckboxChangeItemCodeIS(row)" [matTooltip]="row.name">
+                                        </mat-checkbox> {{ row.itemCode }}
+                                    </mat-cell>
+                                </ng-container>
+                                <!-- Item Description -->
+                                <ng-container matColumnDef="itemDescription">
+                                    <mat-header-cell *matHeaderCellDef class="single-line">Item
+                                        Description</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                                        {{ row.name }}
+                                    </mat-cell>
+                                </ng-container>
+                                <!-- Item Group -->
+                                <ng-container matColumnDef="itemGroup">
+                                    <mat-header-cell *matHeaderCellDef class="single-line">Item
+                                        Group</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                                        {{ row.uoMGroupEntry ?? '-' }}
+                                    </mat-cell>
+                                </ng-container>
+
+                                <mat-header-row *matHeaderRowDef="displayedColumnsItemCodeIS"></mat-header-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumnsItemCodeIS;"></mat-row>
+
+                                <tr class="mat-row" *matNoDataRow>
+                                    <td class="mat-cell" colspan="4">No data matched with "{{input.value}}"</td>
+                                </tr>
+                            </mat-table>
+                            <!-- Save & Close -->
+                            <div class="flex justify-end mt-auto">
+                                <button mat-flat-button color="primary" (click)="addSelectedRowItemCodeIS()">Save &
+                                    Close</button>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <!-- ITEM CODE IS NG TEMPLATE DIALOG ENDS -->
+                    <!-- CARD CODE NG TEMPLATE DIALOG STARTS -->
+                    <ng-template #dialogTemplateCardsItemInspectionCard let-data="data">
+                        <div class="dialog-container flex flex-col h-full">
+                            <div class="flex justify-between items-center p-4 border-b text-primary">
+                                <h2 class="text-lg font-semibold">
+                                    CARDS</h2>
+                                <span (click)="closeDialog()" class="header-close-x">
+                                    <mat-icon class="text-primary">close</mat-icon>
+                                </span>
+                            </div>
+                            <mat-form-field>
+                                <mat-label>Filter</mat-label>
+                                <input matInput (keyup)="applyFilterCards($event)" #input>
+                            </mat-form-field>
+                            <!-- CARDS TABLE STARTS -->
+                            <mat-table [dataSource]="dataSourceCardsCardsItemInspectionCard" class="flex-grow">
+                                <!-- CARD CODE & CHECKBOX COLUMN -->
+                                <ng-container matColumnDef="cardCode">
+                                    <mat-header-cell *matHeaderCellDef
+                                        class="single-line">Card&nbsp;Code</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                                        <mat-checkbox [checked]="row.isSelected"
+                                            (change)="onRowCheckboxChangeCards(row)">
+                                        </mat-checkbox> {{row.intCode}} </mat-cell>
+                                </ng-container>
+                                <!-- CARD DESCRIPTION COLUMN -->
+                                <ng-container matColumnDef="cardDescription">
+                                    <mat-header-cell *matHeaderCellDef
+                                        class="single-line">Card&nbsp;Description</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                                        {{row.description}} </mat-cell>
+                                </ng-container>
+                                <!-- CARD ID COLUMN -->
+                                <ng-container matColumnDef="id">
+                                    <mat-header-cell *matHeaderCellDef
+                                        class="single-line">Card&nbsp;ID</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                                        {{row.id}} </mat-cell>
+                                </ng-container>
+
+                                <mat-header-row *matHeaderRowDef="displayedColumnsCards"></mat-header-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumnsCards;"></mat-row>
+
+                                <tr class="mat-row" *matNoDataRow>
+                                    <td class="mat-cell" colspan="4">No data matched with
+                                        "{{input.value}}"</td>
+                                </tr>
+                            </mat-table>
+                            <!-- CARD CODE TABLE ENDS -->
+                            <!-- SAVE & CLOSE -->
+                            <div class="flex justify-end mt-auto">
+                                <button mat-flat-button color="primary" (click)="addSelectedRowCard()">
+                                    Save&nbsp;&&nbsp; Close
+                                </button>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <!-- CARD CODE NG TEMPLATE DIALOG ENDS -->
+                    <!-- X ITEM CODE NG TEMPLATE DIALOG STARTS -->
+                    <ng-template #dialogTemplateItemInspectionCardItems let-data="data">
+                        <div class="dialog-container flex flex-col h-full">
+                            <div class="flex justify-between items-center p-4 border-b text-primary">
+                                <h2 class="text-lg font-semibold">
+                                    ITEMS</h2>
+                                <span (click)="closeDialog()" class="header-close-x">
+                                    <mat-icon class="text-primary">close</mat-icon>
+                                </span>
+                            </div>
+                            <!-- <mat-form-field>
+                                <mat-label>Filter</mat-label>
+                                <input matInput (keyup)="applyFilterItemInspectionCardItems($event)" #input>
+                            </mat-form-field> -->
+                            <!-- ITEMS TABLE STARTS -->
+                            <mat-table [dataSource]="dataSourceItemInspectionCardItems" class="flex-grow">
+                                <!-- ITEM CODE & CHECKBOX COLUMN -->
+                                <ng-container matColumnDef="itemCode">
+                                    <mat-header-cell *matHeaderCellDef
+                                        class="single-line">Item&nbsp;Code</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                                        <mat-checkbox [checked]="row.isSelected"
+                                            (change)="onRowCheckboxChangeItemInspectionCardItems(row)">
+                                            <!-- [matTooltip]="row.itemDescription" -->
+                                        </mat-checkbox> {{row.itemCode}} </mat-cell>
+                                </ng-container>
+                                <!-- ITEM DESCRIPTION COLUMN -->
+                                <ng-container matColumnDef="itemDescription">
+                                    <mat-header-cell *matHeaderCellDef
+                                        class="single-line">Item&nbsp;Description</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                                        {{row.itemDescription}} </mat-cell>
+                                </ng-container>
+                                <!-- ITEM GROUP COLUMN -->
+                                <ng-container matColumnDef="itemGroup">
+                                    <mat-header-cell *matHeaderCellDef
+                                        class="single-line">Item&nbsp;Group</mat-header-cell>
+                                    <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                                        {{ row.itemGroup ? row.itemGroup : '-' }}
+                                    </mat-cell>
+                                </ng-container>
+
+                                <mat-header-row
+                                    *matHeaderRowDef="displayedColumnsItemInspectionCardItems"></mat-header-row>
+                                <mat-row
+                                    *matRowDef="let row; columns: displayedColumnsItemInspectionCardItems;"></mat-row>
+
+                                <tr class="mat-row" *matNoDataRow>
+                                    <td class="mat-cell" colspan="4">No data matched with
+                                        "{{input.value}}"</td>
+                                </tr>
+                            </mat-table>
+                            <!-- ITEMS TABLE ENDS -->
+                            <!-- SAVE & CLOSE -->
+                            <div class="flex justify-end mt-auto">
+                                <button mat-flat-button color="primary"
+                                    (click)="addSelectedRowItemInspectionCardItem()">
+                                    Save&nbsp;&&nbsp; Close
+                                </button>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <!-- X ITEM CODE NG TEMPLATE DIALOG ENDS -->
                 </div>
+                <div class="w-full mt-4">
+                    <div class="px-6 flex space-x-10">
+                        <!-- CARD ID -->
+                        <div class="w-full">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
+                                style="padding: 0.2rem !important;">
+                                <mat-label>Card ID</mat-label>
+                                <input matInput type="text" class="text-sm" formControlName="id" readonly>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </div>
+                <!-- UPPER FIELDS SECTION ENDS -->
                 <!-- TABS STARTS -->
                 <mat-tab-group class="sm:px-2" mat-stretch-tabs="true" [animationDuration]="'0'">
                     <!-- QUALITATIVE INSPECTION TAB STARTS -->
