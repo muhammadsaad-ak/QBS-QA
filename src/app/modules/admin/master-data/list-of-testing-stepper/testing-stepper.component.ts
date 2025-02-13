@@ -69,7 +69,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private _formBuilder: FormBuilder,
         private dialog: MatDialog,
         private fb: FormBuilder,
-        private _itemSamplesService: ItemSamplesService,,
+        private _itemSamplesService: ItemSamplesService,
         private _uommasterservice: UomMasterService,
         private _inspectionCharateristics: InspectionCharacteristicsService,
         private _qualitativeResultsService: QualitativeResultsService,
