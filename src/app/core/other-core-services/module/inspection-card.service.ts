@@ -122,22 +122,22 @@ getInspectionCardModal(): Observable<any> {
             );
     }
 
-//   AddInspectionCard(data: any): Observable<any> {
-//     const headers = new HttpHeaders({
-//       Authorization: `Bearer ${this.accessToken}`,
-//       'Content-Type': 'application/json',
-//   });
-//   return this._httpClient.post(
-//       `${environment.appApiUrl}/CSAPI/IInspectionCardFeature/AddInspectionCardWithCharacteristics`,
-//       data,
-//       { headers }
-//   ).pipe(
-//       tap(response => console.log('RESPONSE:', response)),
-//       catchError(error => {
-//           console.error('Error Adding Inspection Cards', error);
-//           return throwError(() => new Error('Error Adding Inspection Cards'));
-//       })
-//   );
-// }
+  AddInspectionCard(data: any): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json',
+  });
+  return this._httpClient.post(
+      `${environment.appApiUrl}/CSAPI/IInspectionCardFeature/AddInspectionCardWithCharacteristics`,
+      data,
+      { headers }
+  ).pipe(
+      tap(response => console.log('RESPONSE:', response)),
+      catchError(error => {
+          console.error('Error Adding Inspection Cards', error);
+          return throwError(() => new Error('Error Adding Inspection Cards'));
+      })
+  );
+}
 
 }

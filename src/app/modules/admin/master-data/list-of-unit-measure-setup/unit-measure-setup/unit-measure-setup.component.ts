@@ -69,7 +69,7 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
       @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
       drawerMode: 'side' | 'over';
           
-      displayedColumns: string[] = ['serialId', 'intCode', 'description', 'action'];
+      displayedColumns: string[] = ['serialId', 'uoMCode', 'description', 'action'];
       dataSource = new MatTableDataSource<any>([]);
       
       @ViewChild(MatPaginator) paginator: MatPaginator;

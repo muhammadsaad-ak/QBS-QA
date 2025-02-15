@@ -79,18 +79,18 @@ export class TestingStepperComponent implements AfterViewInit {
     firstRowAdded: boolean = false;
 
     @ViewChild(MatStepper) stepper!: MatStepper; // Correctly reference the MatStepper instance
-
+    //Qualitative Results Form
     firstFormGroup = this._formBuilder.group({
         // firstCtrl: ['', Validators.required],
         resultDescription: ['', Validators.required],
     });
+    // Unit Of Measure Form
     secondFormGroup = this._formBuilder.group({
         uoMCode: ['', Validators.required],
         description: ['', Validators.required],
+        isActive: [false],
     });
-
     // ITEM SAMPLE
-
     itemSamplingForm = this._formBuilder.group({
         sampleCodeIS: ['', Validators.required],
         itemId: ['', Validators.required],
@@ -836,7 +836,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 console.log('Fetched Code:', y); // Check for debugging
 
                 if (y) {
-                    const fullCode = `QR-000${y}`; // Combine 'ICH - ' with the fetched code
+                    const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
                     this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
                 }
             });
@@ -1140,9 +1140,7 @@ export class TestingStepperComponent implements AfterViewInit {
     onSubmitUnitOfMeasure(): void {
         console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
         const formValues = this.secondFormGroup.value;
-        const payload = {
-            ...formValues,
-        };
+        const payload = { ...formValues,};
         this._uommasterservice
             .AddUnitOfMeasure(payload)
             .subscribe((response) => {
@@ -1197,32 +1195,44 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
 
-    // onSubmitInspectionCard() {
-    //     console.log('Form Value:', this.fifthFormGroup.value);
+    onSubmitInspectionCard() {
+        this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
+          const mappedIds = charResponse.data.map((char: any) => ({
+            intCode: char.intCode,
+            id: char.id
+          }));
       
-    //     const { intCode, ...formValue } = this.fifthFormGroup.value; // EXCLUDE intCode from payload
+          const formValue = this.fifthFormGroup.value;
       
-    //     const apiPayload = {
-    //       description: formValue.description,
-    //       type: 'Qualitative',
-    //       isActive: formValue.isActive,
-    //       characteristicsIds: [
-    //         ...formValue.qualitativeTableCriteria.map((item) => item.parameter),
-    //         ...formValue.quantitativeTableCriteria.map((item) => item.parameterX),
-    //       ],
-    //     };
+          // Map IDs for both qualitative and quantitative criteria
+          const qualitativeIds = formValue.qualitativeTableCriteria
+            .map((item) => mappedIds.find((char) => char.intCode === item.parameter)?.id)
+            .filter(Boolean); // Remove undefined/null values
       
-    //     console.log('API Payload:', apiPayload);
+          const quantitativeIds = formValue.quantitativeTableCriteria
+            .map((item) => mappedIds.find((char) => char.intCode === item.parameterX)?.id)
+            .filter(Boolean); // Remove undefined/null values
       
-    //     this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
-    //       (response) => {
-    //         console.log('API Response:', response);
-    //       },
-    //       (error) => {
-    //         console.error('API Error:', error);
-    //       }
-    //     );
-    //   }
+          // Merge both qualitative and quantitative IDs
+          const characteristicsIds = [...qualitativeIds, ...quantitativeIds];
+      
+          const apiPayload = {
+            description: formValue.description,
+            // type: 'qualitative',  // Set type dynamically if needed
+            isActive: formValue.isActive,
+            characteristicsIds
+          };
+      
+          console.log('Final API Payload:', apiPayload);
+      
+          this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
+            (response) => console.log('API Response:', response),
+            (error) => console.error('API Error:', error)
+          );
+        });
+      }
+      
+      
       
 
     closeDialog(): void {
