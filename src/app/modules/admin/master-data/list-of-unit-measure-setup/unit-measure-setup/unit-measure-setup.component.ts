@@ -69,7 +69,7 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
       @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
       drawerMode: 'side' | 'over';
           
-      displayedColumns: string[] = ['serialId', 'intCode', 'description', 'action'];
+      displayedColumns: string[] = ['serialId', 'uoMCode', 'description', 'action'];
       dataSource = new MatTableDataSource<any>([]);
       
       @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -90,11 +90,20 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
     
        ngOnInit(): void {
         //Get API CALLS
-        this._uommasterservice.getUnitOfMeasure().subscribe((unitOfMeasure) => {
-          this.dataSource = unitOfMeasure.data
-          // console.log(unitOfMeasure.data, '............');
-          
+        this._uommasterservice.getUnitOfMeasure().subscribe((response) => {
+          // this.dataSource = unitOfMeasure.data //Saad bhais code
+          this.dataSource = new MatTableDataSource(response.data);
+          this.dataSource.paginator = this.paginator;
+          // console.log(unitOfMeasure.data, '............'); 
       });
+
+      this.dataSource.filterPredicate = (data: any, filter: string) => {
+        const searchText = filter.toLowerCase();
+        return data.intCode?.toString().toLowerCase().includes(searchText) ||
+               data.description?.toString().toLowerCase().includes(searchText) ||
+               data.type?.toString().toLowerCase().includes(searchText) ||
+               (data.isActive ? 'active' : 'inactive').includes(searchText);
+      };
 
       
     

@@ -20,9 +20,14 @@ export class QualitativeResultsService {
 
     // BehaviorSubject to hold role data state
     private _listQualitativeResults  = new BehaviorSubject<any[]>([]);
+    private _qualityResultsCode = new BehaviorSubject<any[]>([]);
+
 
     // Observable to expose role data state
     listQualitativeResults$: Observable<any[]> = this._listQualitativeResults .asObservable();
+
+    qualityResultCode$: Observable<any[]> = this._qualityResultsCode.asObservable(); //For IC Code API
+
 
     /**
      * Setter & getter for access token
@@ -78,6 +83,30 @@ export class QualitativeResultsService {
                         () => new Error('Error fetching items')
                     );
                 })
+            );
+    }
+
+     //Inspection Card Code API
+  getQualitativeResultCode(): Observable<any> {
+    const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        Accept: 'text/plain',
+    });
+  
+    return this._httpClient
+        .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=qualitative_result`, { headers })
+        .pipe(
+            tap((qualityResultCode) => {
+                const qualityResultsCode = (qualityResultCode as any) ?? [];
+                this._qualityResultsCode.next(qualityResultsCode);
+                console.log('Fetched code of Quality Result Code', qualityResultsCode);
+            }),
+            catchError((error) => {
+                console.error('Fetched code of Quality Result Code', error);
+                return throwError(
+                    () => new Error('Fetched code of Quality Result Code')
+                );
+              })
             );
     }
 }

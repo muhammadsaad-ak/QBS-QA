@@ -36,6 +36,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
+import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 import { debounceTime } from 'rxjs';
 
 @Component({
@@ -81,46 +82,17 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
     @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
     drawerMode: 'side' | 'over';
 
-    List_Of_Inspection_Data = [
-        // { cardCode: 'T001', description: 'Weight',  status: true },
-        // { cardCode: 'T002', description: 'Transparency Level',  status: false },
-        {
-            cardCode: 'T001',
-            description: 'Weight Inspection',
-            status: true,
-            qualitativeCriteria: [
-                { parameter: 'Color1', selected: true },
-                { parameter: 'Texture1', selected: false },
-            ],
-            quantitativeCriteria: [
-                { parameter: 'Weight1', selected: true },
-                { parameter: 'Length1', selected: false },
-            ],
-        },
-        {
-            cardCode: 'T002',
-            description: 'Transparency Level',
-            status: true,
-            qualitativeCriteria: [
-                { parameter: 'Color2', selected: true },
-                { parameter: 'Texture2', selected: false },
-            ],
-            quantitativeCriteria: [
-                { parameter: 'Weight2', selected: true },
-                { parameter: 'Length2', selected: false },
-            ],
-        },
-    ];
+   
 
     displayedColumns: string[] = [
         'serialId',
-        'cardCode',
+        'intCode',
         'description',
-        'status',
+        'isActive',
         'action',
     ];
-    dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
-    // dataSource = new MatTableDataSource<any>([]);
+    // dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
+    dataSource = new MatTableDataSource<any>([]);
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -132,10 +104,30 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
         private _formBuilder: UntypedFormBuilder,
         private _qbsConfirmationService: QbsConfirmationService,
         private _router: Router,
-        private _activatedRoute: ActivatedRoute
+        private _activatedRoute: ActivatedRoute,
+         private _inspectionCard: InspectionCardService,
+        
     ) {}
 
     ngOnInit(): void {
+        // this._inspectionCard.getInspectionCard().subscribe((inspectionCharacteristic) => {
+        //     this.dataSource = inspectionCharacteristic.data          
+        // });
+
+        this._inspectionCard.getInspectionCard().subscribe((response) => {
+            this.dataSource = new MatTableDataSource(response.data);
+            this.dataSource.paginator = this.paginator;
+          });
+
+              // Custom filter for better search
+this.dataSource.filterPredicate = (data: any, filter: string) => {
+    const searchText = filter.toLowerCase();
+    return data.intCode?.toString().toLowerCase().includes(searchText) ||
+           data.description?.toString().toLowerCase().includes(searchText) ||
+           data.type?.toString().toLowerCase().includes(searchText) ||
+           (data.isActive ? 'active' : 'inactive').includes(searchText);
+  };
+  
         // Build the config form
         this.configForm = this._formBuilder.group({
             title: 'Remove User',
