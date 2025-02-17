@@ -19,14 +19,22 @@ export class ItemInspectionCardService {
     private _httpClient = inject(HttpClient);
 
     // BehaviorSubject to hold role data state
-    private _listItemsInspectionCards = new BehaviorSubject<any[]>([]);
-    private _listAllItems = new BehaviorSubject<any[]>([]);
-    private _listInspectionCards = new BehaviorSubject<any[]>([]);
+    private _listItemsInspectionCardsIIC = new BehaviorSubject<any[]>([]);
+    private _listAllItemsIIC = new BehaviorSubject<any[]>([]);
+    private _listInspectionCardsIIC = new BehaviorSubject<any[]>([]);
+    private _listInspectionCharacteristics = new BehaviorSubject<any[]>([]);
+    private _listCharacteristicsWithCriteria = new BehaviorSubject<any[]>([]);
+    private _listUnitOfMeasureIIC = new BehaviorSubject<any[]>([]);
+    private _listQualitativeResultsIIC  = new BehaviorSubject<any[]>([]);
 
     // Observable to expose role data state
-    listItemsInspectionCards$: Observable<any[]> = this._listItemsInspectionCards.asObservable();
-    listAllItems$: Observable<any[]> = this._listAllItems.asObservable();
-    listInspectionCards$: Observable<any[]> = this._listInspectionCards.asObservable();
+    listItemsInspectionCardsIIC$: Observable<any[]> = this._listItemsInspectionCardsIIC.asObservable();
+    listAllItemsIIC$: Observable<any[]> = this._listAllItemsIIC.asObservable();
+    listInspectionCardsIIC$: Observable<any[]> = this._listInspectionCardsIIC.asObservable();
+    inspectionCardModal$: Observable<any[]> = this._listInspectionCharacteristics.asObservable();
+    listCharacteristicsWithCriteria$: Observable<any[]> = this._listCharacteristicsWithCriteria.asObservable();
+    listUnitOfMeasureIIC$: Observable<any[]> = this._listUnitOfMeasureIIC.asObservable();
+    listQualitativeResultsIIC$: Observable<any[]> = this._listQualitativeResultsIIC .asObservable();
 
     /**
      * Setter & getter for access token
@@ -54,7 +62,7 @@ export class ItemInspectionCardService {
             .pipe(
                 tap((results) => {
                     const itemsInspectionCards = (results as any).data ?? [];
-                    this._listItemsInspectionCards.next(itemsInspectionCards);
+                    this._listItemsInspectionCardsIIC.next(itemsInspectionCards);
                     console.log('FETCHED RESULTS', itemsInspectionCards);
                 }),
                 catchError((error) => {
@@ -76,7 +84,7 @@ export class ItemInspectionCardService {
             .pipe(
                 tap((itemsSAP) => {
                     const listAllItemsSAP = (itemsSAP as any) ?? [];
-                    this._listAllItems.next(listAllItemsSAP);
+                    this._listAllItemsIIC.next(listAllItemsSAP);
                     console.log('FETCHED ITEMS:', listAllItemsSAP);
                 }),
                 catchError((error) => {
@@ -98,7 +106,7 @@ export class ItemInspectionCardService {
             .pipe(
                 tap((itemsSAP) => {
                     const listAllPatchedCards = (itemsSAP as any) ?? [];
-                    this._listInspectionCards.next(listAllPatchedCards);
+                    this._listInspectionCardsIIC.next(listAllPatchedCards);
                     console.log('FETCHED CARDS:', listAllPatchedCards);
                 }),
                 catchError((error) => {
@@ -121,12 +129,96 @@ export class ItemInspectionCardService {
 
         return this._httpClient.get(getItemDataByCodeapiUrl, { headers }).pipe(
             tap((listAllItemsSAP) => {
-                console.log('FETCHED ITEM DATA:', listAllItemsSAP);
+                console.log('RECEIVED CHARACTERISTICS:', listAllItemsSAP);
             }),
             catchError((error) => {
-                console.error('ERROR FETCHING ITEM DATA', error);
+                console.error('ERROR FETCHING CHARACTERISTICS', error);
                 return throwError(error);
             })
         );
+    }
+    // LIST OF QUALITATIVE & QUANTITATIVE INSPECTION CHARACTERISTICS 
+    getInspectionCharacteristicsIIC(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IInspectionCharacteristicFeature/ListAllInspectionCharacteristics`, { headers })
+            .pipe(
+                tap((inspectionCardsModal) => {
+                    const inspectionCardModal = (inspectionCardsModal as any) ?? [];
+                    this._listInspectionCharacteristics.next(inspectionCardModal);
+                    console.log('FETCHED INSPECTION CHARACTERISTICS', inspectionCardModal);
+                }),
+                catchError((error) => {
+                    console.error('ERROR WHILE FETCHING LIST OF CHARACTERISTICS', error);
+                    return throwError(error);
+                })
+            );
+    }
+    getInspectionCharacteristicsWithCriteria(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IInspectionCharacteristicFeature/ListCharacteristicsWithCriteria`, { headers })
+            .pipe(
+                tap((inspectionModalIIC) => {
+                    const inspectionWithCriteria = (inspectionModalIIC as any) ?? [];
+                    this._listCharacteristicsWithCriteria.next(inspectionWithCriteria);
+                    console.log('CHARACTERISTICS WITH CRITERIA', inspectionWithCriteria);
+                }),
+                catchError((error) => {
+                    console.error('ERROR WHILE FETCHING LIST OF CHARACTERISTICS WITH CRITERIA', error);
+                    return throwError(error);
+                })
+            );
+    }
+    // LIST ALL UNIT OF MEASURE
+    getAllUnitOfMeasureIIC(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IUnitOfMeasureFeature/ListAllUnitOfMeasures`, { headers })
+            .pipe(
+                tap((uom) => {
+                    const UnitOfMeasure = (uom as any) ?? [];
+                    this._listUnitOfMeasureIIC.next(UnitOfMeasure);
+                    console.log('FETCHED UOM', UnitOfMeasure);
+                }),
+                catchError((error) => {
+                    console.error('ERROR WHILE FETCHING LIST OF UOM', error);
+                    return throwError(error);
+                })
+            );
+    }
+      // GET ALL QUALITATIVE RESULTS
+      ListAllQualitativeResultsIIC(): Observable<any> {
+        // Set up the headers with the Authorization token
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IQualitativeResultFeature/ListAllQualitativeResults`, {
+                headers,
+            })
+            .pipe(
+                tap((results) => {
+                    // Optionally handle the response or state update here
+                    const qualitativeResultsIIC = (results as any).data ?? [];
+                    this._listQualitativeResultsIIC .next(qualitativeResultsIIC);
+                      console.log('FETCHED QR', qualitativeResultsIIC);
+                }),
+                catchError((error) => {
+                    console.error('ERROR WHILE QR', error);
+                    return throwError(error);
+                })
+            );
     }
 }

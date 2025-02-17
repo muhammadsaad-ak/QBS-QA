@@ -13,10 +13,10 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute } from '@angular/router';
 import { qbsAnimations } from '@qbs/animations';
-import {
-    qualitativeInspectionIF,
-    quantitativeInspectionIF,
-} from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
+// import {
+//     qualitativeInspectionIF,
+//     quantitativeInspectionIF,
+// } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 import { SelectionModel } from '@angular/cdk/collections';
 import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
@@ -30,6 +30,23 @@ interface itemSamplingRangeIF {
     criticalDefects: number;
     majorDefects: number;
     minorDefects: number;
+}
+
+export interface qualitativeInspectionIF {
+    parameter: string;
+    passCriteria: string;
+    mandatory: boolean;
+    pass: string;
+    fail: string;
+}
+
+export interface quantitativeInspectionIF {
+    parameterQty: string;
+    uoMIdX: string;
+    mandatoryQty: boolean;
+    passCriteriaTarget: string;
+    passCriteriaMax: string;
+    passCriteriaMin: string;
 }
 
 @Component({
@@ -297,7 +314,7 @@ export class TestingStepperComponent implements AfterViewInit {
     ];
     displayedColumnsQuantitative = [
         'parameterQty',
-        'uomQty',
+        'uoMIdX',
         'mandatoryQty',
         'passCriteriaTarget',
         'passCriteriaMax',
@@ -322,7 +339,7 @@ export class TestingStepperComponent implements AfterViewInit {
     quantitativeInspectionItems: quantitativeInspectionIF[] = [
         {
             parameterQty: 'Color Shade',
-            uomQty: '',
+            uoMIdX: '',
             mandatoryQty: false,
             passCriteriaTarget: '',
             passCriteriaMax: '',
@@ -330,7 +347,7 @@ export class TestingStepperComponent implements AfterViewInit {
         },
         {
             parameterQty: 'Dental Damage',
-            uomQty: '',
+            uoMIdX: '',
             mandatoryQty: false,
             passCriteriaTarget: '',
             passCriteriaMax: '',
@@ -366,7 +383,7 @@ export class TestingStepperComponent implements AfterViewInit {
             formArrayQuantitative.push(
                 this.fb.group({
                     parameterQty: [quantitativeItem.parameterQty],
-                    uomQty: [quantitativeItem.uomQty],
+                    uoMIdX: [quantitativeItem.uoMIdX],
                     mandatoryQty: [quantitativeItem.mandatoryQty], //  Checkbox bound here
                     passCriteriaTarget: [quantitativeItem.passCriteriaTarget],
                     passCriteriaMax: [quantitativeItem.passCriteriaMax],
@@ -405,7 +422,7 @@ export class TestingStepperComponent implements AfterViewInit {
     addQuantitativeInspectionRow(description: string): void {
         const quantitativeInspectionFormGroup = this.fb.group({
             parameterQty: [description],
-            uomQty: [''],
+            uoMIdX: [''],
             mandatoryQty: [false],
             passCriteriaTarget: [''],
             passCriteriaMax: [''],
@@ -678,7 +695,7 @@ export class TestingStepperComponent implements AfterViewInit {
         if (selectedRow) {
             //  Set value in the correct row of FormArray
             this.quantitativeArry.controls[index]
-                .get('uomQty')
+                .get('uoMIdX')
                 ?.setValue(selectedRow.code);
             //  Store selected values for debugging
             this.selectedUoMCode = selectedRow.code;
@@ -1180,13 +1197,13 @@ export class TestingStepperComponent implements AfterViewInit {
 
       
 
-    // onSubmit(): void {
-    //   if (this.fourthFormGroup.valid) {
-    //     console.log('Form Submitted:', this.fourthFormGroup.value);
-    //   } else {
-    //     console.log('Form is invalid');
-    //   }
-    // }
+    onSubmit(): void {
+      if (this.fourthFormGroup.valid) {
+        console.log('Form Submitted:', this.fourthFormGroup.value);
+      } else {
+        console.log('Form is invalid');
+      }
+    }
 
     onSubmititemSamplingForm(): void {
         if (this.itemSamplingForm.valid) {
