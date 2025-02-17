@@ -94,9 +94,19 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
 
    ngOnInit(): void {
 
-    this._inspectionCharateristics.getInspectionCharacteristics().subscribe((inspectionCharacteristic) => {
-      this.dataSource = inspectionCharacteristic.data          
-  });
+    this._inspectionCharateristics.getInspectionCharacteristics().subscribe((response) => {
+      this.dataSource = new MatTableDataSource(response.data);
+      this.dataSource.paginator = this.paginator;
+    });
+
+    // Custom filter for better search
+this.dataSource.filterPredicate = (data: any, filter: string) => {
+  const searchText = filter.toLowerCase();
+  return data.intCode?.toString().toLowerCase().includes(searchText) ||
+         data.description?.toString().toLowerCase().includes(searchText) ||
+         data.type?.toString().toLowerCase().includes(searchText) ||
+         (data.isActive ? 'active' : 'inactive').includes(searchText);
+};
 
       // Build the config form
       this.configForm = this._formBuilder.group({

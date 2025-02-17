@@ -13,13 +13,28 @@
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Code</mat-label>
-              <input matInput placeholder="Enter Inspection Code" required>
+              <input class="view-mode-bg-grey"
+               matInput
+              formControlName="data"
+              placeholder="Enter Code" 
+              required
+              readonly
+              style=" cursor: not-allowed;"
+              >
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="resultDescription" required>
             </mat-form-field>
+          </div>
+
+          <!-- Checkboxes Section -->
+          <div class="flex flex-col w-full">
+            <div class="flex items-center">
+              <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
+              <label  class="text-lg">Active</label>
+            </div>
           </div>
 
           <div class="step-navigation">
@@ -127,16 +142,17 @@
               <table class="w-full border border-gray-200 border-collapse">
                 <thead>
                   <tr>
-                    <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th>
+                    <!-- <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th> -->
                     <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
                   </tr>
                 </thead>
                 <tbody formArrayName="qualitativeCriteriaObjects">
                   <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
-                    <td class="px-4 py-2 text-sm border-b border-r text-center">
+                    <!-- <td class="px-4 py-2 text-sm border-b border-r text-center">
                       <input type="text" placeholder="Enter S.No" matInput class="w-full" />
-                      <!-- formControlName="serialno" -->
-                    </td>
+                    </td> -->
+                                          <!-- formControlName="serialno" -->
+
                     <td class="px-4 py-2 text-sm border-b border-r text-center">
                       <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
                     </td>
@@ -230,7 +246,7 @@
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
                         <h2 class="text-lg font-semibold">
-                          ITEMS</h2>
+                          List Of Inspection Characterisitics </h2>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
@@ -267,9 +283,10 @@
                         <ng-container matColumnDef="isActive">
                           <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                           <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.isActive ? row.isActive : '-' }}
+                            {{ row.isActive ? 'Active' : 'Inactive' }}
                           </mat-cell>
                         </ng-container>
+                        
 
                         <mat-header-row *matHeaderRowDef="displayedColumnsItems"></mat-header-row>
                         <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
@@ -325,7 +342,7 @@
                   <ng-template #dialogTemplateItemsX let-data="data">
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
-                        <div class="text-lg font-semibold">Inspection Characterisitics </div>
+                        <div class="text-lg font-semibold">List Of Inspection Characterisitics</div>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
@@ -362,9 +379,10 @@
                         <ng-container matColumnDef="isActive">
                           <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                           <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.isActive ? row.isActive : '-' }}
+                            {{ row.isActive ? 'Active' : 'Inactive' }}
                           </mat-cell>
                         </ng-container>
+                        
 
                         <mat-header-row *matHeaderRowDef="displayedColumnsItemsX"></mat-header-row>
                         <mat-row *matRowDef="let row; columns: displayedColumnsItemsX;"></mat-row>
@@ -385,7 +403,7 @@
           </div>
           <div class="step-navigation">
             <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" matStepperNext>Next</button>
+            <!-- <button mat-button class="next-button" matStepperNext>Next</button> -->
             <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
 
             <button mat-button class="next-button"(click)="onSubmitInspectionCard()" matStepperNext>Next</button>

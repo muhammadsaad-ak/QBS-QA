@@ -69,6 +69,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private _uommasterservice: UomMasterService,
         private _inspectionCharateristics: InspectionCharacteristicsService,
         private _inspectionCardsCode: InspectionCardService,
+        private _qualityResultsCode: QualitativeResultsService,
         private _qualitativeResultsService: QualitativeResultsService
     ) {}
     qualitativeData = [
@@ -81,14 +82,15 @@ export class TestingStepperComponent implements AfterViewInit {
     @ViewChild(MatStepper) stepper!: MatStepper; // Correctly reference the MatStepper instance
     //Qualitative Results Form
     firstFormGroup = this._formBuilder.group({
-        // firstCtrl: ['', Validators.required],
+        isActive: [true],
         resultDescription: ['', Validators.required],
+        data: ['']
     });
     // Unit Of Measure Form
     secondFormGroup = this._formBuilder.group({
         uoMCode: ['', Validators.required],
         description: ['', Validators.required],
-        isActive: [false],
+        isActive: [true],
     });
     // ITEM SAMPLE
     itemSamplingForm = this._formBuilder.group({
@@ -268,14 +270,14 @@ export class TestingStepperComponent implements AfterViewInit {
     fourthFormGroup = this._formBuilder.group({
         intCode: [''],
         description: ['', Validators.required],
-        isActive: [false],
+        isActive: [true],
         type: ['', Validators.required],
         qualitativeCriteriaObjects: this._formBuilder.array([]),
     });
     fifthFormGroup = this._formBuilder.group({
         intCode: ['', Validators.required],
         description: ['', Validators.required],
-        isActive: [false],
+        isActive: [true],
         // type: ['', Validators.required],
         qualitativeTableCriteria: this._formBuilder.array([] as { parameter: string }[]),
         quantitativeTableCriteria: this._formBuilder.array([] as { parameterX: string }[]),
@@ -841,11 +843,19 @@ export class TestingStepperComponent implements AfterViewInit {
                 }
             });
 
+            this._qualityResultsCode.getQualitativeResultCode().subscribe((qualityResultCode) => {
+                console.log('Quality Code:', qualityResultCode); // Debugging ke liye
+            
+                const fullCode = `QR-000${qualityResultCode.data || ''}`; // Code format
+                this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
+            });
+            
+
         // Inspection Card API -> Fifth Form
         this._inspectionCharateristics
             .getInspectionCharacteristicsCode()
             .subscribe((inspectionCharacteristicCode) => {
-                const x = inspectionCharacteristicCode.data; // 13 mil raha hai
+                const x = inspectionCharacteristicCode.data;
                 console.log('Fetched Code:', x); // Check for debugging
 
                 if (x) {
@@ -866,14 +876,6 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         });
 
-        this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
-            const qualitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'qualitative');
-            const quantitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'quantitative');
-          
-            this.dataSourceItems = new MatTableDataSource(qualitativeData);  // Qualitative data
-            this.dataSourceItemsX = new MatTableDataSource(quantitativeData);  // Quantitative data
-        });
-        
 
 
         this.fetchListAllItems();
@@ -991,6 +993,15 @@ export class TestingStepperComponent implements AfterViewInit {
     //
     selectedControlAccountRowIndex: number = -1;
     onItemCodeClick(rowIndex: number): void {
+                //Item Inspection Card Modal
+                this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
+                    const qualitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'qualitative' && item.isActive);
+                    const quantitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'quantitative' && item.isActive);
+                  
+                    this.dataSourceItems = new MatTableDataSource(qualitativeData);  // Qualitative data
+                    this.dataSourceItemsX = new MatTableDataSource(quantitativeData);  // Quantitative data
+                });
+                
         console.log('Row Index:', rowIndex);
         this.selectedControlAccountRowIndex = rowIndex;
         console.log(this.selectedControlAccountRowIndex);
@@ -1030,7 +1041,7 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
-            const rowFormGroup = this.qualitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;rowFormGroup.get('parameter')?.setValue(selectedRow.intCode); // Set the value for this row's parameter
+            const rowFormGroup = this.qualitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;rowFormGroup.get('parameter')?.setValue(selectedRow.description); // Set the value for this row's parameter
             this.selectedInspectionCode = selectedRow.intCode;
             this.selectedItemDescription = selectedRow.description;
 
@@ -1099,7 +1110,7 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
-        const rowFormGroup = this.quantitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;rowFormGroup.get('parameterX')?.setValue(selectedRow.intCode);
+        const rowFormGroup = this.quantitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;rowFormGroup.get('parameterX')?.setValue(selectedRow.description);
         console.log('Selected row:', selectedRow);}
         this.selectedControlAccountRowIndex = -1; // Reset index
     }
@@ -1124,10 +1135,12 @@ export class TestingStepperComponent implements AfterViewInit {
 
     onSubmitQualitativeResult(): void {
         console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
-        const formValues = this.firstFormGroup.value;
-        const payload = {
-            ...formValues,
-        };
+    
+    const formValues = this.firstFormGroup.value;
+    const { data, ...payload } = formValues; // EXCLUDING `data`
+    
+    console.log('FINAL PAYLOAD:', payload);
+
         this._qualitativeResultsService
             .AddQualitativeResult(payload)
             .subscribe((response) => {
@@ -1198,7 +1211,7 @@ export class TestingStepperComponent implements AfterViewInit {
     onSubmitInspectionCard() {
         this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
           const mappedIds = charResponse.data.map((char: any) => ({
-            intCode: char.intCode,
+            description: char.description,
             id: char.id
           }));
       
@@ -1206,11 +1219,11 @@ export class TestingStepperComponent implements AfterViewInit {
       
           // Map IDs for both qualitative and quantitative criteria
           const qualitativeIds = formValue.qualitativeTableCriteria
-            .map((item) => mappedIds.find((char) => char.intCode === item.parameter)?.id)
+            .map((item) => mappedIds.find((char) => char.description  === item.parameter)?.id)
             .filter(Boolean); // Remove undefined/null values
       
           const quantitativeIds = formValue.quantitativeTableCriteria
-            .map((item) => mappedIds.find((char) => char.intCode === item.parameterX)?.id)
+            .map((item) => mappedIds.find((char) => char.description  === item.parameterX)?.id)
             .filter(Boolean); // Remove undefined/null values
       
           // Merge both qualitative and quantitative IDs
