@@ -417,19 +417,24 @@
         .mat-mdc-form-field-focus-overlay {
             border-radius: 6px;
         }
-
+        .mat-mdc-form-field-flex:has(.view-mode-bg-grey) {
+            padding: 0px  !important;
+          }
+        
         /* Form field */
         .mat-mdc-form-field-flex {
             position: relative;
             display: flex;
             align-items: stretch;
             border-radius: 6px;
-            padding: 0 16px;
-            // .inspection-char{
-            //     background: black !important;
+            padding: 0px 16px 0px 16px;
+                
+                  
+            .view-mode-bg-grey {
+            padding:  12px !important;
+            background-color: #F3F4F6 !important;
+            }
 
-            // }
-            
             .mat-mdc-form-field-icon-prefix,
             .mat-mdc-form-field-text-prefix {
                 padding: 0 !important;
@@ -784,8 +789,8 @@
                 .mat-mdc-form-field-icon-prefix,
                 .mat-mdc-form-field-text-prefix {
                     align-self: stretch !important;
-                    margin: 0 16px 0 -16px !important;
-                    padding-left: 16px !important;
+                    // margin: 0 16px 0 -16px !important;
+                    // padding-left: 16px !important;
                     border-radius: 6px 0 0 6px;
                     border-right-width: 1px;
                     border-style: solid;
