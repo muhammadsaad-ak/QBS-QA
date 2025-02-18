@@ -3,8 +3,8 @@ export interface qualitativeInspectionIF {
     parameter: string;
     passCriteria: string;
     mandatory: boolean;
-    pass: string;
-    fail: string;
+    pass: string[];  // Array of strings
+    fail: string[];  // Array of strings
 }
 export interface qualitativeResultsInspectionIF {
     id: string;

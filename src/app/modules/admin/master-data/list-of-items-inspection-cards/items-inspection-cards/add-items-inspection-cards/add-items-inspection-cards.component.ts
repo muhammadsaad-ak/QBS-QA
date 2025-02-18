@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { OnInit, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -6,7 +6,7 @@ import { Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatOptionModule } from '@angular/material/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,6 +29,7 @@ import { QbsFindByKeyPipe } from '@qbs/pipes/find-by-key';
 import { result } from 'lodash';
 import { qualitativeInspectionIF, quantitativeInspectionIF } from '../items-inspection-cards-interface';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 interface RowData {
   id: string;
@@ -54,6 +55,8 @@ interface RowData {
 export class AddItemsInspectionCardsComponent implements OnInit {
   itemsInspectionCardsForm: FormGroup;
 
+  newArray: any[] = []
+
   displayedColumnsQualitative = ['parameter', 'passCriteria', 'mandatory', 'pass', 'fail', 'results'];
   displayedColumnsQuantitative = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin'];
 
@@ -69,7 +72,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemInspectionCardService: ItemInspectionCardService,
-  ) {
+    private changeDetectorRef: ChangeDetectorRef,) {
     this.itemsInspectionCardsForm = this.fb.group({
       itemCode: new FormControl(''),
       itemDescription: new FormControl(''),
@@ -127,8 +130,10 @@ export class AddItemsInspectionCardsComponent implements OnInit {
           parameter: [qualitativeItem.parameter],
           passCriteria: [qualitativeItem.passCriteria],
           mandatory: [qualitativeItem.mandatory],
-          pass: [qualitativeItem.pass],
-          fail: [qualitativeItem.fail],
+          // pass: [qualitativeItem.pass],
+          // fail: [qualitativeItem.fail],
+          pass: [qualitativeItem.pass || []],  // If pass is not provided, assign an empty array
+          fail: [qualitativeItem.fail || []],  // If fail is not provided, assign an empty array
         })
       );
     });
@@ -148,6 +153,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     });
     // Convert formArray.controls to raw values for MatTableDataSource
     this.dataSourceQualitativeInspection.data = formArrayQualitative.value as qualitativeInspectionIF[];
+
     this.dataSourceQuantitativeInspection.data = formArrayQuantitative.value as quantitativeInspectionIF[];
   }
 
@@ -166,8 +172,10 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       parameter: [description],  // Set selectedQualitativeDescriptionIIC
       passCriteria: [criteria],  // Set selectedQualitativeCriteriaIIC
       mandatory: [false],
-      pass: [''],
-      fail: [''],
+      // pass: [''],
+      // fail: [''],
+      pass: [], // Multiple pass values in array
+      fail: [] // Multiple fail values in array
     });
 
     this.qualitativeInspectionObjects.push(qualitativeFormGroup); // Add a new FormGroup to FormArray
@@ -197,7 +205,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       next: (response) => {
         if (response && response.isRequestSuccess && response.data) {
           this.dataSourceItemCodeIIC = new MatTableDataSource(response.data);
-          console.log('FETCHED ITEMS:', this.dataSourceItemCodeIIC.data);
+          // console.log('FETCHED ITEMS:', this.dataSourceItemCodeIIC.data);
         } else {
           console.warn('INVALID API RESPONSE:', response);
           this.dataSourceItemCodeIIC = new MatTableDataSource([]);
@@ -214,7 +222,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       next: (response) => {
         if (response && response.isRequestSuccess && response.data) {
           this.dataSourceCardCodeIIC = new MatTableDataSource(response.data);
-          console.log('FETCHED CARDS:', this.dataSourceCardCodeIIC.data);
+          // console.log('FETCHED CARDS:', this.dataSourceCardCodeIIC.data);
         } else {
           console.warn('INVALID API RESPONSE:', response);
           this.dataSourceCardCodeIIC = new MatTableDataSource([]);
@@ -242,8 +250,6 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   submitItemsInspectionCardsForm(): void {
     if (this.itemsInspectionCardsForm.valid) {
       const formValues = this.itemsInspectionCardsForm.value;
-      console.log("🚀 ~ AddItemsInspectionCardsComponent ~ submitItemsInspectionCardsForm ~ formValues:", formValues)
-      
       // Ensure qualitativeResultPassStatusObjects and qualitativeResultFailStatusObjects are correctly updated
       const updatedQualitativeInspectionObjects = formValues.qualitativeInspectionObjects.map((inspectionObject: any) => {
         // Find and update the pass/fail arrays
@@ -253,9 +259,6 @@ export class AddItemsInspectionCardsComponent implements OnInit {
         const updatedFailObjects = this.qualitativeResultFailStatusObjects.filter(
           (failObj) => failObj.qualitativeResultId === inspectionObject.id
         );
-        
-        console.log("🚀 ~ AddItemsInspectionCardsComponent ~ updatedQualitativeInspectionObjects ~ updatedPassObjects:", updatedPassObjects)
-        console.log("🚀 ~ AddItemsInspectionCardsComponent ~ updatedQualitativeInspectionObjects ~ updatedFailObjects:", updatedFailObjects)
         // Update the inspection object with the correct pass/fail data
         return {
           ...inspectionObject,
@@ -269,12 +272,12 @@ export class AddItemsInspectionCardsComponent implements OnInit {
         qualitativeInspectionObjects: updatedQualitativeInspectionObjects, // Ensure updated data is used
       };
 
-      console.log('FORM SUBMISSION PAYLOAD:', payload);
+      // console.log('FORM SUBMISSION PAYLOAD:', payload);
 
       // Reset the form after submission if needed
       // this.itemsInspectionCardsForm.reset();
     } else {
-      console.log('FORM IS INVALID!');
+      // console.log('FORM IS INVALID!');
     }
   }
 
@@ -292,7 +295,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       data: this.dataSourceItemCodeIIC,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('DIALOG CLOSED');
+      // // console.log('DIALOG CLOSED');
     });
   }
   displayedColumnsItemCodeICC: string[] = [
@@ -320,9 +323,9 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       this.selectedItemCodeIIC = selectedRow.itemCode;
       this.selectedItemDescriptionICC = selectedRow.name;
 
-      console.log('SELECTED ROW:', selectedRow);
+      // console.log('SELECTED ROW:', selectedRow);
     } else {
-      console.log('NO ROW SELECTED');
+      // console.log('NO ROW SELECTED');
     }
   }
   applyFilterItemCodeIIC(event: Event) {
@@ -345,7 +348,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       data: this.dataSourceCardCodeIIC,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('DIALOG CLOSED');
+      // // console.log('DIALOG CLOSED');
     });
   }
 
@@ -370,7 +373,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       this.selectedCardCode = selectedRowCardCodeIIC.cardCode;
       this.selectedCardDescription = selectedRowCardCodeIIC.cardDescription;
 
-      console.log('SELECTED ROW:', selectedRowCardCodeIIC);
+      // console.log('SELECTED ROW:', selectedRowCardCodeIIC);
 
       // Call API dynamically with the selected ID / inspectionCardId
       const inspectionCardId = selectedRowCardCodeIIC.id;
@@ -383,7 +386,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
         error: (err) => console.error('ERROR FETCHING CHARACTERISTICS:', err)
       });
     } else {
-      console.log('NO ROW SELECTED');
+      // console.log('NO ROW SELECTED');
     }
   }
 
@@ -413,12 +416,12 @@ export class AddItemsInspectionCardsComponent implements OnInit {
           // Push a row for each qualitativeCriteriaResult
           characteristic.qualitativeCriteriaResults.forEach((criteria: any) => {
             qualitativeArray.push(this.fb.group({
-              id: characteristic.id, // Assigning qualitative ID
+              id: characteristic.id,
               parameter: characteristic.description,
-              passCriteria: criteria.description, // Assigning criteria individually
+              passCriteria: criteria.description,
               mandatory: false,
-              pass: '',
-              fail: ''
+              pass: [], // Multiple pass values in array
+              fail: [] // Multiple fail values in array
             }));
           });
         }
@@ -449,11 +452,12 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     });
 
     // Update data sources for the tables
-    this.dataSourceQualitativeInspection.data = qualitativeArray.value;
-    this.dataSourceQuantitativeInspection.data = quantitativeArray.value;
+    //  this.dataSourceQualitativeInspection.data = qualitativeArray.value;
+    this.dataSourceQualitativeInspection = qualitativeArray.value;
+    this.dataSourceQuantitativeInspection = quantitativeArray.value;
 
-    console.log('UPDATED qualitativeArray:', this.dataSourceQualitativeInspection.data);
-    console.log('UPDATED qualitativeArray:', this.dataSourceQuantitativeInspection.data);
+    console.log('UPDATED qualitativeArray:', this.dataSourceQualitativeInspection);
+    // console.log('UPDATED qualitativeArray:', this.dataSourceQuantitativeInspection.data);
   }
   // CARD CODE NG TEMPLATE ENDS
 
@@ -476,7 +480,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       data: this.dataSourceUoMIIC,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('DIALOG CLOSED');
+      // console.log('DIALOG CLOSED');
     });
   }
 
@@ -498,9 +502,9 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       //  Store selected values for debugging
       this.selectedUoMCode = selectedRow.uoMCode;
       this.selectedUoMDescription = selectedRow.description;
-      console.log('SELECTED ROW:', selectedRow);
+      // console.log('SELECTED ROW:', selectedRow);
     } else {
-      console.log('NO ROW SELECTED');
+      // console.log('NO ROW SELECTED');
     }
   }
 
@@ -515,7 +519,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       data: this.dataSourceAddQualitativeIIC,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('DIALOG CLOSED');
+      // console.log('DIALOG CLOSED');
     });
   }
 
@@ -539,13 +543,13 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       // Check if criteriaDescription exists 
       const criteriaDescription = selectedRow.criteriaDescription || ''; // Default to empty if not available
 
-      console.log('SELECTED ROW:', selectedRow);
+      // console.log('SELECTED ROW:', selectedRow);
 
       // Call addQualitativeInspectionRow and pass the selected values
       // this.addQualitativeInspectionRow(selectedRow.id, selectedRow.description, selectedRow.criteriaDescription);
       this.addQualitativeInspectionRow(selectedRow.id, selectedRow.description, criteriaDescription);
     } else {
-      console.log('NO ROW SELECTED');
+      // console.log('NO ROW SELECTED');
     }
   }
 
@@ -566,7 +570,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       data: this.dataSourceAddQuantitativeIIC,
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log('DIALOG CLOSED');
+      // console.log('DIALOG CLOSED');
     });
   }
 
@@ -585,7 +589,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       // Set the selected values
       this.selectedQuantitativeDescriptionIIC = selectedRow.description;
 
-      console.log('SELECTED ROW:', selectedRow);
+      // console.log('SELECTED ROW:', selectedRow);
 
       // Call addQuantitativeInspectionRow and pass the selected values
       // this.addQuantitativeInspectionRow(this.selectedQuantitativeDescriptionIIC);
@@ -611,27 +615,65 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   selectedRowIndexResults: number = -1; // Store the clicked row index
 
   selectedRowData: RowData;
-  onResultsClickIIC(index: number, data: any) {
 
+
+  onResultsClickIIC(index: number, data: any) {
     this.selectedRowIndexResults = index; // Save index
     this.selectedRowData = data; // Save data
 
-    console.log(this.selectedRowIndexResults);
-    console.log(this.selectedRowData);
-    console.log(this.selectedRowData.id);
+    // console.log(this.selectedRowIndexResults);
+    // console.log(this.selectedRowData);
+    // console.log(this.selectedRowData.id);
 
+    const paramID = this.selectedRowData.id;
     const dialogRef = this.dialog.open(this.dialogTemplateResultsIIC, {
       width: '75%',
       height: '75vh',
-      data: this.dataSourceQRIIC,
+      data: { paramID },
+      // data: this.dataSourceQRIIC,
     });
-
-    console.log(this.dataSourceQRIIC);
-
     dialogRef.afterClosed().subscribe(result => {
-      console.log('DIALOG CLOSED');
+      // console.log('DIALOG CLOSED');
     });
   }
+
+
+
+  saveQualitativeData(updatedData: any, paramID: any) {
+    // Find the index of the record with the corresponding 'qualitativeResultId'
+    const index = this.dataSourceQualitativeInspection.data.findIndex(
+      (row) => row.qualitativeResultId === paramID
+    );
+
+    if (index !== -1) {
+      // Save the new values for 'pass' and 'fail' based on modal data
+      this.dataSourceQualitativeInspection.data[index].pass = updatedData.pass;
+      this.dataSourceQualitativeInspection.data[index].fail = updatedData.fail;
+
+      // Refresh the table view after saving the new values
+      this.dataSourceQualitativeInspection._updateChangeSubscription();
+    }
+  }
+
+
+
+  updateQualitativeTable(updatedData: any, paramID: any) {
+    // Convert MatTableDataSource to array and use findIndex with the correct field 'qualitativeResultId'
+    const index = this.dataSourceQualitativeInspection.data.findIndex(
+      (row) => row.qualitativeResultId === paramID // Use 'qualitativeResultId' instead of 'id'
+    );
+
+    if (index !== -1) {
+      // Update the row with new data
+      this.dataSourceQualitativeInspection.data[index] = updatedData;
+
+      // Refresh the table view after updating the data
+      this.dataSourceQualitativeInspection._updateChangeSubscription();
+    }
+  }
+
+
+
 
 
   displayedColumnsResultsIIC: string[] = ['id', 'code', 'description', 'criteria'];
@@ -639,12 +681,108 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   qualitativeResultPassStatusObjects: any[] = [];
   qualitativeResultFailStatusObjects: any[] = [];
 
-  onSave(row: any): void {
-    this.onCriteriaSelection(row)
+
+  // onSave(row: any): void {
+  //   this.onCriteriaSelection(row.id)
+  //   this.dialog.closeAll();
+  // }
+
+  XonSave(paramId: any, data: any): void {
+    // Convert `criteria` from string ("true" / "false") to boolean (true / false)
+    const filteredData = data.filteredData
+      .map((row: any) => ({
+        ...row,
+        criteria: row.criteria === "true" ? true : row.criteria === "false" ? false : row.criteria,
+      }))
+      .filter((row: any) => row.criteria === true || row.criteria === false);
+
+    console.log("FILTERED DATA:", filteredData);
+    this.addSelectedRowCardCodeIIC();
+    // Close dialog after processing
     this.dialog.closeAll();
+  }
 
 
 
+
+
+
+
+
+
+
+  onSave(paramId: any, data: any): void {
+    console.log("PARAM ID: ", paramId);
+    // console.log("RAW DATA FROM MODAL:", data);
+
+    const filteredData = data.filteredData
+      .map((row: any) => ({
+        ...row,
+        criteria: row.criteria === "true" ? true : row.criteria === "false" ? false : row.criteria,
+      }))
+      .filter((row: any) => row.criteria === true || row.criteria === false);
+    // console.log("FILTERED DATA:", filteredData);
+
+    const formArrayQualitative = this.qualitativeInspectionObjects;
+    // console.log("QUALITATIVE FORM ARRAY:", formArrayQualitative.value);
+    // console.log("SEARCHING FOR paramId:", paramId);
+
+    const rowIndex = formArrayQualitative.controls.findIndex((row: any) => row.value.id === paramId);
+
+    if (rowIndex !== -1) {
+      console.log(" ROW FOUND for paramId:", paramId, "at index:", rowIndex);
+
+      const rowData = formArrayQualitative.at(rowIndex).value;
+      console.log("ROW DATA:", rowData); // Check row data
+
+      // Ensure pass and fail are arrays (default to empty arrays if null or undefined)
+      rowData.pass = rowData.pass || [];
+      rowData.fail = rowData.fail || [];
+
+      // Filter and map the filteredData to get pass and fail values
+      // rowData.pass = filteredData.filter((item: any) => item.criteria === true).map((item: any) => item.id); // Passing id for the pass array
+      // rowData.fail = filteredData.filter((item: any) => item.criteria === false).map((item: any) => item.id); // Passing id for the fail array
+      rowData.pass = filteredData.filter((item: any) => item.criteria === true).map((item: any) => item.resultDescription);
+      rowData.fail = filteredData.filter((item: any) => item.criteria === false).map((item: any) => item.resultDescription);
+      // console.log("UPDATED ROW DATA:", rowData);
+
+      if (!this.dataSourceQualitativeInspection) {
+        // Initialize with an empty array if it doesn't exist
+        this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
+        // console.log("YEH CONSOLE NAHE HOAWA");
+        console.log("Initial DataSource Initialized with Empty Array");
+      } else {
+        console.log("DataSource Already Exists");
+        // console.log("ELSE CONSOLE HO RAHA HAI");
+      }
+
+      // Check & Verify the current data in dataSource
+      console.log("Current data in dataSourceQualitativeInspection:", this.dataSourceQualitativeInspection.data);
+      // console.log("dataSourceQualitativeInspection:", this.dataSourceQualitativeInspection);
+
+      // Ensure dataSourceQualitativeInspection is MatTableDataSource
+      if (!(this.dataSourceQualitativeInspection instanceof MatTableDataSource)) {
+        this.dataSourceQualitativeInspection = new MatTableDataSource(this.dataSourceQualitativeInspection);
+      }
+
+      // Now, update the row
+      const index = this.dataSourceQualitativeInspection.data.findIndex((row: any) => row.id === paramId);
+      if (index !== -1) {
+        this.dataSourceQualitativeInspection.data[index].pass = [...rowData.pass];
+        this.dataSourceQualitativeInspection.data[index].fail = [...rowData.fail];
+        // this.dataSourceQualitativeInspection._updateChangeSubscription();
+        this.dataSourceQualitativeInspection.data = [...this.dataSourceQualitativeInspection.data];
+
+      } else {
+        console.warn("⚠️ ROW NOT FOUND in dataSource!");
+      }
+      console.log("dataSourceQualitativeInspection.data:", this.dataSourceQualitativeInspection?.data);
+    }
+
+    else {
+      console.warn("❌ ROW NOT FOUND for paramId:", paramId);
+    }
+    this.dialog.closeAll();
   }
 
   onCriteriaSelection(row: any): void {
@@ -679,7 +817,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     // Now, we need to link the updated pass/fail objects to the correct qualitativeInspectionObject
     const formArray = this.itemsInspectionCardsForm.get('qualitativeInspectionObjects') as FormArray;
 
-    console.log(formArray, '.............');
+    // console.log(formArray, '.............');
 
     if (!formArray) {
       console.warn('qualitativeInspectionObjects is undefined.');
@@ -688,9 +826,10 @@ export class AddItemsInspectionCardsComponent implements OnInit {
 
     // Find the correct qualitative inspection object based on inspectionCharacteristicId
     const inspectionIndex = formArray.controls.findIndex(
-      (control) => control.value.inspectionCharacteristicId === row.inspectionCharacteristicId
+      (control) => {
+        return control.value.inspectionCharacteristicId === row.inspectionCharacteristicId
+      }
     );
-
     if (inspectionIndex === -1) {
       console.warn('No matching qualitative inspection object found.');
       return;
@@ -698,6 +837,8 @@ export class AddItemsInspectionCardsComponent implements OnInit {
 
     // Get the specific FormGroup inside the FormArray
     const inspectionObject = formArray.at(inspectionIndex) as FormGroup;
+
+    console.log(formArray, 'formArray');
 
     // Ensure qualitativeResultPassStatusObjects and qualitativeResultFailStatusObjects exist in the form control
     if (!inspectionObject.get('qualitativeResultPassStatusObjects')) {
@@ -728,7 +869,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
 
   }
 
-  
+
 
 
   applyFilterQRIIC(event: Event) {
@@ -754,8 +895,8 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     }
 
     // Debugging: Check length before processing
-    console.log('🔍 Total Rows in dataSourceQRIIC:', this.dataSourceQRIIC.data.length);
-    console.log('🔍 Total Form Controls:', this.qualitativeInspectionObjects.length);
+    // console.log('🔍 Total Rows in dataSourceQRIIC:', this.dataSourceQRIIC.data.length);
+    // console.log('🔍 Total Form Controls:', this.qualitativeInspectionObjects.length);
 
     this.dataSourceQRIIC.data.forEach((row, index) => {
       let formGroup = this.qualitativeInspectionObjects.at(index) as FormGroup;
@@ -773,7 +914,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
         return;
       }
 
-      console.log(`🔄 Processing Row ${index} -> ID: ${row.id}, Criteria: ${row.criteria}`);
+      // console.log(`🔄 Processing Row ${index} -> ID: ${row.id}, Criteria: ${row.criteria}`);
 
       if (row.criteria === 'Pass') {
         passControl.setValue(row.resultDescription);
@@ -784,7 +925,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       }
 
       console.log(
-        `✅ Row ${index} Updated -> Pass: ${passControl.value}, Fail: ${failControl.value}`
+        // `✅ Row ${index} Updated -> Pass: ${passControl.value}, Fail: ${failControl.value}`
       );
     });
   }

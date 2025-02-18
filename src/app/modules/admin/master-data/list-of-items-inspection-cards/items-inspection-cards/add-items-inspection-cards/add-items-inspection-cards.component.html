@@ -304,34 +304,29 @@
                                             <!-- pass COLUMN -->
                                             <ng-container matColumnDef="pass">
                                                 <th mat-header-cell *matHeaderCellDef class="text-sm">Pass</th>
-                                                <td mat-cell *matCellDef="let element; let i = index" [formGroup]="qualitativeInspectionObjects.controls[i]"
-                                                    class="text-sm w-1/6">
-                                                    
-                                                        
-                                                     
-                                                        <span  *ngFor="let qualitativeResultPassStatusObjects of qualitativeResultPassStatusObjects
-                                                        ">
-                                                                {{qualitativeResultPassStatusObjects.isPassed}}
-                                                            </span>
-                                                        
-
-
-                                                </td>
+                                                <!-- <td mat-cell *matCellDef="let element; let i = index"
+                                                class="text-sm w-1/6 whitespace-nowrap"
+                                                [formGroup]="qualitativeInspectionObjects.controls[i]">
+                                                <input matInput formControlName="pass" readonly>
+                                            </td> -->
+                                            <td mat-cell *matCellDef="let element" class="address-column" title="{{element.pass}}">
+                                                <input matInput [value]="element.pass | slice:0:25" readonly>
+                                              </td>
+                                              
                                             </ng-container>
                                             <!-- fail COLUMN -->
                                             <ng-container matColumnDef="fail">
                                                 <th mat-header-cell *matHeaderCellDef class="text-sm">
                                                     Fail</th>
-                                                <td mat-cell *matCellDef="let element; let i = index"
-                                                    class="text-sm w-1/6"
+                                                    <!-- <td mat-cell *matCellDef="let element; let i = index"
+                                                    class="text-sm w-1/6 whitespace-nowrap"
                                                     [formGroup]="qualitativeInspectionObjects.controls[i]">
+                                                    <input matInput formControlName="fail" readonly>
+                                                </td> -->
 
-                                                    <span
-                                                        *ngFor="let qualitativeResultFailStatusObjects of  qualitativeResultFailStatusObjects">
-                                                        {{qualitativeResultFailStatusObjects.isPassed}}
-                                                    </span>
-
-                                                </td>
+                                                <td mat-cell *matCellDef="let element">
+                                                    <input matInput [value]="element.fail" readonly>
+                                                  </td>
                                             </ng-container>
                                             <!-- results COLUMN -->
                                             <ng-container matColumnDef="results">
@@ -421,7 +416,7 @@
                                     </ng-template>
                                     <!-- ADD QUALITATIVE INSPECTION NG TEMPLATE DIALOG ENDS -->
 
-                                    <ng-template #dialogTemplateResultsIIC let-data="data">
+                                    <ng-template #dialogTemplateResultsIIC let-data>
                                         <div class="dialog-container flex flex-col h-full">
                                             <div class="flex justify-between items-center p-4 border-b text-primary">
                                                 <h2 class="text-lg font-semibold">
@@ -429,6 +424,9 @@
                                                 <span (click)="closeDialog()" class="header-close-x">
                                                     <mat-icon class="text-primary">close</mat-icon>
                                                 </span>
+                                            </div>
+                                            <div class="w-full">
+                                              <span>{{data.paramID}}</span>
                                             </div>
                                             <mat-form-field>
                                                 <mat-label>Search</mat-label>
@@ -466,7 +464,8 @@
                                                         <mat-form-field appearance="outline" class="w-full">
                                                             <!-- (selectionChange)="onCriteriaChange(row)" -->
                                                             <mat-select [(value)]="row.criteria"
-                                                                (selectionChange)="onCriteriaSelection(row)">
+                                                               >
+                                                               <!-- (selectionChange)="onCriteriaSelection(row)" -->
                                                                 <mat-option value="true">Pass</mat-option>
                                                                 <mat-option value="false">Fail</mat-option>
                                                             </mat-select>
@@ -488,7 +487,7 @@
                                             <!-- (click)="saveCriteriaSelection()" -->
                                             <!-- SAVE & CLOSE -->
                                             <div class="flex justify-end mt-auto">
-                                                <button (click)="onSave(dataSourceQRIIC)" mat-flat-button
+                                                <button (click)="onSave(data.paramID, dataSourceQRIIC)" mat-flat-button
                                                     color="primary">
                                                     Save&nbsp;&&nbsp;Close
                                                 </button>

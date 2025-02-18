@@ -85,7 +85,7 @@ export class ItemInspectionCardService {
                 tap((itemsSAP) => {
                     const listAllItemsSAP = (itemsSAP as any) ?? [];
                     this._listAllItemsIIC.next(listAllItemsSAP);
-                    console.log('FETCHED ITEMS:', listAllItemsSAP);
+                    // console.log('FETCHED ITEMS:', listAllItemsSAP);
                 }),
                 catchError((error) => {
                     console.error('ERROR FETCHING ITEMS', error);
@@ -107,7 +107,7 @@ export class ItemInspectionCardService {
                 tap((itemsSAP) => {
                     const listAllPatchedCards = (itemsSAP as any) ?? [];
                     this._listInspectionCardsIIC.next(listAllPatchedCards);
-                    console.log('FETCHED CARDS:', listAllPatchedCards);
+                    // console.log('FETCHED CARDS:', listAllPatchedCards);
                 }),
                 catchError((error) => {
                     console.error('ERROR FETCHING CARDS', error);
@@ -129,7 +129,7 @@ export class ItemInspectionCardService {
 
         return this._httpClient.get(getItemDataByCodeapiUrl, { headers }).pipe(
             tap((listAllItemsSAP) => {
-                console.log('RECEIVED CHARACTERISTICS:', listAllItemsSAP);
+                // console.log('RECEIVED CHARACTERISTICS:', listAllItemsSAP);
             }),
             catchError((error) => {
                 console.error('ERROR FETCHING CHARACTERISTICS', error);
@@ -149,7 +149,7 @@ export class ItemInspectionCardService {
                 tap((inspectionCardsModal) => {
                     const inspectionCardModal = (inspectionCardsModal as any) ?? [];
                     this._listInspectionCharacteristics.next(inspectionCardModal);
-                    console.log('FETCHED INSPECTION CHARACTERISTICS', inspectionCardModal);
+                    // console.log('FETCHED INSPECTION CHARACTERISTICS', inspectionCardModal);
                 }),
                 catchError((error) => {
                     console.error('ERROR WHILE FETCHING LIST OF CHARACTERISTICS', error);
@@ -168,7 +168,7 @@ export class ItemInspectionCardService {
                 tap((inspectionModalIIC) => {
                     const inspectionWithCriteria = (inspectionModalIIC as any) ?? [];
                     this._listCharacteristicsWithCriteria.next(inspectionWithCriteria);
-                    console.log('CHARACTERISTICS WITH CRITERIA', inspectionWithCriteria);
+                    // console.log('CHARACTERISTICS WITH CRITERIA', inspectionWithCriteria);
                 }),
                 catchError((error) => {
                     console.error('ERROR WHILE FETCHING LIST OF CHARACTERISTICS WITH CRITERIA', error);
@@ -188,7 +188,7 @@ export class ItemInspectionCardService {
                 tap((uom) => {
                     const UnitOfMeasure = (uom as any) ?? [];
                     this._listUnitOfMeasureIIC.next(UnitOfMeasure);
-                    console.log('FETCHED UOM', UnitOfMeasure);
+                    // console.log('FETCHED UOM', UnitOfMeasure);
                 }),
                 catchError((error) => {
                     console.error('ERROR WHILE FETCHING LIST OF UOM', error);
