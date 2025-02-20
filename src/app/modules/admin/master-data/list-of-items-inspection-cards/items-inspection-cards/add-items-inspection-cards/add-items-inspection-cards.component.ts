@@ -30,7 +30,7 @@ import { result } from 'lodash';
 import { qualitativeInspectionIF, quantitativeInspectionIF } from '../items-inspection-cards-interface';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { ChangeDetectorRef } from '@angular/core';
-import { SAPItemsService } from 'app/core/other-core-services/module/all-sap-items.service';
+// import { SAPItemsService } from 'app/core/other-core-services/module/all-sap-items.service';
 
 interface RowData {
   id: string;
@@ -73,7 +73,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemInspectionCardService: ItemInspectionCardService,
-    private _SAPItemsService: SAPItemsService,
+    // private _SAPItemsService: SAPItemsService,
     private changeDetectorRef: ChangeDetectorRef,) {
     this.itemsInspectionCardsForm = this.fb.group({
       // FORM PAYLOAD
@@ -217,28 +217,12 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   }
 
   // ITEM CODE API
-  // fetchListAllItemsSAP(): void {
-  //   this._SAPItemsService.getListAllItems().subscribe({
-  //     next: (response) => {
-  //       if (response && response.succeeded && response.data) {
-  //         this.dataSourceItemCodeIIC = new MatTableDataSource(response.data);
-  //         // console.log('FETCHED ITEMS:', this.dataSourceItemCodeIIC.data);
-  //       } else {
-  //         console.warn('INVALID API RESPONSE:', response);
-  //         this.dataSourceItemCodeIIC = new MatTableDataSource([]);
-  //       }
-  //     },
-  //     error: (err) => {
-  //       console.error('ERROR FETCHING ITEMS:', err);
-  //     },
-  //   });
-  // }
   fetchListAllItemsSAP(): void {
     this._itemInspectionCardService.getListAllItems().subscribe({
       next: (response) => {
         if (response && response.isRequestSuccess && response.data) {
           this.dataSourceItemCodeIIC = new MatTableDataSource(response.data);
-          // console.log('FETCHED ITEMS:', this.dataSourceItemCodeIIC.data);
+          console.log('FETCHED ITEMS:', this.dataSourceItemCodeIIC.data);
         } else {
           console.warn('INVALID API RESPONSE:', response);
           this.dataSourceItemCodeIIC = new MatTableDataSource([]);
@@ -249,6 +233,23 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       },
     });
   }
+  // SAP API  - SAP ITEM CODE API
+  // fetchListAllItemsSAP(): void {
+  //   this._SAPItemsService.getListAllItems().subscribe({
+  //     next: (response) => {
+  //       if (response) {
+  //         this.dataSourceItemCodeIIC = new MatTableDataSource(response);
+  //         console.log('FETCHED ITEMS:', this.dataSourceItemCodeIIC.data);
+  //       } else {
+  //         console.warn('INVALID API RESPONSE:', response);
+  //         this.dataSourceItemCodeIIC = new MatTableDataSource([]);
+  //       }
+  //     },
+  //     error: (err) => {
+  //       console.error('ERROR FETCHING ITEMS:', err);
+  //     },
+  //   });
+  // }
   // CARD CODE API
   fetchListAllCards(): void {
     this._itemInspectionCardService.ListAllInspectionCards().subscribe({
@@ -288,15 +289,15 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   submitItemsInspectionCardsForm(): void {
     if (this.itemsInspectionCardsForm.valid) {
       const formValues = this.itemsInspectionCardsForm.value;
-  
+
       // Handle null values for itemU_QACard
       if (formValues.itemU_QACard === '' || formValues.itemU_QACard == null) {
         formValues.itemU_QACard = null;
       }
-  
+
       // Extract and exclude intCode
       const { intCode, ...payload } = formValues;
-  
+
       // Ensure qualitativeInspectionObjects is defined before using map
       if (payload.qualitativeInspectionObjects) {
         payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map((item: any) => {
@@ -314,7 +315,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
           };
         });
       }
-  
+
       // Ensure quantitativeInspectionObjects is defined before using map
       if (payload.quantitativeInspectionObjects) {
         payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => {
@@ -328,17 +329,30 @@ export class AddItemsInspectionCardsComponent implements OnInit {
           };
         });
       }
-  
+
       // Log the final payload
       console.log('FORM SUBMISSION PAYLOAD:', payload);
-  
+
+      this._itemInspectionCardService.AddItemInspectionCard(payload).subscribe(
+        (response) => {
+          if (response.isRequestSuccess) {
+            console.log('API RUN SUCCESSFULLY.', payload);
+          } else {
+            console.error(
+              'ERROR WHILE ADDIND DATA.',
+              response.message
+            );
+          }
+        }
+      );
+
       // Optionally, you can reset the form if needed
       // this.itemsInspectionCardsForm.reset();
     } else {
       console.log('FORM IS INVALID!');
     }
   }
-  
+
 
 
   submitItemsInspectionCardsFormXXX(): void {
@@ -383,6 +397,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   // ITEM CODE - ITEM INSPECTION CARD NG TEMPLATE STARTS
   @ViewChild('dialogTemplateItemCodeIIC') dialogTemplateItemCodeIIC;
   onItemCodeClickIIC() {
+    console.log("click howa hai");
     const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIIC, {
       width: '80%',
       height: '75vh',
@@ -729,6 +744,8 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     // console.log(this.selectedRowData);
     // console.log(this.selectedRowData.id);
 
+
+
     const paramID = this.selectedRowData.id;
     const dialogRef = this.dialog.open(this.dialogTemplateResultsIIC, {
       width: '75%',
@@ -791,8 +808,146 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   //   this.dialog.closeAll();
   // }
 
+  // IRFAN - 20022025
+  // onSave(paramId: any, data: any): void {
 
+  //   const filteredData = data.filteredData
+  //     .map((row: any) => ({
+  //       ...row,
+  //       criteria: row.criteria === "true" ? true : row.criteria === "false" ? false : row.criteria,
+  //     }))
+  //     .filter((row: any) => row.criteria === true || row.criteria === false);
+
+  //   filteredData.forEach((item: any) => {
+  //     const resultObject = {
+  //       qualitativeResultId: item.id,
+  //       isPassed: true
+  //     };
+  //     if (item.criteria === true) {
+  //       this.qualitativeResultPassStatusObjects.push(resultObject);
+  //     } else if (item.criteria === false) {
+  //       this.qualitativeResultFailStatusObjects.push(resultObject);
+  //     }
+  //   });
+
+  //   const qualitativeObjectsArray = this.qualitativeInspectionObjects.controls.map(control => control.value);
+
+  //   const qualitativeObject = qualitativeObjectsArray.find(
+  //     (obj: any) => obj.id === paramId
+  //   );
+
+  //   if (qualitativeObject) {
+  //     qualitativeObject.qualitativeResultPassStatusObjects = this.qualitativeResultPassStatusObjects;
+  //     qualitativeObject.qualitativeResultFailStatusObjects = this.qualitativeResultFailStatusObjects;
+
+  //     console.log("✅ Updated Qualitative Object:", qualitativeObject);
+  //   } else {
+  //     console.warn("❌ No matching qualitativeInspectionObject found for paramId:", paramId);
+  //   }
+
+  //   // console.log("🔥 Pass Objects BEFORE Mapping:", this.qualitativeResultPassStatusObjects);
+  //   // console.log("🔥 Fail Objects BEFORE Mapping:", this.qualitativeResultFailStatusObjects);
+
+  //   // console.log("🔥 qualitativeObject before mapping:", qualitativeObject);
+
+  //   if (qualitativeObject) {
+  //     qualitativeObject.inspectionCharacteristicId = qualitativeObject.id; // Ensure correct field
+
+  //     qualitativeObject.qualitativeResultPassStatusObjects = this.qualitativeResultPassStatusObjects.map((item: any) => {
+  //       // console.log("AFFTER Mapping Pass Object:", item);
+  //       return {
+  //         qualitativeResultId: item.qualitativeResultId,
+  //         isPassed: true
+  //       };
+  //     });
+
+  //     qualitativeObject.qualitativeResultFailStatusObjects = this.qualitativeResultFailStatusObjects.map((item: any) => {
+  //       // console.log("AFTER Mapping Fail Object:", item);
+  //       return {
+  //         qualitativeResultId: item.qualitativeResultId,
+  //         isPassed: true
+  //       };
+  //     });
+
+  //     console.log("✅ FINAL QUALITATIVE OBJECT:", qualitativeObject);
+  //   } else {
+  //     // console.warn("❌ No matching qualitativeInspectionObject found for paramId:", paramId);
+  //   }
+
+  //   const formArrayQualitative = this.qualitativeInspectionObjects;
+  //   console.log("QUALITATIVE FORM ARRAY:", formArrayQualitative.value);
+  //   // console.log("SEARCHING FOR paramId:", paramId);
+
+  //   const rowIndex = formArrayQualitative.controls.findIndex((row: any) => row.value.id === paramId);
+
+  //   if (rowIndex !== -1) {
+  //     // console.log(" ROW FOUND for paramId:", paramId, "at index:", rowIndex);
+
+  //     const rowData = formArrayQualitative.at(rowIndex).value;
+  //     // console.log("ROW DATA:", rowData);
+
+  //     // Ensure pass and fail are arrays
+  //     rowData.pass = rowData.pass || [];  //  default to empty arrays if null or undefined
+  //     rowData.fail = rowData.fail || [];  //  default to empty arrays if null or undefined
+
+
+  //     // rowData.qualitativeResultPassStatusObjects = [];
+  //     // rowData.qualitativeResultFailStatusObjects = [];
+
+
+
+  //     // filter and map the filteredData to get pass and fail values
+  //     // rowData.pass = filteredData.filter((item: any) => item.criteria === true).map((item: any) => item.id); 
+  //     // rowData.fail = filteredData.filter((item: any) => item.criteria === false).map((item: any) => item.id); 
+  //     rowData.pass = filteredData.filter((item: any) => item.criteria === true).map((item: any) => item.resultDescription);
+  //     rowData.fail = filteredData.filter((item: any) => item.criteria === false).map((item: any) => item.resultDescription);
+  //     // console.log("UPDATED ROW DATA:", rowData);
+
+
+  //     if (!this.dataSourceQualitativeInspection) {
+  //       // Initialize with an empty array if it doesn't exist
+  //       this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
+  //       console.log("Initial DataSource Initialized with Empty Array");
+  //     }
+  //     else {
+  //       // console.log("ELSE CONSOLE HO RAHA HAI");
+  //       console.log("DataSource Already Exists");
+  //     }
+
+  //     // Check & Verify the current data in dataSource
+  //     console.log("Current data in dataSourceQualitativeInspection:", this.dataSourceQualitativeInspection.data);
+  //     // console.log("dataSourceQualitativeInspection:", this.dataSourceQualitativeInspection);
+
+  //     // Ensure dataSourceQualitativeInspection is MatTableDataSource
+  //     if (!(this.dataSourceQualitativeInspection instanceof MatTableDataSource)) {
+  //       this.dataSourceQualitativeInspection = new MatTableDataSource(this.dataSourceQualitativeInspection);
+  //     }
+
+  //     // // update the row
+  //     const index = this.dataSourceQualitativeInspection.data.findIndex((row: any) => row.id === paramId);
+  //     if (index !== -1) {
+  //       this.dataSourceQualitativeInspection.data[index].pass = [...rowData.pass];
+  //       this.dataSourceQualitativeInspection.data[index].fail = [...rowData.fail];
+
+  //       // this.dataSourceQualitativeInspection._updateChangeSubscription();
+  //       this.dataSourceQualitativeInspection.data = [...this.dataSourceQualitativeInspection.data];
+  //     }
+  //     else {
+  //       console.warn("⚠️ ROW NOT FOUND in dataSource!");
+  //     }
+  //   }
+  //   else {
+  //     console.warn("❌ ROW NOT FOUND for paramId:", paramId);
+  //   }
+  //   this.dialog.closeAll();
+  // }
+
+  // LEAD CODE
   onSave(paramId: any, data: any): void {
+
+    // 🛑 Clear the arrays before adding new data to avoid duplication
+    this.qualitativeResultPassStatusObjects = [];
+    this.qualitativeResultFailStatusObjects = [];
 
     const filteredData = data.filteredData
       .map((row: any) => ({
@@ -820,111 +975,58 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     );
 
     if (qualitativeObject) {
-      qualitativeObject.qualitativeResultPassStatusObjects = this.qualitativeResultPassStatusObjects;
-      qualitativeObject.qualitativeResultFailStatusObjects = this.qualitativeResultFailStatusObjects;
+      qualitativeObject.qualitativeResultPassStatusObjects = [...this.qualitativeResultPassStatusObjects];
+      qualitativeObject.qualitativeResultFailStatusObjects = [...this.qualitativeResultFailStatusObjects];
 
       console.log("✅ Updated Qualitative Object:", qualitativeObject);
     } else {
       console.warn("❌ No matching qualitativeInspectionObject found for paramId:", paramId);
     }
 
-    // console.log("🔥 Pass Objects BEFORE Mapping:", this.qualitativeResultPassStatusObjects);
-    // console.log("🔥 Fail Objects BEFORE Mapping:", this.qualitativeResultFailStatusObjects);
-
-    // console.log("🔥 qualitativeObject before mapping:", qualitativeObject);
-
-    if (qualitativeObject) {
-      qualitativeObject.inspectionCharacteristicId = qualitativeObject.id; // Ensure correct field
-
-      qualitativeObject.qualitativeResultPassStatusObjects = this.qualitativeResultPassStatusObjects.map((item: any) => {
-        // console.log("AFFTER Mapping Pass Object:", item);
-        return {
-          qualitativeResultId: item.qualitativeResultId,
-          isPassed: true
-        };
-      });
-
-      qualitativeObject.qualitativeResultFailStatusObjects = this.qualitativeResultFailStatusObjects.map((item: any) => {
-        // console.log("AFTER Mapping Fail Object:", item);
-        return {
-          qualitativeResultId: item.qualitativeResultId,
-          isPassed: true
-        };
-      });
-
-      console.log("✅ FINAL QUALITATIVE OBJECT:", qualitativeObject);
-    } else {
-      // console.warn("❌ No matching qualitativeInspectionObject found for paramId:", paramId);
-    }
-
     const formArrayQualitative = this.qualitativeInspectionObjects;
     console.log("QUALITATIVE FORM ARRAY:", formArrayQualitative.value);
-    // console.log("SEARCHING FOR paramId:", paramId);
 
     const rowIndex = formArrayQualitative.controls.findIndex((row: any) => row.value.id === paramId);
 
     if (rowIndex !== -1) {
-      // console.log(" ROW FOUND for paramId:", paramId, "at index:", rowIndex);
-
       const rowData = formArrayQualitative.at(rowIndex).value;
-      // console.log("ROW DATA:", rowData);
 
-      // Ensure pass and fail are arrays
-      rowData.pass = rowData.pass || [];  //  default to empty arrays if null or undefined
-      rowData.fail = rowData.fail || [];  //  default to empty arrays if null or undefined
-
-
-      // rowData.qualitativeResultPassStatusObjects = [];
-      // rowData.qualitativeResultFailStatusObjects = [];
-
-
-
-      // filter and map the filteredData to get pass and fail values
-      // rowData.pass = filteredData.filter((item: any) => item.criteria === true).map((item: any) => item.id); 
-      // rowData.fail = filteredData.filter((item: any) => item.criteria === false).map((item: any) => item.id); 
       rowData.pass = filteredData.filter((item: any) => item.criteria === true).map((item: any) => item.resultDescription);
       rowData.fail = filteredData.filter((item: any) => item.criteria === false).map((item: any) => item.resultDescription);
-      // console.log("UPDATED ROW DATA:", rowData);
-
 
       if (!this.dataSourceQualitativeInspection) {
-        // Initialize with an empty array if it doesn't exist
         this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
-        console.log("Initial DataSource Initialized with Empty Array");
-      }
-      else {
-        // console.log("ELSE CONSOLE HO RAHA HAI");
-        console.log("DataSource Already Exists");
       }
 
-      // Check & Verify the current data in dataSource
-      console.log("Current data in dataSourceQualitativeInspection:", this.dataSourceQualitativeInspection.data);
-      // console.log("dataSourceQualitativeInspection:", this.dataSourceQualitativeInspection);
-
-      // Ensure dataSourceQualitativeInspection is MatTableDataSource
       if (!(this.dataSourceQualitativeInspection instanceof MatTableDataSource)) {
         this.dataSourceQualitativeInspection = new MatTableDataSource(this.dataSourceQualitativeInspection);
       }
 
-      // // update the row
       const index = this.dataSourceQualitativeInspection.data.findIndex((row: any) => row.id === paramId);
       if (index !== -1) {
         this.dataSourceQualitativeInspection.data[index].pass = [...rowData.pass];
         this.dataSourceQualitativeInspection.data[index].fail = [...rowData.fail];
-
-        // this.dataSourceQualitativeInspection._updateChangeSubscription();
         this.dataSourceQualitativeInspection.data = [...this.dataSourceQualitativeInspection.data];
-      }
-      else {
+      } else {
         console.warn("⚠️ ROW NOT FOUND in dataSource!");
       }
-    }
-    else {
+    } else {
       console.warn("❌ ROW NOT FOUND for paramId:", paramId);
     }
+
+    this.resetDropdownCriteria();
     this.dialog.closeAll();
   }
 
+  resetDropdownCriteria() {
+    // Iterate over the underlying data array in MatTableDataSource
+    this.dataSourceQRIIC.data.forEach((row: any) => {
+      row.criteria = null; // or set it to some default value like `true` or `false`
+    });
+
+    // Ensure that MatTableDataSource is updated with the new data
+    this.dataSourceQRIIC = new MatTableDataSource<any>(this.dataSourceQRIIC.data);
+  }
 
 
 

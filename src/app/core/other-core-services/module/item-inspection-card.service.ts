@@ -25,7 +25,7 @@ export class ItemInspectionCardService {
     private _listInspectionCharacteristics = new BehaviorSubject<any[]>([]);
     private _listCharacteristicsWithCriteria = new BehaviorSubject<any[]>([]);
     private _listUnitOfMeasureIIC = new BehaviorSubject<any[]>([]);
-    private _listQualitativeResultsIIC  = new BehaviorSubject<any[]>([]);
+    private _listQualitativeResultsIIC = new BehaviorSubject<any[]>([]);
 
     // Observable to expose role data state
     listItemsInspectionCardsIIC$: Observable<any[]> = this._listItemsInspectionCardsIIC.asObservable();
@@ -34,7 +34,7 @@ export class ItemInspectionCardService {
     inspectionCardModal$: Observable<any[]> = this._listInspectionCharacteristics.asObservable();
     listCharacteristicsWithCriteria$: Observable<any[]> = this._listCharacteristicsWithCriteria.asObservable();
     listUnitOfMeasureIIC$: Observable<any[]> = this._listUnitOfMeasureIIC.asObservable();
-    listQualitativeResultsIIC$: Observable<any[]> = this._listQualitativeResultsIIC .asObservable();
+    listQualitativeResultsIIC$: Observable<any[]> = this._listQualitativeResultsIIC.asObservable();
 
     /**
      * Setter & getter for access token
@@ -48,6 +48,24 @@ export class ItemInspectionCardService {
     }
 
     // ADD API
+    // ADD ITEM INSPECTION CARD 3.1 API
+    AddItemInspectionCard(data: any): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+        });
+        return this._httpClient.post(
+            `${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/AddItemInspectionCardWithBothInspections`,
+            data,
+            { headers }
+        ).pipe(
+            tap(response => console.log('RESPONSE:', response)),
+            catchError(error => {
+                console.error('ERROR WHILE ADDING ITEM INSPECTION CARD', error);
+                return throwError(() => error);
+            })
+        );
+    }
 
     // GET ALL ITEM INSPECTION CARDS API
     ListAllItemsInspectionCards(): Observable<any> {
@@ -196,8 +214,8 @@ export class ItemInspectionCardService {
                 })
             );
     }
-      // GET ALL QUALITATIVE RESULTS
-      ListAllQualitativeResultsIIC(): Observable<any> {
+    // GET ALL QUALITATIVE RESULTS
+    ListAllQualitativeResultsIIC(): Observable<any> {
         // Set up the headers with the Authorization token
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
@@ -212,8 +230,8 @@ export class ItemInspectionCardService {
                 tap((results) => {
                     // Optionally handle the response or state update here
                     const qualitativeResultsIIC = (results as any).data ?? [];
-                    this._listQualitativeResultsIIC .next(qualitativeResultsIIC);
-                      console.log('FETCHED QR', qualitativeResultsIIC);
+                    this._listQualitativeResultsIIC.next(qualitativeResultsIIC);
+                    console.log('FETCHED QR', qualitativeResultsIIC);
                 }),
                 catchError((error) => {
                     console.error('ERROR WHILE QR', error);

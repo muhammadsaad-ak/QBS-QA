@@ -54,12 +54,12 @@
                                 <td mat-cell *matCellDef="let element">
                                     {{element.itemDescription ? element.itemDescription : '-' }} </td>
                             </ng-container>
-                            <!-- cardCode COLUMN -->
+                            <!-- cardDescription COLUMN -->
                             <ng-container matColumnDef="cardCode">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Card Code	 </th>
+                                    Card Description	 </th>
                                 <td mat-cell *matCellDef="let element">
-                                    {{element.cardCode ? element.cardCode : '-'}} </td>
+                                    {{element.cardDescription ? element.cardDescription : '-'}} </td>
                             </ng-container>
                             <!-- Action COLUMN -->
                             <ng-container matColumnDef="action">
