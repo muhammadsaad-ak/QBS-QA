@@ -642,7 +642,6 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     const selectedRow = this.dataSourceAddQualitativeIIC.data.find(row => row.isSelected);
     if (selectedRow) {
       console.log(selectedRow);
-      return;
       // Set the selected values
       this.selectedQualitativeDescriptionIIC = selectedRow.description;
       this.selectedQualitativeCriteriaIIC = selectedRow.inspectionCriteria;
