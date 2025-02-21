@@ -150,11 +150,11 @@ export class ItemsInspectionCardsComponent {
     this._router.navigate(['add-items-inspection-cards'], { relativeTo: this._activatedRoute });
   }
 
-  actionEdittemsInspectionCards(itemData: any): void {
-    this._router.navigate(['edit-items-inspection-cards', itemData.cardCode],
+  actionEdittemsInspectionCards(rowDataIIC: any, inspectionCardId: string): void {
+    this._router.navigate(['edit-items-inspection-cards', inspectionCardId],
       {
         relativeTo: this._activatedRoute,
-        state: { itemData }
+        state: { rowDataIIC }
       });
   }
 }

@@ -81,10 +81,10 @@ export class ItemInspectionCardService {
                 tap((results) => {
                     const itemsInspectionCards = (results as any).data ?? [];
                     this._listItemsInspectionCardsIIC.next(itemsInspectionCards);
-                    console.log('FETCHED RESULTS', itemsInspectionCards);
+                    console.log('FETCHED Item Inspection Card', itemsInspectionCards);
                 }),
                 catchError((error) => {
-                    console.error('ERROR FETCHING ITEM SAMPLES', error);
+                    console.error('ERROR WHILE FETCHING Item Inspection Card', error);
                     return throwError(error);
                 })
             );

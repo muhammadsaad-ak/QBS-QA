@@ -9,11 +9,12 @@
             <!-- Header Starts -->
             <div class="relative flex-0 flex-col px-6 py-2 md:px-8">
                 <!-- Title -->
+                <!-- List of Item Inspection Card -->
                 <div class="text-3xl font-extrabold tracking-tight">
-                    List of Item Inspection Card 3.0
+                    List&nbsp;of&nbsp;Item&nbsp;Inspection&nbsp;Card
                 </div>
             </div>
-            <!-- Actions - Search & Add button -->
+            <!-- Search & Add button -->
             <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between w-full px-4">
                 <!-- Search Input Field -->
                 <mat-form-field class="qbs-mat-dense qbs-mat-rounded w-full sm:w-2/3 md:w-1/2">
@@ -34,30 +35,30 @@
                 <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
                     <div class="mat-elevation-z8">
                         <table mat-table [dataSource]="dataSourceItemsInspectionCards">
-                            <!-- Serial Id COLUMN -->
+                            <!-- serialId - S.No COLUMN -->
                             <ng-container matColumnDef="serialId">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     S.No </th>
                                 <td mat-cell *matCellDef="let index = index"> {{index + 1}} </td>
                             </ng-container>
-                            <!-- itemCode COLUMN -->
+                            <!-- itemCode - Item Code COLUMN -->
                             <ng-container matColumnDef="itemCode">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Item Code </th>
+                                    Item&nbsp;Code </th>
                                 <td mat-cell *matCellDef="let element">
                                     {{element.itemCode ? element.itemCode : '-'}} </td>
                             </ng-container>
-                            <!-- itemDescription COLUMN -->
+                            <!-- itemDescription - Item Description	COLUMN -->
                             <ng-container matColumnDef="itemDescription">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Item Description </th>
+                                    Item&nbsp;Description </th>
                                 <td mat-cell *matCellDef="let element">
                                     {{element.itemDescription ? element.itemDescription : '-' }} </td>
                             </ng-container>
-                            <!-- cardDescription COLUMN -->
+                            <!-- cardDescription - Card Description	COLUMN -->
                             <ng-container matColumnDef="cardCode">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Card Description	 </th>
+                                    Card&nbsp;Description	 </th>
                                 <td mat-cell *matCellDef="let element">
                                     {{element.cardDescription ? element.cardDescription : '-'}} </td>
                             </ng-container>
@@ -72,7 +73,7 @@
                                     </button>
                                     <mat-menu #menu="matMenu">
                                         <button mat-menu-item class="text-blue-400"
-                                            (click)="actionEdittemsInspectionCards(element)">
+                                            (click)="actionEdittemsInspectionCards(element, element.inspectionCardId)">
                                             Edit
                                             <mat-icon svgIcon="heroicons_outline:pencil"
                                                 class="text-blue-400"></mat-icon>
@@ -83,7 +84,7 @@
                             <tr mat-header-row *matHeaderRowDef="displayedColumnsItemsInspectionCards"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumnsItemsInspectionCards;"></tr>
                         </table>
-                        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+                        <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons
                             aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">
                         </mat-paginator>
                     </div>
