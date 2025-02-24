@@ -30,6 +30,23 @@ interface itemSamplingRangeIF {
     minorDefects: number;
 }
 
+export interface qualitativeInspectionIF {
+    parameter: string;
+    passCriteria: string;
+    mandatory: boolean;
+    pass: string;
+    fail: string;
+}
+
+export interface quantitativeInspectionIF {
+    parameterQty: string;
+    uoMIdX: string;
+    mandatoryQty: boolean;
+    passCriteriaTarget: string;
+    passCriteriaMax: string;
+    passCriteriaMin: string;
+}
+
 @Component({
     selector: 'app-testing-stepper',
     standalone: true,
@@ -303,7 +320,7 @@ export class TestingStepperComponent implements AfterViewInit {
     ];
     displayedColumnsQuantitative = [
         'parameterQty',
-        'uomQty',
+        'uoMIdX',
         'mandatoryQty',
         'passCriteriaTarget',
         'passCriteriaMax',
@@ -328,7 +345,7 @@ export class TestingStepperComponent implements AfterViewInit {
     quantitativeInspectionItems: quantitativeInspectionIF[] = [
         {
             parameterQty: 'Color Shade',
-            uomQty: '',
+            uoMIdX: '',
             mandatoryQty: false,
             passCriteriaTarget: '',
             passCriteriaMax: '',
@@ -336,7 +353,7 @@ export class TestingStepperComponent implements AfterViewInit {
         },
         {
             parameterQty: 'Dental Damage',
-            uomQty: '',
+            uoMIdX: '',
             mandatoryQty: false,
             passCriteriaTarget: '',
             passCriteriaMax: '',
@@ -372,7 +389,7 @@ export class TestingStepperComponent implements AfterViewInit {
             formArrayQuantitative.push(
                 this.fb.group({
                     parameterQty: [quantitativeItem.parameterQty],
-                    uomQty: [quantitativeItem.uomQty],
+                    uoMIdX: [quantitativeItem.uoMIdX],
                     mandatoryQty: [quantitativeItem.mandatoryQty], //  Checkbox bound here
                     passCriteriaTarget: [quantitativeItem.passCriteriaTarget],
                     passCriteriaMax: [quantitativeItem.passCriteriaMax],
@@ -411,7 +428,7 @@ export class TestingStepperComponent implements AfterViewInit {
     addQuantitativeInspectionRow(description: string): void {
         const quantitativeInspectionFormGroup = this.fb.group({
             parameterQty: [description],
-            uomQty: [''],
+            uoMIdX: [''],
             mandatoryQty: [false],
             passCriteriaTarget: [''],
             passCriteriaMax: [''],
@@ -684,7 +701,7 @@ export class TestingStepperComponent implements AfterViewInit {
         if (selectedRow) {
             //  Set value in the correct row of FormArray
             this.quantitativeArry.controls[index]
-                .get('uomQty')
+                .get('uoMIdX')
                 ?.setValue(selectedRow.code);
             //  Store selected values for debugging
             this.selectedUoMCode = selectedRow.code;

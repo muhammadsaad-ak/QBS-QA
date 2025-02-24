@@ -1,3 +1,32 @@
 .mat-icon-primary {
     color: #4f46e5 !important;
 }
+
+.pass-fail-column {
+    max-width: 250px !important;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+.view-mode {
+    pointer-events: none !important;
+    cursor: no-drop !important;
+}
+
+.view-mode:hover {
+    pointer-events: none !important;
+    cursor: no-drop !important;
+}
+
+.single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mat-mdc-table mat-header-row.mat-mdc-header-row, .mat-mdc-table mat-row.mat-mdc-row, .mat-mdc-table mat-footer-row.mat-mdc-footer-cell {
+    height: 48px !important;
+}

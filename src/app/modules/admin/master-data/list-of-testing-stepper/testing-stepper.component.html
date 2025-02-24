@@ -175,7 +175,7 @@
 
       <!-- Fifth Step -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card " >
-        <form [formGroup]="fifthFormGroup">
+        <form [formGroup]="fifthFormGroup"(click)="onSubmit()">
           <!-- (ngSubmit)="onSubmit()" -->
           <!-- Custom Styled Heading -->
           <h1 class="custom-heading">Inspection Card</h1>
