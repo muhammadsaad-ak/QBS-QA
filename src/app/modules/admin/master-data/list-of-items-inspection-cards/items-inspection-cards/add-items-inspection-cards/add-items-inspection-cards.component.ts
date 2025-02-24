@@ -256,10 +256,8 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       passCriteriaMin: [''],
     });
 
-    // ✅ Push to FormArray
     this.quantitativeInspectionObjects.push(quantitativeInspectionFormGroup);
 
-    // ✅ Ensure the data source is properly reassigned
     if (!this.dataSourceQuantitativeInspection) {
       this.dataSourceQuantitativeInspection = new MatTableDataSource<quantitativeInspectionIF>([]);
     }
@@ -268,10 +266,8 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       this.dataSourceQuantitativeInspection = new MatTableDataSource(this.dataSourceQuantitativeInspection);
     }
 
-    // ✅ Add new row to the dataSource
     this.dataSourceQuantitativeInspection.data = [...this.quantitativeInspectionObjects.value];
 
-    console.log("✅ Updated DataSource: ", this.dataSourceQuantitativeInspection.data);
   }
 
 
@@ -345,7 +341,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     }
   }
 
-  submitItemsInspectionCardsForm(): void {
+  submitItemsInspectionCardsFormxxxxx(): void {
     if (this.itemsInspectionCardsForm.valid) {
       const formValues = this.itemsInspectionCardsForm.value;
 
@@ -415,6 +411,74 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   }
 
 
+  submitItemsInspectionCardsForm(): void {
+    if (this.itemsInspectionCardsForm.valid) {
+      const formValues = this.itemsInspectionCardsForm.value;
+      console.log('Raw Form Values hehe:', formValues);
+
+      // Handle null values for itemU_QACard
+      formValues.itemU_QACard = formValues.itemU_QACard || null;
+
+      // Extract and exclude intCode
+      const { intCode, ...payload } = formValues;
+
+      // ✅ Ensure qualitativeInspectionObjects exists before using map
+      if (Array.isArray(payload.qualitativeInspectionObjects)) {
+        payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map((item: any) => ({
+          inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
+          isMandatory: item?.mandatory ?? false, // Ensure it exists
+          qualitativeResultPassStatusObjects: Array.isArray(item?.qualitativeResultPassStatusObjects)
+            ? item.qualitativeResultPassStatusObjects.map((result: any) => ({
+              qualitativeResultId: result?.qualitativeResultId ?? null,
+              isPassed: result?.isPassed ?? false,
+            }))
+            : [], // Provide empty array if undefined
+          qualitativeResultFailStatusObjects: Array.isArray(item?.qualitativeResultFailStatusObjects)
+            ? item.qualitativeResultFailStatusObjects.map((result: any) => ({
+              qualitativeResultId: result?.qualitativeResultId ?? null,
+              isPassed: result?.isPassed ?? false,
+            }))
+            : [], // Provide empty array if undefined
+        }));
+      } else {
+        payload.qualitativeInspectionObjects = []; // Default to empty array
+      }
+
+      // ✅ Ensure quantitativeInspectionObjects exists before using map
+      if (Array.isArray(payload.quantitativeInspectionObjects)) {
+        payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
+          inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
+          isMandatory: item?.mandatoryQty ?? false, // Ensure it exists
+          uoMId: item?.uoMId ?? "", // Ensure UoM ID exists
+          // target: item?.passCriteriaTarget ? Number(item.passCriteriaTarget) : null,
+          // max: item?.passCriteriaMax ? Number(item.passCriteriaMax) : null,
+          // min: item?.passCriteriaMin ? Number(item.passCriteriaMin) : null,
+          target: item?.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
+          max: item?.passCriteriaMax !== undefined ? parseFloat(item.passCriteriaMax) : null,
+          min: item?.passCriteriaMin !== undefined ? parseFloat(item.passCriteriaMin) : null,
+        }));
+      } else {
+        payload.quantitativeInspectionObjects = []; // Default to empty array
+      }
+
+      // 🚀 Log the final payload before sending
+      console.log('FORM SUBMISSION PAYLOAD:', payload);
+
+      this._itemInspectionCardService.AddItemInspectionCard(payload).subscribe(
+        (response) => {
+          if (response.isRequestSuccess) {
+            console.log('API RUN SUCCESSFULLY.', payload);
+          } else {
+            console.error('ERROR WHILE ADDING DATA.', response.message);
+          }
+        }
+      );
+
+    } else {
+      console.log('FORM IS INVALID!');
+    }
+  }
+
 
   submitItemsInspectionCardsFormXXX(): void {
     if (this.itemsInspectionCardsForm.valid) {
@@ -457,10 +521,10 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   dataSourceItemCodeIIC!: MatTableDataSource<any>;
   // ITEM CODE - ITEM INSPECTION CARD NG TEMPLATE STARTS
   @ViewChild('dialogTemplateItemCodeIIC') dialogTemplateItemCodeIIC;
+
   onItemCodeClickIIC() {
-    console.log("click howa hai");
     const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIIC, {
-      width: '80%',
+      width: '75vw',
       height: '75vh',
       data: this.dataSourceItemCodeIIC,
     });
@@ -468,24 +532,27 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       // // console.log('DIALOG CLOSED');
     });
   }
+
   displayedColumnsItemCodeICC: string[] = [
     'itemCode',
     'itemDescription',
     'itemGroup',
   ];
+
   selectedIntCodeIIC: number;
   selectedItemCodeIIC: string;
   selectedItemDescriptionICC: string = '';
-  // 
+
   onRowChangeItemCodeIIC(selectedRow: any): void {
     this.dataSourceItemCodeIIC.data.forEach(row => (row.isSelected = false));
     selectedRow.isSelected = true;
   }
-  // 
+
   addSelectedRowItemCodeIIC(): void {
     this.dialog.closeAll();
     const selectedRow = this.dataSourceItemCodeIIC.data.find(row => row.isSelected);
     if (selectedRow) {
+      // console.log('SELECTED ROW:', selectedRow);
       this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
       this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.name);
 
@@ -498,16 +565,17 @@ export class AddItemsInspectionCardsComponent implements OnInit {
       // this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
       // this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemDescription);
 
-
       this.selectedIntCodeIIC = selectedRow.intCode;
+      // console.log("addSelectedRowItemCodeIIC - this.selectedIntCodeIIC:", this.selectedIntCodeIIC)
       this.selectedItemCodeIIC = selectedRow.itemCode;
+      // console.log("addSelectedRowItemCodeIIC - this.selectedItemCodeIIC:", this.selectedItemCodeIIC)
       this.selectedItemDescriptionICC = selectedRow.name;
-
-      // console.log('SELECTED ROW:', selectedRow);
+      // console.log("addSelectedRowItemCodeIIC - this.selectedItemDescriptionICC:", this.selectedItemDescriptionICC)
     } else {
-      // console.log('NO ROW SELECTED');
+      console.log('NO ROW SELECTED');
     }
   }
+
   applyFilterItemCodeIIC(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSourceItemCodeIIC.filter = filterValue.trim().toLowerCase();
@@ -515,15 +583,15 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   // ITEM CODE - ITEM INSPECTION CARD NG TEMPLATE ENDS
 
   ListIAllCardsItemInspectionCard = [];
-
   // CARD CODE - ITEM INSPECTION CARD  NG TEMPLATE STARTS
   @ViewChild('dialogTemplateCardCodeIIC') dialogTemplateCardCodeIIC;
+
   // dataSourceCardCodeIIC = new MatTableDataSource<any>(this.ListIAllCardsItemInspectionCard);
   dataSourceCardCodeIIC = new MatTableDataSource<any>([]);
 
   onCardCodeClickIIC() {
     const dialogRef = this.dialog.open(this.dialogTemplateCardCodeIIC, {
-      width: '75%',
+      width: '75vw',
       height: '75vh',
       data: this.dataSourceCardCodeIIC,
     });
@@ -532,7 +600,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     });
   }
 
-  displayedColumnsCards: string[] = ['cardCode', 'cardDescription'];
+  displayedColumnsCards: string[] = ['cardCode', 'cardDescription', 'cardStatus'];
   selectedCardCode: string = '';
   selectedCardDescription: string = '';
 
@@ -655,7 +723,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
   onUoMQtyClickIIC(index: number) {
     this.selectedRowIndexUoM = index; //  Save index
     const dialogRef = this.dialog.open(this.dialogTemplateUoMIIC, {
-      width: '75%',
+      width: '75vw',
       height: '75vh',
       data: this.dataSourceUoMIIC,
     });
@@ -673,7 +741,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     selectedRow.isSelected = true;
   }
 
-  addSelectedRowUoMIIC(index: number): void {
+  addSelectedRowUoMIICxx(index: number): void {
     this.dialog.closeAll();
     const selectedRow = this.dataSourceUoMIIC.data.find(row => row.isSelected);
     if (selectedRow) {
@@ -688,13 +756,38 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     }
   }
 
+  addSelectedRowUoMIIC(): void {
+    this.dialog.closeAll();
+
+    if (this.selectedRowIndexUoM === -1) {
+      console.log('No row index selected');
+      return;
+    }
+
+    const selectedRow = this.dataSourceUoMIIC.data.find(row => row.isSelected);
+
+    if (selectedRow) {
+      console.log('SELECTED ROW:', selectedRow);
+
+      // ✅ Set the UoM value for the correct row only
+      this.quantitativeInspectionObjects.controls[this.selectedRowIndexUoM].patchValue({
+        uoMId: selectedRow.id,  // Save only in the row that triggered the modal
+      });
+
+      // Reset after update
+      this.selectedRowIndexUoM = -1;
+    } else {
+      console.log('NO ROW SELECTED');
+    }
+  }
+
   // ADD QUALITATIVE INSPECTION NG TEMPLATE STARTS
   @ViewChild('dialogTemplateAddQualitativeIIC') dialogTemplateAddQualitativeIIC;
   dataSourceAddQualitativeIIC = new MatTableDataSource([]);
 
   onAddQualitativeClickIIC() {
     const dialogRef = this.dialog.open(this.dialogTemplateAddQualitativeIIC, {
-      width: '75%',
+      width: '75vw',
       height: '75vh',
       data: this.dataSourceAddQualitativeIIC,
     });
@@ -745,7 +838,7 @@ export class AddItemsInspectionCardsComponent implements OnInit {
 
   onAddQuantitativeClickIIC() {
     const dialogRef = this.dialog.open(this.dialogTemplateAddQuantitativeIIC, {
-      width: '75%',
+      width: '75vw',
       height: '75vh',
       data: this.dataSourceAddQuantitativeIIC,
     });
@@ -802,17 +895,19 @@ export class AddItemsInspectionCardsComponent implements OnInit {
     this.selectedRowData = data; // Save data
 
     // console.log(this.selectedRowIndexResults);
-    // console.log(this.selectedRowData);
+    console.log(this.selectedRowData);
     // console.log(this.selectedRowData.id);
-    
-    
+
+
     const paramID = this.selectedRowData.id;
+    const clickedRowParameter = this.selectedRowData.parameter;
+    const clickedRowPassCriteria = this.selectedRowData.passCriteria;
     console.log(paramID);
-   
+
     const dialogRef = this.dialog.open(this.dialogTemplateResultsIIC, {
-      width: '75%',
+      width: '75vw',
       height: '75vh',
-      data: { paramID },
+      data: { paramID, clickedRowParameter, clickedRowPassCriteria },
       // data: this.dataSourceQRIIC,
     });
     dialogRef.afterClosed().subscribe(result => {

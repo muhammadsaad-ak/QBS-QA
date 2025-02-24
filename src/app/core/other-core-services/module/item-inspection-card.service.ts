@@ -125,7 +125,7 @@ export class ItemInspectionCardService {
                 tap((itemsSAP) => {
                     const listAllPatchedCards = (itemsSAP as any) ?? [];
                     this._listInspectionCardsIIC.next(listAllPatchedCards);
-                    // console.log('FETCHED CARDS:', listAllPatchedCards);
+                    console.log('FETCHED CARDS:', listAllPatchedCards);
                 }),
                 catchError((error) => {
                     console.error('ERROR FETCHING CARDS', error);
