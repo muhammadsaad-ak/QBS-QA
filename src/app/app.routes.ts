@@ -84,11 +84,15 @@ export const appRoutes: Route[] = [
                     { path: 'list-of-unit-measure-setup', loadChildren: () => import('app/modules/admin/master-data/list-of-unit-measure-setup/list-of-unit-measure-setup.routes') },
                     { path: 'list-of-items-samples', loadChildren: () => import('app/modules/admin/master-data/list-of-items-samples/list-of-items-samples.routes') },
                     { path: 'list-of-inspection-card', loadChildren: () => import('app/modules/admin/master-data/list-of-inspection-card/list-of-inspection-card.routes') },
-
                     { path: 'list-of-items-inspection-cards', loadChildren: () => import('app/modules/admin/master-data/list-of-items-inspection-cards/list-of-items-inspection-cards.routes') },
-
                     { path: 'list-of-testing-stepper',loadChildren: () => import('app/modules/admin/master-data/list-of-testing-stepper/testing-stepper.routes').then(m => m.TestingStepperRoutes)
 }                ]        
+            },
+            {
+                path: 'evaluation-plan', children: [
+                    { path: 'list-of-evaluation-plan', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-evaluation-plan/list-of-evaluation-plan.routes') },
+                    { path: 'list-of-sap-document', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-sap-document/list-of-sap-document.routes') },
+                ]
             },
 
         ]
