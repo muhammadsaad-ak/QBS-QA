@@ -1,29 +1,35 @@
 .custom-input-quality {
-    width: 25%;          /* Ensures the input field takes full width */
-  }
-  
-  .custom-input input {
-    height: 50px;         /* Adjust the height */
-    font-size: 18px;      /* Increase font size */
-    padding: 10px;        /* Add padding for better spacing */
-  }
-  
-  .custom-input mat-label {
-    font-size: 16px;      /* Increase the label font size if needed */
-  }
-  .custom-heading {
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 30px;
-    text-align: left;
-    text-underline-position: from-font;
-    text-decoration-skip-ink: none;
-  }
+  width: 25%;
+  /* Ensures the input field takes full width */
+}
 
-  //Removing Numbers from the stepper
-  .mat-step-header .mat-step-icon {
-    display: none;
-  }
+.custom-input input {
+  height: 50px;
+  /* Adjust the height */
+  font-size: 18px;
+  /* Increase font size */
+  padding: 10px;
+  /* Add padding for better spacing */
+}
+
+.custom-input mat-label {
+  font-size: 16px;
+  /* Increase the label font size if needed */
+}
+
+.custom-heading {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+}
+
+//Removing Numbers from the stepper
+.mat-step-header .mat-step-icon {
+  display: none;
+}
 
 
 .custom-stepper .mat-step-header {
@@ -33,8 +39,10 @@
 }
 
 .custom-stepper .mat-step-header[aria-selected="true"] {
-  border-bottom: 2px solid #5046E5; /* Blue underline on selected step */
-  color: wheat; /* Blue text on selected step */
+  border-bottom: 2px solid #5046E5;
+  /* Blue underline on selected step */
+  color: wheat;
+  /* Blue text on selected step */
 }
 
 .mat-horizontal-stepper-header-container {
@@ -42,40 +50,47 @@
 }
 
 .mat-mdc-tab-group .mat-mdc-tab-body-content {
-    padding: 0px;
+  padding: 0px;
 }
 
-  /* Additional styles for buttons */
-  .step-navigation {
-    margin-top: 24px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 16px;
+/* Additional styles for buttons */
+.step-navigation {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
 
-    button {
-      &.back-button {
-        border: 1px solid #5046E5;
-        color: #5046E5;
-        width: 140px;
+  button {
+    &.back-button {
+      border: 1px solid #5046E5;
+      color: #5046E5;
+      width: 140px;
 
-      }
-  
-      &.next-button {
-        background-color: #5046E5;
-        color: white;
-        width: 140px;
-      }
-      .next-button:hover {
-        background-color: #3e38b8;
-    }
     }
 
-    
-    
-    
-    
-    
-    
+    &.next-button {
+      background-color: #5046E5;
+      color: white;
+      width: 140px;
+    }
+
+    .next-button:hover {
+      background-color: #3e38b8;
+    }
   }
+}
 
-  
+.pass-fail-column {
+  max-width: 250px !important;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+.mat-mdc-table mat-header-row.mat-mdc-header-row,
+.mat-mdc-table mat-row.mat-mdc-row,
+.mat-mdc-table mat-footer-row.mat-mdc-footer-cell {
+  height: 48px !important;
+}
