@@ -1,0 +1,25 @@
+.mat-icon-primary {
+    color: #4f46e5 !important;
+}
+.ml-2,
+.mr-1 {
+    display: inline-flex;
+    align-items: center;
+}
+
+.item-cavity-section {
+    // height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.mat-mdc-row {
+    height: 39px !important;
+}
+
+.single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
