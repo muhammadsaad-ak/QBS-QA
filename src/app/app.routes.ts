@@ -91,7 +91,7 @@ export const appRoutes: Route[] = [
             {
                 path: 'evaluation-plan', children: [
                     { path: 'list-of-evaluation-plan', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-evaluation-plan/list-of-evaluation-plan.routes') },
-                    { path: 'list-of-sap-document', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-sap-document/list-of-sap-document.routes') },
+                    // { path: 'list-of-sap-document', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-sap-document/list-of-sap-document.routes') },
                 ]
             },
 
