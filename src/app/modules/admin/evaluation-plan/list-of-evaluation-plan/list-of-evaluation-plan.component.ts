@@ -57,26 +57,199 @@ import { ItemSamplesService } from 'app/core/other-core-services/module/item-sam
   ],
   encapsulation: ViewEncapsulation.None,
 })
-export class ListOfEvaluationPlanComponent {
+export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
 
   configForm: UntypedFormGroup;
   searchInputControl: UntypedFormControl = new UntypedFormControl();
-  orderTypeControl = new FormControl(null); // Default null, or you can set a default value
+  orderTypeControl = new FormControl('purchaseOrder');
+  currentView = 'evaluationPlan'; // Options: 'evaluationPlan' or 'sapDocuments'
 
-
+  pageTitle = 'List of Evaluation Plan';
   addUserBtn = "Add Qualitative";
   addBtnTitle = "Add";
 
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
-  drawerMode: 'side' | 'over';
+  drawerMode: 'side' | 'over' = 'side';
 
   List_Of_Inspection_Data = [];
 
-  displayedColumns: string[] = ['serialId', 'docNo', 'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
-  // dataSource = new MatTableDataSource<any>([]);
-  dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
+  displayedColumns: string[] = [];
+  dataSource = new MatTableDataSource<any>([]);
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  
+  // Static data for Evaluation Plan - Purchase Orders
+  evalPlanPurchaseOrderData = [
+    {
+      docNo: 'PO-001',
+      docDate: '2025-02-10',
+      lineNo: '1',
+      itemCode: 'ITM-1001',
+      itemDescription: 'Steel Plate 10mm',
+      qty: 50,
+      status: 'Open'
+    },
+    {
+      docNo: 'PO-001',
+      docDate: '2025-02-10',
+      lineNo: '2',
+      itemCode: 'ITM-1002',
+      itemDescription: 'Aluminum Sheet 5mm',
+      qty: 100,
+      status: 'Open'
+    },
+    {
+      docNo: 'PO-002',
+      docDate: '2025-02-15',
+      lineNo: '1',
+      itemCode: 'ITM-2001',
+      itemDescription: 'Copper Wire 2mm',
+      qty: 200,
+      status: 'Closed'
+    },
+    {
+      docNo: 'PO-003',
+      docDate: '2025-02-18',
+      lineNo: '1',
+      itemCode: 'ITM-3001',
+      itemDescription: 'Plastic Resin Type A',
+      qty: 500,
+      status: 'In Progress'
+    },
+    {
+      docNo: 'PO-004',
+      docDate: '2025-02-20',
+      lineNo: '1',
+      itemCode: 'ITM-4001',
+      itemDescription: 'Electronic Component X-42',
+      qty: 1000,
+      status: 'Open'
+    }
+  ];
+
+  // Static data for Evaluation Plan - Production Orders
+  evalPlanProductionOrderData = [
+    {
+      docNo: 'PRO-001',
+      docDate: '2025-02-12',
+      itemCode: 'PROD-101',
+      productName: 'Metal Frame Assembly',
+      qty: 25,
+      status: 'In Progress'
+    },
+    {
+      docNo: 'PRO-002',
+      docDate: '2025-02-14',
+      itemCode: 'PROD-102',
+      productName: 'Circuit Board v2',
+      qty: 100,
+      status: 'Pending'
+    },
+    {
+      docNo: 'PRO-003',
+      docDate: '2025-02-19',
+      itemCode: 'PROD-103',
+      productName: 'Plastic Housing Type B',
+      qty: 50,
+      status: 'Completed'
+    },
+    {
+      docNo: 'PRO-004',
+      docDate: '2025-02-22',
+      itemCode: 'PROD-104',
+      productName: 'Final Product Assembly',
+      qty: 30,
+      status: 'In Progress'
+    },
+    {
+      docNo: 'PRO-005',
+      docDate: '2025-02-24',
+      itemCode: 'PROD-105',
+      productName: 'Custom Component Z-99',
+      qty: 150,
+      status: 'Scheduled'
+    }
+  ];
+
+  // Static data for SAP Documents - Purchase Orders
+  sapDocPurchaseOrderData = [
+    {
+      docNo: 'PO-101',
+      lineNo: '1',
+      itemCode: 'SAP-1001',
+      itemDescription: 'SAP Connector Module',
+      qty: 30,
+      openQty: 10,
+      status: 'Partial'
+    },
+    {
+      docNo: 'PO-102',
+      lineNo: '1',
+      itemCode: 'SAP-1002',
+      itemDescription: 'Database Integration Kit',
+      qty: 20,
+      openQty: 20,
+      status: 'Open'
+    },
+    {
+      docNo: 'PO-103',
+      lineNo: '1',
+      itemCode: 'SAP-1003',
+      itemDescription: 'SAP API License',
+      qty: 5,
+      openQty: 0,
+      status: 'Closed'
+    },
+    {
+      docNo: 'PO-104',
+      lineNo: '1',
+      itemCode: 'SAP-1004',
+      itemDescription: 'ERP Module Extension',
+      qty: 15,
+      openQty: 5,
+      status: 'Partial'
+    }
+  ];
+
+  // Static data for SAP Documents - Production Orders
+  sapDocProductionOrderData = [
+    {
+      docNo: 'PRO-201',
+      docDate: '2025-02-05',
+      itemCode: 'SAPPR-101',
+      productName: 'SAP Integration Gateway',
+      qty: 10,
+      openQty: 3,
+      status: 'In Progress'
+    },
+    {
+      docNo: 'PRO-202',
+      docDate: '2025-02-10',
+      itemCode: 'SAPPR-102',
+      productName: 'ERP System Core',
+      qty: 5,
+      openQty: 5,
+      status: 'Open'
+    },
+    {
+      docNo: 'PRO-203',
+      docDate: '2025-02-15',
+      itemCode: 'SAPPR-103',
+      productName: 'Database Connector',
+      qty: 20,
+      openQty: 0,
+      status: 'Completed'
+    },
+    {
+      docNo: 'PRO-204',
+      docDate: '2025-02-20',
+      itemCode: 'SAPPR-104',
+      productName: 'SAP Analytics Module',
+      qty: 8,
+      openQty: 4,
+      status: 'Partial'
+    }
+  ];
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
@@ -88,135 +261,94 @@ export class ListOfEvaluationPlanComponent {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemSamplesService: ItemSamplesService,
-
-    
   ) { }
 
   ngOnInit(): void {
-
-    this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
-      this.dataSource.data = items.data;
-    })
-
-    // Check if there is updated data from navigation
-    const navigationState = history.state.updatedData;
-    if (navigationState) {
-      const updatedData = navigationState;
-      // Now update the List_Of_Inspection_Data with the new data
-      this.List_Of_Inspection_Data = this.List_Of_Inspection_Data.map(item =>
-        item.sampleCode === updatedData.sampleCode ? updatedData : item
-      );
-      // Refresh the table data source
-      this.dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
-    }
-
-    this.orderTypeControl.setValue('purchaseOrder'); // Set default to Purchase Order
-    this.updateTableColumns('purchaseOrder'); // Initialize table
-
-    this.orderTypeControl.valueChanges.subscribe((selectedType) => {
-        this.updateTableColumns(selectedType);
+    // Set default order type and screen type
+    this.updateTableView();
+    
+    // React to order type changes
+    this.orderTypeControl.valueChanges.subscribe(() => {
+      this.updateTableView();
     });
 
-    this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
-        this.dataSource.data = items.data;
-    });
-
-    this.searchInputControl.valueChanges.pipe(debounceTime(300)).subscribe((searchTerm: string) => {
-        this.applyFilter(searchTerm);
-    });
-}
-
-updateTableColumns(orderType: string): void {
-  if (orderType === 'purchaseOrder') {
-      this.displayedColumns = ['serialId', 'docNo', 'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
-  } else if (orderType === 'productionOrder') {
-      this.displayedColumns = ['serialId', 'docNo', 'docDate', 'lineNo', 'itemCode', 'qty', 'status', 'action']; // Adjusted columns
-  }
-
-
-    // Build the config form
-    // this.configForm = this._formBuilder.group({
-    //   title: 'Remove User',
-    //   message:
-    //     'Are you sure you want to remove this user permanently? <span class="font-medium">This action cannot be undone!</span>',
-    //   icon: this._formBuilder.group({
-    //     show: true,
-    //     name: 'heroicons_outline:exclamation-triangle',
-    //     color: 'warn',
-    //   }),
-    //   actions: this._formBuilder.group({
-    //     confirm: this._formBuilder.group({
-    //       show: true,
-    //       label: 'Remove',
-    //       color: 'warn',
-    //     }),
-    //     cancel: this._formBuilder.group({
-    //       show: true,
-    //       label: 'Cancel',
-    //     }),
-    //   }),
-    //   dismissible: true,
-    // });
-
-
-    //Search with complete payload values
-    // Subscribe to search input field value changes to filter the table data
+    // Setup search functionality
     this.searchInputControl.valueChanges
       .pipe(debounceTime(300))
       .subscribe((searchTerm: string) => {
         this.applyFilter(searchTerm);
       });
-
-    //Search with the specific payload values
-    // Override the default filterPredicate
-    // this.dataSource.filterPredicate = (data: User, filter: string) => {
-    //   const transformedFilter = filter.trim().toLowerCase();
-    //   // You can add more fields for filtering by expanding the condition below
-    //   return (
-    //     // data.name.toLowerCase().includes(transformedFilter) ||
-    //     data.email.toLowerCase().includes(transformedFilter) ||
-    //     data.phone.toLowerCase().includes(transformedFilter) ||
-    //     data.department.toLowerCase().includes(transformedFilter)
-    //   );
-    // };
-
-    // Subscribe to search input field value changes to filter the table data
-    // this.searchInputControl.valueChanges.pipe(debounceTime(300)).subscribe((searchTerm: string) => {
-    //   this.applyFilter(searchTerm);
-    // });
-
-
   }
+
+  updateTableView(): void {
+    const orderType = this.orderTypeControl.value;
+    
+    if (this.currentView === 'evaluationPlan') {
+      this.pageTitle = 'List of Evaluation Plan';
+      
+      if (orderType === 'purchaseOrder') {
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
+        this.dataSource.data = this.evalPlanPurchaseOrderData;
+      } else if (orderType === 'productionOrder') {
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'productName', 'qty', 'status', 'action']; 
+        this.dataSource.data = this.evalPlanProductionOrderData;
+      }
+    } else if (this.currentView === 'sapDocuments') {
+      this.pageTitle = 'List of SAP Documents';
+      
+      if (orderType === 'purchaseOrder') {
+        this.displayedColumns = ['serialId', 'docNo', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'action'];
+        this.dataSource.data = this.sapDocPurchaseOrderData;
+      } else if (orderType === 'productionOrder') {
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'productName', 'qty', 'openQty', 'status', 'action'];
+        this.dataSource.data = this.sapDocProductionOrderData;
+      }
+    }
+    
+    // Reset paginator when data changes
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
+  }
+
+  toggleView(): void {
+    this.currentView = this.currentView === 'evaluationPlan' ? 'sapDocuments' : 'evaluationPlan';
+    this.updateTableView();
+  }
+
   ngOnDestroy(): void {
-
-
+    // Cleanup if needed
   }
 
   // Method to apply filter on the dataSource
   applyFilter(searchTerm: string): void {
-    searchTerm = searchTerm.trim().toLowerCase(); // Remove whitespace and make lowercase
-    this.dataSource.filter = searchTerm; // Apply filter (MatTableDataSource handles filtering)
+    if (!searchTerm) {
+      // If search term is empty, reset filter
+      this.dataSource.filter = '';
+      return;
+    }
+    
+    searchTerm = searchTerm.trim().toLowerCase();
+    this.dataSource.filter = searchTerm;
+    
+    // Reset to first page when filtering
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
   }
 
-
   onBackdropClicked(): void {
-    console.log('On Back Drop Clicked')
+    console.log('On Back Drop Clicked');
     this.matDrawer.close();
     this._router.navigate(['./'], { relativeTo: this._activatedRoute });
   }
 
-  // openAddInspectionDrawer(type: 'visitprofile'): void {
-  //   this.matDrawer.open();
-  //   this._router.navigate(['add-qualitative-result'], { relativeTo: this._activatedRoute });
-  // }
-
-
-  // addbtn(): void {
-  //   this._router.navigate(['add-item-sample'], { relativeTo: this._activatedRoute });
-  // }
-
-  // actionEditItemData(itemData: any): void {
-  //   console.log(itemData);
-  //   this._router.navigate(['edit-item-sample'], { state: { data: itemData }, relativeTo: this._activatedRoute });
-  // }
+  actionEditItemData(element: any): void {
+    console.log('Edit item:', element);
+    // Navigate to edit page with item data
+    this._router.navigate(['edit-item-sample'], { 
+      state: { data: element }, 
+      relativeTo: this._activatedRoute 
+    });
+  }
 }
