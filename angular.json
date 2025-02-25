@@ -90,7 +90,11 @@
               "buildTarget": "Angular-Boilerplate:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "host": "0.0.0.0",
+            "allowedHosts": ["qa-addon.qbscocloud.net"]
+          }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n"

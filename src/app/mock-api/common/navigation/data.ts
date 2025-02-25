@@ -98,6 +98,32 @@ export const compactNavigation: QbsNavigationItem[] = [
             
         ],
     },
+
+    //Evaluation Plan
+    {
+        id: 'evaluation-plan',
+        title: 'Evaluation Plan',
+        subtitle: 'Unique evaluation plan designs',
+        type: 'aside', // Changed from 'basic' to 'aside' so it can have children
+        icon: 'heroicons_outline:home',
+        children: [
+            {
+                id: 'evaluation-plan.list-of-evaluation-plan',
+                title: 'List of Evaluation Plan',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/evaluation-plan/list-of-evaluation-plan',
+            },
+            {
+                id: 'evaluation-plan.list-of-sap-document',
+                title: 'SAP Documents',
+                type: 'basic',
+                icon: 'heroicons_outline:document-text',
+                link: '/evaluation-plan/list-of-sap-document',
+            }
+        ],
+    },
+    
     // {
     //     id: 'list-of-qualitative-result',
     //     title: '',
