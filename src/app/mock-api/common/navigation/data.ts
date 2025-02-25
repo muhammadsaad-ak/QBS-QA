@@ -105,7 +105,7 @@ export const compactNavigation: QbsNavigationItem[] = [
         title: 'Evaluation Plan',
         subtitle: 'Unique evaluation plan designs',
         type: 'aside', // Changed from 'basic' to 'aside' so it can have children
-        icon: 'heroicons_outline:home',
+        icon: 'heroicons_outline:rectangle-stack',
         children: [
             {
                 id: 'evaluation-plan.list-of-evaluation-plan',
