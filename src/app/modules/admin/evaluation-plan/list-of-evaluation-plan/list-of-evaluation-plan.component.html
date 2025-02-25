@@ -7,11 +7,16 @@
         </mat-drawer>
         <mat-drawer-content>
             <!-- Header Starts -->
-            <div class="relative flex-0 flex-col px-6 py-2 md:px-8">
+            <div class="relative flex flex-row px-6 py-2 md:px-8 items-center justify-between">
                 <!-- Title -->
                 <div class="text-3xl font-extrabold tracking-tight">
-                    List of Evaluation Plan
+                    {{ pageTitle }}
                 </div>
+                <!-- Toggle View Button -->
+                <button mat-flat-button color="primary" (click)="toggleView()">
+                    <span *ngIf="currentView === 'evaluationPlan'">Switch to SAP Documents</span>
+                    <span *ngIf="currentView === 'sapDocuments'">Switch to Evaluation Plan</span>
+                </button>
             </div>
             <!-- Actions - Search & Add button -->
             <div class="mt-4 flex flex-col sm:flex-row sm:items-center w-full px-4">
@@ -80,12 +85,27 @@
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{element.itemDescription ? element.itemDescription : '-' }} </td>
                             </ng-container>
+                            <!-- Product Name COLUMN -->
+                            <ng-container matColumnDef="productName">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                    Product Name </th>
+                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                    {{element.productName ? element.productName : '-' }} </td>
+                            </ng-container>
                             <!-- QTY COLUMN -->
                             <ng-container matColumnDef="qty">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
                                     QTY </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{ element.qty ? element.qty : '-' }}
+                                </td>
+                            </ng-container>
+                            <!-- Open QTY COLUMN -->
+                            <ng-container matColumnDef="openQty">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                    Open QTY </th>
+                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                    {{ element.openQty !== undefined ? element.openQty : '-' }}
                                 </td>
                             </ng-container>
                             <!-- Status COLUMN -->
@@ -97,7 +117,7 @@
                                 </td>
                             </ng-container>
                             <!-- Action COLUMN -->
-                            <ng-container matColumnDef="action">
+                            <!-- <ng-container matColumnDef="action">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Action </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
@@ -113,6 +133,15 @@
                                                 class="text-blue-400"></mat-icon>
                                         </button>
                                     </mat-menu>
+                                </td>
+                            </ng-container> -->
+                            <ng-container matColumnDef="action">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
+                                    Action </th>
+                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                    <button mat-icon-button (click)="actionEditItemData(element)">
+                                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:plus-circle'"></mat-icon>
+                                    </button>
                                 </td>
                             </ng-container>
                             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
