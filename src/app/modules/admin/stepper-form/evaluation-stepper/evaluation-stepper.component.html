@@ -1,0 +1,129 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <div class="p-3 mt-4 h-auto overflow-y-auto padding-right: 8px;">
+        <mat-stepper [linear]="isLinear" #stepper class="custom-stepper mt-4" displayDefaultIndicatorType="false">
+  
+        <!-- First Step -->
+        <mat-step [stepControl]="planPurchaseOrderFormGroup" label="Evaluation Plan Purchase Order">
+          <form [formGroup]="planPurchaseOrderFormGroup">
+  
+            <!-- Custom Styled Heading -->
+            <h1 class="custom-heading">Evaluation Plan Purchase Order</h1>
+  
+            <!-- Responsive Flexbox Container -->
+            <div style="display: flex; gap: 2px 8px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Doc No.</mat-label>
+                <input class="view-mode-bg-grey" matInput formControlName="docNoPO" placeholder="Enter Code" required
+                  readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+  
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Item Code</mat-label>
+                <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="itemCodePO" required
+                readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Item Description</mat-label>
+                <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="itemDescriptionPO" placeholder="Enter Code" required
+                  readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+  
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Inspection Date & Time</mat-label>
+                <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="inspectionDateTimePO" required
+                readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>P.O Date</mat-label>
+                <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="datePO" placeholder="Enter Code" required
+                  readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+  
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Purchase Order</mat-label>
+                <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="purchaseOrderPO" required
+                readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Location</mat-label>
+                <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="locationPO" placeholder="Enter Code" required
+                  readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+  
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>P.O Qty:</mat-label>
+                <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="quantityPO" required
+                readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Open Qty:</mat-label>
+                <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="openQuantityPO" placeholder="Enter Code" required
+                  readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+  
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Vendor</mat-label>
+                <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="vendorPO" required
+                readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Sample Qty</mat-label>
+                <input class="view-mode-bg-grey" matInput formControlName="samplePO" placeholder="Enter Code" required
+                  readonly style=" cursor: not-allowed;">
+              </mat-form-field>
+  
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>QC Lot No:</mat-label>
+                <input matInput placeholder="Enter " formControlName="qcLotNoPO" required
+                readonly>
+              </mat-form-field>
+
+              <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
+                <mat-label>Receive Qty</mat-label>
+                <input matInput formControlName="receiveQtyPO" placeholder="Enter Code" required
+                  readonly>
+              </mat-form-field>
+  
+              <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
+                <mat-label>Inspection Qty:</mat-label>
+                <input matInput placeholder="Enter " formControlName="inspectionQtyPO" required
+                readonly>
+              </mat-form-field>
+            </div>
+
+            <hr class="custom-divider">
+
+            <div class="sample-card add-sample-card">
+                <span>Add Sample</span>
+                <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
+            </div>
+
+
+            
+            <div class="step-navigation">
+              <button mat-button class="next-button" matStepperNext>Next</button>
+            </div>
+  
+  
+          </form>
+        </mat-step>
+  
+        <mat-step>
+            <ng-template matStepLabel>Done</ng-template>
+            <p>You are now done.</p>
+            <div>
+              <!-- <button mat-button matStepperPrevious>Back</button> -->
+              <button mat-button class="back-button" matStepperPrevious>Back</button>
+    
+              <button mat-button (click)="stepper.reset()">Reset</button>
+            </div>
+          </mat-step>
+    
+        </mat-stepper>
+      </div>
+    </div>

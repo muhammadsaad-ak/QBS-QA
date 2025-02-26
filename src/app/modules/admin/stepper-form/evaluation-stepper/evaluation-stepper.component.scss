@@ -1,0 +1,138 @@
+.custom-input-quality {
+    width: 25%;
+    /* Ensures the input field takes full width */
+  }
+  
+  .custom-input input {
+    height: 50px;
+    /* Adjust the height */
+    font-size: 18px;
+    /* Increase font size */
+    padding: 10px;
+    /* Add padding for better spacing */
+  }
+  
+  .custom-input mat-label {
+    font-size: 16px;
+    /* Increase the label font size if needed */
+  }
+  
+  .custom-heading {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 30px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+  }
+  
+  //Removing Numbers from the stepper
+  .mat-step-header .mat-step-icon {
+    display: none;
+  }
+  
+  
+  .custom-stepper .mat-step-header {
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s ease;
+    height: 40px;
+  }
+  
+  .custom-stepper .mat-step-header[aria-selected="true"] {
+    border-bottom: 2px solid #5046E5;
+    /* Blue underline on selected step */
+    color: wheat;
+    /* Blue text on selected step */
+  }
+  
+  .mat-horizontal-stepper-header-container {
+    margin-bottom: 10px;
+  }
+  
+  .mat-mdc-tab-group .mat-mdc-tab-body-content {
+    padding: 0px;
+  }
+  
+  /* Additional styles for buttons */
+  .step-navigation {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+  
+    button {
+      &.back-button {
+        border: 1px solid #5046E5;
+        color: #5046E5;
+        width: 140px;
+  
+      }
+  
+      &.next-button {
+        background-color: #5046E5;
+        color: white;
+        width: 140px;
+      }
+  
+      .next-button:hover {
+        background-color: #3e38b8;
+      }
+    }
+  }
+  .mat-form-field {
+    margin-bottom: 2px !important; /* Reduce the space below each field */
+  }
+
+  .custom-divider {
+    border: none;
+    height: 2px;
+    background-color: #ddd; /* Light Grey */
+    margin: 20px 0;
+}
+
+// .add-sample-card {
+//     border: 2px solid #5046E5; /* Blue border */
+//     border-radius: 10px;
+//     font-weight: 600;
+//     color: #5046E5;
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     justify-content: center;
+//     padding: 16px;
+//     min-width: 150px;
+//     min-height: 100px;
+//     cursor: pointer;
+//     transition: all 0.3s ease-in-out;
+//   }
+
+  .add-sample-card {
+    border: 2px solid #5046E5; /* Blue border */
+    width: 336px;
+    height: 114px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: #5046E5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .add-sample-card:hover {
+    background-color: rgba(63, 81, 181, 0.1); /* Light blue hover effect */
+  }
+  
+  
+  .add-sample-card:hover {
+    background-color: rgba(63, 81, 181, 0.1); /* Light blue hover effect */
+  }
+
+  .custom-add-icon {
+    color: #5046E5;
+}
+  

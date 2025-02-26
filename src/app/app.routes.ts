@@ -94,6 +94,11 @@ export const appRoutes: Route[] = [
                     // { path: 'list-of-sap-document', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-sap-document/list-of-sap-document.routes') },
                 ]
             },
+            {
+                path: 'evaluation-stepper', children: [
+                    { path: 'new-evaluation-stepper', loadChildren: () => import('app/modules/admin/stepper-form/evaluation-stepper/evaluation-stepper.routes') },
+                ]
+            },
 
         ]
     },

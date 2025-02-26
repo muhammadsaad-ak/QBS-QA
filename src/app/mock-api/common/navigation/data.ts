@@ -123,7 +123,22 @@ export const compactNavigation: QbsNavigationItem[] = [
             }
         ],
     },
-    
+    {
+        id: 'evaluation-stepper',
+        title: 'Evaluation Stepper',
+        subtitle: 'Unique evaluation stepper designs',
+        type: 'aside', // Changed from 'basic' to 'aside' so it can have children
+        icon: 'heroicons_outline:adjustments-horizontal',
+        children: [
+            {
+                id: 'evaluation-stepper.new-evaluation-stepper',
+                title: 'Evaluation Stepper',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/evaluation-stepper/new-evaluation-stepper',
+            },
+        ]
+    }
     // {
     //     id: 'list-of-qualitative-result',
     //     title: '',
