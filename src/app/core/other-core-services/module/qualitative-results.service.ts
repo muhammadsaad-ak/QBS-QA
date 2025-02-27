@@ -19,12 +19,12 @@ export class QualitativeResultsService {
     private _httpClient = inject(HttpClient);
 
     // BehaviorSubject to hold role data state
-    private _listQualitativeResults  = new BehaviorSubject<any[]>([]);
+    private _listQualitativeResults = new BehaviorSubject<any[]>([]);
     private _qualityResultsCode = new BehaviorSubject<any[]>([]);
 
 
     // Observable to expose role data state
-    listQualitativeResults$: Observable<any[]> = this._listQualitativeResults .asObservable();
+    listQualitativeResults$: Observable<any[]> = this._listQualitativeResults.asObservable();
 
     qualityResultCode$: Observable<any[]> = this._qualityResultsCode.asObservable(); //For IC Code API
 
@@ -74,8 +74,8 @@ export class QualitativeResultsService {
                 tap((results) => {
                     // Optionally handle the response or state update here
                     const qualitativeResults = (results as any).data ?? [];
-                    this._listQualitativeResults .next(qualitativeResults);
-                      console.log('FETCHED RESULTS', qualitativeResults);
+                    this._listQualitativeResults.next(qualitativeResults);
+                    console.log('FETCHED RESULTS', qualitativeResults);
                 }),
                 catchError((error) => {
                     console.error('Error fetching items', error);
@@ -86,27 +86,46 @@ export class QualitativeResultsService {
             );
     }
 
-     //Inspection Card Code API
-  getQualitativeResultCode(): Observable<any> {
-    const headers = new HttpHeaders({
-        Authorization: `Bearer ${this.accessToken}`,
-        Accept: 'text/plain',
-    });
-  
-    return this._httpClient
-        .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=qualitative_result`, { headers })
-        .pipe(
-            tap((qualityResultCode) => {
-                const qualityResultsCode = (qualityResultCode as any) ?? [];
-                this._qualityResultsCode.next(qualityResultsCode);
-                console.log('Fetched code of Quality Result Code', qualityResultsCode);
-            }),
-            catchError((error) => {
-                console.error('Fetched code of Quality Result Code', error);
-                return throwError(
-                    () => new Error('Fetched code of Quality Result Code')
-                );
-              })
+    //  GET NEXT INT COUNT QUALITATIVE RESULT
+    getQualitativeResultCode(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=qualitative_result`, { headers })
+            .pipe(
+                tap((qualityResultCode) => {
+                    const qualityResultsCode = (qualityResultCode as any) ?? [];
+                    this._qualityResultsCode.next(qualityResultsCode);
+                    console.log('Fetched code of Quality Result Code', qualityResultsCode);
+                }),
+                catchError((error) => {
+                    console.error('Fetched code of Quality Result Code', error);
+                    return throwError(
+                        () => new Error('Fetched code of Quality Result Code')
+                    );
+                })
             );
+    }
+    // UPDATE QUALITATIVE RESULT API
+    UpdateQualitativeResult(data: any): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+        });
+        // console.log("SENDING PAYLOAD", data);
+        return this._httpClient.put(
+            `${environment.appApiUrl}/CSAPI/IQualitativeResultFeature/UpdateQualitativeResult`,
+            data,
+            { headers }
+        ).pipe(
+            tap(response => console.log('RESPONSE:', response)),
+            catchError(error => {
+                console.error('ERROR WHILE UPDATING QUALITATIVE RESULT', error);
+                return throwError(() => error);
+            })
+        );
     }
 }

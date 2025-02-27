@@ -27,6 +27,7 @@ import { QbsFindByKeyPipe } from '@qbs/pipes/find-by-key';
 import { QualitativeResultComponent } from '../qualitative-result.component';
 import { Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 
 @Component({
   selector: 'app-edit-qualitative-result',
@@ -36,11 +37,12 @@ import { HttpClient } from '@angular/common/http';
   encapsulation: ViewEncapsulation.None,
   imports: [AsyncPipe, CommonModule, DatePipe, FormsModule, MatAutocompleteModule, MatButtonModule, MatButtonToggleModule, MatCheckboxModule, MatDatepickerModule, MatDividerModule, MatFormFieldModule, MatIconModule, MatInputModule, MatMenuModule, MatOptionModule, MatPaginatorModule, MatProgressBarModule, MatRippleModule, MatSelectModule, MatSidenavModule, MatSortModule, MatSlideToggleModule, MatTabsModule, MatRadioModule, MatTooltipModule, NgClass, NgTemplateOutlet, ReactiveFormsModule, RouterLink, RouterOutlet, TextFieldModule, QbsFindByKeyPipe],
 })
+
 export class EditQualitativeResultComponent implements OnInit, AfterViewInit, OnDestroy {
+
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
-  itemMasterForm: FormGroup;
-  editQualitativeResultsForm: FormGroup;
-  errorMessage: string | null = null;
+
+  qualitativeResultUpdateForm: FormGroup;
   editMode: boolean = false;
   elementData: any;
 
@@ -54,12 +56,16 @@ export class EditQualitativeResultComponent implements OnInit, AfterViewInit, On
     private route: ActivatedRoute,
     private fb: FormBuilder,
     private http: HttpClient,
+    private _qualitativeResultsService: QualitativeResultsService,
   ) {
-    this.editQualitativeResultsForm = new FormGroup({
+    this.qualitativeResultUpdateForm = new FormGroup({
+      id: new FormControl(),
       qrCode: new FormControl(),
-      qrDescription: new FormControl(''),
+      resultDescription: new FormControl(''),
+      isActive: new FormControl(''),
     });
   }
+
   ngOnInit(): void {
     const navigation = this._location.getState() as { element: any };
     if (navigation?.element) {
@@ -70,6 +76,7 @@ export class EditQualitativeResultComponent implements OnInit, AfterViewInit, On
       console.error('NO ELEMENT DATA FOUND IN ROUTE STATE');
     }
   }
+  
   populateQRFormWithStateData(data: any): void {
     if (!data) {
       console.error('NO DATA TO POPULATE THE FORM FIELDS.');
@@ -77,11 +84,13 @@ export class EditQualitativeResultComponent implements OnInit, AfterViewInit, On
     }
     // MAPPING RESPONSE 
     // console.log(data);
-    this.editQualitativeResultsForm.patchValue({
-      qrCode: data.qualitativeCode || '',
-      qrDescription: data.description || '',
+    this.qualitativeResultUpdateForm.patchValue({
+      id: data.id || '',
+      qrCode: data.intCode || '',
+      resultDescription: data.resultDescription || '',
+      isActive: data.isActive || '',
     });
-    // console.log('RESPONSE:', this.editQualitativeResultsForm.value);
+    // console.log('RESPONSE:', this.qualitativeResultUpdateForm.value);
   }
 
   ngAfterViewInit(): void {
@@ -89,10 +98,29 @@ export class EditQualitativeResultComponent implements OnInit, AfterViewInit, On
   ngOnDestroy(): void {
   }
 
-  onSubmit(): void {
-    console.log('UPDATED FORM VALUES:', this.editQualitativeResultsForm.value);
-    this._quanlitativeResultComponent.matDrawer.close();
-    this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
+  onUpdateQualitativeResult(): void {
+    // console.log('UPDATED FORM VALUES:', this.qualitativeResultUpdateForm.value);
+    const formValues = this.qualitativeResultUpdateForm.value;
+    // const payload = { ...formValues, };
+    const { qrCode, ...payload } = formValues; // Exclude intCode
+    // console.log(payload);
+    // return;
+    this._qualitativeResultsService.UpdateQualitativeResult(payload).subscribe(
+      (response) => {
+        if (response.isRequestSuccess) {
+          console.log('API RUN SUCCESSFULLY.', payload);
+          setTimeout(() => {
+            this._quanlitativeResultComponent.matDrawer.close();
+            this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
+          }, 1500);
+        } else {
+          console.error('ERROR WHILE UPDATING DATA.', response.message);
+        }
+      },
+      (error) => {
+        console.error('API request failed:', error);
+      }
+    );
   }
 
   toggleEditMode(editMode: boolean): void {
