@@ -14,14 +14,10 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute } from '@angular/router';
 import { qbsAnimations } from '@qbs/animations';
-// import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
-// import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
-// import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
-// import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
-// import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { MatSelectModule } from '@angular/material/select';
+import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 
 /**
  * @title Stepper overview
@@ -45,52 +41,302 @@ import { MatSelectModule } from '@angular/material/select';
     MatTableModule,
     MatTabsModule,
     MatSelectModule,
-],
+  ],
   templateUrl: './evaluation-stepper.component.html',
   styleUrl: './evaluation-stepper.component.scss'
 })
-export class EvaluationStepperComponent {
+export class EvaluationStepperComponent implements AfterViewInit {
+  i: number;
+  
+  // Form groups
+  qualitativeInspectionForm: FormGroup;
+  quantitativeInspectionForm: FormGroup;
+  
+  
+  // DataSources for tables
+  dataSourceQualitativeInspection: MatTableDataSource<any>;
+  dataSourceQuantitativeInspection: MatTableDataSource<any>;
+  // dataSourceUoMIIC: MatTableDataSource<any>;
+  // dataSourceAddQuantitativeIIC: MatTableDataSource<any>;
+  
+  // Selected row index for UoM
+  // selectedRowIndexUoM: number = -1;
+  
+  // Selected UoM Code
+  selectedUoMCode: string = '';
+  
+  // Display columns
+  displayedColumnsQualitative: string[] = ['parameter', 'passCriteria', 'mandatory', 'result', 'remarks'];
+  displayedColumnsQuantitative: string[] = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin', 'result', 'remarks'];
+  displayedColumnsUoMIIC: string[] = ['code', 'description'];
+  displayedColumnsAddQuantitativeIIC: string[] = ['inspectionCode', 'inspectionDescription'];
+  
+  // Static data for UoM
+  uomData = [
+    { id: 1, uoMCode: 'KG', description: 'Kilogram', isSelected: false },
+    { id: 2, uoMCode: 'GM', description: 'Gram', isSelected: false },
+    { id: 3, uoMCode: 'LTR', description: 'Liter', isSelected: false },
+    { id: 4, uoMCode: 'ML', description: 'Milliliter', isSelected: false },
+    { id: 5, uoMCode: 'CM', description: 'Centimeter', isSelected: false }
+  ];
+  
+  // Static data for Add Quantitative
+  quantitativeCharacteristics = [
+    { id: 1, intCode: 'WT001', description: 'Weight Check', isSelected: false },
+    { id: 2, intCode: 'DM001', description: 'Dimension Check', isSelected: false },
+    { id: 3, intCode: 'TH001', description: 'Thickness Check', isSelected: false },
+    { id: 4, intCode: 'PH001', description: 'pH Level', isSelected: false },
+    { id: 5, intCode: 'VS001', description: 'Viscosity', isSelected: false }
+  ];
+  
   constructor(
     private _formBuilder: FormBuilder,
     private dialog: MatDialog,
-    private fb: FormBuilder,){}
+    private _inspectionCardModal: InspectionCardService,
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef
+  ) {}
+  
+  // Get form array controls
+  get qualitativeInspectionObjects(): FormArray {
+    return this.qualitativeInspectionForm.get('qualitativeObjects') as FormArray;
+  }
+  
+  get quantitativeInspectionObjects(): FormArray {
+    return this.quantitativeInspectionForm.get('quantitativeObjects') as FormArray;
+  }
+  
+  samples = [
+    { id: 1, inspectionTime: '10:30 AM', inspectionBy: 'Mr.kamran', cardColor: '#e8f5e9' },
+    { id: 2, inspectionTime: '10:31 AM', inspectionBy: 'Mr.kamran', cardColor: '#ffebee' },
     
+  ];
 
-    samples = [
-      { id: 1, inspectionTime: '10:30 AM', inspectionBy: 'Mr.kamran', cardColor: '#e8f5e9' },
-      { id: 2, inspectionTime: '10:30 AM', inspectionBy: 'Mr.kamran', cardColor: '#ffebee' },
-      { id: 3, inspectionTime: '10:30 AM', inspectionBy: 'Mr.kamran', cardColor: '#f5f5f5' },
-      { id: 4, inspectionTime: '10:30 AM', inspectionBy: 'Mr.kamran', cardColor: '#e8f5e9' }
-    ];
+  nextSampleId: number = 3; // Since you already have samples 1-4
+  addNewSample(): void {
+    // Create a new sample object with form data
+    const newSample = {
+      id: this.nextSampleId,
+      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionTimeModalPO').value,
+      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionByModalPO').value,
+      cardColor: this.getRandomCardColor() // Function to get a color
+    };
+    
+    // Add to samples array
+    this.samples.push(newSample);
+    
+    // Increment the sample ID for next time
+    this.nextSampleId++;
+    
+    // Close the dialog
+    this.closeDialog();
+  }
 
-    planPurchaseOrderFormGroup = this._formBuilder.group({
-      isActive: [true],
-      docNoPO: [''],
-      itemCodePO: [''],
-      itemDescriptionPO: [''],
-      inspectionDateTimePO: [''],
-      datePO: [''],
-      purchaseOrderPO: [''],
-      quantityPO: [''],
-      openQuantityPO: [''],
-      vendorPO: [''],
-      qcLotNoPO: ['', Validators.required],
-      receiveQtyPO: ['', Validators.required],
-      inspectionQtyPO: ['', Validators.required],
-      samplePO: [''],
-      locationPO: [''],
-
+  getRandomCardColor(): string {
+    const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+  
+  planPurchaseOrderFormGroup = this._formBuilder.group({
+    isActive: [true],
+    docNoPO: ['DOC-2024-001'],
+    itemCodePO: ['ITEM-123'],
+    itemDescriptionPO: ['Test Item Description'],
+    inspectionDateTimePO: ['2024-02-27 10:00 AM'],
+    datePO: ['2024-02-20'],
+    purchaseOrderPO: ['PO-2024-001'],
+    quantityPO: ['1000'],
+    openQuantityPO: ['500'],
+    vendorPO: ['Vendor XYZ'],
+    qcLotNoPO: ['QC-001', Validators.required],
+    receiveQtyPO: ['750', Validators.required],
+    inspectionQtyPO: ['50', Validators.required],
+    samplePO: ['10'],
+    locationPO: ['Warehouse A'],
+    itemCodeModalPO: ['ITEM-123'],
+    inspectionQtyModalPO: ['50'],
+    inspectionByModalPO: ['Mr. Kamran'],
+    inspectionTimeModalPO: ['10:30 AM'],
   });
-  // secondFormGroup = this._formBuilder.group({
-  //   secondCtrl: ['', Validators.required],
-  // });
+  
   isLinear = false;
   
+  @ViewChild('dialogTemplateItems') dialogTemplateItems;
+  dataSourceItems = new MatTableDataSource([]);
+  selectedControlAccountRowIndex: number = -1;
+  
+  ngOnInit() {
+    // Initialize form groups
+    this.qualitativeInspectionForm = this.fb.group({
+      qualitativeObjects: this.fb.array([])
+    });
+    
+    this.quantitativeInspectionForm = this.fb.group({
+      quantitativeObjects: this.fb.array([])
+    });
+    
+    // Add static qualitative inspection data
+    this.addQualitativeData();
+    
+    // Add static quantitative inspection data
+    this.addQuantitativeData();
+    
+    // Initialize data sources
+    this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
+    this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+    // this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
+    // this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
+  }
+  
+  ngAfterViewInit() {
+    this.cdr.detectChanges();
+  }
+  
+  // Add static qualitative data
+  addQualitativeData() {
+    const qualitativeData = [
+      { parameter: 'Visual Inspection', passCriteria: 'No visible defects', mandatory: true, result: '', remarks: '' },
+      { parameter: 'Color Check', passCriteria: 'Matches standard color', mandatory: true, result: '', remarks: '' },
+      { parameter: 'Odor Test', passCriteria: 'No unusual odor', mandatory: false, result: '', remarks: '' },
+      { parameter: 'Package Integrity', passCriteria: 'No damage to packaging', mandatory: true, result: '', remarks: '' },
+      { parameter: 'Label Verification', passCriteria: 'All labels present and correct', mandatory: true, result: '', remarks: '' }
+    ];
+    
+    qualitativeData.forEach(item => {
+      this.qualitativeInspectionObjects.push(
+        this.fb.group({
+          parameter: [item.parameter],
+          passCriteria: [item.passCriteria],
+          mandatory: [item.mandatory],
+          result: [item.result],
+          remarks: [item.remarks]
+        })
+      );
+    });
+  }
+  
+  // Add static quantitative data
+  addQuantitativeData() {
+    const quantitativeData = [
+      { parameterQty: 'Weight', uoMId: 'KG', mandatoryQty: true, passCriteriaTarget: '10.0', passCriteriaMax: '10.5', passCriteriaMin: '9.5', result: '', remarks: '' },
+      { parameterQty: 'Length', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '20.0', passCriteriaMax: '20.2', passCriteriaMin: '19.8', result: '', remarks: '' },
+      { parameterQty: 'Width', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '15.0', passCriteriaMax: '15.2', passCriteriaMin: '14.8', result: '', remarks: '' },
+      { parameterQty: 'Height', uoMId: 'CM', mandatoryQty: false, passCriteriaTarget: '5.0', passCriteriaMax: '5.2', passCriteriaMin: '4.8', result: '', remarks: '' },
+      { parameterQty: 'Volume', uoMId: 'ML', mandatoryQty: false, passCriteriaTarget: '500.0', passCriteriaMax: '510.0', passCriteriaMin: '490.0', result: '', remarks: '' }
+    ];
+    
+    quantitativeData.forEach(item => {
+      this.quantitativeInspectionObjects.push(
+        this.fb.group({
+          parameterQty: [item.parameterQty],
+          uoMId: [item.uoMId],
+          mandatoryQty: [item.mandatoryQty],
+          passCriteriaTarget: [item.passCriteriaTarget],
+          passCriteriaMax: [item.passCriteriaMax],
+          passCriteriaMin: [item.passCriteriaMin],
+          result: [item.result],
+          remarks: [item.remarks]
+        })
+      );
+    });
+  }
+  
+  // Display Item Modal
+  onItemCodeClick(rowIndex: number): void {
+    console.log('Row Index:', rowIndex);
+    this.selectedControlAccountRowIndex = rowIndex;
+    console.log(this.selectedControlAccountRowIndex);
+    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+      width: '70%',
+      height: '75vh',
+      data: this.dataSourceItems,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('DIALOG CLOSED');
+    });
+  }
+  
+  // Close dialog
+  closeDialog(): void {
+    this.dialog.closeAll();
+  }
+  
+  // // UoM interaction methods
+  // onUoMQtyClickIIC(index: number): void {
+  //   this.selectedRowIndexUoM = index;
+  //   // Open UoM dialog (implementation would be in template)
+  // }
+  
+  onRowChangeUoMIIC(row: any): void {
+    this.uomData.forEach(item => item.isSelected = false);
+    row.isSelected = true;
+    this.selectedUoMCode = row.uoMCode;
+  }
+  
+  addSelectedRowUoMIIC(index: number): void {
+    const selectedUoM = this.uomData.find(item => item.isSelected);
+    if (selectedUoM && index >= 0) {
+      this.quantitativeInspectionObjects.at(index).get('uoMId').setValue(selectedUoM.uoMCode);
+    }
+    this.closeDialog();
+  }
+  
+  // // Filter methods
+  // applyFilterUoMIIC(event: Event): void {
+  //   const filterValue = (event.target as HTMLInputElement).value;
+  //   this.dataSourceUoMIIC.filter = filterValue.trim().toLowerCase();
+  // }
+  
+  // Quantitative inspection methods
+  onRowChangeAddQuantitativeIIC(row: any): void {
+    this.quantitativeCharacteristics.forEach(item => item.isSelected = false);
+    row.isSelected = true;
+  }
+  
+  addSelectedRowQuantitativeIIC(): void {
+    const selectedChar = this.quantitativeCharacteristics.find(item => item.isSelected);
+    if (selectedChar) {
+      this.quantitativeInspectionObjects.push(
+        this.fb.group({
+          parameterQty: [selectedChar.description],
+          uoMId: [''],
+          mandatoryQty: [false],
+          passCriteriaTarget: [''],
+          passCriteriaMax: [''],
+          passCriteriaMin: [''],
+          result: [''],
+          remarks: ['']
+        })
+      );
+      this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+    }
+    this.closeDialog();
+  }
+  
+  // applyFilterAddQuantitativeIIC(event: Event): void {
+  //   const filterValue = (event.target as HTMLInputElement).value;
+  //   this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
+  // }
+  
+  // displayedColumnsItems: string[] = [
+  //   'intCode',
+  //   'description',
+  //   'type',
+  //   'isActive',
+  // ];
+  
+  // selectedInspectionCode: string = '';
+  // selectedItemDescription: string = '';
+  
+  // onRowCheckboxChangeItems(selectedRow: any): void {
+  //   if (this.dataSourceItems.data) {
+  //     this.dataSourceItems.data.forEach((row) => (row.isSelected = false));
+  //     selectedRow.isSelected = true;
+  //   }
+  // }
+  
+  // applyFilterItems(event: Event) {
+  //   const filterValue = (event.target as HTMLInputElement).value;
+  //   this.dataSourceItems.filter = filterValue.trim().toLowerCase();
+  // }
 }
-
-
-
-
-
-/////////////////////////////////////
-
