@@ -12,7 +12,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { qbsAnimations } from '@qbs/animations';
 import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
@@ -66,6 +66,9 @@ interface itemSamplingRangeIF {
     styleUrl: './testing-stepper.component.scss',
 })
 export class TestingStepperComponent implements AfterViewInit {
+    isEditMode: boolean = false;
+    rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
+
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
     private _activatedRoute = inject(ActivatedRoute);
@@ -88,6 +91,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private _itemInspectionCardService: ItemInspectionCardService,
         // private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
+        private _router: Router,
     ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
@@ -99,6 +103,7 @@ export class TestingStepperComponent implements AfterViewInit {
     @ViewChild(MatStepper) stepper!: MatStepper; // Correctly reference the MatStepper instance
     //Qualitative Results Form
     firstFormGroup = this._formBuilder.group({
+        id: [''],
         isActive: [true],
         resultDescription: ['', Validators.required],
         data: ['']
@@ -875,7 +880,7 @@ export class TestingStepperComponent implements AfterViewInit {
     qualitativeResultFailStatusObjects: any[] = [];
 
     onSaveQualitativeResult
-    (paramId: any, data: any): void {
+        (paramId: any, data: any): void {
         // Clear the arrays before adding new data to avoid duplication
         this.qualitativeResultPassStatusObjects = [];
         this.qualitativeResultFailStatusObjects = [];
@@ -1035,7 +1040,7 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     // ITEM INSPECTION CARD ENDS
-    
+
     isLinear = false;
 
     ngOnInit(): void {
@@ -1050,12 +1055,12 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         });
 
-        this._qualityResultsCode.getQualitativeResultCode().subscribe((qualityResultCode) => {
-            console.log('Quality Code:', qualityResultCode); // Debugging ke liye
+        // this._qualityResultsCode.getQualitativeResultCode().subscribe((qualityResultCode) => {
+        //     console.log('Quality Code:', qualityResultCode); // Debugging ke liye
 
-            const fullCode = `QR-000${qualityResultCode.data || ''}`; // Code format
-            this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
-        });
+        //     const fullCode = `QR-000${qualityResultCode.data || ''}`; // Code format
+        //     this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
+        // });
 
 
         // Inspection Card API -> Fifth Form
@@ -1137,6 +1142,28 @@ export class TestingStepperComponent implements AfterViewInit {
             this.dataSourceUoMIIC.data = unitOfMeasure.data;
         });
 
+        // UPDATE QUALITATIVE RESULT STARTS
+        //  RETRIEVING rowDataQR
+        if (!this.rowDataQR) {
+            const storedDataQR = sessionStorage.getItem('stepperDataQR');   // IF rowDataQR IS MISSING, GET FROM sessionStorage
+            this.rowDataQR = storedDataQR ? JSON.parse(storedDataQR) : null;
+        }
+        if (this.rowDataQR) {
+            this.isEditMode = true;
+            console.log('RECEIVED QR DATA:', this.rowDataQR);
+            // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
+            this.populateQualitativeResultData(this.rowDataQR);
+        } else {
+            console.log('NO DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+            this._qualityResultsCode.getQualitativeResultCode().subscribe((qualityResultCode) => {
+                // console.log('Quality Code:', qualityResultCode);
+                const fullCode = `QR-000${qualityResultCode.data || ''}`;
+                this.firstFormGroup.get('data')?.setValue(fullCode);
+            });
+        }
+        // UPDATE QUALITATIVE RESULT ENDS
     }
 
     ngAfterViewInit(): void {
@@ -1498,4 +1525,45 @@ export class TestingStepperComponent implements AfterViewInit {
     closeDialog(): void {
         this.dialog.closeAll();
     }
+
+    // UPDATE Qualitative Result STARTS
+    populateQualitativeResultData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE 
+        console.log(data);
+        const formattedQRintCode = "QR-" + this.rowDataQR.intCode.toString().padStart(5, '0');
+        this.firstFormGroup.patchValue({
+            id: this.rowDataQR.id,
+            data: formattedQRintCode,
+            resultDescription: this.rowDataQR.resultDescription,
+            isActive: this.rowDataQR.isActive
+        });
+    }
+
+    onUpdateQualitativeResult(): void {
+        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
+        const formValues = this.firstFormGroup.value;
+        const { data, ...payload } = formValues; // EXCLUDING intCode
+        console.log(payload);
+        // return;
+        this._qualitativeResultsService.UpdateQualitativeResult(payload).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                    setTimeout(() => {
+                        this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
+                    }, 1500);
+                } else {
+                    console.error('ERROR WHILE UPDATING DATA.', response.message);
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
+    }
+    // UPDATE Qualitative Result ENDS
 }

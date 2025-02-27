@@ -17,6 +17,11 @@
                 readonly style=" cursor: not-allowed;">
             </mat-form-field>
 
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
+              <mat-label>ID</mat-label>
+              <input class="view-mode-bg-grey" matInput formControlName="id" readonly style=" cursor: not-allowed;">
+            </mat-form-field>
+
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="resultDescription" required>
@@ -32,7 +37,10 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="next-button" (click)="onSubmitQualitativeResult()" matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitQualitativeResult()"
+              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode"
+              (click)="onUpdateQualitativeResult()">Update</button>
           </div>
 
 
@@ -869,7 +877,8 @@
                         <!-- Qualitative Result NG TABLE ENDS -->
                         <!-- Save & Close -->
                         <div class="save-close-container flex justify-end mt-auto py-2">
-                          <button (click)="onSaveQualitativeResult(data.paramID, dataSourceQRIIC)" mat-flat-button color="primary">
+                          <button (click)="onSaveQualitativeResult(data.paramID, dataSourceQRIIC)" mat-flat-button
+                            color="primary">
                             Save&nbsp;&&nbsp;Close
                           </button>
                         </div>
