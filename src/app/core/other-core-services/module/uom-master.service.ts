@@ -59,24 +59,45 @@ export class UomMasterService {
     }
 
     getUnitOfMeasure(): Observable<any> {
-      const headers = new HttpHeaders({
-          Authorization: `Bearer ${this.accessToken}`,
-          Accept: 'text/plain',
-      });
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
 
-      return this._httpClient
-          .get(`${environment.appApiUrl}/CSAPI/IUnitOfMeasureFeature/ListAllUnitOfMeasures`, { headers })
-          .pipe(
-              tap((uom) => {
-                  const UnitOfMeasure = (uom as any) ?? [];
-                  this._UnitOfMeasure.next(UnitOfMeasure);
-                  console.log('Fetched list of UOM', UnitOfMeasure);
-              }),
-              catchError((error) => {
-                  console.error('Error fetching list of UOM', error);
-                  return throwError(
-                      () => new Error('Error fetching list of UOM')
-                  );
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IUnitOfMeasureFeature/ListAllUnitOfMeasures`, { headers })
+            .pipe(
+                tap((uom) => {
+                    const UnitOfMeasure = (uom as any) ?? [];
+                    this._UnitOfMeasure.next(UnitOfMeasure);
+                    console.log('Fetched list of UOM', UnitOfMeasure);
+                }),
+                catchError((error) => {
+                    console.error('Error fetching list of UOM', error);
+                    return throwError(
+                        () => new Error('Error fetching list of UOM')
+                    );
                 })
-              );
-      }}
+            );
+    }
+
+    // UPDATE UNIT OF MEASURE API
+    updateUnitOfMeasure(data: any): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+        });
+        console.log("SENDING PAYLOAD", data);
+        return this._httpClient.put(
+            `${environment.appApiUrl}/CSAPI/IUnitOfMeasureFeature/UpdateUnitOfMeasure`,
+            data,
+            { headers }
+        ).pipe(
+            tap(response => console.log('RESPONSE:', response)),
+            catchError(error => {
+                console.error('ERROR WHILE UPDATING UOM DATA', error);
+                return throwError(() => error);
+            })
+        );
+    }
+}
