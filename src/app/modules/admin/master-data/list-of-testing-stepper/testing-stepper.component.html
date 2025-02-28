@@ -56,16 +56,21 @@
 
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
 
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
+              <mat-label>ID</mat-label>
+              <input class="view-mode-bg-grey" matInput formControlName="id" readonly style=" cursor: not-allowed;">
+            </mat-form-field>
+
 
 
             <!-- UOM Code Field -->
-            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>UOM Code</mat-label>
               <input matInput formControlName="uoMCode" placeholder="Enter UOM Code" required>
             </mat-form-field>
 
             <!-- UOM Name Field -->
-            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+            <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>UOM Name</mat-label>
               <input matInput formControlName="description" placeholder="Enter UOM Name" required>
             </mat-form-field>
@@ -80,8 +85,10 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" (click)="onSubmitUnitOfMeasure()" matStepperNext>Next</button>
+            <button mat-button class="back-button" matStepperPrevious  *ngIf="!isEditMode">Back</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()"
+              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update UOM</button>
           </div>
         </form>
       </mat-step>

@@ -68,6 +68,7 @@ interface itemSamplingRangeIF {
 export class TestingStepperComponent implements AfterViewInit {
     isEditMode: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
+    rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
 
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
@@ -110,6 +111,7 @@ export class TestingStepperComponent implements AfterViewInit {
     });
     // Unit Of Measure Form
     secondFormGroup = this._formBuilder.group({
+        id: [''],
         uoMCode: ['', Validators.required],
         description: ['', Validators.required],
         isActive: [true],
@@ -1150,7 +1152,7 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         if (this.rowDataQR) {
             this.isEditMode = true;
-            console.log('RECEIVED QR DATA:', this.rowDataQR);
+            // console.log('RECEIVED QR DATA:', this.rowDataQR);
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateQualitativeResultData(this.rowDataQR);
         } else {
@@ -1164,6 +1166,24 @@ export class TestingStepperComponent implements AfterViewInit {
             });
         }
         // UPDATE QUALITATIVE RESULT ENDS
+
+        // UPDATE UOM - UNIT OF MEASURE STARTS
+        //  RETRIEVING rowDataUOM
+        if (!this.rowDataUOM) {
+            const storedDataUOM = sessionStorage.getItem('stepperDataUOM');   // IF rowDataUOM IS MISSING, GET FROM sessionStorage
+            this.rowDataUOM = storedDataUOM ? JSON.parse(storedDataUOM) : null;
+        }
+        if (this.rowDataUOM) {
+            this.isEditMode = true;
+            // console.log('RECEIVED UOM DATA:', this.rowDataUOM);
+            // POPULATE FORM, secondFormGroup, WITH RECEIVED DATA - rowDataQR
+            this.populateUoMData(this.rowDataUOM);
+        } else {
+            console.log('NO DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+        }
+        // UPDATE UOM - UNIT OF MEASURE STARTS
     }
 
     ngAfterViewInit(): void {
@@ -1526,7 +1546,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.dialog.closeAll();
     }
 
-    // UPDATE Qualitative Result STARTS
+    // UPDATE QUALITATIVE RESULT STARTS
     populateQualitativeResultData(data: any): void {
         if (!data) {
             console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
@@ -1565,5 +1585,45 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         );
     }
-    // UPDATE Qualitative Result ENDS
+    // UPDATE QR - QUALITATIVE RESULT ENDS
+
+    // UPDATE UOM - UNIT OF MEASURE STARTS
+    populateUoMData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE 
+        // console.log(data);
+        this.secondFormGroup.patchValue({
+            id: this.rowDataUOM.id,
+            uoMCode: this.rowDataUOM.uoMCode,
+            description: this.rowDataUOM.description,
+            isActive: this.rowDataUOM.isActive
+        });
+    }
+
+    onUpdateUoM(): void {
+        // console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
+        const formValues = this.secondFormGroup.value;
+        const { ...payload } = formValues; 
+        // console.log(payload);
+        // return;
+        this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                    setTimeout(() => {
+                        this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
+                    }, 1500);
+                } else {
+                    console.error('ERROR WHILE UPDATING UOM DATA .', response.message);
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
+    }
+    // UPDATE UOM - UNIT OF MEASURE ENDS
 }
