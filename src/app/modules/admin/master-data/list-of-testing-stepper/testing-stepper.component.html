@@ -128,7 +128,7 @@
             <!-- Qualitative and Quantitative Section -->
             <!-- IF !isEditMode - ADD MODE -->
             <div class="w-full" *ngIf="!isEditMode">
-              <div class="mt-4">
+              <div class="mt-2">
                 <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"
                   [value]="'just-good'">
                   <mat-radio-button class="mb-2" [value]="'qualitative'"
@@ -142,7 +142,7 @@
                 </mat-radio-group>
               </div>
               <!-- Main Card Section -->
-              <div class="mt-4 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
+              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
                 <table class="w-full border border-gray-200 border-collapse">
                   <thead>
                     <tr>
@@ -173,7 +173,7 @@
             <!-- IF isEditMode - UPDATE MODE -->
             <!-- Only show this section when isEditMode is true -->
             <div class="w-full" *ngIf="isEditMode">
-              <div class="mt-4">
+              <div class="mt-2">
                 <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'">
                   <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'" class="mb-2"
                     [value]="'qualitative'"
@@ -188,7 +188,7 @@
                 </mat-radio-group>
               </div>
               <!-- Main Card Section -->
-              <div class="mt-4 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
+              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
                 <table class="w-full border border-gray-200 border-collapse">
                   <thead>
                     <tr>
