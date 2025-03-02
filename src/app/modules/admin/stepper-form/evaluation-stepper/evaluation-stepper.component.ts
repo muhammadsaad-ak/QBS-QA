@@ -48,24 +48,24 @@ import { InspectionCardService } from 'app/core/other-core-services/module/inspe
 export class EvaluationStepperComponent implements AfterViewInit {
   i: number;
   
-  // Form groups
+  // Plan Purchase Form groups
   qualitativeInspectionForm: FormGroup;
   quantitativeInspectionForm: FormGroup;
   
   
-  // DataSources for tables
+  // Plan Purchase DataSources for tables
   dataSourceQualitativeInspection: MatTableDataSource<any>;
   dataSourceQuantitativeInspection: MatTableDataSource<any>;
-  // dataSourceUoMIIC: MatTableDataSource<any>;
-  // dataSourceAddQuantitativeIIC: MatTableDataSource<any>;
+  dataSourceUoMIIC: MatTableDataSource<any>;
+  dataSourceAddQuantitativeIIC: MatTableDataSource<any>;
   
   // Selected row index for UoM
-  // selectedRowIndexUoM: number = -1;
+  selectedRowIndexUoM: number = -1;
   
   // Selected UoM Code
   selectedUoMCode: string = '';
   
-  // Display columns
+  // Plan Purchase Display columns
   displayedColumnsQualitative: string[] = ['parameter', 'passCriteria', 'mandatory', 'result', 'remarks'];
   displayedColumnsQuantitative: string[] = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin', 'result', 'remarks'];
   displayedColumnsUoMIIC: string[] = ['code', 'description'];
@@ -96,47 +96,7 @@ export class EvaluationStepperComponent implements AfterViewInit {
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef
   ) {}
-  
-  // Get form array controls
-  get qualitativeInspectionObjects(): FormArray {
-    return this.qualitativeInspectionForm.get('qualitativeObjects') as FormArray;
-  }
-  
-  get quantitativeInspectionObjects(): FormArray {
-    return this.quantitativeInspectionForm.get('quantitativeObjects') as FormArray;
-  }
-  
-  samples = [
-    { id: 1, inspectionTime: '10:30 AM', inspectionBy: 'Mr.kamran', cardColor: '#e8f5e9' },
-    { id: 2, inspectionTime: '10:31 AM', inspectionBy: 'Mr.kamran', cardColor: '#ffebee' },
-    
-  ];
 
-  nextSampleId: number = 3; // Since you already have samples 1-4
-  addNewSample(): void {
-    // Create a new sample object with form data
-    const newSample = {
-      id: this.nextSampleId,
-      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionTimeModalPO').value,
-      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionByModalPO').value,
-      cardColor: this.getRandomCardColor() // Function to get a color
-    };
-    
-    // Add to samples array
-    this.samples.push(newSample);
-    
-    // Increment the sample ID for next time
-    this.nextSampleId++;
-    
-    // Close the dialog
-    this.closeDialog();
-  }
-
-  getRandomCardColor(): string {
-    const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
-    return colors[Math.floor(Math.random() * colors.length)];
-  }
-  
   planPurchaseOrderFormGroup = this._formBuilder.group({
     isActive: [true],
     docNoPO: ['DOC-2024-001'],
@@ -151,7 +111,7 @@ export class EvaluationStepperComponent implements AfterViewInit {
     qcLotNoPO: ['QC-001', Validators.required],
     receiveQtyPO: ['750', Validators.required],
     inspectionQtyPO: ['50', Validators.required],
-    samplePO: ['10'],
+    samplePO: ['3'],
     locationPO: ['Warehouse A'],
     itemCodeModalPO: ['ITEM-123'],
     inspectionQtyModalPO: ['50'],
@@ -159,7 +119,92 @@ export class EvaluationStepperComponent implements AfterViewInit {
     inspectionTimeModalPO: ['10:30 AM'],
   });
   
+
+  planProductionOrderFormGroup = this._formBuilder.group({
+    docNoPP: ['DOC-2024-001'],
+    itemCodePP: ['ITEM-123'],
+    itemDescriptionPP: ['Test Item Description'],
+    inspectionDateTimePP: ['2024-02-27 10:00 AM'],
+    datePP: ['2024-02-20'],
+    productionOrderPP: ['PO-2024-001'],
+    locationPP: ['1000'],
+    lotPP: ['500'],
+    sampleQtyPP: ['Vendor XYZ'],
+    openQtyPP: ['QC-001', Validators.required],
+    lotSizeUnitPP: ['750', Validators.required],
+    shiftPP: ['50', Validators.required],
+    machineNoPP: ['10'],
+    variantPP: ['Warehouse A'],
+    bmrPP: ['ITEM-123'],
+    analyzedByPP: ['50'],
+    inspectionByModalPP: ['Mr. Kamran'],
+    inspectionTimeModalPP: ['10:30 AM'],
+
+  })
+
+
   isLinear = false;
+  
+  // Get form array controls
+  get qualitativeInspectionObjects(): FormArray {
+    return this.qualitativeInspectionForm.get('qualitativeObjects') as FormArray;
+  }
+  
+  get quantitativeInspectionObjects(): FormArray {
+    return this.quantitativeInspectionForm.get('quantitativeObjects') as FormArray;
+  }
+  
+  samplesPurchaseOrder = [
+    { id: 1, inspectionTime: '10:30 AM', inspectionBy: 'Mr.kamran', cardColor: '#e8f5e9' },
+    { id: 2, inspectionTime: '10:31 AM', inspectionBy: 'Mr.kamran', cardColor: '#ffebee' },
+    
+  ];
+
+  samplesProductionOrder = [
+    { id: 1, inspectionTime: '11:54 AM', inspectionBy: 'Mr.Hamza', cardColor: '#e8f5e9' },
+    { id: 2, inspectionTime: '08:12 AM', inspectionBy: 'Mr.Hamza', cardColor: '#ffebee' },
+    
+  ];
+
+  nextSampleId: number = 3; // Since you already have samples 1-4
+  addNewSampleForPurchaseOrder(): void {
+    // Create a new sample object with form data
+    const newSample = {
+      id: this.nextSampleId,
+      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionTimeModalPO').value,
+      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionByModalPO').value,
+      cardColor: this.getRandomCardColor() // Function to get a color
+    };
+    
+    // Add to samples array
+    this.samplesPurchaseOrder.push(newSample);
+    
+    // Increment the sample ID for next time
+    this.nextSampleId++;
+    
+    // Close the dialog
+    this.closeDialog();
+  }
+
+  addNewSampleForProductionOrder(): void {
+    const newSample = {
+      id: this.nextSampleId,
+      inspectionTime: this.planProductionOrderFormGroup.get('inspectionTimeModalPP').value,
+      inspectionBy: this.planProductionOrderFormGroup.get('inspectionByModalPP').value,
+      cardColor: this.getRandomCardColor()
+    };
+  
+    this.samplesProductionOrder.push(newSample);
+    this.nextSampleId++;
+    this.closeDialog();
+  }
+
+  getRandomCardColor(): string {
+    const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+  
+ 
   
   @ViewChild('dialogTemplateItems') dialogTemplateItems;
   dataSourceItems = new MatTableDataSource([]);
@@ -184,8 +229,8 @@ export class EvaluationStepperComponent implements AfterViewInit {
     // Initialize data sources
     this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
     this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
-    // this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
-    // this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
+    this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
+    this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
   
   ngAfterViewInit() {
@@ -242,10 +287,24 @@ export class EvaluationStepperComponent implements AfterViewInit {
   }
   
   // Display Item Modal
-  onItemCodeClick(rowIndex: number): void {
-    console.log('Row Index:', rowIndex);
-    this.selectedControlAccountRowIndex = rowIndex;
-    console.log(this.selectedControlAccountRowIndex);
+  onItemCodeClick(): void {
+    // console.log('Row Index:', rowIndex);
+    // this.selectedControlAccountRowIndex = rowIndex;
+    // console.log(this.selectedControlAccountRowIndex);
+    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+      width: '70%',
+      height: '75vh',
+      data: this.dataSourceItems,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('DIALOG CLOSED');
+    });
+  }
+  
+  onItemCodeClickPP(): void {
+    // console.log('Row Index:', rowIndex);
+    // this.selectedControlAccountRowIndex = rowIndex;
+    // console.log(this.selectedControlAccountRowIndex);
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
       height: '75vh',
@@ -313,10 +372,10 @@ export class EvaluationStepperComponent implements AfterViewInit {
     this.closeDialog();
   }
   
-  // applyFilterAddQuantitativeIIC(event: Event): void {
-  //   const filterValue = (event.target as HTMLInputElement).value;
-  //   this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
-  // }
+  applyFilterAddQuantitativeIIC(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
+  }
   
   // displayedColumnsItems: string[] = [
   //   'intCode',

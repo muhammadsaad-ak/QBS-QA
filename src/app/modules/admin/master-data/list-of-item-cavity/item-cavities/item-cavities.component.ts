@@ -1,23 +1,8 @@
-import {
-  AsyncPipe,
-  CommonModule,
-  NgClass,
-  NgTemplateOutlet,
-} from '@angular/common';
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormControl,
-  UntypedFormGroup,
-} from '@angular/forms';
+import { Component } from '@angular/core';
+// 
+import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
+import { OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -36,24 +21,45 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
-import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 import { debounceTime } from 'rxjs';
+import { itemsCavityIF } from './item-cavity-interface';
+import { qbsAnimations } from '@qbs/animations';
+// 
 
 @Component({
-  selector: 'app-qualitative-result',
+  selector: 'app-item-cavities',
   standalone: true,
-  templateUrl: './qualitative-result.component.html',
-  styleUrl: './qualitative-result.component.scss',
-  encapsulation: ViewEncapsulation.None,
+  templateUrl: './item-cavities.component.html',
+  styleUrl: './item-cavities.component.scss',
   imports: [
-    RouterOutlet,
-    MatDrawer,
-    MatSidenavModule,
     AsyncPipe,
     CommonModule,
     FormsModule,
     MatButtonModule,
     MatButtonToggleModule,
+    MatCheckboxModule,
+    MatDrawer,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatMenuModule,
+    MatOptionModule,
+    MatPaginatorModule,
+    MatProgressBarModule,
+    MatRippleModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+    MatSortModule,
+    MatSidenavModule,
+    MatTableModule,
+    MatTabsModule,
+    NgClass,
+    NgTemplateOutlet,
+    ReactiveFormsModule,
+    RouterOutlet,
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
     MatIconModule,
@@ -67,26 +73,31 @@ import { debounceTime } from 'rxjs';
     MatSlideToggleModule,
     MatSortModule,
     MatTabsModule,
-    NgClass,
-    NgTemplateOutlet,
-    ReactiveFormsModule,
     MatTableModule,
+    ReactiveFormsModule,
   ],
+  encapsulation: ViewEncapsulation.None,
+  animations: qbsAnimations,
 })
-export class QualitativeResultComponent implements OnInit, OnDestroy {
+export class ItemCavitiesComponent {
   searchInputControl: UntypedFormControl = new UntypedFormControl();
-  addBtnTitle = "Add";
+  addBtnTitle = "Add"
 
-  @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
-  drawerMode: 'side' | 'over';
+  // listAllItemsCavity: itemsCavityIF[] = [];
+  listAllItemsCavity: itemsCavityIF[] = [
+    { itemCode: 'ITM0007653', itemDescription: 'Bottle Inspection', mouldDescription: 'U5-01', noOfCavity: 5 },
+    { itemCode: 'ITM0007654', itemDescription: 'Jar Inspection', mouldDescription: 'U5-03', noOfCavity: 15 },
+  ];
 
-  displayedColumnsQualitativeResults: string[] = ['serialNo', 'intCode', 'description', 'status', 'action'];
-  dataSourcsQualitativeResults = new MatTableDataSource<any>([]);
+  displayedColumnsItemsCavity: string[] = ['serialNo', 'itemCode', 'itemDescription', 'mouldDescription', 'noOfCavity', 'action'];
+
+  // dataSourceItemsCavity = new MatTableDataSource<any>([]);
+  dataSourceItemsCavity = new MatTableDataSource<any>(this.listAllItemsCavity);
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   ngAfterViewInit() {
-    this.dataSourcsQualitativeResults.paginator = this.paginator;
+    this.dataSourceItemsCavity.paginator = this.paginator;
   }
 
   constructor(
@@ -94,24 +105,19 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
     private _qbsConfirmationService: QbsConfirmationService,
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
-    private _qualitativeResultsService: QualitativeResultsService,
   ) { }
 
   ngOnInit(): void {
-    this._qualitativeResultsService.ListAllQualitativeResults().subscribe((items) => {
-      this.dataSourcsQualitativeResults.data = items.data;
-    })
-
     // Check if there is updated data from navigation
     const navigationState = history.state.updatedData;
     if (navigationState) {
       const updatedData = navigationState;
-      // Now update the with the new data
-      this.dataSourcsQualitativeResults.data = this.dataSourcsQualitativeResults.data.map(item =>
-        item.intCode === updatedData.intCode ? updatedData : item
+      // Now update the listAllItemsCavity with the new data
+      this.listAllItemsCavity = this.listAllItemsCavity.map(item =>
+        item.itemCode === updatedData.sampleCode ? updatedData : item
       );
       // Refresh the table data source
-      this.dataSourcsQualitativeResults = new MatTableDataSource<any>(this.dataSourcsQualitativeResults.data);
+      this.dataSourceItemsCavity = new MatTableDataSource<any>(this.listAllItemsCavity);
     }
 
     this.searchInputControl.valueChanges
@@ -125,28 +131,13 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
 
   applyFilter(searchTerm: string): void {
     searchTerm = searchTerm.trim().toLowerCase();
-    this.dataSourcsQualitativeResults.filter = searchTerm;
+    this.dataSourceItemsCavity.filter = searchTerm;
   }
 
-  onBackdropClicked(): void {
-    console.log('On Back Drop Clicked');
-    this.matDrawer.close();
-    this._router.navigate(['./'], { relativeTo: this._activatedRoute });
+  onAddItemCavityClick(): void {
+    console.log("CLICKED");
   }
-
-  openAddQualitativeResultDrawer(type: 'visitprofile'): void {
-    this.matDrawer.open();
-    this._router.navigate(['add-qualitative-result'], {
-      relativeTo: this._activatedRoute,
-    });
-  }
-
-  openQRUpdateDrawer(type: 'visitprofile', element: any): void {
-    this.matDrawer.open();
-    // console.log(`SENDING DATA: ${JSON.stringify(element)}`);
-    this._router.navigate(['edit-qualitative-result', element.intCode], {
-      relativeTo: this._activatedRoute,
-      state: { element }
-    });
+  actionEditItemData(itemData: any): void {
+    console.log(itemData);
   }
 }

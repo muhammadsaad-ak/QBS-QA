@@ -26,7 +26,7 @@ export const compactNavigation: QbsNavigationItem[] = [
     //     icon: 'heroicons_outline:chart-pie',
     //     link: '/dashboards/project'
     // }
-    
+
     //Dashboard
     {
         id: 'dashboards',
@@ -80,7 +80,7 @@ export const compactNavigation: QbsNavigationItem[] = [
                 type: 'basic',
                 icon: 'feather:search',
                 link: '/master-data/list-of-items-inspection-cards',
-            },
+            },
             {
                 id: 'master-data.list-of-inspection-card',
                 title: 'List of Inspection Card',
@@ -95,7 +95,7 @@ export const compactNavigation: QbsNavigationItem[] = [
                 icon: 'heroicons_outline:clipboard-document-check',
                 link: '/master-data/list-of-testing-stepper',
             }
-            
+
         ],
     },
 
@@ -120,6 +120,13 @@ export const compactNavigation: QbsNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:document-text',
                 link: '/evaluation-plan/list-of-sap-document',
+            },
+            {
+                id: 'evaluation-plan.list-of-item-cavity',
+                title: 'List of Item Cavity',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/evaluation-plan/list-of-item-cavity',
             }
         ],
     },
@@ -153,10 +160,10 @@ export const compactNavigation: QbsNavigationItem[] = [
     //             icon: 'heroicons_outline:document-duplicate',
     //             link: '/master-data/list-of-qualitative-result',
     //         }
-            
+
     //     ],
     // },
-    
+
 ];
 export const futuristicNavigation: QbsNavigationItem[] = [
     {
