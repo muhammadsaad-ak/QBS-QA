@@ -94,7 +94,12 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
 
    ngOnInit(): void {
 
-    this._inspectionCharateristics.getInspectionCharacteristics().subscribe((response) => {
+    // this._inspectionCharateristics.getInspectionCharacteristics().subscribe((response) => {
+    //   this.dataSource = new MatTableDataSource(response.data);
+    //   this.dataSource.paginator = this.paginator;
+    // });
+    // INSPECTION CHARACTERISTICS WITH CRITERIA
+    this._inspectionCharateristics.getInspectionWithCriteria().subscribe((response) => {
       this.dataSource = new MatTableDataSource(response.data);
       this.dataSource.paginator = this.paginator;
     });
@@ -183,32 +188,30 @@ this.dataSource.filterPredicate = (data: any, filter: string) => {
   }
 
   
-  openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
-    console.log(element)
-    this.matDrawer.open();
-    this._router.navigate(['edit-list-of-inspection', element.inspectionCode], { relativeTo: this._activatedRoute,state: { element} });      
-  }
-
-
+  // openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
+  //   console.log(element)
+  //   this.matDrawer.open();
+  //   this._router.navigate(['edit-list-of-inspection', element.inspectionCode], { relativeTo: this._activatedRoute,state: { element} });      
+  // }
        
-  openUpdateUoMDrawer(type: 'visitprofile', element: any): void {
-    this.matDrawer.open();
-    this._router.navigate(['edit-unit-measure-setup', element.uomCode], { relativeTo: this._activatedRoute, state: { element} });   
+  // openUpdateUoMDrawer(type: 'visitprofile', element: any): void {
+  //   this.matDrawer.open();
+  //   this._router.navigate(['edit-unit-measure-setup', element.uomCode], { relativeTo: this._activatedRoute, state: { element} });   
+  // }
+
+  openStepperToUpdateICH(rowDataICH: any): void {
+    console.log('SENDING DATA:', rowDataICH);
+    // return;
+    sessionStorage.setItem('stepperDataICH', JSON.stringify(rowDataICH));
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 2 }
+    });
   }
 
-  /**
-     * Open confirmation dialog
-     */
-//   deleteUser(type: 'visitprofile'): void {
-//     // Open the dialog and save the reference of it
-//     const dialogRef = this._qbsConfirmationService.open(
-//         this.configForm.value
-//     );
-
-//     // Subscribe to afterClosed from the dialog reference
-//     dialogRef.afterClosed().subscribe((result) => {
-//         console.log(result);
-//     });
-// }
-
+  openStepperToAddICH(): void {
+    sessionStorage.removeItem('stepperDataICH');
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 2 }
+    });
+  }
 }
