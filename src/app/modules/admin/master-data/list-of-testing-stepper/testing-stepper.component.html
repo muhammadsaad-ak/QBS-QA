@@ -213,7 +213,7 @@
         </form>
       </mat-step>
 
-      <!-- Fifth Step -->
+      <!-- Fifth Step - Inspection Card -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
         <form [formGroup]="fifthFormGroup">
           <!-- (ngSubmit)="onSubmit()" -->
@@ -226,7 +226,11 @@
               <mat-label>Card Code</mat-label>
               <input class="view-mode-bg-grey" matInput placeholder="Enter Card Code" formControlName="intCode" required
                 readonly style=" cursor: not-allowed;">
+            </mat-form-field>
 
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
+              <mat-label>ID</mat-label>
+              <input class="view-mode-bg-grey" matInput formControlName="id" readonly style=" cursor: not-allowed;">
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
@@ -436,16 +440,12 @@
 
           </div>
           <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <!-- <button mat-button class="next-button" matStepperNext>Next</button> -->
-            <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
-
-            <button mat-button class="next-button" (click)="onSubmitInspectionCard()" matStepperNext>Next</button>
-
-
+            <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCard()"
+              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode"
+              (click)="onUpdateInspectionCard()">Update</button>
           </div>
-
-
         </form>
       </mat-step>
 
