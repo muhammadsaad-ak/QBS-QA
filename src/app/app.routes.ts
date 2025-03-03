@@ -3,21 +3,13 @@ import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
-
-// @formatter:off
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 export const appRoutes: Route[] = [
 
-    // Redirect empty path to '/example'
-    { path: '', pathMatch: 'full', redirectTo: 'dashboards/project' },
+    // Redirect empty path to 'list-of-inspection-management'
+    { path: '', pathMatch: 'full', redirectTo: 'master-data/list-of-inspection-management' },
 
-    // Redirect signed-in user to the '/example'
-    //
-    // After the user signs in, the sign-in page will redirect the user to the 'signed-in-redirect'
-    // path. Below is another redirection for that path to redirect the user to the desired
-    // location. This is a small convenience to keep all main routes together here on this file.
-    { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'dashboards/project' },
+    // Redirect signed-in user to 'list-of-inspection-management'
+    { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'master-data/list-of-inspection-management' },
 
     // Auth routes for guests
     {
@@ -70,13 +62,13 @@ export const appRoutes: Route[] = [
         },
         children: [
 
-            // Dashboards
-            // {path: 'example', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {
-                path: 'dashboards', children: [
-                    { path: 'project', loadChildren: () => import('app/modules/admin/dashboards/project/project.routes') },
-                ]
-            },
+            // ✅ Removed dashboards route
+            // {
+            //     path: 'dashboards', children: [
+            //         { path: 'project', loadChildren: () => import('app/modules/admin/dashboards/project/project.routes') },
+            //     ]
+            // },
+
             {
                 path: 'master-data', children: [
                     { path: 'list-of-inspection-management', loadChildren: () => import('app/modules/admin/master-data/list-of-inspection-management/list-of-inspection-management.routes') },
@@ -92,14 +84,10 @@ export const appRoutes: Route[] = [
             {
                 path: 'evaluation-plan', children: [
                     { path: 'list-of-evaluation-plan', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-evaluation-plan/list-of-evaluation-plan.routes') },
-                    // { path: 'list-of-sap-document', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-sap-document/list-of-sap-document.routes') },
                     { path: 'list-of-item-cavity', loadChildren: () => import('app/modules/admin/master-data/list-of-item-cavity/list-of-item-cavity.routes') },
                 ]
             },
 
         ]
     },
-
-
 ];
-

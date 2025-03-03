@@ -93,6 +93,8 @@ export class TestingStepperComponent implements AfterViewInit {
     private _activatedRoute = inject(ActivatedRoute);
 
     unitOfMeasureLOV: any = [];
+    characteristicsList: any[] = []; // Yeh top par bana lo component ke
+
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -107,6 +109,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private _inspectionCardsCode: InspectionCardService,
         private _qualityResultsCode: QualitativeResultsService,
         private _qualitativeResultsService: QualitativeResultsService,
+        private _inspectionCardService: InspectionCardService,
         // Item Inspection Card
         private _itemInspectionCardService: ItemInspectionCardService,
         // private _SAPItemsService: SAPItemsService,
@@ -1274,6 +1277,22 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // ITEM INSPECTION CARD ENDS
 
+    loadCharacteristics(inspectionCardId: string): void {
+        this._inspectionCardService.getCharacteristicsByInspectionCardId(inspectionCardId).subscribe(
+            (res) => {
+                if (res.isRequestSuccess && res.data.length) {
+                    this.characteristicsList = res.data[0].inspectionCharacteristicResults;
+                    console.log('Characteristics:', this.characteristicsList);
+                } else {
+                    console.error('No characteristics found.');
+                }
+            },
+            (error) => {
+                console.error('Error loading characteristics:', error);
+            }
+        );
+    }
+
     isLinear = false;
 
     ngOnInit(): void {
@@ -1331,15 +1350,11 @@ export class TestingStepperComponent implements AfterViewInit {
         this.fetchListAllCards();
 
         // GET INSPECTION CHARACTERISTICS API
-        this._itemInspectionCardService
-            .getInspectionCharacteristicsIIC()
-            .subscribe();
+        this._itemInspectionCardService.getInspectionCharacteristicsIIC().subscribe();
 
         // INSPECTION CHARACTERISTICS API FOR BOTH  QUALITATIVE  &  QUANTITATIVE
         // API CALL TO GET INSPECTION CHARACTERISTICS WITH CRITERIA
-        this._itemInspectionCardService
-            .getInspectionCharacteristicsWithCriteria()
-            .subscribe((inspectionCardModal) => {
+        this._itemInspectionCardService.getInspectionCharacteristicsWithCriteria().subscribe((inspectionCardModal) => {
                 const qualitativeData = inspectionCardModal.data.filter(
                     (item: any) => item.type === 'qualitative'
                 );
@@ -1367,18 +1382,14 @@ export class TestingStepperComponent implements AfterViewInit {
             });
 
         // LIST ALL QUALITATIVE RESULTS
-        this._itemInspectionCardService
-            .ListAllQualitativeResultsIIC()
-            .subscribe((items) => {
+        this._itemInspectionCardService.ListAllQualitativeResultsIIC().subscribe((items) => {
                 this.dataSourceQRIIC.data = items.data;
                 // const activeItems = items.data.filter(item => item.isActive === true);
                 // this.dataSourceQRIIC.data = activeItems;
             });
 
         // UOM - UNIT OF MEASURE API
-        this._itemInspectionCardService
-            .getAllUnitOfMeasureIIC()
-            .subscribe((unitOfMeasure) => {
+        this._itemInspectionCardService.getAllUnitOfMeasureIIC().subscribe((unitOfMeasure) => {
                 this.dataSourceUoMIIC.data = unitOfMeasure.data;
             });
 
@@ -1463,14 +1474,14 @@ export class TestingStepperComponent implements AfterViewInit {
             // console.log('RECEIVED QR DATA:', this.rowDataQR);
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateICData(this.rowDataIC);
+            // 🆕 Characteristics load kar rahe hain yahan:
+            this.loadCharacteristics(this.rowDataIC.id);
         } else {
             console.log('NO DATA RECEIVED');
             this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
-            this._inspectionCardsCode
-                .getInspectionCardCode()
-                .subscribe((inspectionCardCode) => {
-                    const y = inspectionCardCode.data; // 13 mil raha hai
+            this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+                    const y = inspectionCardCode.data;
                     console.log('Fetched Code:', y); // Check for debugging
 
                     if (y) {
@@ -2058,9 +2069,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 if (response.isRequestSuccess) {
                     console.log('API RUN SUCCESSFULLY.', payload);
                     setTimeout(() => {
-                        this._router.navigate(['../../'], {
-                            relativeTo: this._activatedRoute,
-                        });
+                        this._router.navigate(['/master-data/list-of-inspection-card'], { relativeTo: this._activatedRoute,});
                     }, 1500);
                 } else {
                     console.error(
