@@ -21,7 +21,8 @@
                 </mat-form-field>
                 <!-- Add Button -->
                 <button class="mb-3 sm:mt-0 sm:ml-auto" mat-flat-button [color]="'primary'"
-                    (click)="openAddQualitativeResultDrawer('visitprofile')">
+                    (click)="openStepperToAddQR()">
+                    <!-- (click)="openAddQualitativeResultDrawer('visitprofile')" -->
                     <span class="flex items-center">
                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                         <span class="ml-1">{{ addBtnTitle }}</span>
@@ -48,7 +49,8 @@
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Code
                                 </th>
-                                <td mat-cell *matCellDef="let element"> {{element.intCode ? element.intCode : '-'}}
+                                <td mat-cell *matCellDef="let element"> {{element.intCode ? 'QR-000' + element.intCode :
+                                    '-'}}
                                 </td>
                             </ng-container>
                             <!-- Description COLUMN -->
@@ -65,9 +67,9 @@
                                     Status
                                 </th>
                                 <td mat-cell *matCellDef="let element" [ngClass]="{
-        'text-green-500': element.isActive,
-        'text-amber-500': !element.isActive
-    }">
+                                'text-green-500': element.isActive,
+                                'text-amber-500': !element.isActive 
+                                }">
                                     {{ element.isActive ? 'Active' : 'Inactive' }}
                                 </td>
                             </ng-container>
@@ -83,7 +85,8 @@
                                     </button>
                                     <mat-menu #menu="matMenu">
                                         <button mat-menu-item class="text-blue-400"
-                                            (click)="openQRUpdateDrawer('visitprofile', element)">
+                                            (click)="openStepperToUpdateQR(element)">
+                                            <!-- (click)="openQRUpdateDrawer('visitprofile', element)" -->
                                             Edit
                                             <mat-icon svgIcon="heroicons_outline:pencil"
                                                 class="text-blue-400"></mat-icon>

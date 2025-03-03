@@ -1,7 +1,21 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ViewChild, ViewEncapsulation, inject, } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
+import {
+    AfterViewInit,
+    ChangeDetectorRef,
+    Component,
+    ViewChild,
+    ViewEncapsulation,
+    inject,
+} from '@angular/core';
+import {
+    FormArray,
+    FormBuilder,
+    FormGroup,
+    FormsModule,
+    ReactiveFormsModule,
+    Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,20 +23,22 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { qbsAnimations } from '@qbs/animations';
+import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
+import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
-import { qualitativeInspectionIF, quantitativeInspectionIF, } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
-import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
-import { ChangeDetectorRef } from '@angular/core';
-import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
-import { MatSelectModule } from '@angular/material/select';
+import {
+    qualitativeInspectionIF,
+    quantitativeInspectionIF,
+} from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
 // Item Inspection Card
 interface RowData {
     id: string;
@@ -66,6 +82,12 @@ interface itemSamplingRangeIF {
     styleUrl: './testing-stepper.component.scss',
 })
 export class TestingStepperComponent implements AfterViewInit {
+    isEditMode: boolean = false;
+    rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
+    rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
+    rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
+    rowDataIC: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
+
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
     private _activatedRoute = inject(ActivatedRoute);
@@ -78,6 +100,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private fb: FormBuilder,
         private _inspectionCardModal: InspectionCardService,
         private _inspectionCard: InspectionCardService,
+        private _inspectionCardUpdate: InspectionCardService,
         private _itemSamplesService: ItemSamplesService,
         private _uommasterservice: UomMasterService,
         private _inspectionCharateristics: InspectionCharacteristicsService,
@@ -88,7 +111,8 @@ export class TestingStepperComponent implements AfterViewInit {
         private _itemInspectionCardService: ItemInspectionCardService,
         // private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
-    ) { }
+        private _router: Router
+    ) {}
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
         { parameter: 'Sample Parameter 2' },
@@ -99,12 +123,14 @@ export class TestingStepperComponent implements AfterViewInit {
     @ViewChild(MatStepper) stepper!: MatStepper; // Correctly reference the MatStepper instance
     //Qualitative Results Form
     firstFormGroup = this._formBuilder.group({
+        id: [''],
         isActive: [true],
         resultDescription: ['', Validators.required],
-        data: ['']
+        data: [''],
     });
     // Unit Of Measure Form
     secondFormGroup = this._formBuilder.group({
+        id: [''],
         uoMCode: ['', Validators.required],
         description: ['', Validators.required],
         isActive: [true],
@@ -285,6 +311,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     //
     fourthFormGroup = this._formBuilder.group({
+        id: [''],
         intCode: [''],
         description: ['', Validators.required],
         isActive: [true],
@@ -292,12 +319,17 @@ export class TestingStepperComponent implements AfterViewInit {
         qualitativeCriteriaObjects: this._formBuilder.array([]),
     });
     fifthFormGroup = this._formBuilder.group({
+        id: [''],
         intCode: ['', Validators.required],
         description: ['', Validators.required],
         isActive: [true],
         // type: ['', Validators.required],
-        qualitativeTableCriteria: this._formBuilder.array([] as { parameter: string }[]),
-        quantitativeTableCriteria: this._formBuilder.array([] as { parameterX: string }[]),
+        qualitativeTableCriteria: this._formBuilder.array(
+            [] as { parameter: string }[]
+        ),
+        quantitativeTableCriteria: this._formBuilder.array(
+            [] as { parameterX: string }[]
+        ),
     });
 
     // ITEM INSPECTION CARD STARTS
@@ -307,15 +339,15 @@ export class TestingStepperComponent implements AfterViewInit {
         itemName: ['TAPAL DANEDAR POUCH 900G', Validators.required],
         itemType: ['itItems', Validators.required],
         itemGroupCode: ['138', Validators.required],
-        itemU_QACard: [null,],
+        itemU_QACard: [null],
         itemUoMGroupEntry: ['-1', Validators.required],
         itemCode: ['ITM000017', Validators.required],
         itemDescription: ['TAPAL DANEDAR POUCH 900G', Validators.required],
 
         // CARDS
-        intCode: ['', Validators.required],  // CARD CODE
+        intCode: ['', Validators.required], // CARD CODE
         cardDescription: ['', Validators.required], //  CARD DESCRIPTION
-        inspectionCardId: ['', Validators.required],  //  CARD ID
+        inspectionCardId: ['', Validators.required], //  CARD ID
         // id: ['', Validators.required],    //  CARD ID
 
         // QUALITATIVE & QUANTITATIVE INSPECTION
@@ -324,14 +356,34 @@ export class TestingStepperComponent implements AfterViewInit {
         quantitativeInspectionObjects: this.fb.array([]),
     });
 
-    displayedColumnsQualitative = ['parameter', 'passCriteria', 'mandatory', 'results', 'pass', 'fail'];
-    displayedColumnsQuantitative = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin'];
+    displayedColumnsQualitative = [
+        'parameter',
+        'passCriteria',
+        'mandatory',
+        'results',
+        'pass',
+        'fail',
+    ];
+    displayedColumnsQuantitative = [
+        'parameterQty',
+        'uoMId',
+        'mandatoryQty',
+        'passCriteriaTarget',
+        'passCriteriaMax',
+        'passCriteriaMin',
+    ];
 
     qualitativeInspectionItems: qualitativeInspectionIF[] = [];
     quantitativeInspectionItems: quantitativeInspectionIF[] = [];
 
-    dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>(this.qualitativeInspectionItems);
-    dataSourceQuantitativeInspection = new MatTableDataSource<quantitativeInspectionIF>(this.quantitativeInspectionItems);
+    dataSourceQualitativeInspection =
+        new MatTableDataSource<qualitativeInspectionIF>(
+            this.qualitativeInspectionItems
+        );
+    dataSourceQuantitativeInspection =
+        new MatTableDataSource<quantitativeInspectionIF>(
+            this.quantitativeInspectionItems
+        );
 
     initializeTableDataItemInspectionCard(): void {
         // QUALITATIVE INSPECTION FormArray
@@ -344,8 +396,8 @@ export class TestingStepperComponent implements AfterViewInit {
                     mandatory: [qualitativeItem.mandatory],
                     // pass: [qualitativeItem.pass],
                     // fail: [qualitativeItem.fail],
-                    pass: [qualitativeItem.pass || []],  // If pass is not provided, assign an empty array
-                    fail: [qualitativeItem.fail || []],  // If fail is not provided, assign an empty array
+                    pass: [qualitativeItem.pass || []], // If pass is not provided, assign an empty array
+                    fail: [qualitativeItem.fail || []], // If fail is not provided, assign an empty array
                 })
             );
         });
@@ -364,28 +416,38 @@ export class TestingStepperComponent implements AfterViewInit {
             );
         });
         // Convert formArray.controls to raw values for MatTableDataSource
-        this.dataSourceQualitativeInspection.data = formArrayQualitative.value as qualitativeInspectionIF[];
+        this.dataSourceQualitativeInspection.data =
+            formArrayQualitative.value as qualitativeInspectionIF[];
 
-        this.dataSourceQuantitativeInspection.data = formArrayQuantitative.value as quantitativeInspectionIF[];
+        this.dataSourceQuantitativeInspection.data =
+            formArrayQuantitative.value as quantitativeInspectionIF[];
     }
 
     // QUALITATIVE
     get qualitativeInspectionObjects(): FormArray {
-        return this.itemsInspectionCardsForm.get('qualitativeInspectionObjects') as FormArray;
+        return this.itemsInspectionCardsForm.get(
+            'qualitativeInspectionObjects'
+        ) as FormArray;
     }
     // QUANTITATIVE
     get quantitativeInspectionObjects(): FormArray {
-        return this.itemsInspectionCardsForm.get('quantitativeInspectionObjects') as FormArray;
+        return this.itemsInspectionCardsForm.get(
+            'quantitativeInspectionObjects'
+        ) as FormArray;
     }
 
-    addQualitativeInspectionRow(id: string, description: string, criteria: string): void {
+    addQualitativeInspectionRow(
+        id: string,
+        description: string,
+        criteria: string
+    ): void {
         const qualitativeFormGroup = this.fb.group({
             id: [id],
             parameter: [description],
             passCriteria: [criteria],
             mandatory: [false],
             pass: [], // Multiple pass values in array
-            fail: []  // Multiple fail values in array
+            fail: [], // Multiple fail values in array
         });
 
         // Push the new form group into the FormArray
@@ -393,17 +455,30 @@ export class TestingStepperComponent implements AfterViewInit {
 
         // Ensure the data source is properly initialized
         if (!this.dataSourceQualitativeInspection) {
-            this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
+            this.dataSourceQualitativeInspection =
+                new MatTableDataSource<qualitativeInspectionIF>([]);
         }
 
-        if (!(this.dataSourceQualitativeInspection instanceof MatTableDataSource)) {
-            this.dataSourceQualitativeInspection = new MatTableDataSource(this.dataSourceQualitativeInspection);
+        if (
+            !(
+                this.dataSourceQualitativeInspection instanceof
+                MatTableDataSource
+            )
+        ) {
+            this.dataSourceQualitativeInspection = new MatTableDataSource(
+                this.dataSourceQualitativeInspection
+            );
         }
 
         // Update the dataSource with the latest FormArray values
-        this.dataSourceQualitativeInspection.data = [...this.qualitativeInspectionObjects.value];
+        this.dataSourceQualitativeInspection.data = [
+            ...this.qualitativeInspectionObjects.value,
+        ];
 
-        console.log("Updated Qualitative DataSource:", this.dataSourceQualitativeInspection.data);
+        console.log(
+            'Updated Qualitative DataSource:',
+            this.dataSourceQualitativeInspection.data
+        );
     }
 
     addQuantitativeInspectionRow(id: string, description: string): void {
@@ -417,17 +492,29 @@ export class TestingStepperComponent implements AfterViewInit {
             passCriteriaMin: [''],
         });
 
-        this.quantitativeInspectionObjects.push(quantitativeInspectionFormGroup);
+        this.quantitativeInspectionObjects.push(
+            quantitativeInspectionFormGroup
+        );
 
         if (!this.dataSourceQuantitativeInspection) {
-            this.dataSourceQuantitativeInspection = new MatTableDataSource<quantitativeInspectionIF>([]);
+            this.dataSourceQuantitativeInspection =
+                new MatTableDataSource<quantitativeInspectionIF>([]);
         }
 
-        if (!(this.dataSourceQuantitativeInspection instanceof MatTableDataSource)) {
-            this.dataSourceQuantitativeInspection = new MatTableDataSource(this.dataSourceQuantitativeInspection);
+        if (
+            !(
+                this.dataSourceQuantitativeInspection instanceof
+                MatTableDataSource
+            )
+        ) {
+            this.dataSourceQuantitativeInspection = new MatTableDataSource(
+                this.dataSourceQuantitativeInspection
+            );
         }
 
-        this.dataSourceQuantitativeInspection.data = [...this.quantitativeInspectionObjects.value];
+        this.dataSourceQuantitativeInspection.data = [
+            ...this.quantitativeInspectionObjects.value,
+        ];
     }
 
     // ITEM CODE API
@@ -435,8 +522,13 @@ export class TestingStepperComponent implements AfterViewInit {
         this._itemInspectionCardService.getListAllItems().subscribe({
             next: (response) => {
                 if (response && response.isRequestSuccess && response.data) {
-                    this.dataSourceItemCodeIIC = new MatTableDataSource(response.data);
-                    console.log('FETCHED ITEMS:', this.dataSourceItemCodeIIC.data);
+                    this.dataSourceItemCodeIIC = new MatTableDataSource(
+                        response.data
+                    );
+                    console.log(
+                        'FETCHED ITEMS:',
+                        this.dataSourceItemCodeIIC.data
+                    );
                 } else {
                     console.warn('INVALID API RESPONSE:', response);
                     this.dataSourceItemCodeIIC = new MatTableDataSource([]);
@@ -470,7 +562,9 @@ export class TestingStepperComponent implements AfterViewInit {
         this._itemInspectionCardService.ListAllInspectionCards().subscribe({
             next: (response) => {
                 if (response && response.isRequestSuccess && response.data) {
-                    this.dataSourceCardCodeIIC = new MatTableDataSource(response.data);
+                    this.dataSourceCardCodeIIC = new MatTableDataSource(
+                        response.data
+                    );
                     // console.log('FETCHED CARDS:', this.dataSourceCardCodeIIC.data);
                 } else {
                     console.warn('INVALID API RESPONSE:', response);
@@ -493,7 +587,7 @@ export class TestingStepperComponent implements AfterViewInit {
             height: '75vh',
             data: this.dataSourceItemCodeIIC,
         });
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe((result) => {
             // // console.log('DIALOG CLOSED');
         });
     }
@@ -509,17 +603,25 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedItemDescriptionICC: string = '';
 
     onRowChangeItemCodeIIC(selectedRow: any): void {
-        this.dataSourceItemCodeIIC.data.forEach(row => (row.isSelected = false));
+        this.dataSourceItemCodeIIC.data.forEach(
+            (row) => (row.isSelected = false)
+        );
         selectedRow.isSelected = true;
     }
 
     addSelectedRowItemCodeIIC(): void {
         this.dialog.closeAll();
-        const selectedRow = this.dataSourceItemCodeIIC.data.find(row => row.isSelected);
+        const selectedRow = this.dataSourceItemCodeIIC.data.find(
+            (row) => row.isSelected
+        );
         if (selectedRow) {
             // console.log('SELECTED ROW:', selectedRow);
-            this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
-            this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.name);
+            this.itemsInspectionCardsForm
+                .get('itemCode')
+                .setValue(selectedRow.itemCode);
+            this.itemsInspectionCardsForm
+                .get('itemDescription')
+                .setValue(selectedRow.name);
 
             //  AGAINST SAP LIST ALL ITEMS
             // this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
@@ -560,44 +662,62 @@ export class TestingStepperComponent implements AfterViewInit {
             height: '75vh',
             data: this.dataSourceCardCodeIIC,
         });
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe((result) => {
             // // console.log('DIALOG CLOSED');
         });
     }
 
-    displayedColumnsCards: string[] = ['cardCode', 'cardDescription', 'cardStatus'];
+    displayedColumnsCards: string[] = [
+        'cardCode',
+        'cardDescription',
+        'cardStatus',
+    ];
     selectedCardCode: string = '';
     selectedCardDescription: string = '';
 
     onRowChangeCardCodeIIC(selectedRow: any): void {
-        this.dataSourceCardCodeIIC.data.forEach(row => (row.isSelected = false));
+        this.dataSourceCardCodeIIC.data.forEach(
+            (row) => (row.isSelected = false)
+        );
         selectedRow.isSelected = true;
     }
 
     addSelectedRowCardCodeIIC(): void {
         this.dialog.closeAll();
-        const selectedRowCardCodeIIC = this.dataSourceCardCodeIIC.data.find(row => row.isSelected);
+        const selectedRowCardCodeIIC = this.dataSourceCardCodeIIC.data.find(
+            (row) => row.isSelected
+        );
 
         if (selectedRowCardCodeIIC) {
-            this.itemsInspectionCardsForm.get('intCode').setValue(selectedRowCardCodeIIC.intCode);
-            this.itemsInspectionCardsForm.get('cardDescription').setValue(selectedRowCardCodeIIC.description);
-            this.itemsInspectionCardsForm.get('inspectionCardId').setValue(selectedRowCardCodeIIC.id);
+            this.itemsInspectionCardsForm
+                .get('intCode')
+                .setValue(selectedRowCardCodeIIC.intCode);
+            this.itemsInspectionCardsForm
+                .get('cardDescription')
+                .setValue(selectedRowCardCodeIIC.description);
+            this.itemsInspectionCardsForm
+                .get('inspectionCardId')
+                .setValue(selectedRowCardCodeIIC.id);
 
             this.selectedCardCode = selectedRowCardCodeIIC.cardCode;
-            this.selectedCardDescription = selectedRowCardCodeIIC.cardDescription;
+            this.selectedCardDescription =
+                selectedRowCardCodeIIC.cardDescription;
 
             // console.log('SELECTED ROW:', selectedRowCardCodeIIC);
 
             // Call API dynamically with the selected ID / inspectionCardId
             const inspectionCardId = selectedRowCardCodeIIC.id;
-            this._itemInspectionCardService.getCardCharacteristicsDataByCardId(inspectionCardId).subscribe({
-                next: (response) => {
-                    console.log('RECEIVED CHARACTERISTICS:', response);
-                    // Process the fetched data
-                    this.fetcheCardCharacteristicsByCardId(response.data);
-                },
-                error: (err) => console.error('ERROR FETCHING CHARACTERISTICS:', err)
-            });
+            this._itemInspectionCardService
+                .getCardCharacteristicsDataByCardId(inspectionCardId)
+                .subscribe({
+                    next: (response) => {
+                        console.log('RECEIVED CHARACTERISTICS:', response);
+                        // Process the fetched data
+                        this.fetcheCardCharacteristicsByCardId(response.data);
+                    },
+                    error: (err) =>
+                        console.error('ERROR FETCHING CHARACTERISTICS:', err),
+                });
         } else {
             // console.log('NO ROW SELECTED');
         }
@@ -608,9 +728,11 @@ export class TestingStepperComponent implements AfterViewInit {
         this.dataSourceCardCodeIIC.filter = filterValue.trim().toLowerCase();
     }
 
-
     fetcheCardCharacteristicsByCardId(characteristicsData: any): void {
-        if (!characteristicsData || !characteristicsData.responseCharacteristicWithCriteria) {
+        if (
+            !characteristicsData ||
+            !characteristicsData.responseCharacteristicWithCriteria
+        ) {
             console.warn('No valid item data received.');
             return;
         }
@@ -622,55 +744,66 @@ export class TestingStepperComponent implements AfterViewInit {
         qualitativeArray.clear();
         quantitativeArray.clear();
 
-        characteristicsData.responseCharacteristicWithCriteria.forEach((characteristic: any) => {
-            const type = characteristic.type.toLowerCase(); //  toLowerCase TO HANDLE BOTH qualitative OR Qualitative
+        characteristicsData.responseCharacteristicWithCriteria.forEach(
+            (characteristic: any) => {
+                const type = characteristic.type.toLowerCase(); //  toLowerCase TO HANDLE BOTH qualitative OR Qualitative
 
-            if (type === 'qualitative') {
-                if (characteristic.qualitativeCriteriaResults.length > 0) {
-                    // Push a row for each qualitativeCriteriaResult
-                    characteristic.qualitativeCriteriaResults.forEach((criteria: any) => {
-                        qualitativeArray.push(this.fb.group({
-                            id: characteristic.id,
-                            parameter: characteristic.description,
-                            passCriteria: criteria.description,
-                            mandatory: false,
-                            pass: [], // Multiple pass values in array
-                            fail: [] // Multiple fail values in array
-                        }));
-                    });
-                }
-                else {
-                    // Push a row even if there are no criteria results
-                    qualitativeArray.push(this.fb.group({
-                        id: characteristic.id, // Assigning qualitative ID
-                        parameter: characteristic.description,
-                        passCriteria: '',
-                        mandatory: false,
-                        pass: '',
-                        fail: ''
-                    }));
+                if (type === 'qualitative') {
+                    if (characteristic.qualitativeCriteriaResults.length > 0) {
+                        // Push a row for each qualitativeCriteriaResult
+                        characteristic.qualitativeCriteriaResults.forEach(
+                            (criteria: any) => {
+                                qualitativeArray.push(
+                                    this.fb.group({
+                                        id: characteristic.id,
+                                        parameter: characteristic.description,
+                                        passCriteria: criteria.description,
+                                        mandatory: false,
+                                        pass: [], // Multiple pass values in array
+                                        fail: [], // Multiple fail values in array
+                                    })
+                                );
+                            }
+                        );
+                    } else {
+                        // Push a row even if there are no criteria results
+                        qualitativeArray.push(
+                            this.fb.group({
+                                id: characteristic.id, // Assigning qualitative ID
+                                parameter: characteristic.description,
+                                passCriteria: '',
+                                mandatory: false,
+                                pass: '',
+                                fail: '',
+                            })
+                        );
+                    }
+                } else if (type === 'quantitative') {
+                    // Assigning quantitative ID
+                    quantitativeArray.push(
+                        this.fb.group({
+                            id: characteristic.id, // Assigning quantitative ID
+                            parameterQty: characteristic.description,
+                            uoMId: '',
+                            mandatoryQty: false,
+                            passCriteriaTarget: '',
+                            passCriteriaMax: '',
+                            passCriteriaMin: '',
+                        })
+                    );
                 }
             }
-            else if (type === 'quantitative') {
-                // Assigning quantitative ID
-                quantitativeArray.push(this.fb.group({
-                    id: characteristic.id, // Assigning quantitative ID
-                    parameterQty: characteristic.description,
-                    uoMId: '',
-                    mandatoryQty: false,
-                    passCriteriaTarget: '',
-                    passCriteriaMax: '',
-                    passCriteriaMin: ''
-                }));
-            }
-        });
+        );
 
         // Update data sources for the tables
         //  this.dataSourceQualitativeInspection.data = qualitativeArray.value;
         this.dataSourceQualitativeInspection = qualitativeArray.value;
         this.dataSourceQuantitativeInspection = quantitativeArray.value;
 
-        console.log('UPDATED qualitativeArray:', this.dataSourceQualitativeInspection);
+        console.log(
+            'UPDATED qualitativeArray:',
+            this.dataSourceQualitativeInspection
+        );
         // console.log('UPDATED qualitativeArray:', this.dataSourceQuantitativeInspection.data);
     }
     // CARD CODE NG TEMPLATE ENDS
@@ -688,7 +821,7 @@ export class TestingStepperComponent implements AfterViewInit {
             height: '75vh',
             data: this.dataSourceUoMIIC,
         });
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe((result) => {
             // console.log('DIALOG CLOSED');
         });
     }
@@ -698,16 +831,20 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedUoMDescription: string = '';
 
     onRowChangeUoMIIC(selectedRow: any): void {
-        this.dataSourceUoMIIC.data.forEach(row => (row.isSelected = false));
+        this.dataSourceUoMIIC.data.forEach((row) => (row.isSelected = false));
         selectedRow.isSelected = true;
     }
 
     addSelectedRowUoMIICxx(index: number): void {
         this.dialog.closeAll();
-        const selectedRow = this.dataSourceUoMIIC.data.find(row => row.isSelected);
+        const selectedRow = this.dataSourceUoMIIC.data.find(
+            (row) => row.isSelected
+        );
         if (selectedRow) {
             //  Set value in the correct row of FormArray
-            this.quantitativeInspectionObjects.controls[index].get('uoMId')?.setValue(selectedRow.id);
+            this.quantitativeInspectionObjects.controls[index]
+                .get('uoMId')
+                ?.setValue(selectedRow.id);
             //  Store selected values for debugging
             this.selectedUoMCode = selectedRow.uoMCode;
             this.selectedUoMDescription = selectedRow.description;
@@ -725,14 +862,18 @@ export class TestingStepperComponent implements AfterViewInit {
             return;
         }
 
-        const selectedRow = this.dataSourceUoMIIC.data.find(row => row.isSelected);
+        const selectedRow = this.dataSourceUoMIIC.data.find(
+            (row) => row.isSelected
+        );
 
         if (selectedRow) {
             console.log('SELECTED ROW:', selectedRow);
 
             // Set the UoM value for the correct row only
-            this.quantitativeInspectionObjects.controls[this.selectedRowIndexUoM].patchValue({
-                uoMId: selectedRow.id,  // Save only in the row that triggered the modal
+            this.quantitativeInspectionObjects.controls[
+                this.selectedRowIndexUoM
+            ].patchValue({
+                uoMId: selectedRow.id, // Save only in the row that triggered the modal
             });
 
             // Reset after update
@@ -743,45 +884,62 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     // ADD QUALITATIVE INSPECTION NG TEMPLATE STARTS
-    @ViewChild('dialogTemplateAddQualitativeIIC') dialogTemplateAddQualitativeIIC;
+    @ViewChild('dialogTemplateAddQualitativeIIC')
+    dialogTemplateAddQualitativeIIC;
     dataSourceAddQualitativeIIC = new MatTableDataSource([]);
 
     onAddQualitativeClickIIC() {
-        const dialogRef = this.dialog.open(this.dialogTemplateAddQualitativeIIC, {
-            width: '75vw',
-            height: '75vh',
-            data: this.dataSourceAddQualitativeIIC,
-        });
-        dialogRef.afterClosed().subscribe(result => {
+        const dialogRef = this.dialog.open(
+            this.dialogTemplateAddQualitativeIIC,
+            {
+                width: '75vw',
+                height: '75vh',
+                data: this.dataSourceAddQualitativeIIC,
+            }
+        );
+        dialogRef.afterClosed().subscribe((result) => {
             // console.log('DIALOG CLOSED');
         });
     }
 
-    displayedColumnsAddQualitativeIIC: string[] = ['inspectionCode', 'inspectionDescription', 'inspectionCriteria'];
+    displayedColumnsAddQualitativeIIC: string[] = [
+        'inspectionCode',
+        'inspectionDescription',
+        'inspectionCriteria',
+    ];
     selectedQualitativeDescriptionIIC: string = '';
     selectedQualitativeCriteriaIIC: string = '';
 
     onRowChangeAddQualitativeIIC(selectedRow: any): void {
-        this.dataSourceAddQualitativeIIC.data.forEach(row => (row.isSelected = false));
+        this.dataSourceAddQualitativeIIC.data.forEach(
+            (row) => (row.isSelected = false)
+        );
         selectedRow.isSelected = true;
     }
 
     addSelectedRowQualitativeIIC(): void {
         this.dialog.closeAll();
-        const selectedRow = this.dataSourceAddQualitativeIIC.data.find(row => row.isSelected);
+        const selectedRow = this.dataSourceAddQualitativeIIC.data.find(
+            (row) => row.isSelected
+        );
         if (selectedRow) {
             // Set the selected values
             this.selectedQualitativeDescriptionIIC = selectedRow.description;
-            this.selectedQualitativeCriteriaIIC = selectedRow.inspectionCriteria;
+            this.selectedQualitativeCriteriaIIC =
+                selectedRow.inspectionCriteria;
 
-            // Check if criteriaDescription exists 
+            // Check if criteriaDescription exists
             const criteriaDescription = selectedRow.criteriaDescription || ''; // Default to empty if not available
 
             // console.log('SELECTED ROW:', selectedRow);
 
             // Call addQualitativeInspectionRow and pass the selected values
             // this.addQualitativeInspectionRow(selectedRow.id, selectedRow.description, selectedRow.criteriaDescription);
-            this.addQualitativeInspectionRow(selectedRow.id, selectedRow.description, criteriaDescription);
+            this.addQualitativeInspectionRow(
+                selectedRow.id,
+                selectedRow.description,
+                criteriaDescription
+            );
         } else {
             // console.log('NO ROW SELECTED');
         }
@@ -789,36 +947,49 @@ export class TestingStepperComponent implements AfterViewInit {
 
     applyFilterAddQualitativeIIC(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSourceAddQualitativeIIC.filter = filterValue.trim().toLowerCase();
+        this.dataSourceAddQualitativeIIC.filter = filterValue
+            .trim()
+            .toLowerCase();
     }
     // ADD QUALITATIVE INSPECTION NG TEMPLATE ENDS
 
     // ADD QUANTITATIVE INSPECTION NG TEMPLATE STARTS
-    @ViewChild('dialogTemplateAddQuantitativeIIC') dialogTemplateAddQuantitativeIIC;
+    @ViewChild('dialogTemplateAddQuantitativeIIC')
+    dialogTemplateAddQuantitativeIIC;
     dataSourceAddQuantitativeIIC = new MatTableDataSource([]);
 
     onAddQuantitativeClickIIC() {
-        const dialogRef = this.dialog.open(this.dialogTemplateAddQuantitativeIIC, {
-            width: '75vw',
-            height: '75vh',
-            data: this.dataSourceAddQuantitativeIIC,
-        });
-        dialogRef.afterClosed().subscribe(result => {
+        const dialogRef = this.dialog.open(
+            this.dialogTemplateAddQuantitativeIIC,
+            {
+                width: '75vw',
+                height: '75vh',
+                data: this.dataSourceAddQuantitativeIIC,
+            }
+        );
+        dialogRef.afterClosed().subscribe((result) => {
             // console.log('DIALOG CLOSED');
         });
     }
 
-    displayedColumnsAddQuantitativeIIC: string[] = ['inspectionCode', 'inspectionDescription'];
+    displayedColumnsAddQuantitativeIIC: string[] = [
+        'inspectionCode',
+        'inspectionDescription',
+    ];
     selectedQuantitativeDescriptionIIC: string = '';
 
     onRowChangeAddQuantitativeIIC(selectedRow: any): void {
-        this.dataSourceAddQuantitativeIIC.data.forEach(row => (row.isSelected = false));
+        this.dataSourceAddQuantitativeIIC.data.forEach(
+            (row) => (row.isSelected = false)
+        );
         selectedRow.isSelected = true;
     }
 
     addSelectedRowQuantitativeIIC(): void {
         this.dialog.closeAll();
-        const selectedRow = this.dataSourceAddQuantitativeIIC.data.find(row => row.isSelected);
+        const selectedRow = this.dataSourceAddQuantitativeIIC.data.find(
+            (row) => row.isSelected
+        );
         if (selectedRow) {
             // console.log('SELECTED ROW:', selectedRow);
             // Set the selected values
@@ -826,7 +997,10 @@ export class TestingStepperComponent implements AfterViewInit {
 
             // Call addQuantitativeInspectionRow and pass the selected values
             // this.addQuantitativeInspectionRow(this.selectedQuantitativeDescriptionIIC);
-            this.addQuantitativeInspectionRow(selectedRow.id, selectedRow.description);
+            this.addQuantitativeInspectionRow(
+                selectedRow.id,
+                selectedRow.description
+            );
         } else {
             console.log('NO ROW SELECTED');
         }
@@ -834,7 +1008,9 @@ export class TestingStepperComponent implements AfterViewInit {
 
     applyFilterAddQuantitativeIIC(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
+        this.dataSourceAddQuantitativeIIC.filter = filterValue
+            .trim()
+            .toLowerCase();
     }
     // ADD QUANTITATIVE INSPECTION NG TEMPLATE ENDS
 
@@ -864,7 +1040,7 @@ export class TestingStepperComponent implements AfterViewInit {
             data: { paramID, clickedRowParameter, clickedRowPassCriteria },
             // data: this.dataSourceQRIIC,
         });
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe((result) => {
             // console.log('DIALOG CLOSED');
         });
     }
@@ -874,8 +1050,7 @@ export class TestingStepperComponent implements AfterViewInit {
     qualitativeResultPassStatusObjects: any[] = [];
     qualitativeResultFailStatusObjects: any[] = [];
 
-    onSaveQualitativeResult
-    (paramId: any, data: any): void {
+    onSaveQualitativeResult(paramId: any, data: any): void {
         // Clear the arrays before adding new data to avoid duplication
         this.qualitativeResultPassStatusObjects = [];
         this.qualitativeResultFailStatusObjects = [];
@@ -883,14 +1058,21 @@ export class TestingStepperComponent implements AfterViewInit {
         const filteredData = data.filteredData
             .map((row: any) => ({
                 ...row,
-                criteria: row.criteria === "true" ? true : row.criteria === "false" ? false : row.criteria,
+                criteria:
+                    row.criteria === 'true'
+                        ? true
+                        : row.criteria === 'false'
+                          ? false
+                          : row.criteria,
             }))
-            .filter((row: any) => row.criteria === true || row.criteria === false);
+            .filter(
+                (row: any) => row.criteria === true || row.criteria === false
+            );
 
         filteredData.forEach((item: any) => {
             const resultObject = {
                 qualitativeResultId: item.id,
-                isPassed: true
+                isPassed: true,
             };
             if (item.criteria === true) {
                 this.qualitativeResultPassStatusObjects.push(resultObject);
@@ -899,50 +1081,82 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         });
 
-        const qualitativeObjectsArray = this.qualitativeInspectionObjects.controls.map(control => control.value);
+        const qualitativeObjectsArray =
+            this.qualitativeInspectionObjects.controls.map(
+                (control) => control.value
+            );
 
         const qualitativeObject = qualitativeObjectsArray.find(
             (obj: any) => obj.id === paramId
         );
 
         if (qualitativeObject) {
-            qualitativeObject.qualitativeResultPassStatusObjects = [...this.qualitativeResultPassStatusObjects];
-            qualitativeObject.qualitativeResultFailStatusObjects = [...this.qualitativeResultFailStatusObjects];
+            qualitativeObject.qualitativeResultPassStatusObjects = [
+                ...this.qualitativeResultPassStatusObjects,
+            ];
+            qualitativeObject.qualitativeResultFailStatusObjects = [
+                ...this.qualitativeResultFailStatusObjects,
+            ];
 
-            console.log("Updated Qualitative Object:", qualitativeObject);
+            console.log('Updated Qualitative Object:', qualitativeObject);
         } else {
-            console.warn("❌ No matching qualitativeInspectionObject found for paramId:", paramId);
+            console.warn(
+                '❌ No matching qualitativeInspectionObject found for paramId:',
+                paramId
+            );
         }
 
         const formArrayQualitative = this.qualitativeInspectionObjects;
-        console.log("QUALITATIVE FORM ARRAY:", formArrayQualitative.value);
+        console.log('QUALITATIVE FORM ARRAY:', formArrayQualitative.value);
 
-        const rowIndex = formArrayQualitative.controls.findIndex((row: any) => row.value.id === paramId);
+        const rowIndex = formArrayQualitative.controls.findIndex(
+            (row: any) => row.value.id === paramId
+        );
 
         if (rowIndex !== -1) {
             const rowData = formArrayQualitative.at(rowIndex).value;
 
-            rowData.pass = filteredData.filter((item: any) => item.criteria === true).map((item: any) => item.resultDescription);
-            rowData.fail = filteredData.filter((item: any) => item.criteria === false).map((item: any) => item.resultDescription);
+            rowData.pass = filteredData
+                .filter((item: any) => item.criteria === true)
+                .map((item: any) => item.resultDescription);
+            rowData.fail = filteredData
+                .filter((item: any) => item.criteria === false)
+                .map((item: any) => item.resultDescription);
 
             if (!this.dataSourceQualitativeInspection) {
-                this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
+                this.dataSourceQualitativeInspection =
+                    new MatTableDataSource<qualitativeInspectionIF>([]);
             }
 
-            if (!(this.dataSourceQualitativeInspection instanceof MatTableDataSource)) {
-                this.dataSourceQualitativeInspection = new MatTableDataSource(this.dataSourceQualitativeInspection);
+            if (
+                !(
+                    this.dataSourceQualitativeInspection instanceof
+                    MatTableDataSource
+                )
+            ) {
+                this.dataSourceQualitativeInspection = new MatTableDataSource(
+                    this.dataSourceQualitativeInspection
+                );
             }
 
-            const index = this.dataSourceQualitativeInspection.data.findIndex((row: any) => row.id === paramId);
+            const index = this.dataSourceQualitativeInspection.data.findIndex(
+                (row: any) => row.id === paramId
+            );
             if (index !== -1) {
-                this.dataSourceQualitativeInspection.data[index].pass = [...rowData.pass];
-                this.dataSourceQualitativeInspection.data[index].fail = [...rowData.fail];
-                this.dataSourceQualitativeInspection.data = [...this.dataSourceQualitativeInspection.data];
+                this.dataSourceQualitativeInspection.data[index].pass = [
+                    ...rowData.pass,
+                ];
+                this.dataSourceQualitativeInspection.data[index].fail = [
+                    ...rowData.fail,
+                ];
+                this.dataSourceQualitativeInspection.data = [
+                    ...this.dataSourceQualitativeInspection.data,
+                ];
             } else {
-                console.warn("⚠️ ROW NOT FOUND in dataSource!");
+                console.warn('⚠️ ROW NOT FOUND in dataSource!');
             }
         } else {
-            console.warn("❌ ROW NOT FOUND for paramId:", paramId);
+            console.warn('❌ ROW NOT FOUND for paramId:', paramId);
         }
 
         this.resetDropdownCriteria();
@@ -956,9 +1170,10 @@ export class TestingStepperComponent implements AfterViewInit {
         });
 
         // Ensure that MatTableDataSource is updated with the new data
-        this.dataSourceQRIIC = new MatTableDataSource<any>(this.dataSourceQRIIC.data);
+        this.dataSourceQRIIC = new MatTableDataSource<any>(
+            this.dataSourceQRIIC.data
+        );
     }
-
 
     applyFilterQRIIC(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
@@ -978,39 +1193,60 @@ export class TestingStepperComponent implements AfterViewInit {
 
             // Ensure qualitativeInspectionObjects exists before using map
             if (Array.isArray(payload.qualitativeInspectionObjects)) {
-                payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map((item: any) => ({
-                    inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                    isMandatory: item?.mandatory ?? false, // Ensure it exists
-                    qualitativeResultPassStatusObjects: Array.isArray(item?.qualitativeResultPassStatusObjects)
-                        ? item.qualitativeResultPassStatusObjects.map((result: any) => ({
-                            qualitativeResultId: result?.qualitativeResultId ?? null,
-                            isPassed: result?.isPassed ?? false,
-                        }))
-                        : [], // Provide empty array if undefined
-                    qualitativeResultFailStatusObjects: Array.isArray(item?.qualitativeResultFailStatusObjects)
-                        ? item.qualitativeResultFailStatusObjects.map((result: any) => ({
-                            qualitativeResultId: result?.qualitativeResultId ?? null,
-                            isPassed: result?.isPassed ?? false,
-                        }))
-                        : [], // Provide empty array if undefined
-                }));
+                payload.qualitativeInspectionObjects =
+                    payload.qualitativeInspectionObjects.map((item: any) => ({
+                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
+                        isMandatory: item?.mandatory ?? false, // Ensure it exists
+                        qualitativeResultPassStatusObjects: Array.isArray(
+                            item?.qualitativeResultPassStatusObjects
+                        )
+                            ? item.qualitativeResultPassStatusObjects.map(
+                                  (result: any) => ({
+                                      qualitativeResultId:
+                                          result?.qualitativeResultId ?? null,
+                                      isPassed: result?.isPassed ?? false,
+                                  })
+                              )
+                            : [], // Provide empty array if undefined
+                        qualitativeResultFailStatusObjects: Array.isArray(
+                            item?.qualitativeResultFailStatusObjects
+                        )
+                            ? item.qualitativeResultFailStatusObjects.map(
+                                  (result: any) => ({
+                                      qualitativeResultId:
+                                          result?.qualitativeResultId ?? null,
+                                      isPassed: result?.isPassed ?? false,
+                                  })
+                              )
+                            : [], // Provide empty array if undefined
+                    }));
             } else {
                 payload.qualitativeInspectionObjects = []; // Default to empty array
             }
 
             // Ensure quantitativeInspectionObjects exists before using map
             if (Array.isArray(payload.quantitativeInspectionObjects)) {
-                payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
-                    inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                    isMandatory: item?.mandatoryQty ?? false, // Ensure it exists
-                    uoMId: item?.uoMId ?? "", // Ensure UoM ID exists
-                    // target: item?.passCriteriaTarget ? Number(item.passCriteriaTarget) : null,
-                    // max: item?.passCriteriaMax ? Number(item.passCriteriaMax) : null,
-                    // min: item?.passCriteriaMin ? Number(item.passCriteriaMin) : null,
-                    target: item?.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
-                    max: item?.passCriteriaMax !== undefined ? parseFloat(item.passCriteriaMax) : null,
-                    min: item?.passCriteriaMin !== undefined ? parseFloat(item.passCriteriaMin) : null,
-                }));
+                payload.quantitativeInspectionObjects =
+                    payload.quantitativeInspectionObjects.map((item: any) => ({
+                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
+                        isMandatory: item?.mandatoryQty ?? false, // Ensure it exists
+                        uoMId: item?.uoMId ?? '', // Ensure UoM ID exists
+                        // target: item?.passCriteriaTarget ? Number(item.passCriteriaTarget) : null,
+                        // max: item?.passCriteriaMax ? Number(item.passCriteriaMax) : null,
+                        // min: item?.passCriteriaMin ? Number(item.passCriteriaMin) : null,
+                        target:
+                            item?.passCriteriaTarget !== undefined
+                                ? parseFloat(item.passCriteriaTarget)
+                                : null,
+                        max:
+                            item?.passCriteriaMax !== undefined
+                                ? parseFloat(item.passCriteriaMax)
+                                : null,
+                        min:
+                            item?.passCriteriaMin !== undefined
+                                ? parseFloat(item.passCriteriaMin)
+                                : null,
+                    }));
             } else {
                 payload.quantitativeInspectionObjects = []; // Default to empty array
             }
@@ -1020,56 +1256,47 @@ export class TestingStepperComponent implements AfterViewInit {
 
             // return;
 
-            this._itemInspectionCardService.AddItemInspectionCard(payload).subscribe(
-                (response) => {
+            this._itemInspectionCardService
+                .AddItemInspectionCard(payload)
+                .subscribe((response) => {
                     if (response.isRequestSuccess) {
                         console.log('API RUN SUCCESSFULLY.', payload);
                     } else {
-                        console.error('ERROR WHILE ADDING DATA.', response.message);
+                        console.error(
+                            'ERROR WHILE ADDING DATA.',
+                            response.message
+                        );
                     }
-                }
-            );
-
+                });
         } else {
             console.log('FORM IS INVALID!');
         }
     }
     // ITEM INSPECTION CARD ENDS
-    
+
     isLinear = false;
 
     ngOnInit(): void {
-        // Inspection Characteristics API.
-        this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCharacteristicCode) => {
-            const y = inspectionCharacteristicCode.data; // 13 mil raha hai
-            console.log('Fetched Code:', y); // Check for debugging
+        // Inspection Card Code Get API.
+        // this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+        //     const y = inspectionCardCode.data; // 13 mil raha hai
+        //     console.log('Fetched Code:', y); // Check for debugging
 
-            if (y) {
-                const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
-                this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
-            }
-        });
+        //     if (y) {
+        //         const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
+        //         this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+        //     }
+        // });
 
-        this._qualityResultsCode.getQualitativeResultCode().subscribe((qualityResultCode) => {
-            console.log('Quality Code:', qualityResultCode); // Debugging ke liye
+        // this._qualityResultsCode.getQualitativeResultCode().subscribe((qualityResultCode) => {
+        //     console.log('Quality Code:', qualityResultCode); // Debugging ke liye
 
-            const fullCode = `QR-000${qualityResultCode.data || ''}`; // Code format
-            this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
-        });
+        //     const fullCode = `QR-000${qualityResultCode.data || ''}`; // Code format
+        //     this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
+        // });
 
 
-        // Inspection Card API -> Fifth Form
-        this._inspectionCharateristics
-            .getInspectionCharacteristicsCode()
-            .subscribe((inspectionCharacteristicCode) => {
-                const x = inspectionCharacteristicCode.data;
-                console.log('Fetched Code:', x); // Check for debugging
 
-                if (x) {
-                    const fullCode = `ICH-000${x}`; // Combine 'ICH - ' with the fetched code
-                    this.fourthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
-                }
-            });
 
         //  Item Sample Service
         this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
@@ -1083,12 +1310,9 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         });
 
-
-
         this.fetchListAllItems();
         this.addNewRowItemSampling();
         // ITEM INSPECTION CARD 3.1
-
 
         this.fourthFormGroup.get('type')?.valueChanges.subscribe((value) => {
             if (value === 'qualitative') {
@@ -1107,36 +1331,156 @@ export class TestingStepperComponent implements AfterViewInit {
         this.fetchListAllCards();
 
         // GET INSPECTION CHARACTERISTICS API
-        this._itemInspectionCardService.getInspectionCharacteristicsIIC().subscribe();
+        this._itemInspectionCardService
+            .getInspectionCharacteristicsIIC()
+            .subscribe();
 
         // INSPECTION CHARACTERISTICS API FOR BOTH  QUALITATIVE  &  QUANTITATIVE
         // API CALL TO GET INSPECTION CHARACTERISTICS WITH CRITERIA
-        this._itemInspectionCardService.getInspectionCharacteristicsWithCriteria().subscribe((inspectionCardModal) => {
-            const qualitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'qualitative');
-            const quantitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'quantitative');
+        this._itemInspectionCardService
+            .getInspectionCharacteristicsWithCriteria()
+            .subscribe((inspectionCardModal) => {
+                const qualitativeData = inspectionCardModal.data.filter(
+                    (item: any) => item.type === 'qualitative'
+                );
+                const quantitativeData = inspectionCardModal.data.filter(
+                    (item: any) => item.type === 'quantitative'
+                );
 
-            qualitativeData.forEach((item: any) => {
-                item.qualitativeCriteriaResultsObjects = item.qualitativeCriteriaResultsObjects || []; // Ensure it's always an array
-                // Setting the first criteria's description
-                item.criteriaDescription = item.qualitativeCriteriaResultsObjects.length > 0 ? item.qualitativeCriteriaResultsObjects[0].description : '';
+                qualitativeData.forEach((item: any) => {
+                    item.qualitativeCriteriaResultsObjects =
+                        item.qualitativeCriteriaResultsObjects || []; // Ensure it's always an array
+                    // Setting the first criteria's description
+                    item.criteriaDescription =
+                        item.qualitativeCriteriaResultsObjects.length > 0
+                            ? item.qualitativeCriteriaResultsObjects[0]
+                                  .description
+                            : '';
+                });
+
+                this.dataSourceAddQualitativeIIC = new MatTableDataSource(
+                    qualitativeData
+                );
+                this.dataSourceAddQuantitativeIIC = new MatTableDataSource(
+                    quantitativeData
+                );
             });
 
-            this.dataSourceAddQualitativeIIC = new MatTableDataSource(qualitativeData);
-            this.dataSourceAddQuantitativeIIC = new MatTableDataSource(quantitativeData);
-        });
-
         // LIST ALL QUALITATIVE RESULTS
-        this._itemInspectionCardService.ListAllQualitativeResultsIIC().subscribe((items) => {
-            this.dataSourceQRIIC.data = items.data;
-            // const activeItems = items.data.filter(item => item.isActive === true);
-            // this.dataSourceQRIIC.data = activeItems;
-        });
+        this._itemInspectionCardService
+            .ListAllQualitativeResultsIIC()
+            .subscribe((items) => {
+                this.dataSourceQRIIC.data = items.data;
+                // const activeItems = items.data.filter(item => item.isActive === true);
+                // this.dataSourceQRIIC.data = activeItems;
+            });
 
         // UOM - UNIT OF MEASURE API
-        this._itemInspectionCardService.getAllUnitOfMeasureIIC().subscribe((unitOfMeasure) => {
-            this.dataSourceUoMIIC.data = unitOfMeasure.data;
-        });
+        this._itemInspectionCardService
+            .getAllUnitOfMeasureIIC()
+            .subscribe((unitOfMeasure) => {
+                this.dataSourceUoMIIC.data = unitOfMeasure.data;
+            });
 
+        // UPDATE QUALITATIVE RESULT STARTS
+        //  RETRIEVING rowDataQR
+        if (!this.rowDataQR) {
+            const storedDataQR = sessionStorage.getItem('stepperDataQR'); // IF rowDataQR IS MISSING, GET FROM sessionStorage
+            this.rowDataQR = storedDataQR ? JSON.parse(storedDataQR) : null;
+        }
+        if (this.rowDataQR) {
+            this.isEditMode = true;
+            // console.log('RECEIVED QR DATA:', this.rowDataQR);
+            // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
+            this.populateQualitativeResultData(this.rowDataQR);
+        } else {
+            console.log('NO DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+            this._qualityResultsCode
+                .getQualitativeResultCode()
+                .subscribe((qualityResultCode) => {
+                    // console.log('Quality Code:', qualityResultCode);
+                    const fullCode = `QR-000${qualityResultCode.data || ''}`;
+                    this.firstFormGroup.get('data')?.setValue(fullCode);
+                });
+        }
+        // UPDATE QUALITATIVE RESULT ENDS
+
+        // UPDATE UOM - UNIT OF MEASURE STARTS
+        //  RETRIEVING rowDataUOM
+        if (!this.rowDataUOM) {
+            const storedDataUOM = sessionStorage.getItem('stepperDataUOM'); // IF rowDataUOM IS MISSING, GET FROM sessionStorage
+            this.rowDataUOM = storedDataUOM ? JSON.parse(storedDataUOM) : null;
+        }
+        if (this.rowDataUOM) {
+            this.isEditMode = true;
+            // console.log('RECEIVED UOM DATA:', this.rowDataUOM);
+            // POPULATE FORM, secondFormGroup, WITH RECEIVED DATA - rowDataQR
+            this.populateUoMData(this.rowDataUOM);
+        } else {
+            console.log('NO DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+        }
+        // UPDATE UOM - UNIT OF MEASURE STARTS
+
+        // UPDATE INSPECTION CHARACTERISTICS STARTS
+        //  RETRIEVING rowDataICH
+        if (!this.rowDataICH) {
+            const storedDataICH = sessionStorage.getItem('stepperDataICH');   // IF rowDataICH IS MISSING, GET FROM sessionStorage
+            this.rowDataICH = storedDataICH ? JSON.parse(storedDataICH) : null;
+        }
+        if (this.rowDataICH) {
+            this.isEditMode = true;
+            console.log('RECEIVED ICH DATA:', this.rowDataICH);
+            // POPULATE FORM, fourthFormGroup, WITH RECEIVED DATA - rowDataICH
+            this.populateInspectionCharacteristicsData(this.rowDataICH);
+        } else {
+            console.log('NO ICH DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR INSPECTION CHARACTERISITIC
+            this._inspectionCharateristics.getInspectionCharacteristicsCode().subscribe((intCodeICH) => {
+                const fetchedNextintCodeICH = intCodeICH.data;
+                console.log('fetchedNextintCodeICH:', fetchedNextintCodeICH);
+                if (fetchedNextintCodeICH) {
+                    const formattedNextintCodeICH = `ICH-000${fetchedNextintCodeICH}`;
+                    this.fourthFormGroup.get('intCode')?.setValue(formattedNextintCodeICH);
+                }
+            });
+        }
+        // UPDATE INSPECTION CHARACTERISTICS ENDS
+
+
+        // UPDATE INSPECTION CARD STARTS
+        //  RETRIEVING rowDataQR
+        if (!this.rowDataIC) {
+            const storedDataIC = sessionStorage.getItem('stepperDataIC'); // IF rowDataIC IS MISSING, GET FROM sessionStorage
+            this.rowDataIC = storedDataIC ? JSON.parse(storedDataIC) : null;
+        }
+        if (this.rowDataIC) {
+            this.isEditMode = true;
+            // console.log('RECEIVED QR DATA:', this.rowDataQR);
+            // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
+            this.populateICData(this.rowDataIC);
+        } else {
+            console.log('NO DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+            this._inspectionCardsCode
+                .getInspectionCardCode()
+                .subscribe((inspectionCardCode) => {
+                    const y = inspectionCardCode.data; // 13 mil raha hai
+                    console.log('Fetched Code:', y); // Check for debugging
+
+                    if (y) {
+                        const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
+                        this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+                    } else {
+                        console.error('No code received from API');
+                    }
+                });
+        }
     }
 
     ngAfterViewInit(): void {
@@ -1238,13 +1582,21 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedControlAccountRowIndex: number = -1;
     onItemCodeClick(rowIndex: number): void {
         //Item Inspection Card Modal
-        this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
-            const qualitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'qualitative' && item.isActive);
-            const quantitativeData = inspectionCardModal.data.filter((item: any) => item.type === 'quantitative' && item.isActive);
+        this._inspectionCardModal
+            .getInspectionCardModal()
+            .subscribe((inspectionCardModal) => {
+                const qualitativeData = inspectionCardModal.data.filter(
+                    (item: any) => item.type === 'qualitative' && item.isActive
+                );
+                const quantitativeData = inspectionCardModal.data.filter(
+                    (item: any) => item.type === 'quantitative' && item.isActive
+                );
 
-            this.dataSourceItems = new MatTableDataSource(qualitativeData);  // Qualitative data
-            this.dataSourceItemsX = new MatTableDataSource(quantitativeData);  // Quantitative data
-        });
+                this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
+                this.dataSourceItemsX = new MatTableDataSource(
+                    quantitativeData
+                ); // Quantitative data
+            });
 
         console.log('Row Index:', rowIndex);
         this.selectedControlAccountRowIndex = rowIndex;
@@ -1269,11 +1621,12 @@ export class TestingStepperComponent implements AfterViewInit {
     //
     onRowCheckboxChangeItems(selectedRow: any): void {
         if (this.dataSourceItems.data) {
-            this.dataSourceItems.data.forEach((row) => (row.isSelected = false));
+            this.dataSourceItems.data.forEach(
+                (row) => (row.isSelected = false)
+            );
             selectedRow.isSelected = true;
         }
     }
-
 
     applyFilterItems(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
@@ -1287,7 +1640,10 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
-            const rowFormGroup = this.qualitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup; rowFormGroup.get('parameter')?.setValue(selectedRow.description); // Set the value for this row's parameter
+            const rowFormGroup = this.qualitativeTableCriteria.at(
+                this.selectedControlAccountRowIndex
+            ) as FormGroup;
+            rowFormGroup.get('parameter')?.setValue(selectedRow.description); // Set the value for this row's parameter
             this.selectedInspectionCode = selectedRow.intCode;
             this.selectedItemDescription = selectedRow.description;
 
@@ -1356,7 +1712,10 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
-            const rowFormGroup = this.quantitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup; rowFormGroup.get('parameterX')?.setValue(selectedRow.description);
+            const rowFormGroup = this.quantitativeTableCriteria.at(
+                this.selectedControlAccountRowIndex
+            ) as FormGroup;
+            rowFormGroup.get('parameterX')?.setValue(selectedRow.description);
             console.log('Selected row:', selectedRow);
         }
         this.selectedControlAccountRowIndex = -1; // Reset index
@@ -1400,7 +1759,7 @@ export class TestingStepperComponent implements AfterViewInit {
     onSubmitUnitOfMeasure(): void {
         console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
         const formValues = this.secondFormGroup.value;
-        const payload = { ...formValues, };
+        const payload = { ...formValues };
         this._uommasterservice
             .AddUnitOfMeasure(payload)
             .subscribe((response) => {
@@ -1440,62 +1799,279 @@ export class TestingStepperComponent implements AfterViewInit {
             const { itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
             console.log('FORM SUBMISSION PAYLOAD:', payload);
             // this.itemSamplingForm.reset();
-            this._itemSamplesService.AddSampleWithRanges(payload).subscribe((response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                } else {
-                    console.error(
-                        'ERROR WHILE ADDIND DATA.',
-                        response.message
-                    );
-                }
-            });
+            this._itemSamplesService
+                .AddSampleWithRanges(payload)
+                .subscribe((response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                    } else {
+                        console.error(
+                            'ERROR WHILE ADDIND DATA.',
+                            response.message
+                        );
+                    }
+                });
         } else {
             console.log('FORM IS INVALID!');
         }
     }
 
     onSubmitInspectionCard() {
-        this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
-            const mappedIds = charResponse.data.map((char: any) => ({
-                description: char.description,
-                id: char.id
-            }));
+        this._inspectionCharateristics
+            .getInspectionCharacteristics()
+            .subscribe((charResponse) => {
+                const mappedIds = charResponse.data.map((char: any) => ({
+                    description: char.description,
+                    id: char.id,
+                }));
 
-            const formValue = this.fifthFormGroup.value;
+                const formValue = this.fifthFormGroup.value;
 
-            // Map IDs for both qualitative and quantitative criteria
-            const qualitativeIds = formValue.qualitativeTableCriteria
-                .map((item) => mappedIds.find((char) => char.description === item.parameter)?.id)
-                .filter(Boolean); // Remove undefined/null values
+                // Map IDs for both qualitative and quantitative criteria
+                const qualitativeIds = formValue.qualitativeTableCriteria
+                    .map(
+                        (item) =>
+                            mappedIds.find(
+                                (char) => char.description === item.parameter
+                            )?.id
+                    )
+                    .filter(Boolean); // Remove undefined/null values
 
-            const quantitativeIds = formValue.quantitativeTableCriteria
-                .map((item) => mappedIds.find((char) => char.description === item.parameterX)?.id)
-                .filter(Boolean); // Remove undefined/null values
+                const quantitativeIds = formValue.quantitativeTableCriteria
+                    .map(
+                        (item) =>
+                            mappedIds.find(
+                                (char) => char.description === item.parameterX
+                            )?.id
+                    )
+                    .filter(Boolean); // Remove undefined/null values
 
-            // Merge both qualitative and quantitative IDs
-            const characteristicsIds = [...qualitativeIds, ...quantitativeIds];
+                // Merge both qualitative and quantitative IDs
+                const characteristicsIds = [
+                    ...qualitativeIds,
+                    ...quantitativeIds,
+                ];
 
-            const apiPayload = {
-                description: formValue.description,
-                // type: 'qualitative',  // Set type dynamically if needed
-                isActive: formValue.isActive,
-                characteristicsIds
-            };
+                const apiPayload = {
+                    description: formValue.description,
+                    // type: 'qualitative',  // Set type dynamically if needed
+                    isActive: formValue.isActive,
+                    characteristicsIds,
+                };
 
-            console.log('Final API Payload:', apiPayload);
+                console.log('Final API Payload:', apiPayload);
 
-            this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
-                (response) => console.log('API Response:', response),
-                (error) => console.error('API Error:', error)
-            );
-        });
+                this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
+                    (response) => console.log('API Response:', response),
+                    (error) => console.error('API Error:', error)
+                );
+            });
     }
-
-
-
 
     closeDialog(): void {
         this.dialog.closeAll();
+    }
+
+    // UPDATE QUALITATIVE RESULT STARTS
+    populateQualitativeResultData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE
+        console.log(data);
+        const formattedQRintCode =
+            'QR-' + this.rowDataQR.intCode.toString().padStart(5, '0');
+        this.firstFormGroup.patchValue({
+            id: this.rowDataQR.id,
+            data: formattedQRintCode,
+            resultDescription: this.rowDataQR.resultDescription,
+            isActive: this.rowDataQR.isActive,
+        });
+    }
+
+    onUpdateQualitativeResult(): void {
+        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
+        const formValues = this.firstFormGroup.value;
+        const { data, ...payload } = formValues; // EXCLUDING intCode
+        console.log(payload);
+        // return;
+        this._qualitativeResultsService
+            .UpdateQualitativeResult(payload)
+            .subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        setTimeout(() => {
+                            this._router.navigate(['../../'], {
+                                relativeTo: this._activatedRoute,
+                            });
+                        }, 1500);
+                    } else {
+                        console.error(
+                            'ERROR WHILE UPDATING DATA.',
+                            response.message
+                        );
+                    }
+                },
+                (error) => {
+                    console.error('API request failed:', error);
+                }
+            );
+    }
+    // UPDATE QR - QUALITATIVE RESULT ENDS
+
+    // UPDATE UOM - UNIT OF MEASURE STARTS
+    populateUoMData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE
+        // console.log(data);
+        this.secondFormGroup.patchValue({
+            id: this.rowDataUOM.id,
+            uoMCode: this.rowDataUOM.uoMCode,
+            description: this.rowDataUOM.description,
+            isActive: this.rowDataUOM.isActive,
+        });
+    }
+
+    onUpdateUoM(): void {
+        // console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
+        const formValues = this.secondFormGroup.value;
+        const { ...payload } = formValues;
+        // console.log(payload);
+        // return;
+        this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                    setTimeout(() => {
+                        this._router.navigate(['../../'], {
+                            relativeTo: this._activatedRoute,
+                        });
+                    }, 1500);
+                } else {
+                    console.error(
+                        'ERROR WHILE UPDATING UOM DATA .',
+                        response.message
+                    );
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
+    }
+    // UPDATE UOM - UNIT OF MEASURE ENDS
+    isDisabled = true;
+
+    // UPDATE INSPECTION CHARACTERISTICS STARTS
+    populateInspectionCharacteristicsData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE 
+        console.log(data);
+        const formattedICHintCode = "ICH-" + this.rowDataICH.intCode.toString().padStart(5, '0');
+        this.fourthFormGroup.patchValue({
+            id: this.rowDataICH.id,
+            intCode: formattedICHintCode,
+            description: this.rowDataICH.description,
+            isActive: this.rowDataICH.isActive,
+            type: this.rowDataICH.type,
+        });
+        const criteriaFormArray = this.fourthFormGroup.get('qualitativeCriteriaObjects') as FormArray;
+
+        // Iterate through `qualitativeCriteriaResultsObjects` and update existing descriptions
+        this.rowDataICH.qualitativeCriteriaResultsObjects.forEach((criteria: any, index: number) => {
+            // Access each FormGroup inside the FormArray by index
+            const criteriaGroup = criteriaFormArray.at(index) as FormGroup;
+
+            // Update the description value for each criteria
+            if (criteriaGroup) {
+                criteriaGroup.patchValue({
+                    description: criteria.description
+                });
+            }
+        });
+    }
+    onUpdateICH(): void {
+        // console.log(this.fourthFormGroup.value);
+        const formValues = this.fourthFormGroup.value;
+        // const { ...payload } = formValues;
+        // const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode, qualitativeCriteriaObjects
+        const { intCode, ...payload } = formValues;
+        this._inspectionCharateristics.updateInspectionWithCriteria(payload).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                    setTimeout(() => {
+                        this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
+                    }, 1500);
+                } else {
+                    console.error('ERROR WHILE UPDATING UOM DATA .', response.message);
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
+    }
+    // UPDATE INSPECTION CHARACTERISTICS ENDS
+
+    //Updating Inspection Card
+
+    // UPDATE UOM - UNIT OF MEASURE STARTS
+    populateICData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE
+        console.log(data);
+        const formattedICintCode =
+            'IC-' + this.rowDataIC.intCode.toString().padStart(5, '0');
+        this.fifthFormGroup.patchValue({
+            id: this.rowDataIC.id,
+            intCode: formattedICintCode,
+            description: this.rowDataIC.description,
+            isActive: this.rowDataIC.isActive,
+        });
+    }
+
+    onUpdateInspectionCard(): void {
+        console.log('UPDATED FORM VALUES:', this.fifthFormGroup.value);
+        const formValues = this.fifthFormGroup.value;
+        const {
+            intCode,
+            qualitativeTableCriteria,
+            quantitativeTableCriteria,
+            ...payload
+        } = formValues; // EXCLUDING intCode, qualitativeTableCriteria, quantitativeTableCriteria
+        console.log(payload);
+        // return;
+        this._inspectionCardUpdate.UpdateInspectionCard(payload).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                    setTimeout(() => {
+                        this._router.navigate(['../../'], {
+                            relativeTo: this._activatedRoute,
+                        });
+                    }, 1500);
+                } else {
+                    console.error(
+                        'ERROR WHILE UPDATING DATA.',
+                        response.message
+                    );
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
     }
 }

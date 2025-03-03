@@ -21,6 +21,7 @@ export class InspectionCardService {
   private _inspectionCardModal = new BehaviorSubject<any[]>([]);
   private _inspectionCardsCode = new BehaviorSubject<any[]>([]);
   private _inspectionCard = new BehaviorSubject<any[]>([]);
+  private _inspectionCardUpdate = new BehaviorSubject<any[]>([]);
 
 
 
@@ -28,6 +29,8 @@ export class InspectionCardService {
   inspectionCardModal$: Observable<any[]> = this._inspectionCardModal.asObservable(); // IC API
   inspectionCardCode$: Observable<any[]> = this._inspectionCardsCode.asObservable(); //For IC Code API
   inspectioncard$: Observable<any[]> = this._inspectionCard.asObservable(); // IC API
+  inspectioncardUpdate$: Observable<any[]> = this._inspectionCardUpdate.asObservable(); // IC API
+
 
 
 
@@ -138,6 +141,26 @@ getInspectionCardModal(): Observable<any> {
           return throwError(() => new Error('Error Adding Inspection Cards'));
       })
   );
+}
+
+// Update Inspection Card API
+UpdateInspectionCard(data: any): Observable<any> {
+    const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
+    });
+    // console.log("SENDING PAYLOAD", data);
+    return this._httpClient.put(
+        `${environment.appApiUrl}/CSAPI/IInspectionCardFeature/UpdateInspectionCard`,
+        data,
+        { headers }
+    ).pipe(
+        tap(response => console.log('RESPONSE:', response)),
+        catchError(error => {
+            console.error('Error while updating Inspection Card Result', error);
+            return throwError(() => error);
+        })
+    );
 }
 
 }

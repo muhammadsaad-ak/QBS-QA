@@ -141,12 +141,27 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
     });
   }
 
-  openQRUpdateDrawer(type: 'visitprofile', element: any): void {
-    this.matDrawer.open();
-    // console.log(`SENDING DATA: ${JSON.stringify(element)}`);
-    this._router.navigate(['edit-qualitative-result', element.intCode], {
-      relativeTo: this._activatedRoute,
-      state: { element }
+  // openQRUpdateDrawer(type: 'visitprofile', element: any): void {
+  //   this.matDrawer.open();
+  //   // console.log(`SENDING DATA: ${JSON.stringify(element)}`);
+  //   this._router.navigate(['edit-qualitative-result', element.intCode], {
+  //     relativeTo: this._activatedRoute,
+  //     state: { element }
+  //   });
+  // }
+
+  openStepperToUpdateQR(rowData: any): void {
+    // console.log('SENDING DATA:', rowData);
+    sessionStorage.setItem('stepperDataQR', JSON.stringify(rowData));
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 0 }
+    });
+  }
+
+  openStepperToAddQR(): void {
+    sessionStorage.removeItem('stepperDataQR');
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 0 }
     });
   }
 }

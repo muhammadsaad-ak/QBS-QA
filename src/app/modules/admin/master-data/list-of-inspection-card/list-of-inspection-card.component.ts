@@ -199,22 +199,38 @@ this.dataSource.filterPredicate = (data: any, filter: string) => {
         });
     }
 
+    openStepperToUpdateIC(rowDataIC: any): void {
+        console.log('SENDING DATA:', rowDataIC);
+        sessionStorage.setItem('stepperDataIC', JSON.stringify(rowDataIC));
+        this._router.navigate(['/master-data/list-of-testing-stepper'], {
+          queryParams: { step: 3 }
+        });
+      }
+    
+      openStepperToAddIC(): void {
+        sessionStorage.removeItem('stepperDataIC');
+        this._router.navigate(['/master-data/list-of-testing-stepper'], {
+          queryParams: { step: 3 }
+        });
+      }
+    }
+
     // openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
     //   console.log(element)
     //   this.matDrawer.open();
     //   this._router.navigate(['edit-inspection-card', element], { relativeTo: this._activatedRoute,state: { element} });
     // }
 
-    openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
-        this.matDrawer.open();
-        // console.log(element.cardCode);
-        // console.log(element);
-        this._router.navigate(['edit-inspection-card', element.cardCode], {
-            relativeTo: this._activatedRoute,
-            state: { element },
-        });
-        return;
-    }
+    // openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
+    //     this.matDrawer.open();
+    //     // console.log(element.cardCode);
+    //     // console.log(element);
+    //     this._router.navigate(['edit-inspection-card', element.cardCode], {
+    //         relativeTo: this._activatedRoute,
+    //         state: { element },
+    //     });
+    //     return;
+    // }
 
     /**
      * Open confirmation dialog
@@ -230,4 +246,4 @@ this.dataSource.filterPredicate = (data: any, filter: string) => {
     //         console.log(result);
     //     });
     // }
-}
+

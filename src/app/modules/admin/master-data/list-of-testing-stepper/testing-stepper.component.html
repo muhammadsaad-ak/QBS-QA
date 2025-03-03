@@ -17,6 +17,11 @@
                 readonly style=" cursor: not-allowed;">
             </mat-form-field>
 
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
+              <mat-label>ID</mat-label>
+              <input class="view-mode-bg-grey" matInput formControlName="id" readonly style=" cursor: not-allowed;">
+            </mat-form-field>
+
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="resultDescription" required>
@@ -32,7 +37,10 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="next-button" (click)="onSubmitQualitativeResult()" matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitQualitativeResult()"
+              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode"
+              (click)="onUpdateQualitativeResult()">Update</button>
           </div>
 
 
@@ -48,16 +56,21 @@
 
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
 
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
+              <mat-label>ID</mat-label>
+              <input class="view-mode-bg-grey" matInput formControlName="id" readonly style=" cursor: not-allowed;">
+            </mat-form-field>
+
 
 
             <!-- UOM Code Field -->
-            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>UOM Code</mat-label>
               <input matInput formControlName="uoMCode" placeholder="Enter UOM Code" required>
             </mat-form-field>
 
             <!-- UOM Name Field -->
-            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+            <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>UOM Name</mat-label>
               <input matInput formControlName="description" placeholder="Enter UOM Name" required>
             </mat-form-field>
@@ -72,8 +85,10 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" (click)="onSubmitUnitOfMeasure()" matStepperNext>Next</button>
+            <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()"
+              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update UOM</button>
           </div>
         </form>
       </mat-step>
@@ -111,60 +126,94 @@
             </div>
 
             <!-- Qualitative and Quantitative Section -->
-            <div class="mt-4">
-              <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"
-                [value]="'just-good'">
-                <mat-radio-button class="mb-2" [value]="'qualitative'"
-                  [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
-                  Qualitative Inspection
-                </mat-radio-button>
-
-                <mat-radio-button class="mb-2" [value]="'quantitative'"
-                  [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'quantitative'}">
-                  Quantitative Inspection
-                </mat-radio-button>
-              </mat-radio-group>
-            </div>
-
-
-            <!-- Main Card Section -->
-            <div class="mt-4 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
-              <table class="w-full border border-gray-200 border-collapse">
-                <thead>
-                  <tr>
-                    <!-- <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th> -->
-                    <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
-                  </tr>
-                </thead>
-                <tbody formArrayName="qualitativeCriteriaObjects">
-                  <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
-                    <!-- <td class="px-4 py-2 text-sm border-b border-r text-center">
+            <!-- IF !isEditMode - ADD MODE -->
+            <div class="w-full" *ngIf="!isEditMode">
+              <div class="mt-2">
+                <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"
+                  [value]="'just-good'">
+                  <mat-radio-button class="mb-2" [value]="'qualitative'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
+                    Qualitative Inspection
+                  </mat-radio-button>
+                  <mat-radio-button class="mb-2" [value]="'quantitative'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'quantitative'}">
+                    Quantitative Inspection
+                  </mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <!-- Main Card Section -->
+              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
+                <table class="w-full border border-gray-200 border-collapse">
+                  <thead>
+                    <tr>
+                      <!-- <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th> -->
+                      <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="qualitativeCriteriaObjects">
+                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
+                      <!-- <td class="px-4 py-2 text-sm border-b border-r text-center">
                       <input type="text" placeholder="Enter S.No" matInput class="w-full" />
                     </td> -->
-                    <!-- formControlName="serialno" -->
-
-                    <td class="px-4 py-2 text-sm border-b border-r text-center">
-                      <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                      <!-- formControlName="serialno" -->
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="step-navigation">
+                <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
+                <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCharacteristics()"
+                  matStepperNext>Next</button>
+                <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
+              </div>
             </div>
-
+            <!-- IF isEditMode - UPDATE MODE -->
+            <!-- Only show this section when isEditMode is true -->
+            <div class="w-full" *ngIf="isEditMode">
+              <div class="mt-2">
+                <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'">
+                  <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'" class="mb-2"
+                    [value]="'qualitative'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
+                    Qualitative Inspection
+                  </mat-radio-button>
+                  <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'" class="mb-2"
+                    [value]="'quantitative'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'quantitative'}">
+                    Quantitative Inspection
+                  </mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <!-- Main Card Section -->
+              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
+                <table class="w-full border border-gray-200 border-collapse">
+                  <thead>
+                    <tr>
+                      <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="qualitativeCriteriaObjects">
+                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="step-navigation">
+                <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateICH()">Update</button>
+              </div>
+            </div>
           </div>
-          <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" (click)="onSubmitInspectionCharacteristics()"
-              matStepperNext>Next</button>
-            <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
-
-          </div>
-
 
         </form>
       </mat-step>
 
-      <!-- Fifth Step -->
+      <!-- Fifth Step - Inspection Card -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
         <form [formGroup]="fifthFormGroup">
           <!-- (ngSubmit)="onSubmit()" -->
@@ -177,7 +226,11 @@
               <mat-label>Card Code</mat-label>
               <input class="view-mode-bg-grey" matInput placeholder="Enter Card Code" formControlName="intCode" required
                 readonly style=" cursor: not-allowed;">
+            </mat-form-field>
 
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
+              <mat-label>ID</mat-label>
+              <input class="view-mode-bg-grey" matInput formControlName="id" readonly style=" cursor: not-allowed;">
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
@@ -387,16 +440,12 @@
 
           </div>
           <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <!-- <button mat-button class="next-button" matStepperNext>Next</button> -->
-            <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
-
-            <button mat-button class="next-button" (click)="onSubmitInspectionCard()" matStepperNext>Next</button>
-
-
+            <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCard()"
+              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode"
+              (click)="onUpdateInspectionCard()">Update</button>
           </div>
-
-
         </form>
       </mat-step>
 
@@ -869,7 +918,8 @@
                         <!-- Qualitative Result NG TABLE ENDS -->
                         <!-- Save & Close -->
                         <div class="save-close-container flex justify-end mt-auto py-2">
-                          <button (click)="onSaveQualitativeResult(data.paramID, dataSourceQRIIC)" mat-flat-button color="primary">
+                          <button (click)="onSaveQualitativeResult(data.paramID, dataSourceQRIIC)" mat-flat-button
+                            color="primary">
                             Save&nbsp;&&nbsp;Close
                           </button>
                         </div>
