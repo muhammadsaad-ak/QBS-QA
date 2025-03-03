@@ -87,6 +87,11 @@ export const appRoutes: Route[] = [
                     { path: 'list-of-item-cavity', loadChildren: () => import('app/modules/admin/master-data/list-of-item-cavity/list-of-item-cavity.routes') },
                 ]
             },
+            {
+                path: 'evaluation-stepper', children: [
+                    { path: 'new-evaluation-stepper', loadChildren: () => import('app/modules/admin/stepper-form/evaluation-stepper/evaluation-stepper.routes') },
+                ]
+            },
 
         ]
     },
