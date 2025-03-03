@@ -85,7 +85,7 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious  *ngIf="!isEditMode">Back</button>
+            <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
             <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()"
               matStepperNext>Next</button>
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update UOM</button>
@@ -126,55 +126,89 @@
             </div>
 
             <!-- Qualitative and Quantitative Section -->
-            <div class="mt-4">
-              <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"
-                [value]="'just-good'">
-                <mat-radio-button class="mb-2" [value]="'qualitative'"
-                  [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
-                  Qualitative Inspection
-                </mat-radio-button>
-
-                <mat-radio-button class="mb-2" [value]="'quantitative'"
-                  [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'quantitative'}">
-                  Quantitative Inspection
-                </mat-radio-button>
-              </mat-radio-group>
-            </div>
-
-
-            <!-- Main Card Section -->
-            <div class="mt-4 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
-              <table class="w-full border border-gray-200 border-collapse">
-                <thead>
-                  <tr>
-                    <!-- <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th> -->
-                    <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
-                  </tr>
-                </thead>
-                <tbody formArrayName="qualitativeCriteriaObjects">
-                  <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
-                    <!-- <td class="px-4 py-2 text-sm border-b border-r text-center">
+            <!-- IF !isEditMode - ADD MODE -->
+            <div class="w-full" *ngIf="!isEditMode">
+              <div class="mt-2">
+                <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"
+                  [value]="'just-good'">
+                  <mat-radio-button class="mb-2" [value]="'qualitative'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
+                    Qualitative Inspection
+                  </mat-radio-button>
+                  <mat-radio-button class="mb-2" [value]="'quantitative'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'quantitative'}">
+                    Quantitative Inspection
+                  </mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <!-- Main Card Section -->
+              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
+                <table class="w-full border border-gray-200 border-collapse">
+                  <thead>
+                    <tr>
+                      <!-- <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th> -->
+                      <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="qualitativeCriteriaObjects">
+                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
+                      <!-- <td class="px-4 py-2 text-sm border-b border-r text-center">
                       <input type="text" placeholder="Enter S.No" matInput class="w-full" />
                     </td> -->
-                    <!-- formControlName="serialno" -->
-
-                    <td class="px-4 py-2 text-sm border-b border-r text-center">
-                      <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                      <!-- formControlName="serialno" -->
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="step-navigation">
+                <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
+                <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCharacteristics()"
+                  matStepperNext>Next</button>
+                <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
+              </div>
             </div>
-
+            <!-- IF isEditMode - UPDATE MODE -->
+            <!-- Only show this section when isEditMode is true -->
+            <div class="w-full" *ngIf="isEditMode">
+              <div class="mt-2">
+                <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'">
+                  <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'" class="mb-2"
+                    [value]="'qualitative'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
+                    Qualitative Inspection
+                  </mat-radio-button>
+                  <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'" class="mb-2"
+                    [value]="'quantitative'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'quantitative'}">
+                    Quantitative Inspection
+                  </mat-radio-button>
+                </mat-radio-group>
+              </div>
+              <!-- Main Card Section -->
+              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
+                <table class="w-full border border-gray-200 border-collapse">
+                  <thead>
+                    <tr>
+                      <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="qualitativeCriteriaObjects">
+                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="step-navigation">
+                <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateICH()">Update</button>
+              </div>
+            </div>
           </div>
-          <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" (click)="onSubmitInspectionCharacteristics()"
-              matStepperNext>Next</button>
-            <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
-
-          </div>
-
 
         </form>
       </mat-step>

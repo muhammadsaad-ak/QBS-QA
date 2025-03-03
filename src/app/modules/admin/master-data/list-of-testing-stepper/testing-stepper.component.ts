@@ -69,6 +69,7 @@ export class TestingStepperComponent implements AfterViewInit {
     isEditMode: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
+    rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
 
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
@@ -292,6 +293,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     //
     fourthFormGroup = this._formBuilder.group({
+        id: [''],
         intCode: [''],
         description: ['', Validators.required],
         isActive: [true],
@@ -1065,18 +1067,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // });
 
 
-        // Inspection Card API -> Fifth Form
-        this._inspectionCharateristics
-            .getInspectionCharacteristicsCode()
-            .subscribe((inspectionCharacteristicCode) => {
-                const x = inspectionCharacteristicCode.data;
-                console.log('Fetched Code:', x); // Check for debugging
 
-                if (x) {
-                    const fullCode = `ICH-000${x}`; // Combine 'ICH - ' with the fetched code
-                    this.fourthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
-                }
-            });
 
         //  Item Sample Service
         this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
@@ -1184,6 +1175,33 @@ export class TestingStepperComponent implements AfterViewInit {
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
         }
         // UPDATE UOM - UNIT OF MEASURE STARTS
+
+        // UPDATE INSPECTION CHARACTERISTICS STARTS
+        //  RETRIEVING rowDataICH
+        if (!this.rowDataICH) {
+            const storedDataICH = sessionStorage.getItem('stepperDataICH');   // IF rowDataICH IS MISSING, GET FROM sessionStorage
+            this.rowDataICH = storedDataICH ? JSON.parse(storedDataICH) : null;
+        }
+        if (this.rowDataICH) {
+            this.isEditMode = true;
+            console.log('RECEIVED ICH DATA:', this.rowDataICH);
+            // POPULATE FORM, fourthFormGroup, WITH RECEIVED DATA - rowDataICH
+            this.populateInspectionCharacteristicsData(this.rowDataICH);
+        } else {
+            console.log('NO ICH DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR INSPECTION CHARACTERISITIC
+            this._inspectionCharateristics.getInspectionCharacteristicsCode().subscribe((intCodeICH) => {
+                const fetchedNextintCodeICH = intCodeICH.data;
+                console.log('fetchedNextintCodeICH:', fetchedNextintCodeICH);
+                if (fetchedNextintCodeICH) {
+                    const formattedNextintCodeICH = `ICH-000${fetchedNextintCodeICH}`;
+                    this.fourthFormGroup.get('intCode')?.setValue(formattedNextintCodeICH);
+                }
+            });
+        }
+        // UPDATE INSPECTION CHARACTERISTICS ENDS
+
     }
 
     ngAfterViewInit(): void {
@@ -1555,6 +1573,8 @@ export class TestingStepperComponent implements AfterViewInit {
         // MAPPING RESPONSE 
         console.log(data);
         const formattedQRintCode = "QR-" + this.rowDataQR.intCode.toString().padStart(5, '0');
+        console.log('formattedQRintCode');
+        console.log(formattedQRintCode);
         this.firstFormGroup.patchValue({
             id: this.rowDataQR.id,
             data: formattedQRintCode,
@@ -1606,7 +1626,7 @@ export class TestingStepperComponent implements AfterViewInit {
     onUpdateUoM(): void {
         // console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
         const formValues = this.secondFormGroup.value;
-        const { ...payload } = formValues; 
+        const { ...payload } = formValues;
         // console.log(payload);
         // return;
         this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
@@ -1626,4 +1646,60 @@ export class TestingStepperComponent implements AfterViewInit {
         );
     }
     // UPDATE UOM - UNIT OF MEASURE ENDS
+    isDisabled = true;
+
+    // UPDATE INSPECTION CHARACTERISTICS STARTS
+    populateInspectionCharacteristicsData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE 
+        console.log(data);
+        const formattedICHintCode = "ICH-" + this.rowDataICH.intCode.toString().padStart(5, '0');
+        this.fourthFormGroup.patchValue({
+            id: this.rowDataICH.id,
+            intCode: formattedICHintCode,
+            description: this.rowDataICH.description,
+            isActive: this.rowDataICH.isActive,
+            type: this.rowDataICH.type,
+        });
+        const criteriaFormArray = this.fourthFormGroup.get('qualitativeCriteriaObjects') as FormArray;
+
+        // Iterate through `qualitativeCriteriaResultsObjects` and update existing descriptions
+        this.rowDataICH.qualitativeCriteriaResultsObjects.forEach((criteria: any, index: number) => {
+            // Access each FormGroup inside the FormArray by index
+            const criteriaGroup = criteriaFormArray.at(index) as FormGroup;
+
+            // Update the description value for each criteria
+            if (criteriaGroup) {
+                criteriaGroup.patchValue({
+                    description: criteria.description
+                });
+            }
+        });
+    }
+    onUpdateICH(): void {
+        // console.log(this.fourthFormGroup.value);
+        const formValues = this.fourthFormGroup.value;
+        // const { ...payload } = formValues;
+        // const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode, qualitativeCriteriaObjects
+        const { intCode, ...payload } = formValues;
+        this._inspectionCharateristics.updateInspectionWithCriteria(payload).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                    setTimeout(() => {
+                        this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
+                    }, 1500);
+                } else {
+                    console.error('ERROR WHILE UPDATING UOM DATA .', response.message);
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
+    }
+    // UPDATE INSPECTION CHARACTERISTICS ENDS
 }
