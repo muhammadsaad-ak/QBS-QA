@@ -1,21 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { CommonModule } from '@angular/common';
-import {
-    AfterViewInit,
-    ChangeDetectorRef,
-    Component,
-    ViewChild,
-    ViewEncapsulation,
-    inject,
-} from '@angular/core';
-import {
-    FormArray,
-    FormBuilder,
-    FormGroup,
-    FormsModule,
-    ReactiveFormsModule,
-    Validators,
-} from '@angular/forms';
+import { AfterViewInit,ChangeDetectorRef,Component,ViewChild,ViewEncapsulation,inject,} from '@angular/core';
+import { FormArray,FormBuilder,FormGroup,FormsModule,ReactiveFormsModule,Validators,} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -35,10 +21,8 @@ import { ItemInspectionCardService } from 'app/core/other-core-services/module/i
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
-import {
-    qualitativeInspectionIF,
-    quantitativeInspectionIF,
-} from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
+import { qualitativeInspectionIF,quantitativeInspectionIF,} from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
+
 // Item Inspection Card
 interface RowData {
     id: string;
@@ -48,7 +32,6 @@ interface RowData {
     pass: string;
     fail: string;
 }
-
 interface itemSamplingRangeIF {
     lotSizeMin: number;
     lotSizeMax: number;
@@ -93,10 +76,10 @@ export class TestingStepperComponent implements AfterViewInit {
     private _activatedRoute = inject(ActivatedRoute);
 
     unitOfMeasureLOV: any = [];
-    characteristicsList: any[] = []; // Yeh top par bana lo component ke
-
+    characteristicsList: any[] = [];
 
     constructor(
+        //Form Builder
         private _formBuilder: FormBuilder,
         private dialog: MatDialog,
         private fb: FormBuilder,
@@ -1277,20 +1260,59 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // ITEM INSPECTION CARD ENDS
 
-    loadCharacteristics(inspectionCardId: string): void {
-        this._inspectionCardService.getCharacteristicsByInspectionCardId(inspectionCardId).subscribe(
-            (res) => {
-                if (res.isRequestSuccess && res.data.length) {
-                    this.characteristicsList = res.data[0].inspectionCharacteristicResults;
-                    console.log('Characteristics:', this.characteristicsList);
-                } else {
-                    console.error('No characteristics found.');
-                }
-            },
-            (error) => {
-                console.error('Error loading characteristics:', error);
-            }
-        );
+    loadCharacteristics(id: string): void {
+        this._inspectionCardService.getCharacteristicsByInspectionCardId(id).subscribe(
+                (res) => {
+                    if (res.isRequestSuccess && res.data.length) {
+                        const characteristics =
+                            res.data[0].inspectionCharacteristicResults;
+
+                        // ✅ Clear existing rows first
+                        this.qualitativeTableCriteria.clear();
+                        this.quantitativeTableCriteria.clear();
+
+                        // Qualitative Rows
+                        const qualitative = characteristics.filter(
+                            (c) => c.type === 'qualitative'
+                        );
+                        qualitative.forEach((item) => {
+                            this.qualitativeTableCriteria.push(
+                                this.fb.group({
+                                    parameter: [
+                                        item.description,
+                                        Validators.required,
+                                    ],
+                                    id: [item.id],
+                                    intCode: [item.intCode],
+                                })
+                            );
+                        });
+
+                        // Quantitative Rows
+                        const quantitative = characteristics.filter(
+                            (c) => c.type === 'quantitative'
+                        );
+                        quantitative.forEach((item) => {
+                            this.quantitativeTableCriteria.push(
+                                this.fb.group({
+                                    parameterX: [
+                                        item.description,
+                                        Validators.required,
+                                    ],
+                                    id: [item.id],
+                                    intCode: [item.intCode],
+                                })
+                            );
+                        });
+
+                        console.log('Qualitative:', qualitative);
+                        console.log('Quantitative:', quantitative);
+                    } else {
+                        console.error('No characteristics data found.');
+                    }
+                },
+                (error) => console.error('Error loading characteristics', error)
+            );
     }
 
     isLinear = false;
@@ -1313,9 +1335,6 @@ export class TestingStepperComponent implements AfterViewInit {
         //     const fullCode = `QR-000${qualityResultCode.data || ''}`; // Code format
         //     this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
         // });
-
-
-
 
         //  Item Sample Service
         this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
@@ -1350,11 +1369,15 @@ export class TestingStepperComponent implements AfterViewInit {
         this.fetchListAllCards();
 
         // GET INSPECTION CHARACTERISTICS API
-        this._itemInspectionCardService.getInspectionCharacteristicsIIC().subscribe();
+        this._itemInspectionCardService
+            .getInspectionCharacteristicsIIC()
+            .subscribe();
 
         // INSPECTION CHARACTERISTICS API FOR BOTH  QUALITATIVE  &  QUANTITATIVE
         // API CALL TO GET INSPECTION CHARACTERISTICS WITH CRITERIA
-        this._itemInspectionCardService.getInspectionCharacteristicsWithCriteria().subscribe((inspectionCardModal) => {
+        this._itemInspectionCardService
+            .getInspectionCharacteristicsWithCriteria()
+            .subscribe((inspectionCardModal) => {
                 const qualitativeData = inspectionCardModal.data.filter(
                     (item: any) => item.type === 'qualitative'
                 );
@@ -1382,14 +1405,18 @@ export class TestingStepperComponent implements AfterViewInit {
             });
 
         // LIST ALL QUALITATIVE RESULTS
-        this._itemInspectionCardService.ListAllQualitativeResultsIIC().subscribe((items) => {
+        this._itemInspectionCardService
+            .ListAllQualitativeResultsIIC()
+            .subscribe((items) => {
                 this.dataSourceQRIIC.data = items.data;
                 // const activeItems = items.data.filter(item => item.isActive === true);
                 // this.dataSourceQRIIC.data = activeItems;
             });
 
         // UOM - UNIT OF MEASURE API
-        this._itemInspectionCardService.getAllUnitOfMeasureIIC().subscribe((unitOfMeasure) => {
+        this._itemInspectionCardService
+            .getAllUnitOfMeasureIIC()
+            .subscribe((unitOfMeasure) => {
                 this.dataSourceUoMIIC.data = unitOfMeasure.data;
             });
 
@@ -1439,7 +1466,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // UPDATE INSPECTION CHARACTERISTICS STARTS
         //  RETRIEVING rowDataICH
         if (!this.rowDataICH) {
-            const storedDataICH = sessionStorage.getItem('stepperDataICH');   // IF rowDataICH IS MISSING, GET FROM sessionStorage
+            const storedDataICH = sessionStorage.getItem('stepperDataICH'); // IF rowDataICH IS MISSING, GET FROM sessionStorage
             this.rowDataICH = storedDataICH ? JSON.parse(storedDataICH) : null;
         }
         if (this.rowDataICH) {
@@ -1451,17 +1478,23 @@ export class TestingStepperComponent implements AfterViewInit {
             console.log('NO ICH DATA RECEIVED');
             this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR INSPECTION CHARACTERISITIC
-            this._inspectionCharateristics.getInspectionCharacteristicsCode().subscribe((intCodeICH) => {
-                const fetchedNextintCodeICH = intCodeICH.data;
-                console.log('fetchedNextintCodeICH:', fetchedNextintCodeICH);
-                if (fetchedNextintCodeICH) {
-                    const formattedNextintCodeICH = `ICH-000${fetchedNextintCodeICH}`;
-                    this.fourthFormGroup.get('intCode')?.setValue(formattedNextintCodeICH);
-                }
-            });
+            this._inspectionCharateristics
+                .getInspectionCharacteristicsCode()
+                .subscribe((intCodeICH) => {
+                    const fetchedNextintCodeICH = intCodeICH.data;
+                    console.log(
+                        'fetchedNextintCodeICH:',
+                        fetchedNextintCodeICH
+                    );
+                    if (fetchedNextintCodeICH) {
+                        const formattedNextintCodeICH = `ICH-000${fetchedNextintCodeICH}`;
+                        this.fourthFormGroup
+                            .get('intCode')
+                            ?.setValue(formattedNextintCodeICH);
+                    }
+                });
         }
         // UPDATE INSPECTION CHARACTERISTICS ENDS
-
 
         // UPDATE INSPECTION CARD STARTS
         //  RETRIEVING rowDataQR
@@ -1475,10 +1508,12 @@ export class TestingStepperComponent implements AfterViewInit {
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateICData(this.rowDataIC);
             // 🆕 Characteristics load kar rahe hain yahan:
-            this.loadCharacteristics(this.rowDataIC.id);
+            this.loadCharacteristics(this.rowDataIC.id); // Yeh API call hogi ab
         } else {
             console.log('NO DATA RECEIVED');
             this.isEditMode = false;
+            // this.addTableRow();   // ✅ Only if creating new
+            // this.addTableRowX();  // ✅ Only if creating new
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
             this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
                     const y = inspectionCardCode.data;
@@ -1826,11 +1861,13 @@ export class TestingStepperComponent implements AfterViewInit {
             console.log('FORM IS INVALID!');
         }
     }
-
+    // Submit Inspection Card
     onSubmitInspectionCard() {
-        this._inspectionCharateristics
-            .getInspectionCharacteristics()
-            .subscribe((charResponse) => {
+        // Fetch all inspection characteristics first
+
+        this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
+                // Map all characteristics with their description and ID
+
                 const mappedIds = charResponse.data.map((char: any) => ({
                     description: char.description,
                     id: char.id,
@@ -1839,6 +1876,8 @@ export class TestingStepperComponent implements AfterViewInit {
                 const formValue = this.fifthFormGroup.value;
 
                 // Map IDs for both qualitative and quantitative criteria
+                // Find matching qualitative IDs based on the form's parameters
+
                 const qualitativeIds = formValue.qualitativeTableCriteria
                     .map(
                         (item) =>
@@ -1848,6 +1887,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     )
                     .filter(Boolean); // Remove undefined/null values
 
+                //Find matching quantitative IDs based on the form's parameters
                 const quantitativeIds = formValue.quantitativeTableCriteria
                     .map(
                         (item) =>
@@ -1857,11 +1897,14 @@ export class TestingStepperComponent implements AfterViewInit {
                     )
                     .filter(Boolean); // Remove undefined/null values
 
-                // Merge both qualitative and quantitative IDs
+                //Combine both qualitative and quantitative IDs
+
                 const characteristicsIds = [
                     ...qualitativeIds,
                     ...quantitativeIds,
                 ];
+
+                //✅ Final payload to send in API
 
                 const apiPayload = {
                     description: formValue.description,
@@ -1872,15 +1915,13 @@ export class TestingStepperComponent implements AfterViewInit {
 
                 console.log('Final API Payload:', apiPayload);
 
+                //Send data to the Add Inspection Card API
+
                 this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
                     (response) => console.log('API Response:', response),
                     (error) => console.error('API Error:', error)
                 );
             });
-    }
-
-    closeDialog(): void {
-        this.dialog.closeAll();
     }
 
     // UPDATE QUALITATIVE RESULT STARTS
@@ -1984,9 +2025,10 @@ export class TestingStepperComponent implements AfterViewInit {
             console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
             return;
         }
-        // MAPPING RESPONSE 
+        // MAPPING RESPONSE
         console.log(data);
-        const formattedICHintCode = "ICH-" + this.rowDataICH.intCode.toString().padStart(5, '0');
+        const formattedICHintCode =
+            'ICH-' + this.rowDataICH.intCode.toString().padStart(5, '0');
         this.fourthFormGroup.patchValue({
             id: this.rowDataICH.id,
             intCode: formattedICHintCode,
@@ -1994,20 +2036,24 @@ export class TestingStepperComponent implements AfterViewInit {
             isActive: this.rowDataICH.isActive,
             type: this.rowDataICH.type,
         });
-        const criteriaFormArray = this.fourthFormGroup.get('qualitativeCriteriaObjects') as FormArray;
+        const criteriaFormArray = this.fourthFormGroup.get(
+            'qualitativeCriteriaObjects'
+        ) as FormArray;
 
         // Iterate through `qualitativeCriteriaResultsObjects` and update existing descriptions
-        this.rowDataICH.qualitativeCriteriaResultsObjects.forEach((criteria: any, index: number) => {
-            // Access each FormGroup inside the FormArray by index
-            const criteriaGroup = criteriaFormArray.at(index) as FormGroup;
+        this.rowDataICH.qualitativeCriteriaResultsObjects.forEach(
+            (criteria: any, index: number) => {
+                // Access each FormGroup inside the FormArray by index
+                const criteriaGroup = criteriaFormArray.at(index) as FormGroup;
 
-            // Update the description value for each criteria
-            if (criteriaGroup) {
-                criteriaGroup.patchValue({
-                    description: criteria.description
-                });
+                // Update the description value for each criteria
+                if (criteriaGroup) {
+                    criteriaGroup.patchValue({
+                        description: criteria.description,
+                    });
+                }
             }
-        });
+        );
     }
     onUpdateICH(): void {
         // console.log(this.fourthFormGroup.value);
@@ -2015,27 +2061,34 @@ export class TestingStepperComponent implements AfterViewInit {
         // const { ...payload } = formValues;
         // const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode, qualitativeCriteriaObjects
         const { intCode, ...payload } = formValues;
-        this._inspectionCharateristics.updateInspectionWithCriteria(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
-                    }, 1500);
-                } else {
-                    console.error('ERROR WHILE UPDATING UOM DATA .', response.message);
+        this._inspectionCharateristics
+            .updateInspectionWithCriteria(payload)
+            .subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        setTimeout(() => {
+                            this._router.navigate(['../../'], {
+                                relativeTo: this._activatedRoute,
+                            });
+                        }, 1500);
+                    } else {
+                        console.error(
+                            'ERROR WHILE UPDATING UOM DATA .',
+                            response.message
+                        );
+                    }
+                },
+                (error) => {
+                    console.error('API request failed:', error);
                 }
-            },
-            (error) => {
-                console.error('API request failed:', error);
-            }
-        );
+            );
     }
     // UPDATE INSPECTION CHARACTERISTICS ENDS
 
     //Updating Inspection Card
 
-    // UPDATE UOM - UNIT OF MEASURE STARTS
+    // UPDATE INSPECTION CARD STARTS
     populateICData(data: any): void {
         if (!data) {
             console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
@@ -2069,7 +2122,10 @@ export class TestingStepperComponent implements AfterViewInit {
                 if (response.isRequestSuccess) {
                     console.log('API RUN SUCCESSFULLY.', payload);
                     setTimeout(() => {
-                        this._router.navigate(['/master-data/list-of-inspection-card'], { relativeTo: this._activatedRoute,});
+                        this._router.navigate(
+                            ['/master-data/list-of-inspection-card'],
+                            { relativeTo: this._activatedRoute }
+                        );
                     }, 1500);
                 } else {
                     console.error(
@@ -2082,5 +2138,13 @@ export class TestingStepperComponent implements AfterViewInit {
                 console.error('API request failed:', error);
             }
         );
+    }
+
+    // UPDATE INSPECTION CARD ENDS
+
+    //Close The Dialog Box
+    
+    closeDialog(): void {
+        this.dialog.closeAll();
     }
 }

@@ -87,7 +87,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'ITM-1001',
       itemDescription: 'Steel Plate 10mm',
       qty: 50,
-      status: 'Open'
+      status: 'Pass'
     },
     {
       docNo: 'PO-001',
@@ -96,7 +96,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'ITM-1002',
       itemDescription: 'Aluminum Sheet 5mm',
       qty: 100,
-      status: 'Open'
+      status: 'Fail'
     },
     {
       docNo: 'PO-002',
@@ -105,7 +105,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'ITM-2001',
       itemDescription: 'Copper Wire 2mm',
       qty: 200,
-      status: 'Closed'
+      status: 'In Progress'
     },
     {
       docNo: 'PO-003',
@@ -114,7 +114,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'ITM-3001',
       itemDescription: 'Plastic Resin Type A',
       qty: 500,
-      status: 'In Progress'
+      status: 'Pass'
     },
     {
       docNo: 'PO-004',
@@ -123,7 +123,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'ITM-4001',
       itemDescription: 'Electronic Component X-42',
       qty: 1000,
-      status: 'Open'
+      status: 'Pass'
     }
   ];
 
@@ -135,7 +135,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'PROD-101',
       productName: 'Metal Frame Assembly',
       qty: 25,
-      status: 'In Progress'
+      status: 'Fail'
     },
     {
       docNo: 'PRO-002',
@@ -143,7 +143,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'PROD-102',
       productName: 'Circuit Board v2',
       qty: 100,
-      status: 'Pending'
+      status: 'Fail'
     },
     {
       docNo: 'PRO-003',
@@ -151,7 +151,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'PROD-103',
       productName: 'Plastic Housing Type B',
       qty: 50,
-      status: 'Completed'
+      status: 'Pass'
     },
     {
       docNo: 'PRO-004',
@@ -159,7 +159,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'PROD-104',
       productName: 'Final Product Assembly',
       qty: 30,
-      status: 'In Progress'
+      status: 'Pass'
     },
     {
       docNo: 'PRO-005',
@@ -167,7 +167,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'PROD-105',
       productName: 'Custom Component Z-99',
       qty: 150,
-      status: 'Scheduled'
+      status: 'In Progress'
     }
   ];
 
@@ -180,7 +180,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'SAP Connector Module',
       qty: 30,
       openQty: 10,
-      status: 'Partial'
+      status: 'Open'
     },
     {
       docNo: 'PO-102',
@@ -198,7 +198,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'SAP API License',
       qty: 5,
       openQty: 0,
-      status: 'Closed'
+      status: 'Open'
     },
     {
       docNo: 'PO-104',
@@ -207,7 +207,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'ERP Module Extension',
       qty: 15,
       openQty: 5,
-      status: 'Partial'
+      status: 'Open'
     }
   ];
 
@@ -220,7 +220,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       productName: 'SAP Integration Gateway',
       qty: 10,
       openQty: 3,
-      status: 'In Progress'
+      status: 'Open'
     },
     {
       docNo: 'PRO-202',
@@ -238,7 +238,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       productName: 'Database Connector',
       qty: 20,
       openQty: 0,
-      status: 'Completed'
+      status: 'Open'
     },
     {
       docNo: 'PRO-204',
@@ -247,7 +247,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       productName: 'SAP Analytics Module',
       qty: 8,
       openQty: 4,
-      status: 'Partial'
+      status: 'Open'
     }
   ];
 
@@ -264,9 +264,12 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Set default order type and screen type
-    this.updateTableView();
-    
+   // Set the initial view to 'sapDocuments' instead of 'evaluationPlan'
+   this.currentView = 'sapDocuments';
+  
+   // Call updateTableView to initialize the table with sapDocuments data
+   this.updateTableView();
+ 
     // React to order type changes
     this.orderTypeControl.valueChanges.subscribe(() => {
       this.updateTableView();
