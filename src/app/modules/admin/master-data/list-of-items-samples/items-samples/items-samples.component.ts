@@ -68,114 +68,7 @@ export class ItemsSamplesComponent {
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
   drawerMode: 'side' | 'over';
 
-  List_Of_Inspection_Data = [
-    {
-      sampleCode: 'IS001', itemCode: 'ITM0012561', itemDescription: 'Paint Bucket 3KG', flexibility: true,
-      samples: [
-        {
-          lotSizeMin: "1",
-          lotSizeMax: "1",
-          sampleSize: "1",
-          criticalDefect: "1",
-          majorDefect: "1",
-          minorDefect: "1"
-        },
-
-      ]
-    },
-    {
-      sampleCode: 'IS002', itemCode: 'ITM0012562', itemDescription: 'Paint Bucket 5KG', flexibility: true,
-      samples: [
-        {
-          lotSizeMin: "1",
-          lotSizeMax: "1",
-          sampleSize: "1",
-          criticalDefect: "1",
-          majorDefect: "1",
-          minorDefect: "1"
-        },
-        {
-          lotSizeMin: "2",
-          lotSizeMax: "2",
-          sampleSize: "2",
-          criticalDefect: "2",
-          majorDefect: "2",
-          minorDefect: "2"
-        }
-      ]
-    },
-    {
-      sampleCode: 'IS003', itemCode: 'ITM0012563', itemDescription: 'Paint Bucket 10KG', flexibility: false,
-      samples: [
-        {
-          lotSizeMin: "1",
-          lotSizeMax: "1",
-          sampleSize: "1",
-          criticalDefect: "1",
-          majorDefect: "1",
-          minorDefect: "1"
-        },
-        {
-          lotSizeMin: "2",
-          lotSizeMax: "2",
-          sampleSize: "2",
-          criticalDefect: "2",
-          majorDefect: "2",
-          minorDefect: "2"
-        }
-      ]
-    },
-    {
-      sampleCode: 'IS004', itemCode: 'ITM0012564', itemDescription: 'Paint Bucket 12KG', flexibility: true,
-      samples: [
-        {
-          lotSizeMin: "1",
-          lotSizeMax: "1",
-          sampleSize: "1",
-          criticalDefect: "1",
-          majorDefect: "1",
-          minorDefect: "1"
-        },
-        {
-          lotSizeMin: "2",
-          lotSizeMax: "2",
-          sampleSize: "2",
-          criticalDefect: "2",
-          majorDefect: "2",
-          minorDefect: "2"
-        }
-      ]
-    },
-    {
-      sampleCode: 'IS005', itemCode: 'ITM0012565', itemDescription: 'Paint Bucket 15KG', flexibility: false,
-      samples: [
-        {
-          lotSizeMin: "1",
-          lotSizeMax: "1",
-          sampleSize: "1",
-          criticalDefect: "1",
-          majorDefect: "1",
-          minorDefect: "1"
-        },
-        {
-          lotSizeMin: "2",
-          lotSizeMax: "2",
-          sampleSize: "2",
-          criticalDefect: "2",
-          majorDefect: "2",
-          minorDefect: "2"
-        },
-        {
-          lotSizeMin: "3",
-          lotSizeMax: "3",
-          sampleSize: "3",
-          criticalDefect: "3",
-          majorDefect: "3",
-          minorDefect: "3"
-        },
-      ]
-    },
-  ];
+  List_Of_Inspection_Data = [];
 
   displayedColumns: string[] = ['serialId', 'sampleCode', 'itemCode', 'itemDescription', 'flexibility', 'action'];
   // dataSource = new MatTableDataSource<any>([]);
@@ -296,8 +189,23 @@ export class ItemsSamplesComponent {
     this._router.navigate(['add-item-sample'], { relativeTo: this._activatedRoute });
   }
 
-  actionEditItemData(itemData: any): void {
-    console.log(itemData);
-    this._router.navigate(['edit-item-sample'], { state: { data: itemData }, relativeTo: this._activatedRoute });
+  // actionEditItemData(itemData: any): void {
+  //   console.log(itemData);
+  //   this._router.navigate(['edit-item-sample'], { state: { data: itemData }, relativeTo: this._activatedRoute });
+  // }
+
+  openStepperToUpdateIS(rowDataIS: any): void {
+    console.log('SENDING DATA:', rowDataIS);
+    sessionStorage.setItem('stepperDataIS', JSON.stringify(rowDataIS));
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 5 }
+    });
+  }
+
+  openStepperToAddIS(): void {
+    sessionStorage.removeItem('stepperDataIS');
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 5 }
+    });
   }
 }

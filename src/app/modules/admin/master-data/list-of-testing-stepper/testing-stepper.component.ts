@@ -86,7 +86,8 @@ export class TestingStepperComponent implements AfterViewInit {
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
-    rowDataIC: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
+    rowDataIC: any; // TO STORE RECEIVED IC DATA FROM NAVIGATION
+    rowDataIS: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM SAMPLE
 
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
@@ -112,7 +113,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
         private _router: Router
-    ) {}
+    ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
         { parameter: 'Sample Parameter 2' },
@@ -138,17 +139,17 @@ export class TestingStepperComponent implements AfterViewInit {
     // ITEM SAMPLE
     itemSamplingForm = this._formBuilder.group({
         sampleCodeIS: ['', Validators.required],
+        itemCode: ['', Validators.required],
         itemId: ['', Validators.required],
         itemDescription: ['', Validators.required],
         flexibility: [false],
-        itemCode: ['', Validators.required],
         samplingRangeObjects: this._formBuilder.array([]),
+        id: [''],
     });
-
     displayedColumnsItemSamplingRange = [
         'lotSizeMin',
         'lotSizeMax',
-        'sampleSize',
+        'sampleQty',
         'criticalDefects',
         'majorDefects',
         'minorDefects',
@@ -167,12 +168,12 @@ export class TestingStepperComponent implements AfterViewInit {
 
     addNewRowItemSampling(): void {
         const itemSamplingFormGroup = this.fb.group({
-            lotSizeMin: [''],
-            lotSizeMax: [''],
-            sampleSize: [''],
-            criticalDefects: [''],
-            majorDefects: [''],
-            minorDefects: [''],
+            lotSizeMin: [],
+            lotSizeMax: [],
+            sampleQty: [],
+            criticalDefects: [],
+            majorDefects: [],
+            minorDefects: [],
         });
         // this.samples.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
         // this.dataSourceItemSampling.data = [...this.samples.value]; // Update the table data source
@@ -199,6 +200,7 @@ export class TestingStepperComponent implements AfterViewInit {
     ];
     selectedIntCodeIS: number;
     selectedItemCodeIS: string;
+    selectedItemIdIS: string;
     selectedItemDescriptionIS: string = '';
     //
     onRowCheckboxChangeItemCodeIS(selectedRow: any): void {
@@ -214,15 +216,12 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow) {
-            this.itemSamplingForm
-                .get('itemCode')
-                .setValue(selectedRow.itemCode);
+            this.itemSamplingForm.get('itemCode').setValue(selectedRow.itemCode);
             this.itemSamplingForm.get('itemId').setValue(selectedRow.id);
-            this.itemSamplingForm
-                .get('itemDescription')
-                .setValue(selectedRow.name);
+            this.itemSamplingForm.get('itemDescription').setValue(selectedRow.name);
 
             this.selectedIntCodeIS = selectedRow.intCode;
+            this.selectedItemIdIS = selectedRow.id;
             this.selectedItemCodeIS = selectedRow.itemCode;
             this.selectedItemDescriptionIS = selectedRow.name;
 
@@ -1062,8 +1061,8 @@ export class TestingStepperComponent implements AfterViewInit {
                     row.criteria === 'true'
                         ? true
                         : row.criteria === 'false'
-                          ? false
-                          : row.criteria,
+                            ? false
+                            : row.criteria,
             }))
             .filter(
                 (row: any) => row.criteria === true || row.criteria === false
@@ -1201,23 +1200,23 @@ export class TestingStepperComponent implements AfterViewInit {
                             item?.qualitativeResultPassStatusObjects
                         )
                             ? item.qualitativeResultPassStatusObjects.map(
-                                  (result: any) => ({
-                                      qualitativeResultId:
-                                          result?.qualitativeResultId ?? null,
-                                      isPassed: result?.isPassed ?? false,
-                                  })
-                              )
+                                (result: any) => ({
+                                    qualitativeResultId:
+                                        result?.qualitativeResultId ?? null,
+                                    isPassed: result?.isPassed ?? false,
+                                })
+                            )
                             : [], // Provide empty array if undefined
                         qualitativeResultFailStatusObjects: Array.isArray(
                             item?.qualitativeResultFailStatusObjects
                         )
                             ? item.qualitativeResultFailStatusObjects.map(
-                                  (result: any) => ({
-                                      qualitativeResultId:
-                                          result?.qualitativeResultId ?? null,
-                                      isPassed: result?.isPassed ?? false,
-                                  })
-                              )
+                                (result: any) => ({
+                                    qualitativeResultId:
+                                        result?.qualitativeResultId ?? null,
+                                    isPassed: result?.isPassed ?? false,
+                                })
+                            )
                             : [], // Provide empty array if undefined
                     }));
             } else {
@@ -1298,17 +1297,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
 
-        //  Item Sample Service
-        this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
-            const fetchedCodeIS = sampleCodeIS.data;
-            console.log('FETCHED CODE:', fetchedCodeIS);
-            if (fetchedCodeIS) {
-                const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
-                this.itemSamplingForm
-                    .get('sampleCodeIS')
-                    ?.setValue(formattedSampleCodeIS);
-            }
-        });
+
 
         this.fetchListAllItems();
         this.addNewRowItemSampling();
@@ -1354,7 +1343,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     item.criteriaDescription =
                         item.qualitativeCriteriaResultsObjects.length > 0
                             ? item.qualitativeCriteriaResultsObjects[0]
-                                  .description
+                                .description
                             : '';
                 });
 
@@ -1481,6 +1470,35 @@ export class TestingStepperComponent implements AfterViewInit {
                     }
                 });
         }
+
+        // UPDATE ITEM SAMPLE STARTS
+        //  RETRIEVING rowDataIS
+        if (!this.rowDataIS) {
+            const storedDataIS = sessionStorage.getItem('stepperDataIS'); // IF rowDataIS IS MISSING, GET FROM sessionStorage
+            this.rowDataIS = storedDataIS ? JSON.parse(storedDataIS) : null;
+        }
+        if (this.rowDataIS) {
+            this.isEditMode = true;
+            console.log('RECEIVED ITEM SAMPLE DATA:', this.rowDataIS);
+            // POPULATE FORM, itemSamplingForm, WITH RECEIVED DATA - rowDataIS
+            this.populateItemSampleFormData(this.rowDataIS);
+            this.getSamplingRangeBySampleId(this.rowDataIS.id)
+        } else {
+            console.log('NO ITEM SAMPLE DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR ITEM SAMPLE
+            this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
+                const fetchedCodeIS = sampleCodeIS.data;
+                console.log('FETCHED SAMPLE CODE:', fetchedCodeIS);
+                if (fetchedCodeIS) {
+                    const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
+                    this.itemSamplingForm
+                        .get('sampleCodeIS')
+                        ?.setValue(formattedSampleCodeIS);
+                }
+            });
+        }
+        // UPDATE ITEM SAMPLE ENDS
     }
 
     ngAfterViewInit(): void {
@@ -1792,13 +1810,13 @@ export class TestingStepperComponent implements AfterViewInit {
     //     }
     // }
 
-    onSubmititemSamplingForm(): void {
+    onSubmitItemSamplingForm(): void {
         if (this.itemSamplingForm.valid) {
             const formValues = this.itemSamplingForm.value;
             // const payload = { ...formValues, };
             const { itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
             console.log('FORM SUBMISSION PAYLOAD:', payload);
-            // this.itemSamplingForm.reset();
+            this.itemSamplingForm.reset();
             this._itemSamplesService
                 .AddSampleWithRanges(payload)
                 .subscribe((response) => {
@@ -2024,7 +2042,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     //Updating Inspection Card
 
-    // UPDATE UOM - UNIT OF MEASURE STARTS
+    // UPDATE IC - INSPECTION CARD STARTS
     populateICData(data: any): void {
         if (!data) {
             console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
@@ -2074,4 +2092,137 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         );
     }
+    // UPDATE IC - INSPECTION CARD ENDS
+
+
+    // UPDATE ITEM SAMPLE STARTS
+    populateItemSampleFormData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            // return;
+        }
+        // MAPPING RESPONSE 
+        console.log(data);
+        // return;
+        const formattedISintCode = "IS-" + this.rowDataIS.intCode.toString().padStart(5, '0');
+        this.itemSamplingForm.patchValue({
+            sampleCodeIS: formattedISintCode,
+            itemCode: this.rowDataIS.itemCode,
+            itemDescription: this.rowDataIS.itemDescription,
+            itemId: this.rowDataIS.itemId,
+            flexibility: this.rowDataIS.flexibility,
+            id: this.rowDataIS.id,
+        });
+
+    }
+    getSamplingRangeBySampleId(id: string): void {
+        this._itemSamplesService.getSamplingRangeObjects(id).subscribe(
+            (results) => {
+                if (results.isRequestSuccess && results.data.length) {
+                    const samplingRangeObjects = results.data[0].samplingRangeObjects;
+                    // console.log('FETCHED SAMPLING RANGE OBJECTS');
+                    // console.log(samplingRangeObjects);
+
+                    this.samplingRangeObjects.clear();
+
+                    // ADDING EACH FETCHED samplingRangeObject TO THE FormArray
+                    samplingRangeObjects.forEach((object) => {
+                        const itemSamplingFormGroup = this.fb.group({
+                            id: [object.id],
+                            lotSizeMin: [object.lotSizeMin],
+                            lotSizeMax: [object.lotSizeMax],
+                            sampleQty: [object.sampleQty],
+                            criticalDefects: [object.criticalDefects],
+                            majorDefects: [object.majorDefects],
+                            minorDefects: [object.minorDefects],
+                        });
+                        this.samplingRangeObjects.push(itemSamplingFormGroup); // Add to FormArray
+                    });
+
+                    // UPDATING THE MatTableDataSource WITH THE NEW FormArray VALUES
+                    this.dataSourceItemSampling.data = this.samplingRangeObjects.value;
+                } else {
+                    console.error('NO SAMPLING RANGE OBJECTS FOUND.');
+                }
+            },
+            (error) => console.error('ERROR WHILE FETCHING SAMPLING RANGE OBJECTS', error)
+        );
+    }
+    onUpdateIS(): void {
+        const formValues = this.itemSamplingForm.value;
+        const { sampleCodeIS, itemCode, itemId, itemDescription, samplingRangeObjects, ...payload } = formValues;
+
+        // LOG THE EXTRACTED payload FOR DEBUGGING
+        // console.log('Form Values (without excluded properties):', payload);
+
+        // ENSURE EACH samplingRangeObject HAS ITS RESPECTIVE id (from the form data)
+        const updatedSamplingRangeObjects = samplingRangeObjects.map((object: any) => {
+            return {
+                id: object.id,
+                lotSizeMin: object.lotSizeMin,
+                lotSizeMax: object.lotSizeMax,
+                sampleQty: object.sampleQty,
+                criticalDefects: object.criticalDefects,
+                majorDefects: object.majorDefects,
+                minorDefects: object.minorDefects
+            };
+        });
+        // Add the updated samplingRangeObjects to the payload
+        const finalPayload = {
+            ...payload,
+            samplingRangeObjects: updatedSamplingRangeObjects,  // INCLUDED WITH RESPECTIVE samplingRangeObject id
+            id: formValues.id
+        };
+        // LOG THE FINAL payload FOR DEBUGGING
+        console.log('Final Payload for Update:', finalPayload);
+        // return;
+        this._itemSamplesService.updateItemSample(finalPayload).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', finalPayload);
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                    }, 1500);
+                } else {
+                    console.error('ERROR WHILE UPDATING ITEM SAMPLE DATA .', response.message);
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
+    }
+    onUpdateISX(): void {
+        console.log(this.itemSamplingForm.value);
+        const formValues = this.itemSamplingForm.value;
+        // const { ...payload } = formValues;
+        // EXCLUDING sampleCodeIS, itemCode, itemId, itemDescription
+        const { sampleCodeIS, itemCode, itemId, itemDescription, ...payload } = formValues;
+
+        // CHANGING samplingRangeObjects to attachSamplingRangeObjects AND ADDING detachSamplingRangeObjects TO THE payload
+        // const { sampleCodeIS, itemCode, itemId, samplingRangeObjects, ...formValuesWithoutIds } = this.itemSamplingForm.value;
+        // const payload = {
+        //     ...formValuesWithoutIds,
+        //     attachSamplingRangeObjects: samplingRangeObjects,
+        //     detachSamplingRangeObjects: [],
+        // };
+        console.log(payload);
+        return;
+        this._itemSamplesService.updateItemSample(payload).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                    }, 1500);
+                } else {
+                    console.error('ERROR WHILE UPDATING UOM DATA .', response.message);
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
+    }
+    // UPDATE ITEM SAMPLE ENDS
 }
