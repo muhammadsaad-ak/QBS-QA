@@ -95,35 +95,24 @@
 
       <!-- Third Step -->
 
-      <!-- Fourth Step -->
+      <!-- Fourth Step - Inspection Characterisitic STARTS -->
       <mat-step [stepControl]="fourthFormGroup" label="Inspection Characterisitic">
         <form [formGroup]="fourthFormGroup">
-
-          <!-- Custom Styled Heading -->
           <h1 class="custom-heading">Inspection Characterisitic</h1>
-
           <!-- Responsive Flexbox Container -->
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px; ">
               <mat-label>Inspection Code</mat-label>
-              <input class="view-mode-bg-grey" matInput placeholder="Enter Inspection Code" formControlName="intCode"
-                required readonly style=" cursor: not-allowed;">
+              <input class="view-mode-bg-grey" matInput formControlName="intCode" required readonly
+                style=" cursor: not-allowed;">
             </mat-form-field>
-
-            <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
+            <!-- Description -->
+            <mat-form-field style="flex: 1 1 calc(70% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="description" required>
             </mat-form-field>
-
-
-
-            <!-- Checkboxes Section -->
-            <div class="flex flex-col w-full">
-              <div class="flex items-center">
-                <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
-                <label class="text-lg">Active</label>
-              </div>
-            </div>
+            <!-- Active Checkbox -->
+            <mat-checkbox formControlName="isActive" class="text-lg">Active</mat-checkbox>
 
             <!-- Qualitative and Quantitative Section -->
             <!-- IF !isEditMode - ADD MODE -->
@@ -144,34 +133,39 @@
               <!-- Main Card Section -->
               <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
                 <table class="w-full border border-gray-200 border-collapse">
-                  <thead>
+                  <thead class="bg-gray-800 text-white">
                     <tr>
-                      <!-- <th class="px-4 py-2 text-center text-sm font-medium border-b  border-r  h-12">S.No</th> -->
-                      <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
+                      <th class="p-2 text-left w-full">
+                        <div class="flex justify-between">
+                          <span>Criteria</span>
+                        </div>
+                      </th>
                     </tr>
                   </thead>
-                  <tbody formArrayName="qualitativeCriteriaObjects">
+                  <tbody>
+                    <tr>
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Criteria" formControlName="singleCriteria"
+                          class="w-full" />
+                      </td>
+                    </tr>
+                  </tbody>
+                  <!-- <tbody formArrayName="qualitativeCriteriaObjects" class="hidden">
                     <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
-                      <!-- <td class="px-4 py-2 text-sm border-b border-r text-center">
-                      <input type="text" placeholder="Enter S.No" matInput class="w-full" />
-                    </td> -->
-                      <!-- formControlName="serialno" -->
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
                         <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
                       </td>
                     </tr>
-                  </tbody>
+                  </tbody> -->
                 </table>
               </div>
               <div class="step-navigation">
                 <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
                 <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCharacteristics()"
                   matStepperNext>Next</button>
-                <!-- <button mat-flat-button color="primary" type="submit">Submit</button> -->
               </div>
             </div>
             <!-- IF isEditMode - UPDATE MODE -->
-            <!-- Only show this section when isEditMode is true -->
             <div class="w-full" *ngIf="isEditMode">
               <div class="mt-2">
                 <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'">
@@ -190,18 +184,30 @@
               <!-- Main Card Section -->
               <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
                 <table class="w-full border border-gray-200 border-collapse">
-                  <thead>
+                  <thead class="bg-gray-800 text-white">
                     <tr>
-                      <th class="px-4 py-2 text-center text-sm font-medium border-b h-12">Criteria</th>
+                      <th class="p-2 text-left w-full">
+                        <div class="flex justify-between">
+                          <span>Criteria</span>
+                        </div>
+                      </th>
                     </tr>
                   </thead>
-                  <tbody formArrayName="qualitativeCriteriaObjects">
-                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
+                  <tbody>
+                    <tr>
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
+                        <input type="text" placeholder="Enter Criteria" formControlName="singleCriteria"
+                          class="w-full" />
                       </td>
                     </tr>
                   </tbody>
+                  <!-- <tbody formArrayName="qualitativeCriteriaObjects" class="hidden">
+                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full " />
+                      </td>
+                    </tr>
+                  </tbody> -->
                 </table>
               </div>
               <div class="step-navigation">
@@ -209,9 +215,9 @@
               </div>
             </div>
           </div>
-
         </form>
       </mat-step>
+      <!-- Fourth Step - Inspection Characterisitic ENDS -->
 
       <!-- Fifth Step - Inspection Card -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">

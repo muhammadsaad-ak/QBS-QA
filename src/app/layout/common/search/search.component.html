@@ -1,5 +1,5 @@
 <!-- Bar search -->
-@if (appearance === 'bar') {
+<!-- @if (appearance === 'bar') {
     @if (!opened) {
         <button mat-icon-button (click)="open()">
             <mat-icon
@@ -56,27 +56,27 @@
                             class="group relative mb-1 rounded-md px-6 py-0 text-md dark:hover:bg-hover hover:bg-gray-100"
                             [routerLink]="result.link"
                             [value]="result.value"
-                        >
+                        > -->
                             <!-- Contacts -->
-                            @if (resultSet.id === 'contacts') {
+                            <!-- @if (resultSet.id === 'contacts') {
                                 <ng-container
                                     *ngTemplateOutlet="
                                         contactResult;
                                         context: { $implicit: result }
                                     "
                                 ></ng-container>
-                            }
+                            } -->
                             <!-- Pages -->
-                            @if (resultSet.id === 'pages') {
+                            <!-- @if (resultSet.id === 'pages') {
                                 <ng-container
                                     *ngTemplateOutlet="
                                         pageResult;
                                         context: { $implicit: result }
                                     "
                                 ></ng-container>
-                            }
+                            } -->
                             <!-- Tasks -->
-                            @if (resultSet.id === 'tasks') {
+                            <!-- @if (resultSet.id === 'tasks') {
                                 <ng-container
                                     *ngTemplateOutlet="
                                         taskResult;
@@ -97,10 +97,10 @@
             </button>
         </div>
     }
-}
+} -->
 
 <!-- Basic search -->
-@if (appearance === 'basic') {
+<!-- @if (appearance === 'basic') {
     <div class="w-full sm:min-w-80">
         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
             <mat-icon
@@ -143,26 +143,26 @@
                         class="group relative mb-1 rounded-md px-6 py-0 text-md dark:hover:bg-hover hover:bg-gray-100"
                         [routerLink]="result.link"
                         [value]="result.value"
-                    >
+                    > -->
                         <!-- Contacts -->
-                        @if (resultSet.id === 'contacts') {
+                        <!-- @if (resultSet.id === 'contacts') {
                             <ng-container
                                 *ngTemplateOutlet="
                                     contactResult;
                                     context: { $implicit: result }
                                 "
                             ></ng-container>
-                        }
+                        } -->
                         <!-- Pages -->
-                        @if (resultSet.id === 'pages') {
+                        <!-- @if (resultSet.id === 'pages') {
                             <ng-container
                                 *ngTemplateOutlet="
                                     pageResult;
                                     context: { $implicit: result }
                                 "
                             ></ng-container>
-                        }
-                        <!-- Tasks -->
+                        } -->
+                        <!-- Tasks
                         @if (resultSet.id === 'tasks') {
                             <ng-container
                                 *ngTemplateOutlet="
@@ -176,10 +176,10 @@
             }
         </mat-autocomplete>
     </div>
-}
+} -->
 
 <!-- Contact result template -->
-<ng-template #contactResult let-result>
+<!-- <ng-template #contactResult let-result>
     <div class="flex items-center">
         <div
             class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-100 dark:bg-primary-800"
@@ -198,20 +198,20 @@
             <span [innerHTML]="result.name"></span>
         </div>
     </div>
-</ng-template>
+</ng-template> -->
 
 <!-- Page result template -->
-<ng-template #pageResult let-result>
+<!-- <ng-template #pageResult let-result>
     <div class="flex flex-col">
         <div class="truncate leading-normal" [innerHTML]="result.title"></div>
         <div class="text-secondary truncate text-sm leading-normal">
             {{ result.link }}
         </div>
     </div>
-</ng-template>
+</ng-template> -->
 
 <!-- Task result template -->
-<ng-template #taskResult let-result>
+<!-- <ng-template #taskResult let-result>
     <div class="flex items-center">
         @if (result.completed) {
             <mat-icon
@@ -231,4 +231,4 @@
             [innerHTML]="result.title"
         ></div>
     </div>
-</ng-template>
+</ng-template> -->
