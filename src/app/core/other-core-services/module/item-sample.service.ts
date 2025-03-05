@@ -22,11 +22,13 @@ export class ItemSamplesService {
     private _listItemSamples = new BehaviorSubject<any[]>([]);
     private _listAllItems = new BehaviorSubject<any[]>([]);
     private _sampleCodeIS = new BehaviorSubject<any[]>([]);
+    private _listSamplingRange = new BehaviorSubject<any[]>([]);
 
     // Observable to expose role data state
     listItemSamples$: Observable<any[]> = this._listItemSamples.asObservable();
     listAllItems$: Observable<any[]> = this._listAllItems.asObservable();
     sampleCodeIS$: Observable<any[]> = this._sampleCodeIS.asObservable();
+    listSamplingRange$: Observable<any[]> = this._listSamplingRange.asObservable();
 
     /**
      * Setter & getter for access token
@@ -120,5 +122,66 @@ export class ItemSamplesService {
                     return throwError(error);
                 })
             );
+    }
+    // GET ITEM SAMPLE API
+    getSamplingRangeObjectsBySampleId(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IItemSampleFeature/ListRangesBySampleId?sampleId=98aa1321-60f4-4816-8ce8-dba49348730e`, {
+                headers,
+            })
+            .pipe(
+                tap((results) => {
+                    const samplingRange = (results as any).data ?? [];
+                    this._listSamplingRange.next(samplingRange);
+                    console.log('FETCHED SAMPLE RANGE', samplingRange);
+                }),
+                catchError((error) => {
+                    console.error('ERROR FETCHING SAMPLE RANGE', error);
+                    return throwError(error);
+                })
+            );
+    }
+    // GET SAMPLING RANGE API
+    getSamplingRangeObjects(sampleId: string): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IItemSampleFeature/ListRangesBySampleId?sampleId=${sampleId}`, {
+                headers,
+            })
+            .pipe(
+                tap((results) => {
+                    console.log('FETCHED SAMPLING RANGE OBJECTS', results);
+                }),
+                catchError((error) => {
+                    console.error('ERROR FETCHING SAMPLING RANGE OBJECTS', error);
+                    return throwError(error);
+                })
+            );
+    }
+    // UPDATE  ITEM SAMPLE
+    updateItemSample(data: any): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+        });
+        console.log("SENDING PAYLOAD", data);
+        return this._httpClient.put(
+            `${environment.appApiUrl}/CSAPI/IItemSampleFeature/UpdateItemSample`,
+            data,
+            { headers }
+        ).pipe(
+            tap(response => console.log('RESPONSE:', response)),
+            catchError(error => {
+                console.error('ERROR WHILE UPDATING ITEM SAMPLE', error);
+                return throwError(() => error);
+            })
+        );
     }
 }

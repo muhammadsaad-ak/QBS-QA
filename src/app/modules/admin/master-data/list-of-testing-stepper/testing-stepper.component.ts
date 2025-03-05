@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit,ChangeDetectorRef,Component,ViewChild,ViewEncapsulation,inject,} from '@angular/core';
-import { FormArray,FormBuilder,FormGroup,FormsModule,ReactiveFormsModule,Validators,} from '@angular/forms';
+import { AfterViewInit, ChangeDetectorRef, Component, ViewChild, ViewEncapsulation, inject, } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -21,7 +21,7 @@ import { ItemInspectionCardService } from 'app/core/other-core-services/module/i
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
-import { qualitativeInspectionIF,quantitativeInspectionIF,} from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
+import { qualitativeInspectionIF, quantitativeInspectionIF, } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
 
 // Item Inspection Card
 interface RowData {
@@ -45,22 +45,22 @@ interface itemSamplingRangeIF {
     selector: 'app-testing-stepper',
     standalone: true,
     encapsulation: ViewEncapsulation.None,
-    imports: 
-    [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        MatCheckboxModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        MatRadioModule,
-        MatStepperModule,
-        MatTableModule,
-        MatTabsModule,
-        MatSelectModule,
-    ],
+    imports:
+        [
+            CommonModule,
+            FormsModule,
+            ReactiveFormsModule,
+            MatButtonModule,
+            MatCheckboxModule,
+            MatFormFieldModule,
+            MatIconModule,
+            MatInputModule,
+            MatRadioModule,
+            MatStepperModule,
+            MatTableModule,
+            MatTabsModule,
+            MatSelectModule,
+        ],
     animations: qbsAnimations,
     templateUrl: './testing-stepper.component.html',
     styleUrl: './testing-stepper.component.scss',
@@ -70,7 +70,9 @@ export class TestingStepperComponent implements AfterViewInit {
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
-    rowDataIC: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
+    rowDataIC: any; // TO STORE RECEIVED IC DATA FROM NAVIGATION
+    rowDataIS: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM SAMPLE
+    initialSamplingRangeObjects: any[] = []; //  DECLARE  TO STORE INITIAL samplingRangeObjects VALUES
 
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
@@ -99,7 +101,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
         private _router: Router
-    ) {}
+    ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
         { parameter: 'Sample Parameter 2' },
@@ -125,17 +127,18 @@ export class TestingStepperComponent implements AfterViewInit {
     // ITEM SAMPLE
     itemSamplingForm = this._formBuilder.group({
         sampleCodeIS: ['', Validators.required],
+        itemCode: ['', Validators.required],
         itemId: ['', Validators.required],
         itemDescription: ['', Validators.required],
-        flexibility: [false],
-        itemCode: ['', Validators.required],
+        flexibility: [true],
+        isActive: [true],
         samplingRangeObjects: this._formBuilder.array([]),
+        id: [''],
     });
-
     displayedColumnsItemSamplingRange = [
         'lotSizeMin',
         'lotSizeMax',
-        'sampleSize',
+        'sampleQty',
         'criticalDefects',
         'majorDefects',
         'minorDefects',
@@ -154,12 +157,12 @@ export class TestingStepperComponent implements AfterViewInit {
 
     addNewRowItemSampling(): void {
         const itemSamplingFormGroup = this.fb.group({
-            lotSizeMin: [''],
-            lotSizeMax: [''],
-            sampleSize: [''],
-            criticalDefects: [''],
-            majorDefects: [''],
-            minorDefects: [''],
+            lotSizeMin: [],
+            lotSizeMax: [],
+            sampleQty: [],
+            criticalDefects: [],
+            majorDefects: [],
+            minorDefects: [],
         });
         // this.samples.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
         // this.dataSourceItemSampling.data = [...this.samples.value]; // Update the table data source
@@ -186,6 +189,7 @@ export class TestingStepperComponent implements AfterViewInit {
     ];
     selectedIntCodeIS: number;
     selectedItemCodeIS: string;
+    selectedItemIdIS: string;
     selectedItemDescriptionIS: string = '';
     //
     onRowCheckboxChangeItemCodeIS(selectedRow: any): void {
@@ -201,15 +205,12 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow) {
-            this.itemSamplingForm
-                .get('itemCode')
-                .setValue(selectedRow.itemCode);
+            this.itemSamplingForm.get('itemCode').setValue(selectedRow.itemCode);
             this.itemSamplingForm.get('itemId').setValue(selectedRow.id);
-            this.itemSamplingForm
-                .get('itemDescription')
-                .setValue(selectedRow.name);
+            this.itemSamplingForm.get('itemDescription').setValue(selectedRow.name);
 
             this.selectedIntCodeIS = selectedRow.intCode;
+            this.selectedItemIdIS = selectedRow.id;
             this.selectedItemCodeIS = selectedRow.itemCode;
             this.selectedItemDescriptionIS = selectedRow.name;
 
@@ -1050,8 +1051,8 @@ export class TestingStepperComponent implements AfterViewInit {
                     row.criteria === 'true'
                         ? true
                         : row.criteria === 'false'
-                          ? false
-                          : row.criteria,
+                            ? false
+                            : row.criteria,
             }))
             .filter(
                 (row: any) => row.criteria === true || row.criteria === false
@@ -1189,23 +1190,23 @@ export class TestingStepperComponent implements AfterViewInit {
                             item?.qualitativeResultPassStatusObjects
                         )
                             ? item.qualitativeResultPassStatusObjects.map(
-                                  (result: any) => ({
-                                      qualitativeResultId:
-                                          result?.qualitativeResultId ?? null,
-                                      isPassed: result?.isPassed ?? false,
-                                  })
-                              )
+                                (result: any) => ({
+                                    qualitativeResultId:
+                                        result?.qualitativeResultId ?? null,
+                                    isPassed: result?.isPassed ?? false,
+                                })
+                            )
                             : [], // Provide empty array if undefined
                         qualitativeResultFailStatusObjects: Array.isArray(
                             item?.qualitativeResultFailStatusObjects
                         )
                             ? item.qualitativeResultFailStatusObjects.map(
-                                  (result: any) => ({
-                                      qualitativeResultId:
-                                          result?.qualitativeResultId ?? null,
-                                      isPassed: result?.isPassed ?? false,
-                                  })
-                              )
+                                (result: any) => ({
+                                    qualitativeResultId:
+                                        result?.qualitativeResultId ?? null,
+                                    isPassed: result?.isPassed ?? false,
+                                })
+                            )
                             : [], // Provide empty array if undefined
                     }));
             } else {
@@ -1269,12 +1270,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     const characteristics =
                         res.data[0].inspectionCharacteristicResults;
 
-                        
-    
+
+
                     // ✅ Clear existing rows first
                     this.qualitativeTableCriteria.clear();
                     this.quantitativeTableCriteria.clear();
-    
+
                     // Qualitative Rows
                     const qualitative = characteristics.filter(
                         (c) => c.type === 'qualitative'
@@ -1288,7 +1289,7 @@ export class TestingStepperComponent implements AfterViewInit {
                             })
                         );
                     });
-    
+
                     // Quantitative Rows
                     const quantitative = characteristics.filter(
                         (c) => c.type === 'quantitative'
@@ -1302,16 +1303,16 @@ export class TestingStepperComponent implements AfterViewInit {
                             })
                         );
                     });
-    
+
                     // ✅ Yahan latest IDs save kar le form arrays se
                     this.rowDataIC.characteristicsIds = [
                         ...this.qualitativeTableCriteria.value.map((item) => item.id),
                         ...this.quantitativeTableCriteria.value.map((item) => item.id),
                     ];
-    
+
                     console.log('Qualitative:', qualitative);
                     console.log('Quantitative:', quantitative);
-                    console.log('Saved Existing Characteristic IDs:',this.rowDataIC.characteristicsIds);
+                    console.log('Saved Existing Characteristic IDs:', this.rowDataIC.characteristicsIds);
                 } else {
                     console.error('No characteristics data found.');
                 }
@@ -1319,7 +1320,7 @@ export class TestingStepperComponent implements AfterViewInit {
             (error) => console.error('Error loading characteristics', error)
         );
     }
-    
+
 
     isLinear = false;
 
@@ -1342,17 +1343,7 @@ export class TestingStepperComponent implements AfterViewInit {
         //     this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
         // });
 
-        //  Item Sample Service
-        this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
-            const fetchedCodeIS = sampleCodeIS.data;
-            console.log('FETCHED CODE:', fetchedCodeIS);
-            if (fetchedCodeIS) {
-                const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
-                this.itemSamplingForm
-                    .get('sampleCodeIS')
-                    ?.setValue(formattedSampleCodeIS);
-            }
-        });
+
 
         this.fetchListAllItems();
         this.addNewRowItemSampling();
@@ -1398,7 +1389,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     item.criteriaDescription =
                         item.qualitativeCriteriaResultsObjects.length > 0
                             ? item.qualitativeCriteriaResultsObjects[0]
-                                  .description
+                                .description
                             : '';
                 });
 
@@ -1522,17 +1513,46 @@ export class TestingStepperComponent implements AfterViewInit {
             // this.addTableRowX();  // ✅ Only if creating new
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
             this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
-                    const y = inspectionCardCode.data;
-                    console.log('Fetched Code:', y); // Check for debugging
+                const y = inspectionCardCode.data;
+                console.log('Fetched Code:', y); // Check for debugging
 
-                    if (y) {
-                        const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
-                        this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
-                    } else {
-                        console.error('No code received from API');
-                    }
-                });
+                if (y) {
+                    const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
+                    this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+                } else {
+                    console.error('No code received from API');
+                }
+            });
         }
+
+        // UPDATE ITEM SAMPLE STARTS
+        //  RETRIEVING rowDataIS
+        if (!this.rowDataIS) {
+            const storedDataIS = sessionStorage.getItem('stepperDataIS'); // IF rowDataIS IS MISSING, GET FROM sessionStorage
+            this.rowDataIS = storedDataIS ? JSON.parse(storedDataIS) : null;
+        }
+        if (this.rowDataIS) {
+            this.isEditMode = true;
+            console.log('RECEIVED ITEM SAMPLE DATA:', this.rowDataIS);
+            // POPULATE FORM, itemSamplingForm, WITH RECEIVED DATA - rowDataIS
+            this.populateItemSampleFormData(this.rowDataIS);
+            this.getSamplingRangeBySampleId(this.rowDataIS.id)
+        } else {
+            console.log('NO ITEM SAMPLE DATA RECEIVED');
+            this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR ITEM SAMPLE
+            this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
+                const fetchedCodeIS = sampleCodeIS.data;
+                console.log('FETCHED SAMPLE CODE:', fetchedCodeIS);
+                if (fetchedCodeIS) {
+                    const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
+                    this.itemSamplingForm
+                        .get('sampleCodeIS')
+                        ?.setValue(formattedSampleCodeIS);
+                }
+            });
+        }
+        // UPDATE ITEM SAMPLE ENDS
     }
 
     ngAfterViewInit(): void {
@@ -1854,13 +1874,13 @@ export class TestingStepperComponent implements AfterViewInit {
     //     }
     // }
 
-    onSubmititemSamplingForm(): void {
+    onSubmitItemSamplingForm(): void {
         if (this.itemSamplingForm.valid) {
             const formValues = this.itemSamplingForm.value;
             // const payload = { ...formValues, };
-            const { itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
+            const { id, itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
             console.log('FORM SUBMISSION PAYLOAD:', payload);
-            // this.itemSamplingForm.reset();
+            this.itemSamplingForm.reset();
             this._itemSamplesService
                 .AddSampleWithRanges(payload)
                 .subscribe((response) => {
@@ -1873,8 +1893,10 @@ export class TestingStepperComponent implements AfterViewInit {
                         );
                     }
                 });
+            this.stepper.next();
         } else {
             console.log('FORM IS INVALID!');
+            return;
         }
     }
     // Submit Inspection Card
@@ -1882,62 +1904,62 @@ export class TestingStepperComponent implements AfterViewInit {
         // Fetch all inspection characteristics first
 
         this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
-                // Map all characteristics with their description and ID
+            // Map all characteristics with their description and ID
 
-                const mappedIds = charResponse.data.map((char: any) => ({
-                    description: char.description,
-                    id: char.id,
-                }));
+            const mappedIds = charResponse.data.map((char: any) => ({
+                description: char.description,
+                id: char.id,
+            }));
 
-                const formValue = this.fifthFormGroup.value;
+            const formValue = this.fifthFormGroup.value;
 
-                // Map IDs for both qualitative and quantitative criteria
-                // Find matching qualitative IDs based on the form's parameters
+            // Map IDs for both qualitative and quantitative criteria
+            // Find matching qualitative IDs based on the form's parameters
 
-                const qualitativeIds = formValue.qualitativeTableCriteria
-                    .map(
-                        (item) =>
-                            mappedIds.find(
-                                (char) => char.description === item.parameter
-                            )?.id
-                    )
-                    .filter(Boolean); // Remove undefined/null values
+            const qualitativeIds = formValue.qualitativeTableCriteria
+                .map(
+                    (item) =>
+                        mappedIds.find(
+                            (char) => char.description === item.parameter
+                        )?.id
+                )
+                .filter(Boolean); // Remove undefined/null values
 
-                //Find matching quantitative IDs based on the form's parameters
-                const quantitativeIds = formValue.quantitativeTableCriteria
-                    .map(
-                        (item) =>
-                            mappedIds.find(
-                                (char) => char.description === item.parameterX
-                            )?.id
-                    )
-                    .filter(Boolean); // Remove undefined/null values
+            //Find matching quantitative IDs based on the form's parameters
+            const quantitativeIds = formValue.quantitativeTableCriteria
+                .map(
+                    (item) =>
+                        mappedIds.find(
+                            (char) => char.description === item.parameterX
+                        )?.id
+                )
+                .filter(Boolean); // Remove undefined/null values
 
-                //Combine both qualitative and quantitative IDs
+            //Combine both qualitative and quantitative IDs
 
-                const characteristicsIds = [
-                    ...qualitativeIds,
-                    ...quantitativeIds,
-                ];
+            const characteristicsIds = [
+                ...qualitativeIds,
+                ...quantitativeIds,
+            ];
 
-                //✅ Final payload to send in API
+            //✅ Final payload to send in API
 
-                const apiPayload = {
-                    description: formValue.description,
-                    // type: 'qualitative',  // Set type dynamically if needed
-                    isActive: formValue.isActive,
-                    characteristicsIds,
-                };
+            const apiPayload = {
+                description: formValue.description,
+                // type: 'qualitative',  // Set type dynamically if needed
+                isActive: formValue.isActive,
+                characteristicsIds,
+            };
 
-                console.log('Final API Payload:', apiPayload);
+            console.log('Final API Payload:', apiPayload);
 
-                //Send data to the Add Inspection Card API
+            //Send data to the Add Inspection Card API
 
-                this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
-                    (response) => console.log('API Response:', response),
-                    (error) => console.error('API Error:', error)
-                );
-            });
+            this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
+                (response) => console.log('API Response:', response),
+                (error) => console.error('API Error:', error)
+            );
+        });
     }
 
     // UPDATE QUALITATIVE RESULT STARTS
@@ -2102,6 +2124,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     //Updating Inspection Card
 
+    // UPDATE IC - INSPECTION CARD STARTS
     // UPDATE INSPECTION CARD STARTS
     populateICData(data: any): void {
         if (!data) {
@@ -2119,97 +2142,227 @@ export class TestingStepperComponent implements AfterViewInit {
             isActive: this.rowDataIC.isActive,
         });
     }
-    
+
     // Updating Inspection Card Data: Starts
     onUpdateInspectionCard(): void {
-    console.log('UPDATED FORM VALUES:', this.fifthFormGroup.value);
-    const formValues = this.fifthFormGroup.value;
+        console.log('UPDATED FORM VALUES:', this.fifthFormGroup.value);
+        const formValues = this.fifthFormGroup.value;
 
-    const { intCode, qualitativeTableCriteria, quantitativeTableCriteria, ...restFormValues } = formValues;
+        const { intCode, qualitativeTableCriteria, quantitativeTableCriteria, ...restFormValues } = formValues;
 
-    // ✅ Sare characteristics le aao (jaise add ke waqt karte ho)
-    this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
-        const mappedIds = charResponse.data.map((char: any) => ({
-            description: char.description,
-            id: char.id,
-        }));
+        // ✅ Sare characteristics le aao (jaise add ke waqt karte ho)
+        this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
+            const mappedIds = charResponse.data.map((char: any) => ({
+                description: char.description,
+                id: char.id,
+            }));
 
-        // ✅ Sirf naye qualitative IDs
-        const newQualitativeIds = this.qualitativeTableCriteria.controls
-            .filter((group) => !group.get('id')?.value) // Jinki id nahi hai, wo new hai
-            .map((group) => {
-                const desc = group.get('parameter')?.value;
-                return mappedIds.find((char) => char.description === desc)?.id;
-            })
-            .filter(Boolean);
+            // ✅ Sirf naye qualitative IDs
+            const newQualitativeIds = this.qualitativeTableCriteria.controls
+                .filter((group) => !group.get('id')?.value) // Jinki id nahi hai, wo new hai
+                .map((group) => {
+                    const desc = group.get('parameter')?.value;
+                    return mappedIds.find((char) => char.description === desc)?.id;
+                })
+                .filter(Boolean);
 
-        // ✅ Sirf naye quantitative IDs
-        const newQuantitativeIds = this.quantitativeTableCriteria.controls
-            .filter((group) => !group.get('id')?.value) // Jinki id nahi hai, wo new hai
-            .map((group) => {
-                const desc = group.get('parameterX')?.value;
-                return mappedIds.find((char) => char.description === desc)?.id;
-            })
-            .filter(Boolean);
+            // ✅ Sirf naye quantitative IDs
+            const newQuantitativeIds = this.quantitativeTableCriteria.controls
+                .filter((group) => !group.get('id')?.value) // Jinki id nahi hai, wo new hai
+                .map((group) => {
+                    const desc = group.get('parameterX')?.value;
+                    return mappedIds.find((char) => char.description === desc)?.id;
+                })
+                .filter(Boolean);
 
-        // ✅ Sirf new added IDs
-        const currentCharacteristicIds = [...newQualitativeIds, ...newQuantitativeIds];
-        console.log('✅ Only New Characteristic IDs:', currentCharacteristicIds);
+            // ✅ Sirf new added IDs
+            const currentCharacteristicIds = [...newQualitativeIds, ...newQuantitativeIds];
+            console.log('✅ Only New Characteristic IDs:', currentCharacteristicIds);
 
-      
-        // ✅ Purani jo edit ke waqt thi
-        const existingCharacteristicIds = this.rowDataIC.characteristicsIds || [];
 
-        // ✅ Jo delete hogayi hai
-        const detachInspectionCharacteristicIds = existingCharacteristicIds.filter(
-            (id) =>
-                !this.qualitativeTableCriteria.controls.some((group) => group.get('id')?.value === id) &&
-                !this.quantitativeTableCriteria.controls.some((group) => group.get('id')?.value === id)
-        );
+            // ✅ Purani jo edit ke waqt thi
+            const existingCharacteristicIds = this.rowDataIC.characteristicsIds || [];
 
-        const payload = {
-            id: restFormValues.id,
-            description: restFormValues.description,
-            isActive: restFormValues.isActive,
-            characteristicsIds: currentCharacteristicIds, // ✅ Sirf naye wale
-            detachInspectionCharacteristicIds, // ✅ Jo delete hue
-        };
+            // ✅ Jo delete hogayi hai
+            const detachInspectionCharacteristicIds = existingCharacteristicIds.filter(
+                (id) =>
+                    !this.qualitativeTableCriteria.controls.some((group) => group.get('id')?.value === id) &&
+                    !this.quantitativeTableCriteria.controls.some((group) => group.get('id')?.value === id)
+            );
 
-        console.log('✅ Final Update Payload:', payload);
+            const payload = {
+                id: restFormValues.id,
+                description: restFormValues.description,
+                isActive: restFormValues.isActive,
+                characteristicsIds: currentCharacteristicIds, // ✅ Sirf naye wale
+                detachInspectionCharacteristicIds, // ✅ Jo delete hue
+            };
 
-       
+            console.log('✅ Final Update Payload:', payload);
 
-        this._inspectionCardUpdate.UpdateInspectionCard(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('✅ API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(
-                            ['/master-data/list-of-inspection-card'],
-                            { relativeTo: this._activatedRoute }
-                        );
-                    }, 1500);
-                } else {
-                    console.error('❌ ERROR WHILE UPDATING DATA.', response.message);
+
+
+            this._inspectionCardUpdate.UpdateInspectionCard(payload).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('✅ API RUN SUCCESSFULLY.', payload);
+                        setTimeout(() => {
+                            this._router.navigate(
+                                ['/master-data/list-of-inspection-card'],
+                                { relativeTo: this._activatedRoute }
+                            );
+                        }, 1500);
+                    } else {
+                        console.error('❌ ERROR WHILE UPDATING DATA.', response.message);
+                    }
+                },
+                (error) => {
+                    console.error('❌ API request failed:', error);
                 }
-            },
-            (error) => {
-                console.error('❌ API request failed:', error);
-            }
-        );
-    });
-}
+            );
+        });
+    }
     // Updating Inspection Card Data: Ends
 
-    
-    
-    
+
+
+
 
     // UPDATE INSPECTION CARD ENDS
 
     //Close The Dialog Box
-    
+
     closeDialog(): void {
         this.dialog.closeAll();
     }
+    // UPDATE IC - INSPECTION CARD ENDS
+
+
+    // UPDATE ITEM SAMPLE STARTS
+    populateItemSampleFormData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+            // return;
+        }
+        // MAPPING RESPONSE 
+        console.log(data);
+        // return;
+        const formattedISintCode = "IS-" + this.rowDataIS.intCode.toString().padStart(5, '0');
+        this.itemSamplingForm.patchValue({
+            sampleCodeIS: formattedISintCode,
+            itemCode: this.rowDataIS.itemCode,
+            itemDescription: this.rowDataIS.itemDescription,
+            itemId: this.rowDataIS.itemId,
+            flexibility: this.rowDataIS.flexibility,
+            isActive: this.rowDataIS.isActive,
+            id: this.rowDataIS.id,
+        });
+
+    }
+    getSamplingRangeBySampleId(id: string): void {
+        this._itemSamplesService.getSamplingRangeObjects(id).subscribe(
+            (results) => {
+                if (results.isRequestSuccess && results.data.length) {
+                    const samplingRangeObjects = results.data[0].samplingRangeObjects;
+                    // console.log('FETCHED SAMPLING RANGE OBJECTS');
+                    // console.log(samplingRangeObjects);
+
+                    this.initialSamplingRangeObjects = [...samplingRangeObjects]; // STORE THE INITIAL samplingRangeObjects VALUES
+                    this.samplingRangeObjects.clear();
+
+                    // ADDING EACH FETCHED samplingRangeObject TO THE FormArray
+                    samplingRangeObjects.forEach((object) => {
+                        const itemSamplingFormGroup = this.fb.group({
+                            id: [object.id],
+                            lotSizeMin: [object.lotSizeMin],
+                            lotSizeMax: [object.lotSizeMax],
+                            sampleQty: [object.sampleQty],
+                            criticalDefects: [object.criticalDefects],
+                            majorDefects: [object.majorDefects],
+                            minorDefects: [object.minorDefects],
+                        });
+                        this.samplingRangeObjects.push(itemSamplingFormGroup); // Add to FormArray
+                    });
+
+                    // UPDATING THE MatTableDataSource WITH THE NEW FormArray VALUES
+                    this.dataSourceItemSampling.data = this.samplingRangeObjects.value;
+                } else {
+                    console.error('NO SAMPLING RANGE OBJECTS FOUND.');
+                }
+            },
+            (error) => console.error('ERROR WHILE FETCHING SAMPLING RANGE OBJECTS', error)
+        );
+    }
+    onUpdateIS(): void {
+        const formValues = this.itemSamplingForm.value;
+        const { sampleCodeIS, itemCode, itemId, itemDescription, samplingRangeObjects, ...payload } = formValues;
+
+        const initialSamplingRangeObjects = this.initialSamplingRangeObjects;
+
+        // Filter and map changed or new samplingRangeObjects, and also exclude null or empty rows
+        const updatedSamplingRangeObjects = samplingRangeObjects
+            .filter((object: any, index: number) => {
+                const initialObject = initialSamplingRangeObjects[index];
+
+                // If initialObject doesn't exist, it's a new row, treat it as changed
+                if (!initialObject) {
+                    return true; // New object, treat it as changed
+                }
+
+                // Check if any field is different between the current and initial object
+                return (
+                    object.lotSizeMin !== initialObject.lotSizeMin ||
+                    object.lotSizeMax !== initialObject.lotSizeMax ||
+                    object.sampleQty !== initialObject.sampleQty ||
+                    object.criticalDefects !== initialObject.criticalDefects ||
+                    object.majorDefects !== initialObject.majorDefects ||
+                    object.minorDefects !== initialObject.minorDefects
+                );
+            })
+            .map((object: any) => {
+                // Check if the object has valid values, else return null or don't include
+                if (
+                    object.lotSizeMin && object.lotSizeMax && object.sampleQty &&
+                    object.criticalDefects && object.majorDefects && object.minorDefects
+                ) {
+                    return {
+                        id: object.id || undefined, // Keep the ID as undefined for new rows
+                        lotSizeMin: object.lotSizeMin,
+                        lotSizeMax: object.lotSizeMax,
+                        sampleQty: object.sampleQty,
+                        criticalDefects: object.criticalDefects,
+                        majorDefects: object.majorDefects,
+                        minorDefects: object.minorDefects
+                    };
+                } else {
+                    return null; // Skip invalid rows
+                }
+            })
+            .filter((object: any) => object !== null); // Remove null rows if any
+
+        //  FINAL PAYLOAD finalPayload
+        const sendingPayloadIS = {
+            ...payload,
+            samplingRangeObjects: updatedSamplingRangeObjects,
+            id: formValues.id
+        };
+        // console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
+        // return;
+        this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
+            (response) => {
+                if (response.isRequestSuccess) {
+                    console.log('API run successfully.', sendingPayloadIS);
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                    }, 1500);
+                } else {
+                    console.error('Error while updating item sample data.', response.message);
+                }
+            },
+            (error) => {
+                console.error('API request failed:', error);
+            }
+        );
+    }
+    // UPDATE ITEM SAMPLE ENDS
 }
