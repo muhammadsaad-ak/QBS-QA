@@ -173,9 +173,9 @@ export class TestingStepperComponent implements AfterViewInit {
             lotSizeMin: [],
             lotSizeMax: [],
             sampleQty: [],
-            criticalDefects: [],
-            majorDefects: [],
-            minorDefects: [],
+            criticalDefects: [0],
+            majorDefects: [0],
+            minorDefects: [0],
         });
         // this.samples.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
         // this.dataSourceItemSampling.data = [...this.samples.value]; // Update the table data source

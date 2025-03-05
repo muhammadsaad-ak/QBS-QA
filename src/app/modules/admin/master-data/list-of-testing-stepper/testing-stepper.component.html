@@ -1186,8 +1186,8 @@
             </mat-form-field>
             <!-- Flexibility  -->
             <mat-checkbox formControlName="flexibility" class="text-lg">Flexibility</mat-checkbox>
-            <!-- isActive -->
-            <mat-checkbox formControlName="isActive" class="text-lg" *ngIf="isEditMode">Active</mat-checkbox>
+            <!-- isActive - *ngIf="isEditMode" -->
+            <mat-checkbox formControlName="isActive" class="text-lg" class="hidden">Active</mat-checkbox>
 
             <!-- ITEM CODE IS NG TEMPLATE DIALOG STARTS -->
             <ng-template #dialogTemplateItemCodeIS>
@@ -1308,9 +1308,9 @@
           </div>
           <!-- SAMPLING RANGE TABLE SECTION STARTS -->
           <!-- <div class="pt-4 lg:ml-9 lg:mr-13"> -->
-          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+          <div style="display: flex; gap: 16px; margin-top: 5px; flex-wrap: wrap; align-items: flex-start;">
             <div class="w-full">
-              <div class="w-full flex justify-between items-center m-0 p-0 py-2">
+              <div class="w-full flex justify-between items-center m-0 p-0 py-0">
                 <div class="flex-1">
                   <h1 class="text-xl font-semibold">Sampling Range</h1>
                 </div>
@@ -1330,7 +1330,7 @@
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Lot Size Min
                     </th>
-                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
                       <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('lotSizeMin')"
                         placeholder="Minimum Lot Size">
                     </td>
@@ -1340,7 +1340,7 @@
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Lot Size Max
                     </th>
-                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
                       <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('lotSizeMax')"
                         placeholder="Maximum Lot Size">
                     </td>
@@ -1348,9 +1348,9 @@
                   <!-- Sample Size COLUMN -->
                   <ng-container matColumnDef="sampleQty">
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
-                      Sample Size
+                      Sample Qty
                     </th>
-                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
                       <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('sampleQty')"
                         placeholder="Enter Sample Qty">
                     </td>
@@ -1360,7 +1360,7 @@
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Critical Defect
                     </th>
-                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-end">
                       <input matInput type="number" min="0"
                         [formControl]="samplingRangeObjects.at(i).get('criticalDefects')" placeholder="Enter Value">
                     </td>
@@ -1370,7 +1370,7 @@
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Major Defect&nbsp;(>)
                     </th>
-                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
                       <input matInput type="number" min="0"
                         [formControl]="samplingRangeObjects.at(i).get('majorDefects')" placeholder="Enter Value">
                     </td>
@@ -1379,7 +1379,7 @@
                   <ng-container matColumnDef="minorDefects">
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Minor Defect&nbsp;(<) </th>
-                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap">
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
                       <input matInput type="number" min="0"
                         [formControl]="samplingRangeObjects.at(i).get('minorDefects')" placeholder="Enter Value">
                     </td>
