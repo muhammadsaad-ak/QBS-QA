@@ -298,6 +298,7 @@ export class TestingStepperComponent implements AfterViewInit {
         description: ['', Validators.required],
         isActive: [true],
         type: ['', Validators.required],
+        singleCriteria: [''],
         qualitativeCriteriaObjects: this._formBuilder.array([]),
     });
     fifthFormGroup = this._formBuilder.group({
@@ -1476,18 +1477,28 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onSubmitInspectionCharacteristics(): void {
-        console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
+        // console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
         const formValues = this.fourthFormGroup.value;
-        const { intCode, ...payload } = formValues; // EXCLUDING intCode
-        console.log('UPDATED FORM VALUES:', payload);
+        const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode
 
+        if (payload.type === 'quantitative') {
+            payload.singleCriteria = '';
+        }
+        console.log('SENDING PAYLOAD:', payload);
+        // return;
         this._inspectionCharateristics
             .AddInspectionCharacteristics(payload)
             .subscribe((response) => {
-                if (response.succeeded) {
+                if (response.isRequestSuccess) {
                     console.log('API RUN SUCCESSFULLY.', payload);
+                } else {
+                    console.error('ERROR WHILE INSPECTION CHARACTERISITIC.', response.message);
                 }
-            });
+            },
+                (error) => {
+                    console.error('API REQUEST FAILED:', error);
+                }
+            );
     }
 
     // onSubmit(): void {
@@ -1661,6 +1672,7 @@ export class TestingStepperComponent implements AfterViewInit {
             id: this.rowDataICH.id,
             intCode: formattedICHintCode,
             description: this.rowDataICH.description,
+            singleCriteria: this.rowDataICH.singleCriteria,
             isActive: this.rowDataICH.isActive,
             type: this.rowDataICH.type,
         });
@@ -1683,21 +1695,25 @@ export class TestingStepperComponent implements AfterViewInit {
         // console.log(this.fourthFormGroup.value);
         const formValues = this.fourthFormGroup.value;
         // const { ...payload } = formValues;
-        // const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode, qualitativeCriteriaObjects
-        const { intCode, ...payload } = formValues;
+        const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode, qualitativeCriteriaObjects
+        if (payload.type === 'quantitative') {
+            payload.singleCriteria = '';
+        }
+        // console.log('SENDING PAYLOAD:', payload);
+        // return
         this._inspectionCharateristics.updateInspectionWithCriteria(payload).subscribe(
             (response) => {
                 if (response.isRequestSuccess) {
                     console.log('API RUN SUCCESSFULLY.', payload);
                     setTimeout(() => {
-                        this._router.navigate(['../../'], { relativeTo: this._activatedRoute });
+                        this._router.navigate(['/master-data/list-of-inspection-management'], { relativeTo: this._activatedRoute });
                     }, 1500);
                 } else {
-                    console.error('ERROR WHILE UPDATING UOM DATA .', response.message);
+                    console.error('ERROR WHILE ADDING DATA .', response.message);
                 }
             },
             (error) => {
-                console.error('API request failed:', error);
+                console.error('API REQUEST FAILED:', error);
             }
         );
     }
