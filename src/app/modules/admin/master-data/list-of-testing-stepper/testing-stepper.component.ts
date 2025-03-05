@@ -45,7 +45,8 @@ interface itemSamplingRangeIF {
     selector: 'app-testing-stepper',
     standalone: true,
     encapsulation: ViewEncapsulation.None,
-    imports: [
+    imports: 
+    [
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
@@ -1260,60 +1261,64 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // ITEM INSPECTION CARD ENDS
 
-    loadCharacteristics(id: string): void {
+    loadCharacteristicsInspectionCard(id: string): void {
         this._inspectionCardService.getCharacteristicsByInspectionCardId(id).subscribe(
-                (res) => {
-                    if (res.isRequestSuccess && res.data.length) {
-                        const characteristics =
-                            res.data[0].inspectionCharacteristicResults;
+            (res) => {
+                if (res.isRequestSuccess && res.data.length) {
+                    const characteristics =
+                        res.data[0].inspectionCharacteristicResults;
 
-                        // ✅ Clear existing rows first
-                        this.qualitativeTableCriteria.clear();
-                        this.quantitativeTableCriteria.clear();
-
-                        // Qualitative Rows
-                        const qualitative = characteristics.filter(
-                            (c) => c.type === 'qualitative'
+                        
+    
+                    // ✅ Clear existing rows first
+                    this.qualitativeTableCriteria.clear();
+                    this.quantitativeTableCriteria.clear();
+    
+                    // Qualitative Rows
+                    const qualitative = characteristics.filter(
+                        (c) => c.type === 'qualitative'
+                    );
+                    qualitative.forEach((item) => {
+                        this.qualitativeTableCriteria.push(
+                            this.fb.group({
+                                parameter: [item.description, Validators.required],
+                                id: [item.id],
+                                intCode: [item.intCode],
+                            })
                         );
-                        qualitative.forEach((item) => {
-                            this.qualitativeTableCriteria.push(
-                                this.fb.group({
-                                    parameter: [
-                                        item.description,
-                                        Validators.required,
-                                    ],
-                                    id: [item.id],
-                                    intCode: [item.intCode],
-                                })
-                            );
-                        });
-
-                        // Quantitative Rows
-                        const quantitative = characteristics.filter(
-                            (c) => c.type === 'quantitative'
+                    });
+    
+                    // Quantitative Rows
+                    const quantitative = characteristics.filter(
+                        (c) => c.type === 'quantitative'
+                    );
+                    quantitative.forEach((item) => {
+                        this.quantitativeTableCriteria.push(
+                            this.fb.group({
+                                parameterX: [item.description, Validators.required],
+                                id: [item.id],
+                                intCode: [item.intCode],
+                            })
                         );
-                        quantitative.forEach((item) => {
-                            this.quantitativeTableCriteria.push(
-                                this.fb.group({
-                                    parameterX: [
-                                        item.description,
-                                        Validators.required,
-                                    ],
-                                    id: [item.id],
-                                    intCode: [item.intCode],
-                                })
-                            );
-                        });
-
-                        console.log('Qualitative:', qualitative);
-                        console.log('Quantitative:', quantitative);
-                    } else {
-                        console.error('No characteristics data found.');
-                    }
-                },
-                (error) => console.error('Error loading characteristics', error)
-            );
+                    });
+    
+                    // ✅ Yahan latest IDs save kar le form arrays se
+                    this.rowDataIC.characteristicsIds = [
+                        ...this.qualitativeTableCriteria.value.map((item) => item.id),
+                        ...this.quantitativeTableCriteria.value.map((item) => item.id),
+                    ];
+    
+                    console.log('Qualitative:', qualitative);
+                    console.log('Quantitative:', quantitative);
+                    console.log('Saved Existing Characteristic IDs:',this.rowDataIC.characteristicsIds);
+                } else {
+                    console.error('No characteristics data found.');
+                }
+            },
+            (error) => console.error('Error loading characteristics', error)
+        );
     }
+    
 
     isLinear = false;
 
@@ -1508,7 +1513,7 @@ export class TestingStepperComponent implements AfterViewInit {
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateICData(this.rowDataIC);
             // 🆕 Characteristics load kar rahe hain yahan:
-            this.loadCharacteristics(this.rowDataIC.id); // Yeh API call hogi ab
+            this.loadCharacteristicsInspectionCard(this.rowDataIC.id); // Yeh API call hogi ab
         } else {
             console.log('NO DATA RECEIVED');
             this.isEditMode = false;
@@ -2105,22 +2110,70 @@ export class TestingStepperComponent implements AfterViewInit {
             isActive: this.rowDataIC.isActive,
         });
     }
-
+    
+    // Updating Inspection Card Data: Starts
     onUpdateInspectionCard(): void {
-        console.log('UPDATED FORM VALUES:', this.fifthFormGroup.value);
-        const formValues = this.fifthFormGroup.value;
-        const {
-            intCode,
-            qualitativeTableCriteria,
-            quantitativeTableCriteria,
-            ...payload
-        } = formValues; // EXCLUDING intCode, qualitativeTableCriteria, quantitativeTableCriteria
-        console.log(payload);
-        // return;
+    console.log('UPDATED FORM VALUES:', this.fifthFormGroup.value);
+    const formValues = this.fifthFormGroup.value;
+
+    const { intCode, qualitativeTableCriteria, quantitativeTableCriteria, ...restFormValues } = formValues;
+
+    // ✅ Sare characteristics le aao (jaise add ke waqt karte ho)
+    this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
+        const mappedIds = charResponse.data.map((char: any) => ({
+            description: char.description,
+            id: char.id,
+        }));
+
+        // ✅ Sirf naye qualitative IDs
+        const newQualitativeIds = this.qualitativeTableCriteria.controls
+            .filter((group) => !group.get('id')?.value) // Jinki id nahi hai, wo new hai
+            .map((group) => {
+                const desc = group.get('parameter')?.value;
+                return mappedIds.find((char) => char.description === desc)?.id;
+            })
+            .filter(Boolean);
+
+        // ✅ Sirf naye quantitative IDs
+        const newQuantitativeIds = this.quantitativeTableCriteria.controls
+            .filter((group) => !group.get('id')?.value) // Jinki id nahi hai, wo new hai
+            .map((group) => {
+                const desc = group.get('parameterX')?.value;
+                return mappedIds.find((char) => char.description === desc)?.id;
+            })
+            .filter(Boolean);
+
+        // ✅ Sirf new added IDs
+        const currentCharacteristicIds = [...newQualitativeIds, ...newQuantitativeIds];
+        console.log('✅ Only New Characteristic IDs:', currentCharacteristicIds);
+
+      
+        // ✅ Purani jo edit ke waqt thi
+        const existingCharacteristicIds = this.rowDataIC.characteristicsIds || [];
+
+        // ✅ Jo delete hogayi hai
+        const detachInspectionCharacteristicIds = existingCharacteristicIds.filter(
+            (id) =>
+                !this.qualitativeTableCriteria.controls.some((group) => group.get('id')?.value === id) &&
+                !this.quantitativeTableCriteria.controls.some((group) => group.get('id')?.value === id)
+        );
+
+        const payload = {
+            id: restFormValues.id,
+            description: restFormValues.description,
+            isActive: restFormValues.isActive,
+            characteristicsIds: currentCharacteristicIds, // ✅ Sirf naye wale
+            detachInspectionCharacteristicIds, // ✅ Jo delete hue
+        };
+
+        console.log('✅ Final Update Payload:', payload);
+
+       
+
         this._inspectionCardUpdate.UpdateInspectionCard(payload).subscribe(
             (response) => {
                 if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
+                    console.log('✅ API RUN SUCCESSFULLY.', payload);
                     setTimeout(() => {
                         this._router.navigate(
                             ['/master-data/list-of-inspection-card'],
@@ -2128,17 +2181,20 @@ export class TestingStepperComponent implements AfterViewInit {
                         );
                     }, 1500);
                 } else {
-                    console.error(
-                        'ERROR WHILE UPDATING DATA.',
-                        response.message
-                    );
+                    console.error('❌ ERROR WHILE UPDATING DATA.', response.message);
                 }
             },
             (error) => {
-                console.error('API request failed:', error);
+                console.error('❌ API request failed:', error);
             }
         );
-    }
+    });
+}
+    // Updating Inspection Card Data: Ends
+
+    
+    
+    
 
     // UPDATE INSPECTION CARD ENDS
 
