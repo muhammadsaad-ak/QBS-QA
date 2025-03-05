@@ -1261,7 +1261,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // ITEM INSPECTION CARD ENDS
 
-    loadCharacteristics(id: string): void {
+    loadCharacteristicsInspectionCard(id: string): void {
         this._inspectionCardService.getCharacteristicsByInspectionCardId(id).subscribe(
             (res) => {
                 if (res.isRequestSuccess && res.data.length) {
@@ -1513,7 +1513,7 @@ export class TestingStepperComponent implements AfterViewInit {
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateICData(this.rowDataIC);
             // 🆕 Characteristics load kar rahe hain yahan:
-            this.loadCharacteristics(this.rowDataIC.id); // Yeh API call hogi ab
+            this.loadCharacteristicsInspectionCard(this.rowDataIC.id); // Yeh API call hogi ab
         } else {
             console.log('NO DATA RECEIVED');
             this.isEditMode = false;
@@ -2110,6 +2110,8 @@ export class TestingStepperComponent implements AfterViewInit {
             isActive: this.rowDataIC.isActive,
         });
     }
+    
+    // Updating Inspection Card Data: Starts
     onUpdateInspectionCard(): void {
     console.log('UPDATED FORM VALUES:', this.fifthFormGroup.value);
     const formValues = this.fifthFormGroup.value;
@@ -2188,66 +2190,8 @@ export class TestingStepperComponent implements AfterViewInit {
         );
     });
 }
+    // Updating Inspection Card Data: Ends
 
-    
-    onUpdateInspectionCardz(): void {
-        console.log('UPDATED FORM VALUES:', this.fifthFormGroup.value);
-        const formValues = this.fifthFormGroup.value;
-    
-        const { intCode, qualitativeTableCriteria, quantitativeTableCriteria, ...restFormValues } = formValues;
-    
-        // ✅ IDs lelo form se
-        const qualitativeIds = qualitativeTableCriteria
-        .map((item: any) => item.id)
-        .filter((id: any) => !!id); // Sirf valid IDs
-    
-    const quantitativeIds = quantitativeTableCriteria
-        .map((item: any) => item.id)
-        .filter((id: any) => !!id);
-    
-    const currentCharacteristicIds = [...qualitativeIds, ...quantitativeIds];
-    
-    console.log('Current Characteristic IDs:', currentCharacteristicIds);
-    
-        console.log(currentCharacteristicIds);
-        return;
-        // ✅ Purani IDs jo edit ke waqt thi
-        const existingCharacteristicIds = this.rowDataIC.characteristicsIds || [];
-    
-        // ✅ Delete hone wali IDs
-        const detachInspectionCharacteristicIds = existingCharacteristicIds.filter(
-            (id) => !currentCharacteristicIds.includes(id)
-        );
-    
-        const payload = {
-            id: restFormValues.id,
-            description: restFormValues.description,
-            isActive: restFormValues.isActive,
-            characteristicsIds: currentCharacteristicIds, // ✅ Sirf current wale
-            detachInspectionCharacteristicIds, // ✅ Jo delete hue
-        };
-    
-        console.log('Final Update Payload:', payload);
-    
-        this._inspectionCardUpdate.UpdateInspectionCard(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(
-                            ['/master-data/list-of-inspection-card'],
-                            { relativeTo: this._activatedRoute }
-                        );
-                    }, 1500);
-                } else {
-                    console.error('ERROR WHILE UPDATING DATA.', response.message);
-                }
-            },
-            (error) => {
-                console.error('API request failed:', error);
-            }
-        );
-    }
     
     
     
