@@ -88,6 +88,7 @@ export class TestingStepperComponent implements AfterViewInit {
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
     rowDataIC: any; // TO STORE RECEIVED IC DATA FROM NAVIGATION
     rowDataIS: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM SAMPLE
+    initialSamplingRangeObjects: any[] = []; //  DECLARE  TO STORE INITIAL samplingRangeObjects VALUES
 
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
@@ -142,7 +143,8 @@ export class TestingStepperComponent implements AfterViewInit {
         itemCode: ['', Validators.required],
         itemId: ['', Validators.required],
         itemDescription: ['', Validators.required],
-        flexibility: [false],
+        flexibility: [true],
+        isActive: [true],
         samplingRangeObjects: this._formBuilder.array([]),
         id: [''],
     });
@@ -1814,7 +1816,7 @@ export class TestingStepperComponent implements AfterViewInit {
         if (this.itemSamplingForm.valid) {
             const formValues = this.itemSamplingForm.value;
             // const payload = { ...formValues, };
-            const { itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
+            const { id, itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
             console.log('FORM SUBMISSION PAYLOAD:', payload);
             this.itemSamplingForm.reset();
             this._itemSamplesService
@@ -1829,8 +1831,10 @@ export class TestingStepperComponent implements AfterViewInit {
                         );
                     }
                 });
+                  this.stepper.next();
         } else {
             console.log('FORM IS INVALID!');
+            return;
         }
     }
 
@@ -2111,6 +2115,7 @@ export class TestingStepperComponent implements AfterViewInit {
             itemDescription: this.rowDataIS.itemDescription,
             itemId: this.rowDataIS.itemId,
             flexibility: this.rowDataIS.flexibility,
+            isActive: this.rowDataIS.isActive,
             id: this.rowDataIS.id,
         });
 
@@ -2123,6 +2128,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     // console.log('FETCHED SAMPLING RANGE OBJECTS');
                     // console.log(samplingRangeObjects);
 
+                    this.initialSamplingRangeObjects = [...samplingRangeObjects]; // STORE THE INITIAL samplingRangeObjects VALUES
                     this.samplingRangeObjects.clear();
 
                     // ADDING EACH FETCHED samplingRangeObject TO THE FormArray
@@ -2152,71 +2158,69 @@ export class TestingStepperComponent implements AfterViewInit {
         const formValues = this.itemSamplingForm.value;
         const { sampleCodeIS, itemCode, itemId, itemDescription, samplingRangeObjects, ...payload } = formValues;
 
-        // LOG THE EXTRACTED payload FOR DEBUGGING
-        // console.log('Form Values (without excluded properties):', payload);
+        const initialSamplingRangeObjects = this.initialSamplingRangeObjects;
 
-        // ENSURE EACH samplingRangeObject HAS ITS RESPECTIVE id (from the form data)
-        const updatedSamplingRangeObjects = samplingRangeObjects.map((object: any) => {
-            return {
-                id: object.id,
-                lotSizeMin: object.lotSizeMin,
-                lotSizeMax: object.lotSizeMax,
-                sampleQty: object.sampleQty,
-                criticalDefects: object.criticalDefects,
-                majorDefects: object.majorDefects,
-                minorDefects: object.minorDefects
-            };
-        });
-        // Add the updated samplingRangeObjects to the payload
+        // Filter and map changed or new samplingRangeObjects, and also exclude null or empty rows
+        const updatedSamplingRangeObjects = samplingRangeObjects
+            .filter((object: any, index: number) => {
+                const initialObject = initialSamplingRangeObjects[index];
+
+                // If initialObject doesn't exist, it's a new row, treat it as changed
+                if (!initialObject) {
+                    return true; // New object, treat it as changed
+                }
+
+                // Check if any field is different between the current and initial object
+                return (
+                    object.lotSizeMin !== initialObject.lotSizeMin ||
+                    object.lotSizeMax !== initialObject.lotSizeMax ||
+                    object.sampleQty !== initialObject.sampleQty ||
+                    object.criticalDefects !== initialObject.criticalDefects ||
+                    object.majorDefects !== initialObject.majorDefects ||
+                    object.minorDefects !== initialObject.minorDefects
+                );
+            })
+            .map((object: any) => {
+                // Check if the object has valid values, else return null or don't include
+                if (
+                    object.lotSizeMin && object.lotSizeMax && object.sampleQty &&
+                    object.criticalDefects && object.majorDefects && object.minorDefects
+                ) {
+                    return {
+                        id: object.id || undefined, // Keep the ID as undefined for new rows
+                        lotSizeMin: object.lotSizeMin,
+                        lotSizeMax: object.lotSizeMax,
+                        sampleQty: object.sampleQty,
+                        criticalDefects: object.criticalDefects,
+                        majorDefects: object.majorDefects,
+                        minorDefects: object.minorDefects
+                    };
+                } else {
+                    return null; // Skip invalid rows
+                }
+            })
+            .filter((object: any) => object !== null); // Remove null rows if any
+
+        // Build the final payload
         const finalPayload = {
             ...payload,
-            samplingRangeObjects: updatedSamplingRangeObjects,  // INCLUDED WITH RESPECTIVE samplingRangeObject id
+            samplingRangeObjects: updatedSamplingRangeObjects,
             id: formValues.id
         };
-        // LOG THE FINAL payload FOR DEBUGGING
+
+        // Log final payload
         console.log('Final Payload for Update:', finalPayload);
-        // return;
+
+        // Call the update API
         this._itemSamplesService.updateItemSample(finalPayload).subscribe(
             (response) => {
                 if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', finalPayload);
+                    console.log('API run successfully.', finalPayload);
                     setTimeout(() => {
                         this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
                     }, 1500);
                 } else {
-                    console.error('ERROR WHILE UPDATING ITEM SAMPLE DATA .', response.message);
-                }
-            },
-            (error) => {
-                console.error('API request failed:', error);
-            }
-        );
-    }
-    onUpdateISX(): void {
-        console.log(this.itemSamplingForm.value);
-        const formValues = this.itemSamplingForm.value;
-        // const { ...payload } = formValues;
-        // EXCLUDING sampleCodeIS, itemCode, itemId, itemDescription
-        const { sampleCodeIS, itemCode, itemId, itemDescription, ...payload } = formValues;
-
-        // CHANGING samplingRangeObjects to attachSamplingRangeObjects AND ADDING detachSamplingRangeObjects TO THE payload
-        // const { sampleCodeIS, itemCode, itemId, samplingRangeObjects, ...formValuesWithoutIds } = this.itemSamplingForm.value;
-        // const payload = {
-        //     ...formValuesWithoutIds,
-        //     attachSamplingRangeObjects: samplingRangeObjects,
-        //     detachSamplingRangeObjects: [],
-        // };
-        console.log(payload);
-        return;
-        this._itemSamplesService.updateItemSample(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-                    }, 1500);
-                } else {
-                    console.error('ERROR WHILE UPDATING UOM DATA .', response.message);
+                    console.error('Error while updating item sample data.', response.message);
                 }
             },
             (error) => {

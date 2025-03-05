@@ -1185,12 +1185,10 @@
               <input matInput formControlName="id" readonly="">
             </mat-form-field>
             <!-- Flexibility  -->
-            <div class="flex flex-col w-full">
-              <div class="flex items-center">
-                <label for="" class="text-lg">Flexibility</label>
-                <mat-checkbox class="mr-2" formControlName="flexibility"></mat-checkbox>
-              </div>
-            </div>
+            <mat-checkbox formControlName="flexibility" class="text-lg">Flexibility</mat-checkbox>
+            <!-- isActive -->
+            <mat-checkbox formControlName="isActive" class="text-lg" *ngIf="isEditMode">Active</mat-checkbox>
+
             <!-- ITEM CODE IS NG TEMPLATE DIALOG STARTS -->
             <ng-template #dialogTemplateItemCodeIS>
               <div class="dialog-container flex flex-col h-full">
@@ -1395,8 +1393,9 @@
           <!-- SAMPLING RANGE TABLE SECTION ENDS -->
           <div class="step-navigation">
             <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode" matStepperNext
+            <button mat-button class="next-button" *ngIf="!isEditMode"
               (click)="onSubmitItemSamplingForm()">Next</button>
+            <!-- matStepperNext -->
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateIS()">Update</button>
           </div>
         </form>

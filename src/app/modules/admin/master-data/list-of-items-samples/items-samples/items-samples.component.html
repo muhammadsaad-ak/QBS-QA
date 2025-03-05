@@ -65,26 +65,37 @@
                             <!-- itemDescription COLUMN -->
                             <ng-container matColumnDef="itemDescription">
                                 <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important; text-align: center;">
+                                    style="background-color: #e2e8f0 !important; ">
                                     Item Description </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                <td mat-cell *matCellDef="let element">
                                     {{element.itemDescription ? element.itemDescription : '-' }} </td>
                             </ng-container>
                             <!-- flexibility COLUMN -->
                             <ng-container matColumnDef="flexibility">
                                 <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important; text-align: center;">
+                                    style="background-color: #e2e8f0 !important;">
                                     Flexibility
                                 </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10">
+                                <td mat-cell *matCellDef="let element" class="px-10">
                                     {{ element.flexibility ? 'Yes' : 'No' }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="isActive">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important;  text-align: center">
+                                    Status </th>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{
+                                      'text-green-500': element.isActive,
+                                      'text-amber-500': !element.isActive 
+                                      }" style="text-align: center">
+                                    {{ element.isActive ? 'Active' : 'Inactive' }}
                                 </td>
                             </ng-container>
                             <!-- Action COLUMN -->
                             <ng-container matColumnDef="action">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Action </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                <td mat-cell *matCellDef="let element">
                                     <button mat-icon-button [matMenuTriggerFor]="menu">
                                         <mat-icon class="icon-size-5"
                                             [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
@@ -100,8 +111,8 @@
                                     </mat-menu>
                                 </td>
                             </ng-container>
-                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                            <tr mat-header-row *matHeaderRowDef="displayedColumnsItemSamples"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumnsItemSamples;"></tr>
                         </table>
                         <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
                             aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">
