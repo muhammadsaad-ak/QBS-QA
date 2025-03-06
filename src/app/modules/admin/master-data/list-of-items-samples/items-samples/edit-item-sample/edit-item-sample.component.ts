@@ -33,6 +33,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { qbsAnimations } from '@qbs/animations';
 import { result } from 'lodash';
 import { Validators } from '@angular/forms';
+import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 
 interface itemSamplingIF {
   lotSizeMin: string;
@@ -76,6 +77,7 @@ export class EditItemSampleComponent {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private dialog: MatDialog,
+    private _itemSamplesService: ItemSamplesService,
   ) {
     this.itemSamplingForm = this.fb.group({
       sampleCode: new FormControl(),
@@ -86,6 +88,9 @@ export class EditItemSampleComponent {
     });
   }
   ngOnInit(): void {
+    // this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
+    //   this.dataSourceItemSampling.data = items.data;
+    // })
     this.addNewRow();
     // HANDLE NAVIGATION STATE DATA 
     const navigationData = history.state.data; // ACCESS THE DATA FROM NAVIGATION STATE
