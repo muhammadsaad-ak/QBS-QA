@@ -26,6 +26,8 @@ export class ItemInspectionCardService {
     private _listCharacteristicsWithCriteria = new BehaviorSubject<any[]>([]);
     private _listUnitOfMeasureIIC = new BehaviorSubject<any[]>([]);
     private _listQualitativeResultsIIC = new BehaviorSubject<any[]>([]);
+    private _bothCharacteristicsIIC = new BehaviorSubject<any[]>([]);
+    
 
     // Observable to expose role data state
     listItemsInspectionCardsIIC$: Observable<any[]> = this._listItemsInspectionCardsIIC.asObservable();
@@ -35,6 +37,7 @@ export class ItemInspectionCardService {
     listCharacteristicsWithCriteria$: Observable<any[]> = this._listCharacteristicsWithCriteria.asObservable();
     listUnitOfMeasureIIC$: Observable<any[]> = this._listUnitOfMeasureIIC.asObservable();
     listQualitativeResultsIIC$: Observable<any[]> = this._listQualitativeResultsIIC.asObservable();
+    bothCharacteristicsIIC$: Observable<any[]> = this._bothCharacteristicsIIC.asObservable();
 
     /**
      * Setter & getter for access token
@@ -74,7 +77,7 @@ export class ItemInspectionCardService {
             Accept: 'text/plain',
         });
         return this._httpClient
-            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/ListAllItemInspectionCards`, {
+            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/ListAllCardsWithBothCharacteristics`, {
                 headers,
             })
             .pipe(
@@ -235,6 +238,26 @@ export class ItemInspectionCardService {
                 }),
                 catchError((error) => {
                     console.error('ERROR WHILE QR', error);
+                    return throwError(error);
+                })
+            );
+    }
+    // 
+    getBothCharacteristicsByItemInspectionCard(itemInspectionCardId: string): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/GetCardByIdWithBothCharacteristics?itemInspectionCardId=${itemInspectionCardId}`, { headers })
+            .pipe(
+                tap((BothCharacteristicsIIC) => {
+                    const IICBothCharacteristics = (BothCharacteristicsIIC as any) ?? [];
+                    this._bothCharacteristicsIIC.next(IICBothCharacteristics);
+                    console.log('FETCHED IIC BOTH CHARACTERISTICS', IICBothCharacteristics);
+                }),
+                catchError((error) => {
+                    console.error('ERROR WHILE FETCHING LIST OF BOTH CHARACTERISTICS', error);
                     return throwError(error);
                 })
             );

@@ -146,15 +146,30 @@ export class ItemsInspectionCardsComponent {
     this.dataSourceItemsInspectionCards.filter = searchTerm;
   }
 
-  addItemsInspectionCards(): void {
-    this._router.navigate(['add-items-inspection-cards'], { relativeTo: this._activatedRoute });
+  // addItemsInspectionCards(): void {
+  //   this._router.navigate(['add-items-inspection-cards'], { relativeTo: this._activatedRoute });
+  // }
+
+  // actionEdittemsInspectionCards(rowDataIIC: any, inspectionCardId: string): void {
+  //   this._router.navigate(['edit-items-inspection-cards', inspectionCardId],
+  //     {
+  //       relativeTo: this._activatedRoute,
+  //       state: { rowDataIIC }
+  //     });
+  // }
+
+  openStepperToUpdateIIC(rowDataIIC: any): void {
+    console.log('SENDING IIC DATA:', rowDataIIC);
+    sessionStorage.setItem('stepperDataIIC', JSON.stringify(rowDataIIC));
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 4 }
+    });
   }
 
-  actionEdittemsInspectionCards(rowDataIIC: any, inspectionCardId: string): void {
-    this._router.navigate(['edit-items-inspection-cards', inspectionCardId],
-      {
-        relativeTo: this._activatedRoute,
-        state: { rowDataIIC }
-      });
+  openStepperToAddIIC(): void {
+    sessionStorage.removeItem('stepperDataIIC');
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 4 }
+    });
   }
 }

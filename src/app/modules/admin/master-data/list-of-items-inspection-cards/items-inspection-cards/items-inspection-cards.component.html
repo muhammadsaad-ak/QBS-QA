@@ -22,7 +22,7 @@
                     <input matInput [autocomplete]="'off'" placeholder="Search..." [formControl]="searchInputControl" />
                 </mat-form-field>
                 <!-- Add Button -->
-                <button class="mb-3 sm:mt-0 sm:ml-auto" mat-flat-button [color]="'primary'" (click)="addItemsInspectionCards()">
+                <button class="mb-3 sm:mt-0 sm:ml-auto" mat-flat-button [color]="'primary'" (click)="openStepperToAddIIC()">
                     <span class="flex items-center">
                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                         <span class="ml-1">{{ addBtnTitle }}</span>
@@ -73,7 +73,8 @@
                                     </button>
                                     <mat-menu #menu="matMenu">
                                         <button mat-menu-item class="text-blue-400"
-                                            (click)="actionEdittemsInspectionCards(element, element.inspectionCardId)">
+                                            (click)="openStepperToUpdateIIC(element)">
+                                            <!-- (click)="actionEdittemsInspectionCards(element, element.inspectionCardId)" -->
                                             Edit
                                             <mat-icon svgIcon="heroicons_outline:pencil"
                                                 class="text-blue-400"></mat-icon>

@@ -72,6 +72,7 @@ export class TestingStepperComponent implements AfterViewInit {
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
     rowDataIC: any; // TO STORE RECEIVED IC DATA FROM NAVIGATION
     rowDataIS: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM SAMPLE
+    rowDataIIC: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM SAMPLE
     initialSamplingRangeObjects: any[] = []; //  DECLARE  TO STORE INITIAL samplingRangeObjects VALUES
 
     // private _formBuilder = inject(FormBuilder);
@@ -96,6 +97,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private _qualityResultsCode: QualitativeResultsService,
         private _qualitativeResultsService: QualitativeResultsService,
         private _inspectionCardService: InspectionCardService,
+        private _inspectionCardServiceCardID: InspectionCardService,
         // Item Inspection Card
         private _itemInspectionCardService: ItemInspectionCardService,
         // private _SAPItemsService: SAPItemsService,
@@ -330,19 +332,21 @@ export class TestingStepperComponent implements AfterViewInit {
         itemGroupCode: ['138', Validators.required],
         itemU_QACard: [null],
         itemUoMGroupEntry: ['-1', Validators.required],
-        itemCode: ['ITM000017', Validators.required],
-        itemDescription: ['TAPAL DANEDAR POUCH 900G', Validators.required],
+        itemCode: ['', Validators.required], // ITM000017
+        itemDescription: ['', Validators.required], //  TAPAL DANEDAR POUCH 900G
 
         // CARDS
         intCode: ['', Validators.required], // CARD CODE
         cardDescription: ['', Validators.required], //  CARD DESCRIPTION
         inspectionCardId: ['', Validators.required], //  CARD ID
+
         // id: ['', Validators.required],    //  CARD ID
 
         // QUALITATIVE & QUANTITATIVE INSPECTION
         // FormArray FOR DYNAMIC ROWS
         qualitativeInspectionObjects: this.fb.array([]),
         quantitativeInspectionObjects: this.fb.array([]),
+        id: [''], //  ITEM INSPECTION CARD ID
     });
 
     displayedColumnsQualitative = [
@@ -1264,61 +1268,74 @@ export class TestingStepperComponent implements AfterViewInit {
     // ITEM INSPECTION CARD ENDS
 
     loadCharacteristicsInspectionCard(id: string): void {
-        this._inspectionCardService.getCharacteristicsByInspectionCardId(id).subscribe(
-            (res) => {
-                if (res.isRequestSuccess && res.data.length) {
-                    const characteristics =
-                        res.data[0].inspectionCharacteristicResults;
+        this._inspectionCardService
+            .getCharacteristicsByInspectionCardId(id)
+            .subscribe(
+                (res) => {
+                    if (res.isRequestSuccess && res.data.length) {
+                        const characteristics =
+                            res.data[0].inspectionCharacteristicResults;
 
+                        // ✅ Clear existing rows first
+                        this.qualitativeTableCriteria.clear();
+                        this.quantitativeTableCriteria.clear();
 
-
-                    // ✅ Clear existing rows first
-                    this.qualitativeTableCriteria.clear();
-                    this.quantitativeTableCriteria.clear();
-
-                    // Qualitative Rows
-                    const qualitative = characteristics.filter(
-                        (c) => c.type === 'qualitative'
-                    );
-                    qualitative.forEach((item) => {
-                        this.qualitativeTableCriteria.push(
-                            this.fb.group({
-                                parameter: [item.description, Validators.required],
-                                id: [item.id],
-                                intCode: [item.intCode],
-                            })
+                        // Qualitative Rows
+                        const qualitative = characteristics.filter(
+                            (c) => c.type === 'qualitative'
                         );
-                    });
+                        qualitative.forEach((item) => {
+                            this.qualitativeTableCriteria.push(
+                                this.fb.group({
+                                    parameter: [
+                                        item.description,
+                                        Validators.required,
+                                    ],
+                                    id: [item.id],
+                                    intCode: [item.intCode],
+                                })
+                            );
+                        });
 
-                    // Quantitative Rows
-                    const quantitative = characteristics.filter(
-                        (c) => c.type === 'quantitative'
-                    );
-                    quantitative.forEach((item) => {
-                        this.quantitativeTableCriteria.push(
-                            this.fb.group({
-                                parameterX: [item.description, Validators.required],
-                                id: [item.id],
-                                intCode: [item.intCode],
-                            })
+                        // Quantitative Rows
+                        const quantitative = characteristics.filter(
+                            (c) => c.type === 'quantitative'
                         );
-                    });
+                        quantitative.forEach((item) => {
+                            this.quantitativeTableCriteria.push(
+                                this.fb.group({
+                                    parameterX: [
+                                        item.description,
+                                        Validators.required,
+                                    ],
+                                    id: [item.id],
+                                    intCode: [item.intCode],
+                                })
+                            );
+                        });
 
-                    // ✅ Yahan latest IDs save kar le form arrays se
-                    this.rowDataIC.characteristicsIds = [
-                        ...this.qualitativeTableCriteria.value.map((item) => item.id),
-                        ...this.quantitativeTableCriteria.value.map((item) => item.id),
-                    ];
+                        // ✅ Yahan latest IDs save kar le form arrays se
+                        this.rowDataIC.characteristicsIds = [
+                            ...this.qualitativeTableCriteria.value.map(
+                                (item) => item.id
+                            ),
+                            ...this.quantitativeTableCriteria.value.map(
+                                (item) => item.id
+                            ),
+                        ];
 
-                    console.log('Qualitative:', qualitative);
-                    console.log('Quantitative:', quantitative);
-                    console.log('Saved Existing Characteristic IDs:', this.rowDataIC.characteristicsIds);
-                } else {
-                    console.error('No characteristics data found.');
-                }
-            },
-            (error) => console.error('Error loading characteristics', error)
-        );
+                        console.log('Qualitative:', qualitative);
+                        console.log('Quantitative:', quantitative);
+                        console.log(
+                            'Saved Existing Characteristic IDs:',
+                            this.rowDataIC.characteristicsIds
+                        );
+                    } else {
+                        console.error('No characteristics data found.');
+                    }
+                },
+                (error) => console.error('Error loading characteristics', error)
+            );
     }
 
 
@@ -1553,6 +1570,42 @@ export class TestingStepperComponent implements AfterViewInit {
             });
         }
         // UPDATE ITEM SAMPLE ENDS
+        // UPDATE INSPECTION CARD ENDS
+
+        // UPDATE ITEM INSPECTION CARD STARTS
+        //  RETRIEVING rowDataIIC
+        if (!this.rowDataIIC) {
+            const storedDataIIC = sessionStorage.getItem('stepperDataIIC'); // IF rowDataIIC IS MISSING, GET FROM sessionStorage
+            this.rowDataIIC = storedDataIIC ? JSON.parse(storedDataIIC) : null;
+        }
+        if (this.rowDataIIC) {
+            this.isEditMode = true;
+            console.log('RECEIVED IIC DATA:', this.rowDataIIC);
+            // return;
+            // POPULATE FORM, itemsInspectionCardsForm, WITH RECEIVED DATA - rowDataIIC
+            this.populateIICData(this.rowDataIIC);
+            this.loadBothCharacteristics(this.rowDataIIC.id);
+            // this._itemInspectionCardService
+            //     .getBothCharacteristicsByItemInspectionCard(this.rowDataIIC.id)
+            //     .subscribe();
+           
+        } else {
+            console.log('NO IIC DATA RECEIVED');
+            this.isEditMode = false;
+            // this.addTableRow();   // ✅ Only if creating new
+            // this.addTableRowX();  // ✅ Only if creating new
+            // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+                // Inspection Card Code Get API.
+        // this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+        //     const y = inspectionCardCode.data; // 13 mil raha hai
+        //     console.log('Fetched Code:', y); // Check for debugging
+
+        //     if (y) {
+        //         const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
+        //         this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+        //     }
+        // });
+        }
     }
 
     ngAfterViewInit(): void {
@@ -1853,13 +1906,17 @@ export class TestingStepperComponent implements AfterViewInit {
         // return;
         this._inspectionCharateristics
             .AddInspectionCharacteristics(payload)
-            .subscribe((response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                } else {
-                    console.error('ERROR WHILE INSPECTION CHARACTERISITIC.', response.message);
-                }
-            },
+            .subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                    } else {
+                        console.error(
+                            'ERROR WHILE INSPECTION CHARACTERISITIC.',
+                            response.message
+                        );
+                    }
+                },
                 (error) => {
                     console.error('API REQUEST FAILED:', error);
                 }
@@ -2104,21 +2161,29 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         // console.log('SENDING PAYLOAD:', payload);
         // return
-        this._inspectionCharateristics.updateInspectionWithCriteria(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(['/master-data/list-of-inspection-management'], { relativeTo: this._activatedRoute });
-                    }, 1500);
-                } else {
-                    console.error('ERROR WHILE ADDING DATA .', response.message);
+        this._inspectionCharateristics
+            .updateInspectionWithCriteria(payload)
+            .subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        setTimeout(() => {
+                            this._router.navigate(
+                                ['/master-data/list-of-inspection-management'],
+                                { relativeTo: this._activatedRoute }
+                            );
+                        }, 1500);
+                    } else {
+                        console.error(
+                            'ERROR WHILE ADDING DATA .',
+                            response.message
+                        );
+                    }
+                },
+                (error) => {
+                    console.error('API REQUEST FAILED:', error);
                 }
-            },
-            (error) => {
-                console.error('API REQUEST FAILED:', error);
-            }
-        );
+            );
     }
     // UPDATE INSPECTION CHARACTERISTICS ENDS
 
@@ -2224,11 +2289,226 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // Updating Inspection Card Data: Ends
 
+    // UPDATE ITEM INSPECTION CARD STARTS
+    populateIICData(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE IIC FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE
+        // console.log(data);
+        const formattedCardintCode =
+        'IC-' + this.rowDataIIC.inspectionCardIntCode.toString().padStart(5, '0');
+        this.itemsInspectionCardsForm.patchValue({
+            id: this.rowDataIIC.id,
+            itemCode: this.rowDataIIC.itemCode,
+            itemDescription: this.rowDataIIC.itemDescription,
+            cardDescription: this.rowDataIIC.cardDescription,
+            inspectionCardId: this.rowDataIIC.inspectionCardId,
+            intCode: formattedCardintCode,
+        });
+    }
 
+    loadBothCharacteristicsx(itemInspectionCardId: string): void {
+        this._itemInspectionCardService
+            .getBothCharacteristicsByItemInspectionCard(itemInspectionCardId)
+            .subscribe(
+                (res) => {
+                    if (res.isRequestSuccess && res.data) {
+                        const data = res.data;
 
+                        // First, clear existing FormArrays
+                        this.qualitativeInspectionObjects.clear();
+                        this.quantitativeInspectionObjects.clear();
 
+                        // Populate QUALITATIVE data
+                        data.qualitativeInspectionObjects.forEach(
+                            (qualitative) => {
+                                this.qualitativeInspectionObjects.push(
+                                    this.fb.group({
+                                        inspectionCharacteristicId: [
+                                            qualitative.inspectionCharacteristicId,
+                                            Validators.required,
+                                        ],
+                                        isMandatory: [qualitative.isMandatory],
+                                        qualitativeResultPassStatusObjects:
+                                            this.fb.array(
+                                                qualitative.qualitativeResultPassStatusResults.map(
+                                                    (passStatus) =>
+                                                        this.fb.group({
+                                                            qualitativeResultId:
+                                                                [
+                                                                    passStatus.qualitativeResultId,
+                                                                    Validators.required,
+                                                                ],
+                                                            isPassed: [
+                                                                passStatus.isPassed,
+                                                            ],
+                                                        })
+                                                )
+                                            ),
+                                        qualitativeResultFailStatusObjects:
+                                            this.fb.array(
+                                                qualitative.qualitativeResultFailStatusResults.map(
+                                                    (failStatus) =>
+                                                        this.fb.group({
+                                                            qualitativeResultId:
+                                                                [
+                                                                    failStatus.qualitativeResultId,
+                                                                    Validators.required,
+                                                                ],
+                                                            isPassed: [
+                                                                failStatus.isPassed,
+                                                            ],
+                                                        })
+                                                )
+                                            ),
+                                    })
+                                );
+                            }
+                        );
 
-    // UPDATE INSPECTION CARD ENDS
+                        // Populate QUANTITATIVE data
+                        data.quantitativeInspectionResults.forEach(
+                            (quantitative) => {
+                                this.quantitativeInspectionObjects.push(
+                                    this.fb.group({
+                                        inspectionCharacteristicId: [
+                                            quantitative.inspectionCharacteristicId,
+                                            Validators.required,
+                                        ],
+                                        isMandatory: [quantitative.isMandatory],
+                                        uoMId: [
+                                            quantitative.uoMId,
+                                            Validators.required,
+                                        ],
+                                        target: [
+                                            quantitative.target,
+                                            Validators.required,
+                                        ],
+                                        max: [
+                                            quantitative.max,
+                                            Validators.required,
+                                        ],
+                                        min: [
+                                            quantitative.min,
+                                            Validators.required,
+                                        ],
+                                    })
+                                );
+                            }
+                        );
+
+                        console.log(
+                            '✅ Qualitative Loaded:',
+                            this.qualitativeInspectionObjects.value
+                        );
+                        console.log(
+                            '✅ Quantitative Loaded:',
+                            this.quantitativeInspectionObjects.value
+                        );
+                    } else {
+                        console.error('❌ No characteristics data found.');
+                    }
+                },
+                (error) =>
+                    console.error(
+                        '❌ Error loading both characteristics',
+                        error
+                    )
+            );
+    }
+    // UPDATE ITEM INSPECTION CARD STARTS
+    loadBothCharacteristics(itemInspectionCardId: string): void {
+        this._itemInspectionCardService
+            .getBothCharacteristicsByItemInspectionCard(itemInspectionCardId)
+            .subscribe(
+                (res) => {
+                    if (res.isRequestSuccess && res.data) {
+                        const data = res.data;
+    
+                        // Clear existing FormArrays
+                        this.qualitativeInspectionObjects.clear();
+                        this.quantitativeInspectionObjects.clear();
+    
+                        // Populate QUALITATIVE FormArray
+                        data.qualitativeInspectionObjects.forEach((qualitative) => {
+                            this.qualitativeInspectionObjects.push(
+                                this.fb.group({
+                                    inspectionCharacteristicId: [qualitative.inspectionCharacteristicId, Validators.required],
+                                    // parameter: [qualitative.parameter, Validators.required],
+                                    // passCriteria: [qualitative.passCriteria, Validators.required],
+                                    parameter: [qualitative.inspectionCharacteristicName, Validators.required],
+                                    passCriteria: [qualitative.inspectionCharacteristicSingleCriteria, Validators.required],
+                                    mandatory: [qualitative.isMandatory],
+                                    qualitativeResultPassStatusObjects: this.fb.array(
+                                        qualitative.qualitativeResultPassStatusResults.map(
+                                            (passStatus) =>
+                                                this.fb.group({
+                                                    qualitativeResultId: [passStatus.qualitativeResultId, Validators.required],
+                                                    isPassed: [passStatus.isPassed],
+                                                })
+                                        )
+                                    ),
+                                    qualitativeResultFailStatusObjects: this.fb.array(
+                                        qualitative.qualitativeResultFailStatusResults.map(
+                                            (failStatus) =>
+                                                this.fb.group({
+                                                    qualitativeResultId: [failStatus.qualitativeResultId, Validators.required],
+                                                    isPassed: [failStatus.isPassed],
+                                                })
+                                        )
+                                    ),
+                                })
+                            );
+                        });
+    
+                        // Populate QUANTITATIVE FormArray
+                        data.quantitativeInspectionResults.forEach((quantitative) => {
+                            this.quantitativeInspectionObjects.push(
+                                this.fb.group({
+                                    inspectionCharacteristicId: [quantitative.inspectionCharacteristicId, Validators.required],
+                                    parameterQty: [quantitative.inspectionCharacteristicName, Validators.required],
+                                    // parameterQty: [quantitative.parameterQty, Validators.required],
+                                    // uoMId: [quantitative.uoMId, Validators.required],
+                                    uoMId: [quantitative.uoMName, Validators.required],
+                                    mandatoryQty: [quantitative.isMandatory],
+                                    passCriteriaTarget: [quantitative.target, Validators.required],
+                                    passCriteriaMax: [quantitative.max, Validators.required],
+                                    passCriteriaMin: [quantitative.min, Validators.required],
+                                })
+                            );
+                        });
+    
+                        // ✅ Update MatTableDataSource after populating FormArrays
+                        if (!this.dataSourceQualitativeInspection) {
+                            this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
+                        }
+                        if (!this.dataSourceQuantitativeInspection) {
+                            this.dataSourceQuantitativeInspection = new MatTableDataSource<quantitativeInspectionIF>([]);
+                        }
+    
+                        // Assign FormArray values to dataSources
+                        this.dataSourceQualitativeInspection.data = this.qualitativeInspectionObjects.value;
+                        this.dataSourceQuantitativeInspection.data = this.quantitativeInspectionObjects.value;
+    
+                        console.log('✅ Qualitative Loaded:', this.qualitativeInspectionObjects.value);
+                        console.log('✅ Quantitative Loaded:', this.quantitativeInspectionObjects.value);
+                    } else {
+                        console.error('❌ No characteristics data found.');
+                    }
+                },
+                (error) => console.error('❌ Error loading both characteristics', error)
+            );
+    }
+
+    onUpdateItemInspectionCard(): void {
+        console.log('UPDATED FORM VALUES:', this.itemsInspectionCardsForm.value);
+     
+    }
+    
+    
+    
 
     //Close The Dialog Box
 

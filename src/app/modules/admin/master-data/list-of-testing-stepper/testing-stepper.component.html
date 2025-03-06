@@ -469,14 +469,15 @@
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Item Code</mat-label>
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
-                (click)="onItemCodeClickIIC()"></mat-icon>
+                (click)="onItemCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="itemCode" required readonly
                 [value]="selectedItemCodeIIC ? selectedItemCodeIIC : ''">
             </mat-form-field>
             <!-- ITEM DESCRIPTION -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Item Description</mat-label>
-              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"></mat-icon>
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="itemDescription" required readonly
                 [value]="selectedItemDescriptionICC ? selectedItemDescriptionICC : ''">
             </mat-form-field>
@@ -484,20 +485,28 @@
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Card Code</mat-label>
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
-                (click)="onCardCodeClickIIC()"></mat-icon>
+                (click)="onCardCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="intCode" required readonly
                 [value]="selectedCardCode ? selectedCardCode : ''">
             </mat-form-field>
             <!-- CARD DESCRIPTION -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
-              <mat-label>Item Description</mat-label>
-              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"></mat-icon>
+              <mat-label>Card Description</mat-label>
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="cardDescription" required readonly
                 [value]="selectedCardDescription ? selectedCardDescription : ''">
             </mat-form-field>
           </div>
 
           <!-- HIDDEN FIELDS -->
+          <!-- ITEM INSPECTION CARD ID -->
+          <div class="w-full">
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+              <mat-label>INSPECTION CARD ID</mat-label>
+              <input matInput type="text" class="text-sm" formControlName="id" readonly>
+            </mat-form-field>
+          </div>
           <!-- itemName,itemType,itemGroupCode,itemU_QACard,itemUoMGroupEntry,Card ID -->
           <div class="w-full mt-4 hidden">
             <div class="px-6 flex space-x-10">
@@ -746,8 +755,8 @@
                         <ng-container matColumnDef="fail">
                           <th mat-header-cell *matHeaderCellDef class="text-sm">
                             Fail</th>
-                          <td mat-cell *matCellDef="let element">
-                            <input matInput [value]="element.fail" readonly>
+                          <td mat-cell *matCellDef="let element" title="{{element.fail}}">
+                            <input matInput [value]="element.fail | slice:0:25" readonly>
                           </td>
                           <!-- <td mat-cell *matCellDef="let element; let i = index"
                                                             class="text-sm w-1/6 whitespace-nowrap"
@@ -1146,9 +1155,11 @@
           </mat-tab-group>
 
           <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" matStepperNext
+            <button mat-button *ngIf="!isEditMode" class="back-button" matStepperPrevious>Back</button>
+            <button mat-button *ngIf="!isEditMode" class="next-button" matStepperNext
               (click)="submitItemsInspectionCardsForm()">Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode"
+              (click)="onUpdateItemInspectionCard()">Update</button>
           </div>
         </form>
       </mat-step>
