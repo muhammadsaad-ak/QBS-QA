@@ -111,6 +111,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private _qualityResultsCode: QualitativeResultsService,
         private _qualitativeResultsService: QualitativeResultsService,
         private _inspectionCardService: InspectionCardService,
+        private _inspectionCardServiceCardID: InspectionCardService,
         // Item Inspection Card
         private _itemInspectionCardService: ItemInspectionCardService,
         // private _SAPItemsService: SAPItemsService,
@@ -353,12 +354,14 @@ export class TestingStepperComponent implements AfterViewInit {
         intCode: ['', Validators.required], // CARD CODE
         cardDescription: ['', Validators.required], //  CARD DESCRIPTION
         inspectionCardId: ['', Validators.required], //  CARD ID
+
         // id: ['', Validators.required],    //  CARD ID
 
         // QUALITATIVE & QUANTITATIVE INSPECTION
         // FormArray FOR DYNAMIC ROWS
         qualitativeInspectionObjects: this.fb.array([]),
         quantitativeInspectionObjects: this.fb.array([]),
+        id: [''], //  ITEM INSPECTION CARD ID
     });
 
     displayedColumnsQualitative = [
@@ -1578,14 +1581,27 @@ export class TestingStepperComponent implements AfterViewInit {
             // return;
             // POPULATE FORM, itemsInspectionCardsForm, WITH RECEIVED DATA - rowDataIIC
             this.populateIICData(this.rowDataIIC);
-            // this.loadCharacteristicsInspectionCard(this.rowDataIC.id);
-            this._itemInspectionCardService.getBothCharacteristicsByItemInspectionCard().subscribe();
+            this.loadBothCharacteristics(this.rowDataIIC.id);
+            // this._itemInspectionCardService
+            //     .getBothCharacteristicsByItemInspectionCard(this.rowDataIIC.id)
+            //     .subscribe();
+           
         } else {
             console.log('NO IIC DATA RECEIVED');
             this.isEditMode = false;
             // this.addTableRow();   // ✅ Only if creating new
             // this.addTableRowX();  // ✅ Only if creating new
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+                // Inspection Card Code Get API.
+        // this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+        //     const y = inspectionCardCode.data; // 13 mil raha hai
+        //     console.log('Fetched Code:', y); // Check for debugging
+
+        //     if (y) {
+        //         const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
+        //         this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+        //     }
+        // });
         }
     }
 
@@ -2308,14 +2324,218 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         // MAPPING RESPONSE
         // console.log(data);
+        const formattedCardintCode =
+        'IC-' + this.rowDataIIC.inspectionCardIntCode.toString().padStart(5, '0');
         this.itemsInspectionCardsForm.patchValue({
+            id: this.rowDataIIC.id,
             itemCode: this.rowDataIIC.itemCode,
             itemDescription: this.rowDataIIC.itemDescription,
             cardDescription: this.rowDataIIC.cardDescription,
             inspectionCardId: this.rowDataIIC.inspectionCardId,
+            intCode: formattedCardintCode,
         });
     }
+
+    loadBothCharacteristicsx(itemInspectionCardId: string): void {
+        this._itemInspectionCardService
+            .getBothCharacteristicsByItemInspectionCard(itemInspectionCardId)
+            .subscribe(
+                (res) => {
+                    if (res.isRequestSuccess && res.data) {
+                        const data = res.data;
+
+                        // First, clear existing FormArrays
+                        this.qualitativeInspectionObjects.clear();
+                        this.quantitativeInspectionObjects.clear();
+
+                        // Populate QUALITATIVE data
+                        data.qualitativeInspectionObjects.forEach(
+                            (qualitative) => {
+                                this.qualitativeInspectionObjects.push(
+                                    this.fb.group({
+                                        inspectionCharacteristicId: [
+                                            qualitative.inspectionCharacteristicId,
+                                            Validators.required,
+                                        ],
+                                        isMandatory: [qualitative.isMandatory],
+                                        qualitativeResultPassStatusObjects:
+                                            this.fb.array(
+                                                qualitative.qualitativeResultPassStatusResults.map(
+                                                    (passStatus) =>
+                                                        this.fb.group({
+                                                            qualitativeResultId:
+                                                                [
+                                                                    passStatus.qualitativeResultId,
+                                                                    Validators.required,
+                                                                ],
+                                                            isPassed: [
+                                                                passStatus.isPassed,
+                                                            ],
+                                                        })
+                                                )
+                                            ),
+                                        qualitativeResultFailStatusObjects:
+                                            this.fb.array(
+                                                qualitative.qualitativeResultFailStatusResults.map(
+                                                    (failStatus) =>
+                                                        this.fb.group({
+                                                            qualitativeResultId:
+                                                                [
+                                                                    failStatus.qualitativeResultId,
+                                                                    Validators.required,
+                                                                ],
+                                                            isPassed: [
+                                                                failStatus.isPassed,
+                                                            ],
+                                                        })
+                                                )
+                                            ),
+                                    })
+                                );
+                            }
+                        );
+
+                        // Populate QUANTITATIVE data
+                        data.quantitativeInspectionResults.forEach(
+                            (quantitative) => {
+                                this.quantitativeInspectionObjects.push(
+                                    this.fb.group({
+                                        inspectionCharacteristicId: [
+                                            quantitative.inspectionCharacteristicId,
+                                            Validators.required,
+                                        ],
+                                        isMandatory: [quantitative.isMandatory],
+                                        uoMId: [
+                                            quantitative.uoMId,
+                                            Validators.required,
+                                        ],
+                                        target: [
+                                            quantitative.target,
+                                            Validators.required,
+                                        ],
+                                        max: [
+                                            quantitative.max,
+                                            Validators.required,
+                                        ],
+                                        min: [
+                                            quantitative.min,
+                                            Validators.required,
+                                        ],
+                                    })
+                                );
+                            }
+                        );
+
+                        console.log(
+                            '✅ Qualitative Loaded:',
+                            this.qualitativeInspectionObjects.value
+                        );
+                        console.log(
+                            '✅ Quantitative Loaded:',
+                            this.quantitativeInspectionObjects.value
+                        );
+                    } else {
+                        console.error('❌ No characteristics data found.');
+                    }
+                },
+                (error) =>
+                    console.error(
+                        '❌ Error loading both characteristics',
+                        error
+                    )
+            );
+    }
     // UPDATE ITEM INSPECTION CARD STARTS
+    loadBothCharacteristics(itemInspectionCardId: string): void {
+        this._itemInspectionCardService
+            .getBothCharacteristicsByItemInspectionCard(itemInspectionCardId)
+            .subscribe(
+                (res) => {
+                    if (res.isRequestSuccess && res.data) {
+                        const data = res.data;
+    
+                        // Clear existing FormArrays
+                        this.qualitativeInspectionObjects.clear();
+                        this.quantitativeInspectionObjects.clear();
+    
+                        // Populate QUALITATIVE FormArray
+                        data.qualitativeInspectionObjects.forEach((qualitative) => {
+                            this.qualitativeInspectionObjects.push(
+                                this.fb.group({
+                                    inspectionCharacteristicId: [qualitative.inspectionCharacteristicId, Validators.required],
+                                    // parameter: [qualitative.parameter, Validators.required],
+                                    // passCriteria: [qualitative.passCriteria, Validators.required],
+                                    parameter: [qualitative.inspectionCharacteristicName, Validators.required],
+                                    passCriteria: [qualitative.inspectionCharacteristicSingleCriteria, Validators.required],
+                                    mandatory: [qualitative.isMandatory],
+                                    qualitativeResultPassStatusObjects: this.fb.array(
+                                        qualitative.qualitativeResultPassStatusResults.map(
+                                            (passStatus) =>
+                                                this.fb.group({
+                                                    qualitativeResultId: [passStatus.qualitativeResultId, Validators.required],
+                                                    isPassed: [passStatus.isPassed],
+                                                })
+                                        )
+                                    ),
+                                    qualitativeResultFailStatusObjects: this.fb.array(
+                                        qualitative.qualitativeResultFailStatusResults.map(
+                                            (failStatus) =>
+                                                this.fb.group({
+                                                    qualitativeResultId: [failStatus.qualitativeResultId, Validators.required],
+                                                    isPassed: [failStatus.isPassed],
+                                                })
+                                        )
+                                    ),
+                                })
+                            );
+                        });
+    
+                        // Populate QUANTITATIVE FormArray
+                        data.quantitativeInspectionResults.forEach((quantitative) => {
+                            this.quantitativeInspectionObjects.push(
+                                this.fb.group({
+                                    inspectionCharacteristicId: [quantitative.inspectionCharacteristicId, Validators.required],
+                                    parameterQty: [quantitative.inspectionCharacteristicName, Validators.required],
+                                    // parameterQty: [quantitative.parameterQty, Validators.required],
+                                    // uoMId: [quantitative.uoMId, Validators.required],
+                                    uoMId: [quantitative.uoMName, Validators.required],
+                                    mandatoryQty: [quantitative.isMandatory],
+                                    passCriteriaTarget: [quantitative.target, Validators.required],
+                                    passCriteriaMax: [quantitative.max, Validators.required],
+                                    passCriteriaMin: [quantitative.min, Validators.required],
+                                })
+                            );
+                        });
+    
+                        // ✅ Update MatTableDataSource after populating FormArrays
+                        if (!this.dataSourceQualitativeInspection) {
+                            this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
+                        }
+                        if (!this.dataSourceQuantitativeInspection) {
+                            this.dataSourceQuantitativeInspection = new MatTableDataSource<quantitativeInspectionIF>([]);
+                        }
+    
+                        // Assign FormArray values to dataSources
+                        this.dataSourceQualitativeInspection.data = this.qualitativeInspectionObjects.value;
+                        this.dataSourceQuantitativeInspection.data = this.quantitativeInspectionObjects.value;
+    
+                        console.log('✅ Qualitative Loaded:', this.qualitativeInspectionObjects.value);
+                        console.log('✅ Quantitative Loaded:', this.quantitativeInspectionObjects.value);
+                    } else {
+                        console.error('❌ No characteristics data found.');
+                    }
+                },
+                (error) => console.error('❌ Error loading both characteristics', error)
+            );
+    }
+
+    onUpdateItemInspectionCard(): void {
+        console.log('UPDATED FORM VALUES:', this.itemsInspectionCardsForm.value);
+     
+    }
+    
+    
+    
 
     //Close The Dialog Box
 

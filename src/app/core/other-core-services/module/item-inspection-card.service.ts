@@ -27,6 +27,7 @@ export class ItemInspectionCardService {
     private _listUnitOfMeasureIIC = new BehaviorSubject<any[]>([]);
     private _listQualitativeResultsIIC = new BehaviorSubject<any[]>([]);
     private _bothCharacteristicsIIC = new BehaviorSubject<any[]>([]);
+    
 
     // Observable to expose role data state
     listItemsInspectionCardsIIC$: Observable<any[]> = this._listItemsInspectionCardsIIC.asObservable();
@@ -76,7 +77,7 @@ export class ItemInspectionCardService {
             Accept: 'text/plain',
         });
         return this._httpClient
-            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/ListAllItemInspectionCards`, {
+            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/ListAllCardsWithBothCharacteristics`, {
                 headers,
             })
             .pipe(
@@ -242,13 +243,13 @@ export class ItemInspectionCardService {
             );
     }
     // 
-    getBothCharacteristicsByItemInspectionCard(): Observable<any> {
+    getBothCharacteristicsByItemInspectionCard(itemInspectionCardId: string): Observable<any> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
             Accept: 'text/plain',
         });
         return this._httpClient
-            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/ListAllCardsByIdWithBothCharacteristics?lastCount=1`, { headers })
+            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/GetCardByIdWithBothCharacteristics?itemInspectionCardId=${itemInspectionCardId}`, { headers })
             .pipe(
                 tap((BothCharacteristicsIIC) => {
                     const IICBothCharacteristics = (BothCharacteristicsIIC as any) ?? [];
