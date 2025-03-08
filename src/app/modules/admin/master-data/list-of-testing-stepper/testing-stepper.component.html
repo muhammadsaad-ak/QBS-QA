@@ -77,7 +77,7 @@
 
           </div>
           <!-- Checkboxes Section -->
-          <div class="flex flex-col w-full">
+          <div class="flex flex-col w-full" *ngIf="isEditMode">
             <div class="flex items-center">
               <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
               <label class="text-lg">Active</label>
@@ -86,9 +86,8 @@
 
           <div class="step-navigation">
             <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()"
-              matStepperNext>Next</button>
-            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update UOM</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()">Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update</button>
           </div>
         </form>
       </mat-step>
