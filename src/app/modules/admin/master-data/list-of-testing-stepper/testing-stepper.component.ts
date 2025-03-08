@@ -1896,7 +1896,6 @@ export class TestingStepperComponent implements AfterViewInit {
                 });
             this.stepper.next();
         } else {
-            alert('Kindly fill all the required fields.')
             console.log('FORM IS INVALID!');
             return;
         }
