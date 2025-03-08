@@ -81,6 +81,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     unitOfMeasureLOV: any = [];
     characteristicsList: any[] = [];
+    inspectionCardModalList: any [] = [];
 
     constructor(
         //Form Builder
@@ -1360,6 +1361,11 @@ export class TestingStepperComponent implements AfterViewInit {
         //     this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
         // });
 
+        // Inspection Card Modal - Qualitative and Quantitative
+        this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
+        this.inspectionCardModalList = inspectionCardModal.data;
+    });
+
 
 
         this.fetchListAllItems();
@@ -1706,22 +1712,27 @@ export class TestingStepperComponent implements AfterViewInit {
     //
     selectedControlAccountRowIndex: number = -1;
     onItemCodeClick(rowIndex: number): void {
+        const qualitativeData = this.inspectionCardModalList.filter(
+            (item: any) => item.type === 'qualitative' && item.isActive
+        );
+    
+        this.dataSourceItems = new MatTableDataSource(qualitativeData);
         //Item Inspection Card Modal
-        this._inspectionCardModal
-            .getInspectionCardModal()
-            .subscribe((inspectionCardModal) => {
-                const qualitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'qualitative' && item.isActive
-                );
-                const quantitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'quantitative' && item.isActive
-                );
+        // this._inspectionCardModal
+        //     .getInspectionCardModal()
+        //     .subscribe((inspectionCardModal) => {
+        //         const qualitativeData = inspectionCardModal.data.filter(
+        //             (item: any) => item.type === 'qualitative' && item.isActive
+        //         );
+        //         const quantitativeData = inspectionCardModal.data.filter(
+        //             (item: any) => item.type === 'quantitative' && item.isActive
+        //         );
 
-                this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
-                this.dataSourceItemsX = new MatTableDataSource(
-                    quantitativeData
-                ); // Quantitative data
-            });
+        //         this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
+        //         this.dataSourceItemsX = new MatTableDataSource(
+        //             quantitativeData
+        //         ); // Quantitative data
+        //     });
 
         console.log('Row Index:', rowIndex);
         this.selectedControlAccountRowIndex = rowIndex;
@@ -1802,6 +1813,11 @@ export class TestingStepperComponent implements AfterViewInit {
     dataSourceItemsX = new MatTableDataSource([]);
 
     onItemCodeClickX(rowIndex: number): void {
+        const quantitativeData = this.inspectionCardModalList.filter(
+            (item: any) => item.type === 'quantitative' && item.isActive
+        );
+    
+        this.dataSourceItemsX = new MatTableDataSource(quantitativeData);
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
             width: '70%',
