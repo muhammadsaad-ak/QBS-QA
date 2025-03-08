@@ -67,6 +67,7 @@ interface itemSamplingRangeIF {
 })
 export class TestingStepperComponent implements AfterViewInit {
     isEditMode: boolean = false;
+    isValidate = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
@@ -1865,6 +1866,7 @@ export class TestingStepperComponent implements AfterViewInit {
     //   }
 
     onSubmitQualitativeResult(): void {
+        this.isValidate = true;
         if (this.firstFormGroup.valid) {
             // console.log('SENDING QR PAYLOAD:', this.firstFormGroup.value);
             const formValues = this.firstFormGroup.value;
@@ -1880,8 +1882,8 @@ export class TestingStepperComponent implements AfterViewInit {
                 });
             this.stepper.next();
         } else {
-            alert('Kindly fill the Description field.')
-            // console.log('FORM IS INVALID!');
+            // alert('Kindly fill the Description field.')
+            console.log('FORM IS INVALID!');
             return;
         }
     }

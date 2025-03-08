@@ -25,6 +25,8 @@
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="resultDescription" required>
+              <mat-error
+                *ngIf="firstFormGroup.get('resultDescription').invalid && (isValidate || firstFormGroup.get('resultDescription').touched)">Required.</mat-error>
             </mat-form-field>
           </div>
 
@@ -37,7 +39,8 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitQualitativeResult()">Next</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode"
+              (click)="onSubmitQualitativeResult()">Next</button>
             <button mat-button class="next-button" *ngIf="isEditMode"
               (click)="onUpdateQualitativeResult()">Update</button>
           </div>
