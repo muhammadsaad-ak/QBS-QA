@@ -1174,7 +1174,8 @@
             <!-- Sample Code -->
             <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
               <mat-label>Sample Code</mat-label>
-              <input matInput formControlName="sampleCodeIS" required>
+              <input class="view-mode-bg-grey" matInput formControlName="sampleCodeIS" readonly
+                style="cursor: not-allowed;">
             </mat-form-field>
             <!-- Item Code -->
             <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
@@ -1183,12 +1184,16 @@
                 (click)="onItemSampleItemCodeClick()" *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="itemCode" required readonly
                 [value]="selectedItemCodeIS ? selectedItemCodeIS : ''">
+              <mat-error>Required.</mat-error>
             </mat-form-field>
             <!-- Item Description -->
             <mat-form-field style="flex: 0 1 55%; min-width: 100px;">
               <mat-label>Item Description</mat-label>
               <input matInput formControlName="itemDescription" required readonly=""
                 [value]="selectedItemDescriptionIS ? selectedItemDescriptionIS : ''">
+              <mat-error
+                *ngIf="itemSamplingForm.get('itemCode').invalid && (isValidate || itemSamplingForm.get('itemCode').touched)">
+                Required.</mat-error>
             </mat-form-field>
             <!-- Item ID -->
             <mat-form-field style="flex: 0 1 55%; min-width: 100px;" class="hidden">
@@ -1348,8 +1353,14 @@
                       Lot Size Min
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
-                      <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('lotSizeMin')"
+                      <input matInput type="number" min="1" [formControl]="samplingRangeObjects.at(i).get('lotSizeMin')"
                         placeholder="Minimum Lot Size">
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.controls[i].get('lotSizeMin').invalid">
+                        Required.
+                      </mat-error>
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.at(i).get('lotSizeMin').hasError('min')">
+                        Must be greater than or equal to 1.
+                      </mat-error>
                     </td>
                   </ng-container>
                   <!-- Lot Size Max COLUMN -->
@@ -1358,18 +1369,30 @@
                       Lot Size Max
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
-                      <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('lotSizeMax')"
+                      <input matInput type="number" min="1" [formControl]="samplingRangeObjects.at(i).get('lotSizeMax')"
                         placeholder="Maximum Lot Size">
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.controls[i].get('lotSizeMax').invalid">
+                        Required.
+                      </mat-error>
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.at(i).get('lotSizeMax').hasError('min')">
+                        Must be greater than or equal to 1.
+                      </mat-error>
                     </td>
                   </ng-container>
-                  <!-- Sample Size COLUMN -->
+                  <!-- Sample Qty COLUMN -->
                   <ng-container matColumnDef="sampleQty">
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Sample Qty
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
-                      <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('sampleQty')"
+                      <input matInput type="number" min="1" [formControl]="samplingRangeObjects.at(i).get('sampleQty')"
                         placeholder="Enter Sample Qty">
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.controls[i].get('sampleQty').invalid">
+                        Required.
+                      </mat-error>
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.at(i).get('sampleQty').hasError('min')">
+                        Must be greater than or equal to 1.
+                      </mat-error>
                     </td>
                   </ng-container>
                   <!-- Critical Defect COLUMN -->
@@ -1408,12 +1431,15 @@
             </div>
           </div>
           <!-- SAMPLING RANGE TABLE SECTION ENDS -->
+          <div *ngIf="validatingSamplingRange" class="error-message text-red-600">
+            {{ validatingSamplingRange }}
+          </div>
           <div class="step-navigation">
             <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
             <button mat-button class="next-button" *ngIf="!isEditMode"
               (click)="onSubmitItemSamplingForm()">Next</button>
             <!-- matStepperNext -->
-            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateIS()">Update</button>
+            <button mat-button class="next-button" (click)="onUpdateIS()">Update</button>
           </div>
         </form>
       </mat-step>
