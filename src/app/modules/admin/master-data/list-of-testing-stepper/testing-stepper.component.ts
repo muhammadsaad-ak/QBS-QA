@@ -2072,6 +2072,8 @@ export class TestingStepperComponent implements AfterViewInit {
                                     relativeTo: this._activatedRoute,
                                 });
                             }, 1500);
+                            this.isEditMode = false;
+                            console.log('this.isEditMode.', this.isEditMode);
                         } else {
                             console.error(
                                 'ERROR WHILE UPDATING DATA.',
