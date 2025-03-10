@@ -1444,6 +1444,7 @@ export class TestingStepperComponent implements AfterViewInit {
         if (this.rowDataQR) {
             this.isEditMode = true;
             // console.log('RECEIVED QR DATA:', this.rowDataQR);
+            console.log('isEditMode:', this.isEditMode);
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateQualitativeResultData(this.rowDataQR);
         } else {
@@ -1882,7 +1883,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 });
             this.stepper.next();
         } else {
-            // alert('Kindly fill the Description field.')
+            this.isValidate = false;
             console.log('FORM IS INVALID!');
             return;
         }
@@ -2045,33 +2046,41 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateQualitativeResult(): void {
-        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
-        const formValues = this.firstFormGroup.value;
-        const { data, ...payload } = formValues; // EXCLUDING intCode
-        console.log(payload);
-        // return;
-        this._qualitativeResultsService
-            .UpdateQualitativeResult(payload)
-            .subscribe(
-                (response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                        setTimeout(() => {
-                            this._router.navigate(['../../'], {
-                                relativeTo: this._activatedRoute,
-                            });
-                        }, 1500);
-                    } else {
-                        console.error(
-                            'ERROR WHILE UPDATING DATA.',
-                            response.message
-                        );
+        this.isValidate = true;
+        if (this.firstFormGroup.valid) {
+
+            console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
+            const formValues = this.firstFormGroup.value;
+            const { data, ...payload } = formValues; // EXCLUDING intCode
+            console.log(payload);
+            // return;
+            this._qualitativeResultsService
+                .UpdateQualitativeResult(payload)
+                .subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                            setTimeout(() => {
+                                this._router.navigate(['/master-data/list-of-qualitative-result'], {
+                                    relativeTo: this._activatedRoute,
+                                });
+                            }, 1500);
+                        } else {
+                            console.error(
+                                'ERROR WHILE UPDATING DATA.',
+                                response.message
+                            );
+                        }
+                    },
+                    (error) => {
+                        console.error('API request failed:', error);
                     }
-                },
-                (error) => {
-                    console.error('API request failed:', error);
-                }
-            );
+                );
+        } else {
+            this.isValidate = false;
+            console.log('FORM IS INVALID!');
+            return;
+        }
     }
     // UPDATE QR - QUALITATIVE RESULT ENDS
 
