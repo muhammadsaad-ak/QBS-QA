@@ -67,6 +67,7 @@ interface itemSamplingRangeIF {
 })
 export class TestingStepperComponent implements AfterViewInit {
     isEditMode: boolean = false;
+    isValidate = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
@@ -1882,11 +1883,13 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onSubmitUnitOfMeasure(): void {
+        this.isValidate = true
         if (this.secondFormGroup.valid) {
-            console.log('SENDING UOM PAYLOAD:', this.secondFormGroup.value);
+            // console.log('UOM FORM VALUES:', this.secondFormGroup.value);
             const formValues = this.secondFormGroup.value;
             const payload = { ...formValues };
-
+            // console.log('SENDING UOM PAYLOAD:', payload);
+            // return;
             this._uommasterservice
                 .AddUnitOfMeasure(payload)
                 .subscribe((response) => {
@@ -1896,6 +1899,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 });
             this.stepper.next();
         } else {
+            this.isValidate = false
             console.log('FORM IS INVALID!');
             return;
         }
@@ -2093,31 +2097,38 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateUoM(): void {
-        // console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
-        const formValues = this.secondFormGroup.value;
-        const { ...payload } = formValues;
-        // console.log(payload);
-        // return;
-        this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(['../../'], {
-                            relativeTo: this._activatedRoute,
-                        });
-                    }, 1500);
-                } else {
-                    console.error(
-                        'ERROR WHILE UPDATING UOM DATA .',
-                        response.message
-                    );
+        this.isValidate = true
+        if (this.secondFormGroup.valid) {
+            // console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
+            const formValues = this.secondFormGroup.value;
+            const { ...payload } = formValues;
+            // console.log('SENDING QR PAYLOAD:', payload);
+            // return;
+            this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        setTimeout(() => {
+                            this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
+                                relativeTo: this._activatedRoute,
+                            });
+                        }, 1500);
+                    } else {
+                        console.error(
+                            'ERROR WHILE UPDATING UOM DATA .',
+                            response.message
+                        );
+                    }
+                },
+                (error) => {
+                    console.error('API request failed:', error);
                 }
-            },
-            (error) => {
-                console.error('API request failed:', error);
-            }
-        );
+            );
+        } else {
+            this.isValidate = false
+            console.log('FORM IS INVALID!');
+            return;
+        }
     }
     // UPDATE UOM - UNIT OF MEASURE ENDS
     isDisabled = true;
