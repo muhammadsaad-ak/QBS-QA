@@ -1156,8 +1156,8 @@
 
           <div class="step-navigation">
             <button mat-button *ngIf="!isEditMode" class="back-button" matStepperPrevious>Back</button>
-            <button mat-button *ngIf="!isEditMode" class="next-button" matStepperNext
-              (click)="submitItemsInspectionCardsForm()">Next</button>
+            <button mat-button *ngIf="!isEditMode" class="next-button"
+              (click)="submitItemsInspectionCardsForm()">Next</button> <!-- matStepperNext -->
             <button mat-button class="next-button" *ngIf="isEditMode"
               (click)="onUpdateItemInspectionCard()">Update</button>
           </div>
