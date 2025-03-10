@@ -1447,7 +1447,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.populateQualitativeResultData(this.rowDataQR);
         } else {
             console.log('NO DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
             this._qualityResultsCode
                 .getQualitativeResultCode()
@@ -1472,7 +1472,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.populateUoMData(this.rowDataUOM);
         } else {
             console.log('NO DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
         }
         // UPDATE UOM - UNIT OF MEASURE STARTS
@@ -1490,7 +1490,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.populateInspectionCharacteristicsData(this.rowDataICH);
         } else {
             console.log('NO ICH DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR INSPECTION CHARACTERISITIC
             this._inspectionCharateristics
                 .getInspectionCharacteristicsCode()
@@ -1525,7 +1525,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.loadCharacteristicsInspectionCard(this.rowDataIC.id); // Yeh API call hogi ab
         } else {
             console.log('NO DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // this.addTableRow();   // ✅ Only if creating new
             // this.addTableRowX();  // ✅ Only if creating new
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
@@ -1556,7 +1556,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.getSamplingRangeBySampleId(this.rowDataIS.id)
         } else {
             console.log('NO ITEM SAMPLE DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR ITEM SAMPLE
             this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
                 const fetchedCodeIS = sampleCodeIS.data;
@@ -1591,7 +1591,7 @@ export class TestingStepperComponent implements AfterViewInit {
            
         } else {
             console.log('NO IIC DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // this.addTableRow();   // ✅ Only if creating new
             // this.addTableRowX();  // ✅ Only if creating new
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
