@@ -242,6 +242,9 @@
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="description" required>
+              <mat-error
+              *ngIf="fifthFormGroup.get('description').invalid && (isValidate || fifthFormGroup.get('description').touched)">Required.</mat-error>
+
             </mat-form-field>
 
             <!-- Checkboxes Section -->
@@ -274,9 +277,12 @@
                           <div class="flex justify-between items-center">
                             <input matInput formControlName="parameter" placeholder="Enter Parameter Name"
                               class="w-full" />
-                            <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClick(i)"
+                              <mat-icon *ngIf="!qualitativeTableCriteria.controls[i].get('parameter')?.value"
+                              matSuffix 
+                              style="margin-left: 8px;" 
+                              (click)="onItemCodeClick(i)"
                               svgIcon="heroicons_outline:bars-3">
-                            </mat-icon>
+                    </mat-icon>
                             <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
                               (click)="removeRow(i)">delete</mat-icon>
 
@@ -373,8 +379,15 @@
                           <div class="flex justify-between items-center">
                             <input matInput formControlName="parameterX" placeholder="Enter Parameter Name"
                               class="w-full" />
-                            <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
-                              svgIcon="heroicons_outline:bars-3"></mat-icon>
+                            <!-- <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
+                              svgIcon="heroicons_outline:bars-3">
+                            </mat-icon> -->
+                            <mat-icon *ngIf="!quantitativeTableCriteria.controls[i].get('parameterX')?.value"
+                              matSuffix 
+                              style="margin-left: 8px;" 
+                              (click)="onItemCodeClickX(i)"
+                              svgIcon="heroicons_outline:bars-3">
+                            </mat-icon>
                             <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
                               (click)="removeRowX(i)">delete</mat-icon>
                           </div>
@@ -447,8 +460,7 @@
           </div>
           <div class="step-navigation">
             <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCard()"
-              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCard()">Next</button>
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateInspectionCard()">Update</button>
           </div>
         </form>
