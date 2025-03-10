@@ -66,8 +66,8 @@ interface itemSamplingRangeIF {
     styleUrl: './testing-stepper.component.scss',
 })
 export class TestingStepperComponent implements AfterViewInit {
-    isValidate: boolean = false;
     isEditMode: boolean = false;
+    isValidate: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
