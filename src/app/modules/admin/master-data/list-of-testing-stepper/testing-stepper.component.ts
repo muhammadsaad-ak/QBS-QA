@@ -66,8 +66,8 @@ interface itemSamplingRangeIF {
     styleUrl: './testing-stepper.component.scss',
 })
 export class TestingStepperComponent implements AfterViewInit {
-    isEditMode: boolean = false;
     isValidate: boolean = false;
+    isEditMode: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
@@ -2580,27 +2580,27 @@ export class TestingStepperComponent implements AfterViewInit {
 
     validatingSamplingRange: string = '';
     onUpdateIS(): void {
-        this.isValidate = true;  // Set to true to trigger validation
-        this.validatingSamplingRange = ''; // Reset message
-    
+        this.isValidate = true;
+        this.validatingSamplingRange = '';
+
         if (this.itemSamplingForm.valid) {
             const formValues = this.itemSamplingForm.value;
             const { sampleCodeIS, itemCode, itemId, itemDescription, samplingRangeObjects, ...payload } = formValues;
             const initialSamplingRangeObjects = this.initialSamplingRangeObjects;
-    
-            // Track invalid rows to update
+
+            // TRACK INVALID ROWS TO UPDATE
             let invalidRowFound = false;
-    
+
             const updatedSamplingRangeObjects = samplingRangeObjects
                 .filter((object: any, index: number) => {
                     const initialObject = initialSamplingRangeObjects[index];
-    
-                    // If initialObject doesn't exist, it's a new row, treat it as changed
+
+                    // IF initialObject DOESN'T EXIST, IT'S A NEW ROW.
                     if (!initialObject) {
-                        return true; // New object, treat it as changed
+                        return true; // NEW OBJECT 
                     }
-    
-                    // Check if any field is different between the current and initial object
+
+                    // CHECK IF ANY FIELD IS DIFFERENT BETWEEN THE CURRENT AND INITIAL OBJECT
                     return (
                         object.lotSizeMin !== initialObject.lotSizeMin ||
                         object.lotSizeMax !== initialObject.lotSizeMax ||
@@ -2611,15 +2611,15 @@ export class TestingStepperComponent implements AfterViewInit {
                     );
                 })
                 .map((object: any) => {
-                    // Skip rows where lotSizeMin, lotSizeMax, or sampleQty are invalid or missing
+                    // SKIP ROWS WHERE lotSizeMin, lotSizeMax, or sampleQty ARE INVALID OR MISSING
                     if (
                         object.lotSizeMin == null || object.lotSizeMin === '' ||
                         object.lotSizeMax == null || object.lotSizeMax === '' ||
                         object.sampleQty == null || object.sampleQty === ''
                     ) {
                         invalidRowFound = true;
-    
-                        // Add specific validation message for each field
+
+                        // ADD SPECIFIC VALIDATION MESSAGE FOR EACH FIELD
                         if (object.lotSizeMin == null || object.lotSizeMin === '') {
                             this.validatingSamplingRange = 'Lot Size Min is required. ';
                         }
@@ -2629,24 +2629,25 @@ export class TestingStepperComponent implements AfterViewInit {
                         if (object.sampleQty == null || object.sampleQty === '') {
                             this.validatingSamplingRange += 'Sample Qty is required. ';
                         }
-    
-                        return null; // Skip invalid rows
+                        this.isValidate = false;
+                        return;
+                        // return null; // SKIP INVALID ROWS
                     }
-    
-                    // If all required fields are present, return the object
+
+                    // IF ALL REQUIRED FIELDS ARE PRESENT, RETURN THE OBJECT
                     return {
                         id: object.id || undefined,
                         lotSizeMin: object.lotSizeMin,
                         lotSizeMax: object.lotSizeMax,
                         sampleQty: object.sampleQty,
-                        criticalDefects: object.criticalDefects,  // Optional field, can be null or 0
-                        majorDefects: object.majorDefects,        // Optional field, can be null or 0
-                        minorDefects: object.minorDefects         // Optional field, can be null or 0
+                        criticalDefects: object.criticalDefects,  // OPTIONAL FIELD, CAN BE null or 0
+                        majorDefects: object.majorDefects,        // OPTIONAL FIELD, CAN BE null or 0
+                        minorDefects: object.minorDefects         // OPTIONAL FIELD, CAN BE null or 0
                     };
                 })
-                .filter((object: any) => object !== null); // Remove null rows if any
-    
-            // If no valid rows, set message and prevent form submission
+                .filter((object: any) => object !== null); // REMOVE NULL ROWS IF ANY
+
+            // IF NO VALID ROWS, SET MESSAGE AND PREVENT FORM SUBMISSION
             if (updatedSamplingRangeObjects.length > 0) {
                 const sendingPayloadIS = {
                     ...payload,
@@ -2654,7 +2655,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     id: formValues.id
                 };
                 console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
-    
+
                 this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
                     (response) => {
                         if (response.isRequestSuccess) {
@@ -2672,21 +2673,16 @@ export class TestingStepperComponent implements AfterViewInit {
                 );
             } else {
                 this.isValidate = false;
-                // If there are no valid rows, show the message
+                // IF THERE ARE NO VALID ROWS
+                // this.noValidRowsMessage = 'Enter valid values in the required fields.';
                 this.validatingSamplingRange = this.validatingSamplingRange || 'No valid rows to update.';
                 console.error(this.validatingSamplingRange);
             }
         } else {
+            // this.isValidate = false;
             console.log('FORM IS INVALID!');
             return;
         }
     }
-    
-    
-    
-    
-    
-
-    // this.noValidRowsMessage = 'Enter valid values in the required fields.';
     // UPDATE ITEM SAMPLE ENDS
 }
