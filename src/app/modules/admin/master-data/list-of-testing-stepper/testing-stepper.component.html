@@ -275,7 +275,7 @@
                       <tr *ngFor="let control of qualitativeTableCriteria.controls; let i = index" [formGroupName]="i">
                         <td class="p-2 border border-gray-300">
                           <div class="flex justify-between items-center">
-                            <input matInput formControlName="parameter" placeholder="Enter Parameter Name"
+                            <input matInput formControlName="parameter" readonly
                               class="w-full" />
                               <mat-icon *ngIf="!qualitativeTableCriteria.controls[i].get('parameter')?.value"
                               matSuffix 
@@ -377,7 +377,7 @@
                       <tr *ngFor="let control of quantitativeTableCriteria.controls; let i = index" [formGroupName]="i">
                         <td class="p-2 border border-gray-300">
                           <div class="flex justify-between items-center">
-                            <input matInput formControlName="parameterX" placeholder="Enter Parameter Name"
+                            <input matInput formControlName="parameterX" readonly
                               class="w-full" />
                             <!-- <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
                               svgIcon="heroicons_outline:bars-3">
