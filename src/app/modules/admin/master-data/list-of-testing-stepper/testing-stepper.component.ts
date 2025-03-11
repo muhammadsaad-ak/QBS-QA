@@ -22,7 +22,7 @@ import { ItemSamplesService } from 'app/core/other-core-services/module/item-sam
 import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
 import { qualitativeInspectionIF, quantitativeInspectionIF, } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
 // Item Inspection Card
 interface RowData {
     id: string;
@@ -66,8 +66,8 @@ interface itemSamplingRangeIF {
     styleUrl: './testing-stepper.component.scss',
 })
 export class TestingStepperComponent implements AfterViewInit {
-    isValidate: boolean = false;
     isEditMode: boolean = false;
+    isValidate: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
@@ -82,6 +82,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     unitOfMeasureLOV: any = [];
     characteristicsList: any[] = [];
+    inspectionCardModalList: any[] = [];
 
     constructor(
         //Form Builder
@@ -103,7 +104,8 @@ export class TestingStepperComponent implements AfterViewInit {
         private _itemInspectionCardService: ItemInspectionCardService,
         // private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
-        private _router: Router
+        private _router: Router,
+        private _snackBar: MatSnackBar,
     ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
@@ -1362,6 +1364,11 @@ export class TestingStepperComponent implements AfterViewInit {
         //     this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
         // });
 
+        // Inspection Card Modal - Qualitative and Quantitative
+        this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
+            this.inspectionCardModalList = inspectionCardModal.data;
+        });
+
 
 
         this.fetchListAllItems();
@@ -1443,13 +1450,14 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataQR = storedDataQR ? JSON.parse(storedDataQR) : null;
         }
         if (this.rowDataQR) {
-            this.isEditMode = true;
             // console.log('RECEIVED QR DATA:', this.rowDataQR);
+            this.isEditMode = this.rowDataQR.isEditMode ?? false;
+            console.log('isEditMode:', this.isEditMode);
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateQualitativeResultData(this.rowDataQR);
         } else {
             console.log('NO DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
             this._qualityResultsCode
                 .getQualitativeResultCode()
@@ -1474,7 +1482,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.populateUoMData(this.rowDataUOM);
         } else {
             console.log('NO DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
         }
         // UPDATE UOM - UNIT OF MEASURE STARTS
@@ -1492,7 +1500,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.populateInspectionCharacteristicsData(this.rowDataICH);
         } else {
             console.log('NO ICH DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR INSPECTION CHARACTERISITIC
             this._inspectionCharateristics
                 .getInspectionCharacteristicsCode()
@@ -1527,7 +1535,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.loadCharacteristicsInspectionCard(this.rowDataIC.id); // Yeh API call hogi ab
         } else {
             console.log('NO DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // this.addTableRow();   // ✅ Only if creating new
             // this.addTableRowX();  // ✅ Only if creating new
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
@@ -1543,6 +1551,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 }
             });
         }
+        // UPDATE INSPECTION CARD ENDS
 
         // UPDATE ITEM SAMPLE STARTS
         //  RETRIEVING rowDataIS
@@ -1551,14 +1560,14 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataIS = storedDataIS ? JSON.parse(storedDataIS) : null;
         }
         if (this.rowDataIS) {
-            this.isEditMode = true;
+            this.isEditMode = this.rowDataIS.isEditMode ?? false;
             console.log('RECEIVED ITEM SAMPLE DATA:', this.rowDataIS);
             // POPULATE FORM, itemSamplingForm, WITH RECEIVED DATA - rowDataIS
             this.populateItemSampleFormData(this.rowDataIS);
             this.getSamplingRangeBySampleId(this.rowDataIS.id)
         } else {
             console.log('NO ITEM SAMPLE DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // GETTING AND SETTING NEXT INT COUNT FOR ITEM SAMPLE
             this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
                 const fetchedCodeIS = sampleCodeIS.data;
@@ -1572,7 +1581,7 @@ export class TestingStepperComponent implements AfterViewInit {
             });
         }
         // UPDATE ITEM SAMPLE ENDS
-        // UPDATE INSPECTION CARD ENDS
+
 
         // UPDATE ITEM INSPECTION CARD STARTS
         //  RETRIEVING rowDataIIC
@@ -1593,7 +1602,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
         } else {
             console.log('NO IIC DATA RECEIVED');
-            this.isEditMode = false;
+            // this.isEditMode = false;
             // this.addTableRow();   // ✅ Only if creating new
             // this.addTableRowX();  // ✅ Only if creating new
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
@@ -1708,22 +1717,27 @@ export class TestingStepperComponent implements AfterViewInit {
     //
     selectedControlAccountRowIndex: number = -1;
     onItemCodeClick(rowIndex: number): void {
-        //Item Inspection Card Modal
-        this._inspectionCardModal
-            .getInspectionCardModal()
-            .subscribe((inspectionCardModal) => {
-                const qualitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'qualitative' && item.isActive
-                );
-                const quantitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'quantitative' && item.isActive
-                );
+        const qualitativeData = this.inspectionCardModalList.filter(
+            (item: any) => item.type === 'qualitative' && item.isActive
+        );
 
-                this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
-                this.dataSourceItemsX = new MatTableDataSource(
-                    quantitativeData
-                ); // Quantitative data
-            });
+        this.dataSourceItems = new MatTableDataSource(qualitativeData);
+        //Item Inspection Card Modal
+        // this._inspectionCardModal
+        //     .getInspectionCardModal()
+        //     .subscribe((inspectionCardModal) => {
+        //         const qualitativeData = inspectionCardModal.data.filter(
+        //             (item: any) => item.type === 'qualitative' && item.isActive
+        //         );
+        //         const quantitativeData = inspectionCardModal.data.filter(
+        //             (item: any) => item.type === 'quantitative' && item.isActive
+        //         );
+
+        //         this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
+        //         this.dataSourceItemsX = new MatTableDataSource(
+        //             quantitativeData
+        //         ); // Quantitative data
+        //     });
 
         console.log('Row Index:', rowIndex);
         this.selectedControlAccountRowIndex = rowIndex;
@@ -1804,6 +1818,11 @@ export class TestingStepperComponent implements AfterViewInit {
     dataSourceItemsX = new MatTableDataSource([]);
 
     onItemCodeClickX(rowIndex: number): void {
+        const quantitativeData = this.inspectionCardModalList.filter(
+            (item: any) => item.type === 'quantitative' && item.isActive
+        );
+
+        this.dataSourceItemsX = new MatTableDataSource(quantitativeData);
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
             width: '70%',
@@ -1848,7 +1867,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.selectedControlAccountRowIndex = -1; // Reset index
     }
 
-    // onSubmitQualitativeResult(): void {
+    // XonSubmitQualitativeResult(): void {
     //     const qualitativePayload = {
     //         resultDescription: this.firstFormGroup.value.resultDescription
     //     }
@@ -1867,34 +1886,57 @@ export class TestingStepperComponent implements AfterViewInit {
     //   }
 
     onSubmitQualitativeResult(): void {
-        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
-
-        const formValues = this.firstFormGroup.value;
-        const { data, ...payload } = formValues; // EXCLUDING `data`
-
-        console.log('FINAL PAYLOAD:', payload);
-
-        this._qualitativeResultsService
-            .AddQualitativeResult(payload)
-            .subscribe((response) => {
-                if (response.succeeded) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                }
+        this.isValidate = true;
+        if (this.firstFormGroup.valid) {
+            // console.log('QR FORM VALUES:', this.firstFormGroup.value);
+            const formValues = this.firstFormGroup.value;
+            const { data, ...payload } = formValues; // EXCLUDING `data`
+            console.log('SENDING QR PAYLOAD:', payload);
+            // return;
+            this._qualitativeResultsService
+                .AddQualitativeResult(payload)
+                .subscribe((response) => {
+                    if (response.succeeded) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                    }
+                });
+            this.stepper.next();
+        } else {
+            this.isValidate = false;
+            this._snackBar.open('Fill the mandatory Description field.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
             });
+            return;
+        }
     }
 
     onSubmitUnitOfMeasure(): void {
-        console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
-        const formValues = this.secondFormGroup.value;
-        const payload = { ...formValues };
-        this._uommasterservice
-            .AddUnitOfMeasure(payload)
-            .subscribe((response) => {
-                if (response.succeeded) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                }
+        this.isValidate = true
+        if (this.secondFormGroup.valid) {
+            // console.log('UOM FORM VALUES:', this.secondFormGroup.value);
+            const formValues = this.secondFormGroup.value;
+            const payload = { ...formValues };
+            // console.log('SENDING UOM PAYLOAD:', payload);
+            // return;
+            this._uommasterservice
+                .AddUnitOfMeasure(payload)
+                .subscribe((response) => {
+                    if (response.succeeded) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                    }
+                });
+            this.stepper.next();
+        } else {
+            this.isValidate = false;
+            this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+                duration: 1500,
+                panelClass: ['snackbar-error']
             });
+            return;
+        }
     }
+
 
     onSubmitInspectionCharacteristics(): void {
         // console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
@@ -1956,7 +1998,10 @@ export class TestingStepperComponent implements AfterViewInit {
                 });
             this.stepper.next();
         } else {
-            console.log('FORM IS INVALID!');
+            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
             return;
         }
     }
@@ -2042,33 +2087,46 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateQualitativeResult(): void {
-        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
-        const formValues = this.firstFormGroup.value;
-        const { data, ...payload } = formValues; // EXCLUDING intCode
-        console.log(payload);
-        // return;
-        this._qualitativeResultsService
-            .UpdateQualitativeResult(payload)
-            .subscribe(
-                (response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                        setTimeout(() => {
-                            this._router.navigate(['../../'], {
-                                relativeTo: this._activatedRoute,
+        this.isValidate = true;
+        if (this.firstFormGroup.valid) {
+            const formValues = this.firstFormGroup.value;
+            const { data, ...payload } = formValues; // EXCLUDING intCode
+            this._qualitativeResultsService
+                .UpdateQualitativeResult(payload)
+                .subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Record Updated Successfully.', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-error']
                             });
-                        }, 1500);
-                    } else {
-                        console.error(
-                            'ERROR WHILE UPDATING DATA.',
-                            response.message
-                        );
+                            setTimeout(() => {
+                                this._router.navigate(['/master-data/list-of-qualitative-result'], {
+                                    relativeTo: this._activatedRoute,
+                                });
+                            }, 1500);
+                            this.clearingSessionStorage();
+                            console.log('this.isEditMode.', this.isEditMode);
+                        } else {
+                            console.error(
+                                'ERROR WHILE UPDATING DATA.',
+                                response.message
+                            );
+                        }
+                    },
+                    (error) => {
+                        console.error('API request failed:', error);
                     }
-                },
-                (error) => {
-                    console.error('API request failed:', error);
-                }
-            );
+                );
+        } else {
+            this.isValidate = false;
+            this._snackBar.open('Fill the mandatory Description field.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
     }
     // UPDATE QR - QUALITATIVE RESULT ENDS
 
@@ -2079,7 +2137,7 @@ export class TestingStepperComponent implements AfterViewInit {
             return;
         }
         // MAPPING RESPONSE
-        // console.log(data);
+        // console.log('UOM DATA TO POPULATE:',data);
         this.secondFormGroup.patchValue({
             id: this.rowDataUOM.id,
             uoMCode: this.rowDataUOM.uoMCode,
@@ -2089,31 +2147,55 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateUoM(): void {
-        // console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
-        const formValues = this.secondFormGroup.value;
-        const { ...payload } = formValues;
-        // console.log(payload);
-        // return;
-        this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(['../../'], {
+        this.isValidate = true
+        if (this.secondFormGroup.valid) {
+            const payload = this.secondFormGroup.value;
+            console.log(payload);
+            // return;
+            this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
+                        this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
                             relativeTo: this._activatedRoute,
                         });
-                    }, 1500);
-                } else {
-                    console.error(
-                        'ERROR WHILE UPDATING UOM DATA .',
-                        response.message
-                    );
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode.', this.isEditMode);
+                    }
+                },
+                (error) => {
+                    console.error('API REQUEST FAILED:', error);
+                    // EXTRACT error message FROM API RESPONSE
+                    let errorMessage = 'Something went wrong. Please try again.';
+                    if (error.error && error.error.exception && error.error.exception.id) {
+                        errorMessage = error.error.exception.id[0] || errorMessage;
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-error']
+                    });
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
+                            relativeTo: this._activatedRoute,
+                        });
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode.', this.isEditMode);
+                    }, 2000);
                 }
-            },
-            (error) => {
-                console.error('API request failed:', error);
-            }
-        );
+
+            );
+        } else {
+            this.isValidate = false
+            this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+                duration: 1500,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
     }
     // UPDATE UOM - UNIT OF MEASURE ENDS
     isDisabled = true;
@@ -2660,11 +2742,17 @@ export class TestingStepperComponent implements AfterViewInit {
                     (response) => {
                         if (response.isRequestSuccess) {
                             console.log('API run successfully.', sendingPayloadIS);
+                            this._snackBar.open('Record Updated Successfully.', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-error']
+                            });
                             setTimeout(() => {
                                 this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
                             }, 1500);
+                            this.clearingSessionStorage();
+                            console.log('this.isEditMode.', this.isEditMode);
                         } else {
-                            console.error('Error while updating item sample data.', response.message);
+                            console.error('ERROR WHILE UPDATING ITEM SAMPLE DATA.', response.message);
                         }
                     },
                     (error) => {
@@ -2675,14 +2763,37 @@ export class TestingStepperComponent implements AfterViewInit {
                 this.isValidate = false;
                 // IF THERE ARE NO VALID ROWS
                 // this.noValidRowsMessage = 'Enter valid values in the required fields.';
-                this.validatingSamplingRange = this.validatingSamplingRange || 'No valid rows to update.';
-                console.error(this.validatingSamplingRange);
+                // this.validatingSamplingRange = this.validatingSamplingRange || 'No valid rows to update.';
+                // console.error(this.validatingSamplingRange);
+                this._snackBar.open('No changes were made in Ranges. Redirecting to the main screen.', 'Close', {
+                    duration: 1500,
+                    panelClass: ['snackbar-error']
+                });
+                setTimeout(() => {
+                    this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                }, 1500);
+                this.clearingSessionStorage();
+                console.log('this.isEditMode.', this.isEditMode);
             }
         } else {
             // this.isValidate = false;
-            console.log('FORM IS INVALID!');
+            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
             return;
         }
     }
     // UPDATE ITEM SAMPLE ENDS
+
+    // CLEARING SESSION STORAGE
+    clearingSessionStorage(): void {
+        sessionStorage.removeItem('stepperDataQR');
+        sessionStorage.removeItem('stepperDataUOM');
+        sessionStorage.removeItem('stepperDataICH');
+        sessionStorage.removeItem('stepperDataIC');
+        sessionStorage.removeItem('stepperDataIS');
+        sessionStorage.removeItem('stepperDataIIC');
+        this.isEditMode = false;
+    }
 }
