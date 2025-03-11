@@ -1042,8 +1042,8 @@ export class TestingStepperComponent implements AfterViewInit {
 
     qualitativeResultPassStatusObjects: any[] = [];
     qualitativeResultFailStatusObjects: any[] = [];
-
-    XonSaveQualitativeResult(paramId: any, data: any): void {
+    // DOUBLE ARRAY IIC
+    XXonSaveQualitativeResult(paramId: any, data: any): void {
         // Clear the arrays before adding new data to avoid duplication
         this.qualitativeResultPassStatusObjects = [];
         this.qualitativeResultFailStatusObjects = [];
@@ -1156,8 +1156,9 @@ export class TestingStepperComponent implements AfterViewInit {
         this.resetDropdownCriteria();
         this.dialog.closeAll();
     }
+    // SINGLE ARRAY IIC
     onSaveQualitativeResult(paramId: any, data: any): void {
-        // Clear the array before adding new data to avoid duplication
+        // CLEAR THE ARRAY BEFORE ADDING NEW DATA TO AVOID DUPLICATION
         this.qualitativeResultPassStatusObjects = [];
 
         const filteredData = data.filteredData
@@ -1174,14 +1175,13 @@ export class TestingStepperComponent implements AfterViewInit {
                 (row: any) => row.criteria === true || row.criteria === false
             );
 
-        // Now we add all results to the PassStatus array with their correct `isPassed` value
+        // ADDING ALL INTO qualitativeResultPassStatusObjects ARRAY WITH THEIR CORRECT `isPassed` VALUE
         filteredData.forEach((item: any) => {
             const resultObject = {
                 qualitativeResultId: item.id,
                 isPassed: item.criteria === true,  // `true` for pass, `false` for fail
             };
-
-            // Adding both pass and fail items into the same PassStatus array
+            // ADDING BOTH  INTO THE SAME qualitativeResultPassStatusObjects ARRAY
             this.qualitativeResultPassStatusObjects.push(resultObject);
         });
 
@@ -1280,8 +1280,8 @@ export class TestingStepperComponent implements AfterViewInit {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSourceQRIIC.filter = filterValue.trim().toLowerCase();
     }
-
-    XsubmitItemsInspectionCardsForm(): void {
+    // DOUBLE ARRAY IIC
+    XXsubmitItemsInspectionCardsForm(): void {
         if (this.itemsInspectionCardsForm.valid) {
             const formValues = this.itemsInspectionCardsForm.value;
             console.log('Raw Form Values hehe:', formValues);
@@ -1373,368 +1373,59 @@ export class TestingStepperComponent implements AfterViewInit {
             console.log('FORM IS INVALID!');
         }
     }
-    xxsubmitItemsInspectionCardsForm(): void {
-        if (this.itemsInspectionCardsForm.valid) {
-            const formValues = this.itemsInspectionCardsForm.value;
-            console.log('Raw Form Values hehe:', formValues);
-
-            // Handle null values for itemU_QACard
-            formValues.itemU_QACard = formValues.itemU_QACard || null;
-
-            // Extract and exclude intCode
-            const { intCode, ...payload } = formValues;
-
-            // Ensure qualitativeInspectionObjects exists before using map
-            if (Array.isArray(payload.qualitativeInspectionObjects)) {
-                payload.qualitativeInspectionObjects =
-                    payload.qualitativeInspectionObjects.map((item: any) => ({
-                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                        isMandatory: item?.mandatory ?? false, // Ensure it exists
-                        qualitativeResultPassStatusObjects: this.qualitativeResultPassStatusObjects.filter(
-                            (value, index, self) =>
-                                // Remove duplicate based on qualitativeResultId
-                                index === self.findIndex((t) => t.qualitativeResultId === value.qualitativeResultId)
-                        ),
-                    }));
-            } else {
-                payload.qualitativeInspectionObjects = []; // Default to empty array
-            }
-
-            // Ensure quantitativeInspectionObjects exists before using map
-            if (Array.isArray(payload.quantitativeInspectionObjects)) {
-                payload.quantitativeInspectionObjects =
-                    payload.quantitativeInspectionObjects.map((item: any) => ({
-                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                        isMandatory: item?.mandatoryQty ?? false, // Ensure it exists
-                        uoMId: item?.uoMId ?? '', // Ensure UoM ID exists
-                        target:
-                            item?.passCriteriaTarget !== undefined
-                                ? parseFloat(item.passCriteriaTarget)
-                                : null,
-                        max:
-                            item?.passCriteriaMax !== undefined
-                                ? parseFloat(item.passCriteriaMax)
-                                : null,
-                        min:
-                            item?.passCriteriaMin !== undefined
-                                ? parseFloat(item.passCriteriaMin)
-                                : null,
-                    }));
-            } else {
-                payload.quantitativeInspectionObjects = []; // Default to empty array
-            }
-
-            // 🚀 Log the final payload before sending
-            console.log('FORM SUBMISSION PAYLOAD:', payload);
-
-            return;
-
-            // Example API call after adjustments:
-            this._itemInspectionCardService
-                .AddItemInspectionCard(payload)
-                .subscribe((response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                    } else {
-                        console.error(
-                            'ERROR WHILE ADDING DATA.',
-                            response.message
-                        );
-                    }
-                });
-        } else {
-            console.log('FORM IS INVALID!');
-        }
-    }
-    xxxsubmitItemsInspectionCardsForm(): void {
-        if (this.itemsInspectionCardsForm.valid) {
-            const formValues = this.itemsInspectionCardsForm.value;
-            console.log('Raw Form Values hehe:', formValues);
-
-            // Handle null values for itemU_QACard
-            formValues.itemU_QACard = formValues.itemU_QACard || null;
-
-            // Extract and exclude intCode
-            const { intCode, ...payload } = formValues;
-
-            // Ensure qualitativeInspectionObjects exists before using map
-            if (Array.isArray(payload.qualitativeInspectionObjects)) {
-                payload.qualitativeInspectionObjects =
-                    payload.qualitativeInspectionObjects.map((item: any) => ({
-                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                        isMandatory: item?.mandatory ?? false, // Ensure it exists
-                        qualitativeResultPassStatusObjects: this.qualitativeResultPassStatusObjects
-                            .filter(
-                                (value, index, self) =>
-                                    // Remove duplicate based on qualitativeResultId
-                                    index === self.findIndex((t) => t.qualitativeResultId === value.qualitativeResultId)
-                            ),
-                    }));
-            } else {
-                payload.qualitativeInspectionObjects = []; // Default to empty array
-            }
-
-            // Ensure quantitativeInspectionObjects exists before using map
-            if (Array.isArray(payload.quantitativeInspectionObjects)) {
-                payload.quantitativeInspectionObjects =
-                    payload.quantitativeInspectionObjects.map((item: any) => ({
-                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                        isMandatory: item?.mandatoryQty ?? false, // Ensure it exists
-                        uoMId: item?.uoMId ?? '', // Ensure UoM ID exists
-                        target:
-                            item?.passCriteriaTarget !== undefined
-                                ? parseFloat(item.passCriteriaTarget)
-                                : null,
-                        max:
-                            item?.passCriteriaMax !== undefined
-                                ? parseFloat(item.passCriteriaMax)
-                                : null,
-                        min:
-                            item?.passCriteriaMin !== undefined
-                                ? parseFloat(item.passCriteriaMin)
-                                : null,
-                    }));
-            } else {
-                payload.quantitativeInspectionObjects = []; // Default to empty array
-            }
-
-            // 🚀 Log the final payload before sending
-            console.log('FORM SUBMISSION PAYLOAD:', payload);
-
-            return;
-
-            // Example API call after adjustments:
-            this._itemInspectionCardService
-                .AddItemInspectionCard(payload)
-                .subscribe((response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                    } else {
-                        console.error(
-                            'ERROR WHILE ADDING DATA.',
-                            response.message
-                        );
-                    }
-                });
-        } else {
-            console.log('FORM IS INVALID!');
-        }
-    }
-    zzsubmitItemsInspectionCardsForm(): void {
-        if (this.itemsInspectionCardsForm.valid) {
-            const formValues = this.itemsInspectionCardsForm.value;
-            console.log('Raw Form Values hehe:', formValues);
-
-            // Handle null values for itemU_QACard
-            formValues.itemU_QACard = formValues.itemU_QACard || null;
-
-            // Extract and exclude intCode
-            const { intCode, ...payload } = formValues;
-
-            // Ensure qualitativeInspectionObjects exists before using map
-            if (Array.isArray(payload.qualitativeInspectionObjects)) {
-                payload.qualitativeInspectionObjects =
-                    payload.qualitativeInspectionObjects.map((item: any) => ({
-                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                        isMandatory: item?.mandatory ?? false, // Ensure it exists
-
-                        // Qualitative Result Pass Status Logic
-                        qualitativeResultPassStatusObjects: Array.isArray(item?.qualitativeResultPassStatusObjects)
-                            ? item.qualitativeResultPassStatusObjects.map((result: any) => {
-                                return {
-                                    qualitativeResultId: result?.qualitativeResultId ?? null,
-                                    isPassed: result?.criteria === 'true', // true for pass
-                                };
-                            })
-                            : [], // Provide empty array if undefined
-
-                        // Qualitative Result Fail Status Logic
-                        qualitativeResultFailStatusObjects: Array.isArray(item?.qualitativeResultFailStatusObjects)
-                            ? item.qualitativeResultFailStatusObjects.map((result: any) => {
-                                return {
-                                    qualitativeResultId: result?.qualitativeResultId ?? null,
-                                    isPassed: result?.criteria === 'false', // false for fail
-                                };
-                            })
-                            : [], // Provide empty array if undefined
-                    }));
-            } else {
-                payload.qualitativeInspectionObjects = []; // Default to empty array
-            }
-
-            // Ensure quantitativeInspectionObjects exists before using map
-            if (Array.isArray(payload.quantitativeInspectionObjects)) {
-                payload.quantitativeInspectionObjects =
-                    payload.quantitativeInspectionObjects.map((item: any) => ({
-                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                        isMandatory: item?.mandatoryQty ?? false, // Ensure it exists
-                        uoMId: item?.uoMId ?? '', // Ensure UoM ID exists
-                        target:
-                            item?.passCriteriaTarget !== undefined
-                                ? parseFloat(item.passCriteriaTarget)
-                                : null,
-                        max:
-                            item?.passCriteriaMax !== undefined
-                                ? parseFloat(item.passCriteriaMax)
-                                : null,
-                        min:
-                            item?.passCriteriaMin !== undefined
-                                ? parseFloat(item.passCriteriaMin)
-                                : null,
-                    }));
-            } else {
-                payload.quantitativeInspectionObjects = []; // Default to empty array
-            }
-
-            // 🚀 Log the final payload before sending
-            console.log('FORM SUBMISSION PAYLOAD:', payload);
-
-            return;
-
-            this._itemInspectionCardService
-                .AddItemInspectionCard(payload)
-                .subscribe((response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                    } else {
-                        console.error(
-                            'ERROR WHILE ADDING DATA.',
-                            response.message
-                        );
-                    }
-                });
-        } else {
-            console.log('FORM IS INVALID!');
-        }
-    }
-    qwsubmitItemsInspectionCardsForm(): void {
-        if (this.itemsInspectionCardsForm.valid) {
-            const formValues = this.itemsInspectionCardsForm.value;
-            console.log('Raw Form Values hehe:', formValues);
-
-            // Handle null values for itemU_QACard
-            formValues.itemU_QACard = formValues.itemU_QACard || null;
-
-            // Extract and exclude intCode
-            const { intCode, ...payload } = formValues;
-
-            // Ensure qualitativeInspectionObjects exists before using map
-            if (Array.isArray(payload.qualitativeInspectionObjects)) {
-                payload.qualitativeInspectionObjects =
-                    payload.qualitativeInspectionObjects.map((item: any) => ({
-                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                        isMandatory: item?.mandatory ?? false, // Ensure it exists
-
-                        // Qualitative Result Pass Status Logic
-                        qualitativeResultPassStatusObjects: Array.isArray(item?.qualitativeResultPassStatusObjects)
-                            ? item.qualitativeResultPassStatusObjects.map((result: any) => {
-                                return {
-                                    qualitativeResultId: result?.qualitativeResultId ?? null,
-                                    // Check the criteria for pass (should be true for pass)
-                                    isPassed: result?.criteria === 'true' || result?.criteria === true,
-                                };
-                            })
-                            : [], // Provide empty array if undefined
-
-                        // Qualitative Result Fail Status Logic
-                        qualitativeResultFailStatusObjects: Array.isArray(item?.qualitativeResultFailStatusObjects)
-                            ? item.qualitativeResultFailStatusObjects.map((result: any) => {
-                                return {
-                                    qualitativeResultId: result?.qualitativeResultId ?? null,
-                                    // Check the criteria for fail (should be false for fail)
-                                    isPassed: result?.criteria === 'false' || result?.criteria === false,
-                                };
-                            })
-                            : [], // Provide empty array if undefined
-                    }));
-            } else {
-                payload.qualitativeInspectionObjects = []; // Default to empty array
-            }
-
-            // Ensure quantitativeInspectionObjects exists before using map
-            if (Array.isArray(payload.quantitativeInspectionObjects)) {
-                payload.quantitativeInspectionObjects =
-                    payload.quantitativeInspectionObjects.map((item: any) => ({
-                        inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                        isMandatory: item?.mandatoryQty ?? false, // Ensure it exists
-                        uoMId: item?.uoMId ?? '', // Ensure UoM ID exists
-                        target:
-                            item?.passCriteriaTarget !== undefined
-                                ? parseFloat(item.passCriteriaTarget)
-                                : null,
-                        max:
-                            item?.passCriteriaMax !== undefined
-                                ? parseFloat(item.passCriteriaMax)
-                                : null,
-                        min:
-                            item?.passCriteriaMin !== undefined
-                                ? parseFloat(item.passCriteriaMin)
-                                : null,
-                    }));
-            } else {
-                payload.quantitativeInspectionObjects = []; // Default to empty array
-            }
-
-            // 🚀 Log the final payload before sending
-            console.log('FORM SUBMISSION PAYLOAD:', payload);
-
-            return;
-
-            this._itemInspectionCardService
-                .AddItemInspectionCard(payload)
-                .subscribe((response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                    } else {
-                        console.error(
-                            'ERROR WHILE ADDING DATA.',
-                            response.message
-                        );
-                    }
-                });
-        } else {
-            console.log('FORM IS INVALID!');
-        }
-    }
+    // SINGLE ARRAY IIC- 10032025
     submitItemsInspectionCardsForm(): void {
         if (this.itemsInspectionCardsForm.valid) {
             const formValues = this.itemsInspectionCardsForm.value;
-            console.log('Raw Form Values hehe:', formValues);
+            console.log('IIC FORM VALUES:', formValues);
     
             // Handle null values for itemU_QACard
             formValues.itemU_QACard = formValues.itemU_QACard || null;
     
-            // Extract and exclude intCode
-            const { intCode, ...payload } = formValues;
+            const { intCode, ...payload } = formValues; // EXCLUDING intCode
     
-            // Ensure qualitativeInspectionObjects exists before using map
+            // ✅ DEBUG: Checking qualitativeInspectionObjects before processing
+            console.log("Raw qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
+    
+            //  ENSURE qualitativeInspectionObjects EXISTS BEFORE USING map
             if (Array.isArray(payload.qualitativeInspectionObjects)) {
                 payload.qualitativeInspectionObjects =
                     payload.qualitativeInspectionObjects.map((item: any) => {
+                        console.log("Processing qualitative item:", item);
+    
                         const qualitativeResultPassStatusObjects = [];
     
-                        // **Yahaan par pass/fail ko handle karo directly**
                         if (item?.qualitativeResultPassStatusObjects && item?.qualitativeResultPassStatusObjects.length > 0) {
+                            console.log("✅ qualitativeResultPassStatusObjects found:", item.qualitativeResultPassStatusObjects);
+    
                             item.qualitativeResultPassStatusObjects.forEach((result: any) => {
                                 qualitativeResultPassStatusObjects.push({
                                     qualitativeResultId: result?.qualitativeResultId ?? null,
                                     isPassed: result?.isPassed ?? false
                                 });
                             });
+                        } else {
+                            console.warn("⚠️ qualitativeResultPassStatusObjects is missing or empty for item:", item);
                         }
     
                         return {
-                            inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
-                            isMandatory: item?.mandatory ?? false, // Ensure it exists
-                            qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // Set Pass Array
-                            qualitativeResultFailStatusObjects: [], // Yahan fail status ko handle karo agar zarurat ho to
+                            inspectionCharacteristicId: item?.id ?? null,
+                            isMandatory: item?.mandatory ?? false,
+                            qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
+                            qualitativeResultFailStatusObjects: [],
                         };
                     });
+    
+                console.log("✅ Final qualitativeInspectionObjects after processing:", payload.qualitativeInspectionObjects);
             } else {
-                payload.qualitativeInspectionObjects = []; // Agar array nahi hai to empty set karo
+                console.warn("⚠️ qualitativeInspectionObjects is not an array, setting empty array.");
+                payload.qualitativeInspectionObjects = [];
             }
     
-            // **Quantitative Results ko handle karo agar zarurat ho:**
+            // ✅ DEBUG: Checking quantitativeInspectionObjects before processing
+            console.log("Raw quantitativeInspectionObjects:", payload.quantitativeInspectionObjects);
+    
+            //  ENSURE quantitativeInspectionObjects EXISTS BEFORE USING map
             if (Array.isArray(payload.quantitativeInspectionObjects)) {
                 payload.quantitativeInspectionObjects =
                     payload.quantitativeInspectionObjects.map((item: any) => ({
@@ -1752,33 +1443,31 @@ export class TestingStepperComponent implements AfterViewInit {
                             : null,
                     }));
             } else {
-                payload.quantitativeInspectionObjects = []; // Default to empty array
+                console.warn("⚠️ quantitativeInspectionObjects is not an array, setting empty array.");
+                payload.quantitativeInspectionObjects = [];
             }
     
-            // 🚀 Log the final payload before sending
-            console.log('FORM SUBMISSION PAYLOAD:', payload);
+            // ✅ FINAL PAYLOAD CHECK
+            console.log('IIC FINAL PAYLOAD TO API:', payload);
+            // return;
     
-            // return; // Test ke liye return laga diya taake API call na ho
-    
-            // Actual submission logic
             this._itemInspectionCardService
                 .AddItemInspectionCard(payload)
                 .subscribe((response) => {
                     if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
+                        console.log('✅ API RUN SUCCESSFULLY.', payload);
                     } else {
-                        console.error('ERROR WHILE ADDING DATA.', response.message);
+                        console.error('❌ ERROR WHILE ADDING DATA.', response.message);
                     }
                 });
         } else {
-            console.log('FORM IS INVALID!');
+            console.log('❌ FORM IS INVALID!');
         }
     }
-    
-    
-
-
     // ITEM INSPECTION CARD ENDS
+
+    
+
 
     loadCharacteristicsInspectionCard(id: string): void {
         this._inspectionCardService
@@ -2946,30 +2635,33 @@ export class TestingStepperComponent implements AfterViewInit {
 
                         // Populate QUALITATIVE FormArray
                         data.qualitativeInspectionObjects.forEach((qualitative) => {
+                            // Get pass and fail descriptions from the single array
+                            const passDescriptions = qualitative.qualitativeResultPassStatusResults
+                                .filter((item) => item.isPassed)
+                                .map((item) => item.resultDescription || '')
+                                .join(', ');
+
+                            const failDescriptions = qualitative.qualitativeResultPassStatusResults
+                                .filter((item) => !item.isPassed)
+                                .map((item) => item.resultDescription || '')
+                                .join(', ');
+
                             this.qualitativeInspectionObjects.push(
                                 this.fb.group({
-                                    inspectionCharacteristicId: [qualitative.inspectionCharacteristicId, Validators.required],
-                                    // parameter: [qualitative.parameter, Validators.required],
-                                    // passCriteria: [qualitative.passCriteria, Validators.required],
+                                    id: [qualitative.id, Validators.required],
+                                    qualitativeInspectionId: [qualitative.qualitativeInspectionId ?? null], // ✅ FIXED: Save characteristicId
                                     parameter: [qualitative.inspectionCharacteristicName, Validators.required],
                                     passCriteria: [qualitative.inspectionCharacteristicSingleCriteria, Validators.required],
                                     mandatory: [qualitative.isMandatory],
+                                    pass: [passDescriptions], // ✅ Extracted from isPassed=true
+                                    fail: [failDescriptions], // ✅ Extracted from isPassed=false
                                     qualitativeResultPassStatusObjects: this.fb.array(
-                                        qualitative.qualitativeResultPassStatusResults.map(
-                                            (passStatus) =>
-                                                this.fb.group({
-                                                    qualitativeResultId: [passStatus.qualitativeResultId, Validators.required],
-                                                    isPassed: [passStatus.isPassed],
-                                                })
-                                        )
-                                    ),
-                                    qualitativeResultFailStatusObjects: this.fb.array(
-                                        qualitative.qualitativeResultFailStatusResults.map(
-                                            (failStatus) =>
-                                                this.fb.group({
-                                                    qualitativeResultId: [failStatus.qualitativeResultId, Validators.required],
-                                                    isPassed: [failStatus.isPassed],
-                                                })
+                                        qualitative.qualitativeResultPassStatusResults.map((status) =>
+                                            this.fb.group({
+                                                qualitativeResultId: [status.qualitativeResultId, Validators.required],
+                                                isPassed: [status.isPassed],
+                                                resultDescription: [status.resultDescription || ''],
+                                            })
                                         )
                                     ),
                                 })
@@ -2980,11 +2672,10 @@ export class TestingStepperComponent implements AfterViewInit {
                         data.quantitativeInspectionResults.forEach((quantitative) => {
                             this.quantitativeInspectionObjects.push(
                                 this.fb.group({
-                                    inspectionCharacteristicId: [quantitative.inspectionCharacteristicId, Validators.required],
+                                    id: [quantitative.id, Validators.required],
+                                    characteristicId: [quantitative.quantitativeInspectionId ?? null], // ✅ FIXED: Save characteristicId
                                     parameterQty: [quantitative.inspectionCharacteristicName, Validators.required],
-                                    // parameterQty: [quantitative.parameterQty, Validators.required],
-                                    // uoMId: [quantitative.uoMId, Validators.required],
-                                    uoMId: [quantitative.uoMName, Validators.required],
+                                    uoMId: [quantitative.uoMId, Validators.required],
                                     mandatoryQty: [quantitative.isMandatory],
                                     passCriteriaTarget: [quantitative.target, Validators.required],
                                     passCriteriaMax: [quantitative.max, Validators.required],
@@ -3016,9 +2707,78 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateItemInspectionCard(): void {
-        console.log('UPDATED FORM VALUES:', this.itemsInspectionCardsForm.value);
+        console.log('UPDATED IIC FORM VALUES:', this.itemsInspectionCardsForm.value);
+        const formValue = this.itemsInspectionCardsForm.value;
 
+        // Ensure qualitativeInspectionObjects is properly initialized
+        const qualitativeInspectionObjects = formValue.qualitativeInspectionObjects && Array.isArray(formValue.qualitativeInspectionObjects)
+            ? formValue.qualitativeInspectionObjects.map((item: any) => ({
+                id: item.id,
+                qualitativeInspectionId: item.qualitativeInspectionId,
+                isActive: true,
+                isMandatory: item.mandatory,
+                qualitativeResultPassStatusResults: item.qualitativeResultPassStatusObjects ? item.qualitativeResultPassStatusObjects.map((result: any) => ({
+                    qualitativeResultId: result.qualitativeResultId,
+                    isPassed: result.isPassed,
+                })) : [],
+                qualitativeResultFailStatusResults: item.qualitativeResultFailStatusObjects ? item.qualitativeResultFailStatusObjects.map((result: any) => ({
+                    qualitativeResultId: result.qualitativeResultId,
+                    isPassed: result.isPassed,
+                })) : [],
+            }))
+            : [];
+
+        // Ensure quantitativeInspectionObjects is properly initialized
+        const quantitativeInspectionObjects = formValue.quantitativeInspectionObjects && Array.isArray(formValue.quantitativeInspectionObjects)
+            ? formValue.quantitativeInspectionObjects.map((item: any) => ({
+                id: item.id,
+                quantitiveInspectionId: item.characteristicId ?? null,
+                isActive: true,
+                isMandatory: item.mandatoryQty,
+                uoMId: item.uoMId,
+                target: item.passCriteriaTarget ? parseFloat(item.passCriteriaTarget) : null,
+                max: item.passCriteriaMax ? parseFloat(item.passCriteriaMax) : null,
+                min: item.passCriteriaMin ? parseFloat(item.passCriteriaMin) : null,
+            }))
+            : [];
+
+        // Creating the request body for the PUT request
+        const putRequestBodyIIC = {
+            id: formValue.id,
+            isActive: true,
+            qualitativeInspectionResults: qualitativeInspectionObjects,
+            quantitativeInspectionResults: quantitativeInspectionObjects,
+        };
+
+        console.log("Final API Request Body:", putRequestBodyIIC);
+        // return;
+
+        this._itemInspectionCardService
+            .onUpdateItemInspectionCardBothCharacteristics(putRequestBodyIIC)
+            .subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', putRequestBodyIIC);
+                        // setTimeout(() => {
+                        //     this._router.navigate(
+                        //         ['/master-data/list-of-items-inspection-cards'],
+                        //         { relativeTo: this._activatedRoute }
+                        //     );
+                        // }, 1500);
+                    } else {
+                        console.error(
+                            'ERROR WHILE UPDATING ITEM INSPECTION CARD.',
+                            response.message
+                        );
+                    }
+                },
+                (error) => {
+                    console.error('API REQUEST FAILED:', error);
+                }
+            );
     }
+
+
 
 
 
