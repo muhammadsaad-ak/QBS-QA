@@ -476,8 +476,6 @@
             <!-- ITEM DESCRIPTION -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Item Description</mat-label>
-              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
-                *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="itemDescription" required readonly
                 [value]="selectedItemDescriptionICC ? selectedItemDescriptionICC : ''">
             </mat-form-field>
@@ -492,21 +490,12 @@
             <!-- CARD DESCRIPTION -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Card Description</mat-label>
-              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
-                *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="cardDescription" required readonly
                 [value]="selectedCardDescription ? selectedCardDescription : ''">
             </mat-form-field>
           </div>
 
           <!-- HIDDEN FIELDS -->
-          <!-- ITEM INSPECTION CARD ID -->
-          <div class="w-full">
-            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-              <mat-label>INSPECTION CARD ID</mat-label>
-              <input matInput type="text" class="text-sm" formControlName="id" readonly>
-            </mat-form-field>
-          </div>
           <!-- itemName,itemType,itemGroupCode,itemU_QACard,itemUoMGroupEntry,Card ID -->
           <div class="w-full mt-4 hidden">
             <div class="px-6 flex space-x-10">
@@ -549,6 +538,13 @@
                   <input matInput type="text" class="text-sm" formControlName="inspectionCardId" readonly>
                 </mat-form-field>
               </div>
+            </div>
+            <!-- ITEM INSPECTION CARD ID -->
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>INSPECTION CARD ID</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="id" readonly>
+              </mat-form-field>
             </div>
           </div>
           <!-- UPPER FIELDS SECTION ENDS -->
