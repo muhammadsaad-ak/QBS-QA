@@ -9,7 +9,7 @@
             <div class="relative flex-0 flex-col px-6 py-2 md:px-8">
                 <!-- Title -->
                 <div class="text-3xl font-extrabold tracking-tight">
-                    Qualitative Result
+                    Qualitative Results
                 </div>
             </div>
             <!-- Search & Add button -->
@@ -79,19 +79,8 @@
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Action </th>
                                 <td mat-cell *matCellDef="let element">
-                                    <button mat-icon-button [matMenuTriggerFor]="menu">
-                                        <mat-icon class="icon-size-5"
-                                            [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
-                                    </button>
-                                    <mat-menu #menu="matMenu">
-                                        <button mat-menu-item class="text-blue-400"
-                                            (click)="openStepperToUpdateQR(element)">
-                                            <!-- (click)="openQRUpdateDrawer('visitprofile', element)" -->
-                                            Edit
-                                            <mat-icon svgIcon="heroicons_outline:pencil"
-                                                class="text-blue-400"></mat-icon>
-                                        </button>
-                                    </mat-menu>
+                                    <mat-icon svgIcon="heroicons_outline:pencil" class="mat-icon-primary cursor-pointer"
+                                        (click)="openStepperToUpdateQR(element)"></mat-icon>
                                 </td>
                             </ng-container>
 
