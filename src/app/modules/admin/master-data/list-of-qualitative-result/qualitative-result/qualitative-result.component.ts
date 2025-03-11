@@ -152,7 +152,10 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
 
   openStepperToUpdateQR(rowData: any): void {
     // console.log('SENDING DATA:', rowData);
-    sessionStorage.setItem('stepperDataQR', JSON.stringify(rowData));
+    const dataToSendIntoStepperQR = {
+      ...rowData, isEditMode: true // Send isEditMode as true
+    };
+    sessionStorage.setItem('stepperDataQR', JSON.stringify(dataToSendIntoStepperQR));
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
       queryParams: { step: 0 }
     });

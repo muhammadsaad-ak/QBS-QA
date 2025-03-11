@@ -22,7 +22,7 @@ import { ItemSamplesService } from 'app/core/other-core-services/module/item-sam
 import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
 import { qualitativeInspectionIF, quantitativeInspectionIF, } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
 // Item Inspection Card
 interface RowData {
     id: string;
@@ -67,6 +67,7 @@ interface itemSamplingRangeIF {
 })
 export class TestingStepperComponent implements AfterViewInit {
     isEditMode: boolean = false;
+    isValidate = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
@@ -102,7 +103,8 @@ export class TestingStepperComponent implements AfterViewInit {
         private _itemInspectionCardService: ItemInspectionCardService,
         // private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
-        private _router: Router
+        private _router: Router,
+        private _snackBar: MatSnackBar,
     ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
@@ -1441,8 +1443,9 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataQR = storedDataQR ? JSON.parse(storedDataQR) : null;
         }
         if (this.rowDataQR) {
-            this.isEditMode = true;
             // console.log('RECEIVED QR DATA:', this.rowDataQR);
+            this.isEditMode = this.rowDataQR.isEditMode ?? false;
+            console.log('isEditMode:', this.isEditMode);
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateQualitativeResultData(this.rowDataQR);
         } else {
@@ -1588,23 +1591,23 @@ export class TestingStepperComponent implements AfterViewInit {
             // this._itemInspectionCardService
             //     .getBothCharacteristicsByItemInspectionCard(this.rowDataIIC.id)
             //     .subscribe();
-           
+
         } else {
             console.log('NO IIC DATA RECEIVED');
             // this.isEditMode = false;
             // this.addTableRow();   // ✅ Only if creating new
             // this.addTableRowX();  // ✅ Only if creating new
             // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
-                // Inspection Card Code Get API.
-        // this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
-        //     const y = inspectionCardCode.data; // 13 mil raha hai
-        //     console.log('Fetched Code:', y); // Check for debugging
+            // Inspection Card Code Get API.
+            // this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+            //     const y = inspectionCardCode.data; // 13 mil raha hai
+            //     console.log('Fetched Code:', y); // Check for debugging
 
-        //     if (y) {
-        //         const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
-        //         this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
-        //     }
-        // });
+            //     if (y) {
+            //         const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
+            //         this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+            //     }
+            // });
         }
     }
 
@@ -1846,7 +1849,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.selectedControlAccountRowIndex = -1; // Reset index
     }
 
-    // onSubmitQualitativeResult(): void {
+    // XonSubmitQualitativeResult(): void {
     //     const qualitativePayload = {
     //         resultDescription: this.firstFormGroup.value.resultDescription
     //     }
@@ -1865,20 +1868,29 @@ export class TestingStepperComponent implements AfterViewInit {
     //   }
 
     onSubmitQualitativeResult(): void {
-        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
-
-        const formValues = this.firstFormGroup.value;
-        const { data, ...payload } = formValues; // EXCLUDING `data`
-
-        console.log('FINAL PAYLOAD:', payload);
-
-        this._qualitativeResultsService
-            .AddQualitativeResult(payload)
-            .subscribe((response) => {
-                if (response.succeeded) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                }
+        this.isValidate = true;
+        if (this.firstFormGroup.valid) {
+            // console.log('QR FORM VALUES:', this.firstFormGroup.value);
+            const formValues = this.firstFormGroup.value;
+            const { data, ...payload } = formValues; // EXCLUDING `data`
+            console.log('SENDING QR PAYLOAD:', payload);
+            // return;
+            this._qualitativeResultsService
+                .AddQualitativeResult(payload)
+                .subscribe((response) => {
+                    if (response.succeeded) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                    }
+                });
+            this.stepper.next();
+        } else {
+            this.isValidate = false;
+            this._snackBar.open('Fill the mandatory Description field.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
             });
+            return;
+        }
     }
 
     onSubmitUnitOfMeasure(): void {
@@ -2038,33 +2050,49 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateQualitativeResult(): void {
-        console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
-        const formValues = this.firstFormGroup.value;
-        const { data, ...payload } = formValues; // EXCLUDING intCode
-        console.log(payload);
-        // return;
-        this._qualitativeResultsService
-            .UpdateQualitativeResult(payload)
-            .subscribe(
-                (response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                        setTimeout(() => {
-                            this._router.navigate(['../../'], {
-                                relativeTo: this._activatedRoute,
+        this.isValidate = true;
+        if (this.firstFormGroup.valid) {
+            // console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
+            const formValues = this.firstFormGroup.value;
+            const { data, ...payload } = formValues; // EXCLUDING intCode
+            console.log(payload);
+            // return;
+            this._qualitativeResultsService
+                .UpdateQualitativeResult(payload)
+                .subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Record Updated Successfully.', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-error']
                             });
-                        }, 1500);
-                    } else {
-                        console.error(
-                            'ERROR WHILE UPDATING DATA.',
-                            response.message
-                        );
+                            setTimeout(() => {
+                                this._router.navigate(['/master-data/list-of-qualitative-result'], {
+                                    relativeTo: this._activatedRoute,
+                                });
+                            }, 1500);
+                            this.isEditMode = false;
+                            console.log('this.isEditMode.', this.isEditMode);
+                        } else {
+                            console.error(
+                                'ERROR WHILE UPDATING DATA.',
+                                response.message
+                            );
+                        }
+                    },
+                    (error) => {
+                        console.error('API request failed:', error);
                     }
-                },
-                (error) => {
-                    console.error('API request failed:', error);
-                }
-            );
+                );
+        } else {
+            this.isValidate = false;
+            this._snackBar.open('Fill the mandatory Description field.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
     }
     // UPDATE QR - QUALITATIVE RESULT ENDS
 
@@ -2298,7 +2326,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // MAPPING RESPONSE
         // console.log(data);
         const formattedCardintCode =
-        'IC-' + this.rowDataIIC.inspectionCardIntCode.toString().padStart(5, '0');
+            'IC-' + this.rowDataIIC.inspectionCardIntCode.toString().padStart(5, '0');
         this.itemsInspectionCardsForm.patchValue({
             id: this.rowDataIIC.id,
             itemCode: this.rowDataIIC.itemCode,
@@ -2426,11 +2454,11 @@ export class TestingStepperComponent implements AfterViewInit {
                 (res) => {
                     if (res.isRequestSuccess && res.data) {
                         const data = res.data;
-    
+
                         // Clear existing FormArrays
                         this.qualitativeInspectionObjects.clear();
                         this.quantitativeInspectionObjects.clear();
-    
+
                         // Populate QUALITATIVE FormArray
                         data.qualitativeInspectionObjects.forEach((qualitative) => {
                             this.qualitativeInspectionObjects.push(
@@ -2462,7 +2490,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                 })
                             );
                         });
-    
+
                         // Populate QUANTITATIVE FormArray
                         data.quantitativeInspectionResults.forEach((quantitative) => {
                             this.quantitativeInspectionObjects.push(
@@ -2479,7 +2507,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                 })
                             );
                         });
-    
+
                         // ✅ Update MatTableDataSource after populating FormArrays
                         if (!this.dataSourceQualitativeInspection) {
                             this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
@@ -2487,11 +2515,11 @@ export class TestingStepperComponent implements AfterViewInit {
                         if (!this.dataSourceQuantitativeInspection) {
                             this.dataSourceQuantitativeInspection = new MatTableDataSource<quantitativeInspectionIF>([]);
                         }
-    
+
                         // Assign FormArray values to dataSources
                         this.dataSourceQualitativeInspection.data = this.qualitativeInspectionObjects.value;
                         this.dataSourceQuantitativeInspection.data = this.quantitativeInspectionObjects.value;
-    
+
                         console.log('✅ Qualitative Loaded:', this.qualitativeInspectionObjects.value);
                         console.log('✅ Quantitative Loaded:', this.quantitativeInspectionObjects.value);
                     } else {
@@ -2504,11 +2532,11 @@ export class TestingStepperComponent implements AfterViewInit {
 
     onUpdateItemInspectionCard(): void {
         console.log('UPDATED FORM VALUES:', this.itemsInspectionCardsForm.value);
-     
+
     }
-    
-    
-    
+
+
+
 
     //Close The Dialog Box
 
