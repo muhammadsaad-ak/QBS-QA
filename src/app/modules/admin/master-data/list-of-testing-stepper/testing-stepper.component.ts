@@ -1910,17 +1910,31 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onSubmitUnitOfMeasure(): void {
-        console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
-        const formValues = this.secondFormGroup.value;
-        const payload = { ...formValues };
-        this._uommasterservice
-            .AddUnitOfMeasure(payload)
-            .subscribe((response) => {
-                if (response.succeeded) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                }
+        this.isValidate = true
+        if (this.secondFormGroup.valid) {
+            // console.log('UOM FORM VALUES:', this.secondFormGroup.value);
+            const formValues = this.secondFormGroup.value;
+            const payload = { ...formValues };
+            // console.log('SENDING UOM PAYLOAD:', payload);
+            // return;
+            this._uommasterservice
+                .AddUnitOfMeasure(payload)
+                .subscribe((response) => {
+                    if (response.succeeded) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                    }
+                });
+            this.stepper.next();
+        } else {
+            this.isValidate = false;
+            this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+                duration: 1500,
+                panelClass: ['snackbar-error']
             });
+            return;
+        }
     }
+
 
     onSubmitInspectionCharacteristics(): void {
         // console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
@@ -2068,11 +2082,8 @@ export class TestingStepperComponent implements AfterViewInit {
     onUpdateQualitativeResult(): void {
         this.isValidate = true;
         if (this.firstFormGroup.valid) {
-            // console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
             const formValues = this.firstFormGroup.value;
             const { data, ...payload } = formValues; // EXCLUDING intCode
-            console.log(payload);
-            // return;
             this._qualitativeResultsService
                 .UpdateQualitativeResult(payload)
                 .subscribe(
@@ -2088,7 +2099,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                     relativeTo: this._activatedRoute,
                                 });
                             }, 1500);
-                            this.isEditMode = false;
+                            this.clearingSessionStorage();
                             console.log('this.isEditMode.', this.isEditMode);
                         } else {
                             console.error(
@@ -2119,7 +2130,7 @@ export class TestingStepperComponent implements AfterViewInit {
             return;
         }
         // MAPPING RESPONSE
-        // console.log(data);
+        // console.log('UOM DATA TO POPULATE:',data);
         this.secondFormGroup.patchValue({
             id: this.rowDataUOM.id,
             uoMCode: this.rowDataUOM.uoMCode,
@@ -2129,31 +2140,55 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateUoM(): void {
-        // console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
-        const formValues = this.secondFormGroup.value;
-        const { ...payload } = formValues;
-        // console.log(payload);
-        // return;
-        this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(['../../'], {
+        this.isValidate = true
+        if (this.secondFormGroup.valid) {
+            const payload = this.secondFormGroup.value;
+            console.log(payload);
+            // return;
+            this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
+                        this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
                             relativeTo: this._activatedRoute,
                         });
-                    }, 1500);
-                } else {
-                    console.error(
-                        'ERROR WHILE UPDATING UOM DATA .',
-                        response.message
-                    );
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode.', this.isEditMode);
+                    }
+                },
+                (error) => {
+                    console.error('API REQUEST FAILED:', error);
+                      // EXTRACT error message FROM API RESPONSE
+                    let errorMessage = 'Something went wrong. Please try again.';
+                    if (error.error && error.error.exception && error.error.exception.id) {
+                        errorMessage = error.error.exception.id[0] || errorMessage;
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-error']
+                    });
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
+                            relativeTo: this._activatedRoute,
+                        });
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode.', this.isEditMode);
+                    }, 2000);
                 }
-            },
-            (error) => {
-                console.error('API request failed:', error);
-            }
-        );
+                
+            );
+        } else {
+            this.isValidate = false
+            this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+                duration: 1500,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
     }
     // UPDATE UOM - UNIT OF MEASURE ENDS
     isDisabled = true;
@@ -2689,4 +2724,15 @@ export class TestingStepperComponent implements AfterViewInit {
         );
     }
     // UPDATE ITEM SAMPLE ENDS
+
+    // CLEARING SESSION STORAGE
+    clearingSessionStorage(): void {
+        sessionStorage.removeItem('stepperDataQR');
+        sessionStorage.removeItem('stepperDataUOM');
+        sessionStorage.removeItem('stepperDataICH');
+        sessionStorage.removeItem('stepperDataIC');
+        sessionStorage.removeItem('stepperDataIS');
+        sessionStorage.removeItem('stepperDataIIC');
+        this.isEditMode = false;
+    }
 }
