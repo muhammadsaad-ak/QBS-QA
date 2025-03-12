@@ -178,7 +178,8 @@
                 <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'">
                   <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'" class="mb-2"
                     [value]="'qualitative'"
-                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}"
+                    (change)="updateSingleCriteriaValidation()">
                     Qualitative Inspection
                   </mat-radio-button>
                   <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'" class="mb-2"
