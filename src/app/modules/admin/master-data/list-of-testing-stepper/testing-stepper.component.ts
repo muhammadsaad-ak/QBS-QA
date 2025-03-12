@@ -2314,12 +2314,13 @@ export class TestingStepperComponent implements AfterViewInit {
                                 panelClass: ['snackbar-error']
                             });
                             setTimeout(() => {
-                                this._router.navigate(['/master-data/list-of-inspection-management'], {
-                                    relativeTo: this._activatedRoute,
-                                });
-                            }, 1500);
-                            this.clearingSessionStorage();
-                            this.isEditMode = false;
+                                this._router.navigate(['/master-data/list-of-inspection-management'], { relativeTo: this._activatedRoute });
+                                this.clearingSessionStorage();
+                            }, 1600);
+                            setTimeout(() => {
+                                this.clearingSessionStorage();
+                                this.isEditMode = false;
+                            }, 2000);
                             console.log('this.isEditMode.', this.isEditMode);
                         } else {
                             console.error(
