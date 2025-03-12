@@ -23,6 +23,9 @@ import { QualitativeResultsService } from 'app/core/other-core-services/module/q
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
 import { qualitativeInspectionIF, quantitativeInspectionIF, } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
+
+
+
 // Item Inspection Card
 interface RowData {
     id: string;
@@ -86,6 +89,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     constructor(
         //Form Builder
+        private cdr: ChangeDetectorRef,
         private _formBuilder: FormBuilder,
         private dialog: MatDialog,
         private fb: FormBuilder,
@@ -100,12 +104,12 @@ export class TestingStepperComponent implements AfterViewInit {
         private _qualitativeResultsService: QualitativeResultsService,
         private _inspectionCardService: InspectionCardService,
         private _inspectionCardServiceCardID: InspectionCardService,
+        private _snackBar: MatSnackBar,
         // Item Inspection Card
         private _itemInspectionCardService: ItemInspectionCardService,
         // private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
-        private _snackBar: MatSnackBar,
     ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
@@ -1466,7 +1470,10 @@ export class TestingStepperComponent implements AfterViewInit {
                     const fullCode = `QR-000${qualityResultCode.data || ''}`;
                     this.firstFormGroup.get('data')?.setValue(fullCode);
                 });
+                
+                
         }
+        
         // UPDATE QUALITATIVE RESULT ENDS
 
         // UPDATE UOM - UNIT OF MEASURE STARTS
@@ -2006,67 +2013,81 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     // Submit Inspection Card
+
     onSubmitInspectionCard() {
+        const formValue = this.fifthFormGroup.value;
+    
+        // ✅ Validation: At least one qualitative and one quantitative characteristic required in form
+        const hasQualitative = formValue.qualitativeTableCriteria.length > 0;
+        const hasQuantitative = formValue.quantitativeTableCriteria.length > 0;
+    
+        if (!hasQualitative || !hasQuantitative) {
+            this._snackBar.open('At least one qualitative and one quantitative characteristic is required.', 'Close', { 
+                duration: 3000, 
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+    
         // Fetch all inspection characteristics first
-
         this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
-            // Map all characteristics with their description and ID
-
             const mappedIds = charResponse.data.map((char: any) => ({
                 description: char.description,
                 id: char.id,
             }));
-
-            const formValue = this.fifthFormGroup.value;
-
-            // Map IDs for both qualitative and quantitative criteria
-            // Find matching qualitative IDs based on the form's parameters
-
+    
+            // Find matching qualitative IDs
             const qualitativeIds = formValue.qualitativeTableCriteria
-                .map(
-                    (item) =>
-                        mappedIds.find(
-                            (char) => char.description === item.parameter
-                        )?.id
-                )
-                .filter(Boolean); // Remove undefined/null values
-
-            //Find matching quantitative IDs based on the form's parameters
+                .map((item) => mappedIds.find((char) => char.description === item.parameter)?.id)
+                .filter(Boolean);
+    
+            // Find matching quantitative IDs
             const quantitativeIds = formValue.quantitativeTableCriteria
-                .map(
-                    (item) =>
-                        mappedIds.find(
-                            (char) => char.description === item.parameterX
-                        )?.id
-                )
-                .filter(Boolean); // Remove undefined/null values
-
-            //Combine both qualitative and quantitative IDs
-
-            const characteristicsIds = [
-                ...qualitativeIds,
-                ...quantitativeIds,
-            ];
-
-            //✅ Final payload to send in API
-
+                .map((item) => mappedIds.find((char) => char.description === item.parameterX)?.id)
+                .filter(Boolean);
+    
+            // ✅ Validation: Ensure mapped IDs are not empty
+            if (qualitativeIds.length === 0 || quantitativeIds.length === 0) {
+                this._snackBar.open('At least one valid qualitative and one valid quantitative characteristic is required.', 'Close', { 
+                    duration: 3000, 
+                    panelClass: ['snackbar-error']
+                });
+                return;
+            }
+    
+            // ✅ Final API payload
             const apiPayload = {
                 description: formValue.description,
-                // type: 'qualitative',  // Set type dynamically if needed
                 isActive: formValue.isActive,
-                characteristicsIds,
+                characteristicsIds: [...qualitativeIds, ...quantitativeIds],
             };
-
+    
             console.log('Final API Payload:', apiPayload);
-
-            //Send data to the Add Inspection Card API
-
+    
             this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
-                (response) => console.log('API Response:', response),
-                (error) => console.error('API Error:', error)
+                (response) => {
+                    console.log('✅ API Response:', response);
+    
+                    if (response?.isRequestSuccess) { // ✅ Correct condition
+                        console.log('🎉 API RUN SUCCESSFULLY:', apiPayload);
+                        this.stepper.next(); // ✅ Stepper ab aage badega
+                    } else {
+                        console.warn('⚠️ API Response Did Not Succeed:', response);
+                    }
+                },
+                (error) => {
+                    console.error('❌ API Error:', error);
+                    this._snackBar.open('Something went wrong. Please try again.', 'Close', { 
+                        duration: 3000, 
+                        panelClass: ['snackbar-error']
+                    });
+                }
             );
         });
     }
+    
+    
+    
 
     // UPDATE QUALITATIVE RESULT STARTS
     populateQualitativeResultData(data: any): void {
@@ -2298,16 +2319,34 @@ export class TestingStepperComponent implements AfterViewInit {
     onUpdateInspectionCard(): void {
         console.log('UPDATED FORM VALUES:', this.fifthFormGroup.value);
         const formValues = this.fifthFormGroup.value;
-
-        const { intCode, qualitativeTableCriteria, quantitativeTableCriteria, ...restFormValues } = formValues;
-
+    
+        const { description, qualitativeTableCriteria, quantitativeTableCriteria, ...restFormValues } = formValues;
+    
+        // ✅ Validation: Description, At least one qualitative and one quantitative characteristic required
+        const hasDescription = description && description.trim().length > 0; // ✅ Description should not be empty
+        const hasQualitative = qualitativeTableCriteria.length > 0;
+        const hasQuantitative = quantitativeTableCriteria.length > 0;
+    
+        if (!hasDescription || !hasQualitative || !hasQuantitative) {
+            let errorMessage = 'Please fill all required fields:\n';
+            if (!hasDescription) errorMessage += '- Description is required.\n';
+            if (!hasQualitative) errorMessage += '- At least one qualitative characteristic is required.\n';
+            if (!hasQuantitative) errorMessage += '- At least one quantitative characteristic is required.\n';
+    
+            this._snackBar.open(errorMessage, 'Close', { 
+                duration: 4000, 
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+    
         // ✅ Sare characteristics le aao (jaise add ke waqt karte ho)
         this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
             const mappedIds = charResponse.data.map((char: any) => ({
                 description: char.description,
                 id: char.id,
             }));
-
+    
             // ✅ Sirf naye qualitative IDs
             const newQualitativeIds = this.qualitativeTableCriteria.controls
                 .filter((group) => !group.get('id')?.value) // Jinki id nahi hai, wo new hai
@@ -2316,7 +2355,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     return mappedIds.find((char) => char.description === desc)?.id;
                 })
                 .filter(Boolean);
-
+    
             // ✅ Sirf naye quantitative IDs
             const newQuantitativeIds = this.quantitativeTableCriteria.controls
                 .filter((group) => !group.get('id')?.value) // Jinki id nahi hai, wo new hai
@@ -2325,34 +2364,31 @@ export class TestingStepperComponent implements AfterViewInit {
                     return mappedIds.find((char) => char.description === desc)?.id;
                 })
                 .filter(Boolean);
-
+    
             // ✅ Sirf new added IDs
             const currentCharacteristicIds = [...newQualitativeIds, ...newQuantitativeIds];
             console.log('✅ Only New Characteristic IDs:', currentCharacteristicIds);
-
-
+    
             // ✅ Purani jo edit ke waqt thi
             const existingCharacteristicIds = this.rowDataIC.characteristicsIds || [];
-
+    
             // ✅ Jo delete hogayi hai
             const detachInspectionCharacteristicIds = existingCharacteristicIds.filter(
                 (id) =>
                     !this.qualitativeTableCriteria.controls.some((group) => group.get('id')?.value === id) &&
                     !this.quantitativeTableCriteria.controls.some((group) => group.get('id')?.value === id)
             );
-
+    
             const payload = {
                 id: restFormValues.id,
-                description: restFormValues.description,
+                description: description.trim(),
                 isActive: restFormValues.isActive,
                 characteristicsIds: currentCharacteristicIds, // ✅ Sirf naye wale
                 detachInspectionCharacteristicIds, // ✅ Jo delete hue
             };
-
+    
             console.log('✅ Final Update Payload:', payload);
-
-
-
+    
             this._inspectionCardUpdate.UpdateInspectionCard(payload).subscribe(
                 (response) => {
                     if (response.isRequestSuccess) {
@@ -2369,10 +2405,16 @@ export class TestingStepperComponent implements AfterViewInit {
                 },
                 (error) => {
                     console.error('❌ API request failed:', error);
+                    this._snackBar.open('Something went wrong while updating!', 'Close', { 
+                        duration: 3000, 
+                        panelClass: ['snackbar-error']
+                    });
                 }
             );
         });
     }
+    
+    
     // Updating Inspection Card Data: Ends
 
     // UPDATE ITEM INSPECTION CARD STARTS
