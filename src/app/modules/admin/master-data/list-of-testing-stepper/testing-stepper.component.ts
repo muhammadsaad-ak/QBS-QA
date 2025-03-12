@@ -1503,7 +1503,7 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         if (this.rowDataICH) {
             this.isEditMode = this.rowDataICH.isEditMode ?? false;
-            console.log('RECEIVED ICH DATA:', this.isEditMode);
+            console.log('isEditMode:', this.isEditMode);
             console.log('RECEIVED ICH DATA:', this.rowDataICH);
             // POPULATE FORM, fourthFormGroup, WITH RECEIVED DATA - rowDataICH
             this.populateInspectionCharacteristicsData(this.rowDataICH);
@@ -1536,7 +1536,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataIC = storedDataIC ? JSON.parse(storedDataIC) : null;
         }
         if (this.rowDataIC) {
-            this.isEditMode = true;
+            // this.isEditMode = true;
             // console.log('RECEIVED QR DATA:', this.rowDataQR);
             // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateICData(this.rowDataIC);
@@ -1599,7 +1599,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataIIC = storedDataIIC ? JSON.parse(storedDataIIC) : null;
         }
         if (this.rowDataIIC) {
-            this.isEditMode = true;
+            // this.isEditMode = true;
             console.log('RECEIVED IIC DATA:', this.rowDataIIC);
             // return;
             // POPULATE FORM, itemsInspectionCardsForm, WITH RECEIVED DATA - rowDataIIC
@@ -2308,19 +2308,13 @@ export class TestingStepperComponent implements AfterViewInit {
                 .subscribe(
                     (response) => {
                         if (response.isRequestSuccess) {
-                            console.log('API RUN SUCCESSFULLY.', payload);
+                            console.log('API RUN SUCCESSFULLY.', payload);                           
                             this._snackBar.open('Record Updated Successfully.', 'Close', {
                                 duration: 1500,
                                 panelClass: ['snackbar-error']
                             });
-                            setTimeout(() => {
-                                this._router.navigate(['/master-data/list-of-inspection-management'], { relativeTo: this._activatedRoute });
-                                this.clearingSessionStorage();
-                            }, 1600);
-                            setTimeout(() => {
-                                this.clearingSessionStorage();
-                                this.isEditMode = false;
-                            }, 2000);
+                            this._router.navigate(['/master-data/list-of-inspection-management'], { relativeTo: this._activatedRoute });
+                            this.clearingSessionStorage();
                             console.log('this.isEditMode.', this.isEditMode);
                         } else {
                             console.error(
