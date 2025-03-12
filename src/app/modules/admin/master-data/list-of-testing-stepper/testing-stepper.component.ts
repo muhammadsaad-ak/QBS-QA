@@ -1483,7 +1483,8 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataUOM = storedDataUOM ? JSON.parse(storedDataUOM) : null;
         }
         if (this.rowDataUOM) {
-            this.isEditMode = true;
+            // this.isEditMode = true;
+            this.isEditMode = this.rowDataUOM.isEditMode ?? false;
             // console.log('RECEIVED UOM DATA:', this.rowDataUOM);
             // POPULATE FORM, secondFormGroup, WITH RECEIVED DATA - rowDataQR
             this.populateUoMData(this.rowDataUOM);
@@ -1501,7 +1502,8 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataICH = storedDataICH ? JSON.parse(storedDataICH) : null;
         }
         if (this.rowDataICH) {
-            this.isEditMode = true;
+            this.isEditMode = this.rowDataICH.isEditMode ?? false;
+            console.log('RECEIVED ICH DATA:', this.isEditMode);
             console.log('RECEIVED ICH DATA:', this.rowDataICH);
             // POPULATE FORM, fourthFormGroup, WITH RECEIVED DATA - rowDataICH
             this.populateInspectionCharacteristicsData(this.rowDataICH);
@@ -2285,11 +2287,20 @@ export class TestingStepperComponent implements AfterViewInit {
         if (this.fourthFormGroup.valid) {
             // console.log(this.fourthFormGroup.value);
             const formValues = this.fourthFormGroup.value;
-            // const { ...payload } = formValues;
             const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode, qualitativeCriteriaObjects
-            // if (payload.type === 'quantitative') {
-            //     payload.singleCriteria = '';
-            // }
+            // CHECKING VALIDATION FOR singleCriteria
+            if (payload.type === 'qualitative' && !payload.singleCriteria?.trim()) {
+                this.fourthFormGroup.get('singleCriteria')?.setErrors({ required: true });
+                this.fourthFormGroup.get('singleCriteria')?.markAsTouched();
+                this._snackBar.open('Criteria is required.', 'Close', {
+                    duration: 1500,
+                    panelClass: ['snackbar-error']
+                });
+                return;
+            }
+            if (payload.type === 'quantitative') {
+                payload.singleCriteria = '';
+            }
             // console.log('SENDING PAYLOAD:', payload);
             // return
             this._inspectionCharateristics
@@ -2308,6 +2319,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                 });
                             }, 1500);
                             this.clearingSessionStorage();
+                            this.isEditMode = false;
                             console.log('this.isEditMode.', this.isEditMode);
                         } else {
                             console.error(
