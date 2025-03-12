@@ -1805,7 +1805,7 @@ export class TestingStepperComponent implements AfterViewInit {
         });
 
         if (isDuplicateCharacteristic) {
-            this._snackBar.open('DUPLICATE ENTRY: THIS CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
+            this._snackBar.open('DUPLICATE ENTRY: SELECTED CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
@@ -1898,7 +1898,7 @@ export class TestingStepperComponent implements AfterViewInit {
         });
 
         if (isDuplicate) {
-            this._snackBar.open('DUPLICATE ENTRY: THIS CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
+            this._snackBar.open('DUPLICATE ENTRY: SELECTED CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
