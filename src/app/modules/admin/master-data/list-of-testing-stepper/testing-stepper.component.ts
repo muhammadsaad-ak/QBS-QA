@@ -313,7 +313,7 @@ export class TestingStepperComponent implements AfterViewInit {
         intCode: [''],
         description: ['', Validators.required],
         isActive: [true],
-        type: ['', Validators.required],
+        type: ['qualitative', Validators.required],
         singleCriteria: [''],
         qualitativeCriteriaObjects: this._formBuilder.array([]),
     });
@@ -1945,33 +1945,55 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
 
-    onSubmitInspectionCharacteristics(): void {
-        // console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
-        const formValues = this.fourthFormGroup.value;
-        const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode
+    updateSingleCriteriaValidation() {
+        const singleCriteriaControl = this.fourthFormGroup.get('singleCriteria');
 
-        if (payload.type === 'quantitative') {
-            payload.singleCriteria = '';
+        if (this.fourthFormGroup.get('type')?.value === 'qualitative') {
+            singleCriteriaControl?.setValidators([Validators.required]); 
+        } else {
+            singleCriteriaControl?.clearValidators(); 
+            singleCriteriaControl?.setValue('');
         }
-        console.log('SENDING PAYLOAD:', payload);
-        // return;
-        this._inspectionCharateristics
-            .AddInspectionCharacteristics(payload)
-            .subscribe(
-                (response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                    } else {
-                        console.error(
-                            'ERROR WHILE INSPECTION CHARACTERISITIC.',
-                            response.message
-                        );
+
+        singleCriteriaControl?.updateValueAndValidity(); 
+    }
+    onSubmitInspectionCharacteristics(): void {
+        this.isValidate = true;
+        if (this.fourthFormGroup.valid) {
+            // console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
+            const formValues = this.fourthFormGroup.value;
+            const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode
+
+            if (payload.type === 'quantitative') {
+                payload.singleCriteria = '';
+            }
+            console.log('SENDING PAYLOAD:', payload);
+            // return;
+            this._inspectionCharateristics
+                .AddInspectionCharacteristics(payload)
+                .subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                        } else {
+                            console.error(
+                                'ERROR WHILE ADDING INSPECTION CHARACTERISITIC.',
+                                response.message
+                            );
+                        }
+                    },
+                    (error) => {
+                        console.error('API REQUEST FAILED:', error);
                     }
-                },
-                (error) => {
-                    console.error('API REQUEST FAILED:', error);
-                }
-            );
+                );
+            this.stepper.next();
+        } else {
+            this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
     }
 
     // onSubmit(): void {
