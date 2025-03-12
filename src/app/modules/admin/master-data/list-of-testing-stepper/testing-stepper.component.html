@@ -101,7 +101,7 @@
       <!-- Fourth Step - Inspection Characterisitic STARTS -->
       <mat-step [stepControl]="fourthFormGroup" label="Inspection Characterisitic">
         <form [formGroup]="fourthFormGroup">
-          <h1 class="custom-heading">Inspection Characterisitic</h1>
+          <h1 class="custom-heading">Inspection Characteristic</h1>
           <!-- Responsive Flexbox Container -->
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px; ">
@@ -244,7 +244,7 @@
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="description" required>
               <mat-error
-              *ngIf="fifthFormGroup.get('description').invalid && (isValidate || fifthFormGroup.get('description').touched)">Required.</mat-error>
+                *ngIf="fifthFormGroup.get('description').invalid && (isValidate || fifthFormGroup.get('description').touched)">Required.</mat-error>
 
             </mat-form-field>
 
@@ -276,17 +276,12 @@
                       <tr *ngFor="let control of qualitativeTableCriteria.controls; let i = index" [formGroupName]="i">
                         <td class="p-2 border border-gray-300">
                           <div class="flex justify-between items-center">
-                            <input matInput formControlName="parameter" readonly
-                              class="w-full" />
-                              <mat-icon *ngIf="!qualitativeTableCriteria.controls[i].get('parameter')?.value"
-                              matSuffix 
-                              style="margin-left: 8px;" 
-                              (click)="onItemCodeClick(i)"
-                              svgIcon="heroicons_outline:bars-3">
-                    </mat-icon>
+                            <input matInput formControlName="parameter" readonly class="w-full" />
+                            <mat-icon *ngIf="!qualitativeTableCriteria.controls[i].get('parameter')?.value" matSuffix
+                              style="margin-left: 8px;" (click)="onItemCodeClick(i)" svgIcon="heroicons_outline:bars-3">
+                            </mat-icon>
                             <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
                               (click)="removeRow(i)">delete</mat-icon>
-
                           </div>
                         </td>
                       </tr>
@@ -297,13 +292,13 @@
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
                         <h2 class="text-lg font-semibold">
-                          List Of Inspection Characterisitics </h2>
+                          Qualitative Inspection characteristics </h2>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
                       </div>
                       <mat-form-field>
-                        <mat-label>Filter</mat-label>
+                        <mat-label>Search</mat-label>
                         <input matInput (keyup)="applyFilterItems($event)" #input>
                       </mat-form-field>
                       <!-- ITEMS TABLE STARTS -->
@@ -342,9 +337,9 @@
                         <mat-header-row *matHeaderRowDef="displayedColumnsItems"></mat-header-row>
                         <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
                         <!-- <tr class="mat-row" *matNoDataRow>
-                                                <td class="mat-cell" colspan="4">No data matched with
-                                                    "{{input.value}}"</td>
-                                            </tr> -->
+                          <td class="mat-cell" colspan="4">No data matched with
+                            "{{input.value}}"</td>
+                        </tr> -->
                       </mat-table>
                       <!-- ITEMS TABLE TABLE ENDS -->
                       <!-- SAVE & CLOSE -->
@@ -378,15 +373,12 @@
                       <tr *ngFor="let control of quantitativeTableCriteria.controls; let i = index" [formGroupName]="i">
                         <td class="p-2 border border-gray-300">
                           <div class="flex justify-between items-center">
-                            <input matInput formControlName="parameterX" readonly
-                              class="w-full" />
+                            <input matInput formControlName="parameterX" readonly class="w-full" />
                             <!-- <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
                               svgIcon="heroicons_outline:bars-3">
                             </mat-icon> -->
-                            <mat-icon *ngIf="!quantitativeTableCriteria.controls[i].get('parameterX')?.value"
-                              matSuffix 
-                              style="margin-left: 8px;" 
-                              (click)="onItemCodeClickX(i)"
+                            <mat-icon *ngIf="!quantitativeTableCriteria.controls[i].get('parameterX')?.value" matSuffix
+                              style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
                               svgIcon="heroicons_outline:bars-3">
                             </mat-icon>
                             <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
@@ -400,13 +392,13 @@
                   <ng-template #dialogTemplateItemsX let-data="data">
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
-                        <div class="text-lg font-semibold">List Of Inspection Characterisitics</div>
+                        <h2 class="text-lg font-semibold">Quantitative Inspection Characteristics</h2>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
                       </div>
                       <mat-form-field>
-                        <mat-label>Filter</mat-label>
+                        <mat-label>Search</mat-label>
                         <input matInput (keyup)="applyFilterItemsX($event)" #input>
                       </mat-form-field>
                       <!-- ITEMS TABLE STARTS -->
@@ -1295,7 +1287,7 @@
                   </span>
                 </div>
                 <mat-form-field>
-                  <mat-label>Filter</mat-label>
+                  <mat-label>Search</mat-label>
                   <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
                 </mat-form-field>
                 <!-- ITEMS TABLE STARTS -->
