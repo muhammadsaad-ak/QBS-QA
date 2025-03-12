@@ -70,7 +70,7 @@ interface itemSamplingRangeIF {
 })
 export class TestingStepperComponent implements AfterViewInit {
     isEditMode: boolean = false;
-    isValidate = false;
+    isValidate: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
@@ -85,6 +85,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     unitOfMeasureLOV: any = [];
     characteristicsList: any[] = [];
+    inspectionCardModalList: any[] = [];
 
     constructor(
         //Form Builder
@@ -134,13 +135,14 @@ export class TestingStepperComponent implements AfterViewInit {
     });
     // ITEM SAMPLE
     itemSamplingForm = this._formBuilder.group({
-        sampleCodeIS: ['', Validators.required],
+        sampleCodeIS: [''],
         itemCode: ['', Validators.required],
         itemId: ['', Validators.required],
         itemDescription: ['', Validators.required],
         flexibility: [true],
         isActive: [true],
-        samplingRangeObjects: this._formBuilder.array([]),
+        // samplingRangeObjects: this._formBuilder.array([]),
+        samplingRangeObjects: this._formBuilder.array([], [Validators.required]),
         id: [''],
     });
     displayedColumnsItemSamplingRange = [
@@ -165,12 +167,12 @@ export class TestingStepperComponent implements AfterViewInit {
 
     addNewRowItemSampling(): void {
         const itemSamplingFormGroup = this.fb.group({
-            lotSizeMin: [],
-            lotSizeMax: [],
-            sampleQty: [],
-            criticalDefects: [],
-            majorDefects: [],
-            minorDefects: [],
+            lotSizeMin: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
+            lotSizeMax: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
+            sampleQty: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
+            criticalDefects: [null],
+            majorDefects: [null],
+            minorDefects: [null],
         });
         // this.samples.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
         // this.dataSourceItemSampling.data = [...this.samples.value]; // Update the table data source
@@ -1366,6 +1368,11 @@ export class TestingStepperComponent implements AfterViewInit {
         //     this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
         // });
 
+        // Inspection Card Modal - Qualitative and Quantitative
+        this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
+            this.inspectionCardModalList = inspectionCardModal.data;
+        });
+
 
 
         this.fetchListAllItems();
@@ -1551,6 +1558,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 }
             });
         }
+        // UPDATE INSPECTION CARD ENDS
 
         // UPDATE ITEM SAMPLE STARTS
         //  RETRIEVING rowDataIS
@@ -1559,7 +1567,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataIS = storedDataIS ? JSON.parse(storedDataIS) : null;
         }
         if (this.rowDataIS) {
-            this.isEditMode = true;
+            this.isEditMode = this.rowDataIS.isEditMode ?? false;
             console.log('RECEIVED ITEM SAMPLE DATA:', this.rowDataIS);
             // POPULATE FORM, itemSamplingForm, WITH RECEIVED DATA - rowDataIS
             this.populateItemSampleFormData(this.rowDataIS);
@@ -1580,7 +1588,7 @@ export class TestingStepperComponent implements AfterViewInit {
             });
         }
         // UPDATE ITEM SAMPLE ENDS
-        // UPDATE INSPECTION CARD ENDS
+
 
         // UPDATE ITEM INSPECTION CARD STARTS
         //  RETRIEVING rowDataIIC
@@ -1716,22 +1724,27 @@ export class TestingStepperComponent implements AfterViewInit {
     //
     selectedControlAccountRowIndex: number = -1;
     onItemCodeClick(rowIndex: number): void {
-        //Item Inspection Card Modal
-        this._inspectionCardModal
-            .getInspectionCardModal()
-            .subscribe((inspectionCardModal) => {
-                const qualitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'qualitative' && item.isActive
-                );
-                const quantitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'quantitative' && item.isActive
-                );
+        const qualitativeData = this.inspectionCardModalList.filter(
+            (item: any) => item.type === 'qualitative' && item.isActive
+        );
 
-                this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
-                this.dataSourceItemsX = new MatTableDataSource(
-                    quantitativeData
-                ); // Quantitative data
-            });
+        this.dataSourceItems = new MatTableDataSource(qualitativeData);
+        //Item Inspection Card Modal
+        // this._inspectionCardModal
+        //     .getInspectionCardModal()
+        //     .subscribe((inspectionCardModal) => {
+        //         const qualitativeData = inspectionCardModal.data.filter(
+        //             (item: any) => item.type === 'qualitative' && item.isActive
+        //         );
+        //         const quantitativeData = inspectionCardModal.data.filter(
+        //             (item: any) => item.type === 'quantitative' && item.isActive
+        //         );
+
+        //         this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
+        //         this.dataSourceItemsX = new MatTableDataSource(
+        //             quantitativeData
+        //         ); // Quantitative data
+        //     });
 
         console.log('Row Index:', rowIndex);
         this.selectedControlAccountRowIndex = rowIndex;
@@ -1812,6 +1825,11 @@ export class TestingStepperComponent implements AfterViewInit {
     dataSourceItemsX = new MatTableDataSource([]);
 
     onItemCodeClickX(rowIndex: number): void {
+        const quantitativeData = this.inspectionCardModalList.filter(
+            (item: any) => item.type === 'quantitative' && item.isActive
+        );
+
+        this.dataSourceItemsX = new MatTableDataSource(quantitativeData);
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
             width: '70%',
@@ -1901,17 +1919,31 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onSubmitUnitOfMeasure(): void {
-        console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
-        const formValues = this.secondFormGroup.value;
-        const payload = { ...formValues };
-        this._uommasterservice
-            .AddUnitOfMeasure(payload)
-            .subscribe((response) => {
-                if (response.succeeded) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                }
+        this.isValidate = true
+        if (this.secondFormGroup.valid) {
+            // console.log('UOM FORM VALUES:', this.secondFormGroup.value);
+            const formValues = this.secondFormGroup.value;
+            const payload = { ...formValues };
+            // console.log('SENDING UOM PAYLOAD:', payload);
+            // return;
+            this._uommasterservice
+                .AddUnitOfMeasure(payload)
+                .subscribe((response) => {
+                    if (response.succeeded) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                    }
+                });
+            this.stepper.next();
+        } else {
+            this.isValidate = false;
+            this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+                duration: 1500,
+                panelClass: ['snackbar-error']
             });
+            return;
+        }
     }
+
 
     onSubmitInspectionCharacteristics(): void {
         // console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
@@ -1951,12 +1983,14 @@ export class TestingStepperComponent implements AfterViewInit {
     // }
 
     onSubmitItemSamplingForm(): void {
+        this.isValidate = true;
         if (this.itemSamplingForm.valid) {
             const formValues = this.itemSamplingForm.value;
             // const payload = { ...formValues, };
             const { id, itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
             console.log('FORM SUBMISSION PAYLOAD:', payload);
-            this.itemSamplingForm.reset();
+            // this.itemSamplingForm.reset();
+            // return;
             this._itemSamplesService
                 .AddSampleWithRanges(payload)
                 .subscribe((response) => {
@@ -1971,7 +2005,10 @@ export class TestingStepperComponent implements AfterViewInit {
                 });
             this.stepper.next();
         } else {
-            console.log('FORM IS INVALID!');
+            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
             return;
         }
     }
@@ -2073,11 +2110,8 @@ export class TestingStepperComponent implements AfterViewInit {
     onUpdateQualitativeResult(): void {
         this.isValidate = true;
         if (this.firstFormGroup.valid) {
-            // console.log('UPDATED FORM VALUES:', this.firstFormGroup.value);
             const formValues = this.firstFormGroup.value;
             const { data, ...payload } = formValues; // EXCLUDING intCode
-            console.log(payload);
-            // return;
             this._qualitativeResultsService
                 .UpdateQualitativeResult(payload)
                 .subscribe(
@@ -2093,7 +2127,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                     relativeTo: this._activatedRoute,
                                 });
                             }, 1500);
-                            this.isEditMode = false;
+                            this.clearingSessionStorage();
                             console.log('this.isEditMode.', this.isEditMode);
                         } else {
                             console.error(
@@ -2124,7 +2158,7 @@ export class TestingStepperComponent implements AfterViewInit {
             return;
         }
         // MAPPING RESPONSE
-        // console.log(data);
+        // console.log('UOM DATA TO POPULATE:',data);
         this.secondFormGroup.patchValue({
             id: this.rowDataUOM.id,
             uoMCode: this.rowDataUOM.uoMCode,
@@ -2134,31 +2168,55 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateUoM(): void {
-        // console.log('UPDATED FORM VALUES:', this.secondFormGroup.value);
-        const formValues = this.secondFormGroup.value;
-        const { ...payload } = formValues;
-        // console.log(payload);
-        // return;
-        this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API RUN SUCCESSFULLY.', payload);
-                    setTimeout(() => {
-                        this._router.navigate(['../../'], {
+        this.isValidate = true
+        if (this.secondFormGroup.valid) {
+            const payload = this.secondFormGroup.value;
+            console.log(payload);
+            // return;
+            this._uommasterservice.updateUnitOfMeasure(payload).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
+                        this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
                             relativeTo: this._activatedRoute,
                         });
-                    }, 1500);
-                } else {
-                    console.error(
-                        'ERROR WHILE UPDATING UOM DATA .',
-                        response.message
-                    );
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode.', this.isEditMode);
+                    }
+                },
+                (error) => {
+                    console.error('API REQUEST FAILED:', error);
+                    // EXTRACT error message FROM API RESPONSE
+                    let errorMessage = 'Something went wrong. Please try again.';
+                    if (error.error && error.error.exception && error.error.exception.id) {
+                        errorMessage = error.error.exception.id[0] || errorMessage;
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-error']
+                    });
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
+                            relativeTo: this._activatedRoute,
+                        });
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode.', this.isEditMode);
+                    }, 2000);
                 }
-            },
-            (error) => {
-                console.error('API request failed:', error);
-            }
-        );
+
+            );
+        } else {
+            this.isValidate = false
+            this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+                duration: 1500,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
     }
     // UPDATE UOM - UNIT OF MEASURE ENDS
     isDisabled = true;
@@ -2643,76 +2701,141 @@ export class TestingStepperComponent implements AfterViewInit {
             (error) => console.error('ERROR WHILE FETCHING SAMPLING RANGE OBJECTS', error)
         );
     }
+
+    validatingSamplingRange: string = '';
     onUpdateIS(): void {
-        const formValues = this.itemSamplingForm.value;
-        const { sampleCodeIS, itemCode, itemId, itemDescription, samplingRangeObjects, ...payload } = formValues;
+        this.isValidate = true;
+        this.validatingSamplingRange = '';
 
-        const initialSamplingRangeObjects = this.initialSamplingRangeObjects;
+        if (this.itemSamplingForm.valid) {
+            const formValues = this.itemSamplingForm.value;
+            const { sampleCodeIS, itemCode, itemId, itemDescription, samplingRangeObjects, ...payload } = formValues;
+            const initialSamplingRangeObjects = this.initialSamplingRangeObjects;
 
-        // Filter and map changed or new samplingRangeObjects, and also exclude null or empty rows
-        const updatedSamplingRangeObjects = samplingRangeObjects
-            .filter((object: any, index: number) => {
-                const initialObject = initialSamplingRangeObjects[index];
+            // TRACK INVALID ROWS TO UPDATE
+            let invalidRowFound = false;
 
-                // If initialObject doesn't exist, it's a new row, treat it as changed
-                if (!initialObject) {
-                    return true; // New object, treat it as changed
-                }
+            const updatedSamplingRangeObjects = samplingRangeObjects
+                .filter((object: any, index: number) => {
+                    const initialObject = initialSamplingRangeObjects[index];
 
-                // Check if any field is different between the current and initial object
-                return (
-                    object.lotSizeMin !== initialObject.lotSizeMin ||
-                    object.lotSizeMax !== initialObject.lotSizeMax ||
-                    object.sampleQty !== initialObject.sampleQty ||
-                    object.criticalDefects !== initialObject.criticalDefects ||
-                    object.majorDefects !== initialObject.majorDefects ||
-                    object.minorDefects !== initialObject.minorDefects
-                );
-            })
-            .map((object: any) => {
-                // Check if the object has valid values, else return null or don't include
-                if (
-                    object.lotSizeMin && object.lotSizeMax && object.sampleQty &&
-                    object.criticalDefects && object.majorDefects && object.minorDefects
-                ) {
+                    // IF initialObject DOESN'T EXIST, IT'S A NEW ROW.
+                    if (!initialObject) {
+                        return true; // NEW OBJECT 
+                    }
+
+                    // CHECK IF ANY FIELD IS DIFFERENT BETWEEN THE CURRENT AND INITIAL OBJECT
+                    return (
+                        object.lotSizeMin !== initialObject.lotSizeMin ||
+                        object.lotSizeMax !== initialObject.lotSizeMax ||
+                        object.sampleQty !== initialObject.sampleQty ||
+                        object.criticalDefects !== initialObject.criticalDefects ||
+                        object.majorDefects !== initialObject.majorDefects ||
+                        object.minorDefects !== initialObject.minorDefects
+                    );
+                })
+                .map((object: any) => {
+                    // SKIP ROWS WHERE lotSizeMin, lotSizeMax, or sampleQty ARE INVALID OR MISSING
+                    if (
+                        object.lotSizeMin == null || object.lotSizeMin === '' ||
+                        object.lotSizeMax == null || object.lotSizeMax === '' ||
+                        object.sampleQty == null || object.sampleQty === ''
+                    ) {
+                        invalidRowFound = true;
+
+                        // ADD SPECIFIC VALIDATION MESSAGE FOR EACH FIELD
+                        if (object.lotSizeMin == null || object.lotSizeMin === '') {
+                            this.validatingSamplingRange = 'Lot Size Min is required. ';
+                        }
+                        if (object.lotSizeMax == null || object.lotSizeMax === '') {
+                            this.validatingSamplingRange += 'Lot Size Max is required. ';
+                        }
+                        if (object.sampleQty == null || object.sampleQty === '') {
+                            this.validatingSamplingRange += 'Sample Qty is required. ';
+                        }
+                        this.isValidate = false;
+                        return;
+                        // return null; // SKIP INVALID ROWS
+                    }
+
+                    // IF ALL REQUIRED FIELDS ARE PRESENT, RETURN THE OBJECT
                     return {
-                        id: object.id || undefined, // Keep the ID as undefined for new rows
+                        id: object.id || undefined,
                         lotSizeMin: object.lotSizeMin,
                         lotSizeMax: object.lotSizeMax,
                         sampleQty: object.sampleQty,
-                        criticalDefects: object.criticalDefects,
-                        majorDefects: object.majorDefects,
-                        minorDefects: object.minorDefects
+                        criticalDefects: object.criticalDefects,  // OPTIONAL FIELD, CAN BE null or 0
+                        majorDefects: object.majorDefects,        // OPTIONAL FIELD, CAN BE null or 0
+                        minorDefects: object.minorDefects         // OPTIONAL FIELD, CAN BE null or 0
                     };
-                } else {
-                    return null; // Skip invalid rows
-                }
-            })
-            .filter((object: any) => object !== null); // Remove null rows if any
+                })
+                .filter((object: any) => object !== null); // REMOVE NULL ROWS IF ANY
 
-        //  FINAL PAYLOAD finalPayload
-        const sendingPayloadIS = {
-            ...payload,
-            samplingRangeObjects: updatedSamplingRangeObjects,
-            id: formValues.id
-        };
-        // console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
-        // return;
-        this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
-            (response) => {
-                if (response.isRequestSuccess) {
-                    console.log('API run successfully.', sendingPayloadIS);
-                    setTimeout(() => {
-                        this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-                    }, 1500);
-                } else {
-                    console.error('Error while updating item sample data.', response.message);
-                }
-            },
-            (error) => {
-                console.error('API request failed:', error);
+            // IF NO VALID ROWS, SET MESSAGE AND PREVENT FORM SUBMISSION
+            if (updatedSamplingRangeObjects.length > 0) {
+                const sendingPayloadIS = {
+                    ...payload,
+                    samplingRangeObjects: updatedSamplingRangeObjects,
+                    id: formValues.id
+                };
+                console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
+
+                this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API run successfully.', sendingPayloadIS);
+                            this._snackBar.open('Record Updated Successfully.', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-error']
+                            });
+                            setTimeout(() => {
+                                this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                            }, 1500);
+                            this.clearingSessionStorage();
+                            console.log('this.isEditMode.', this.isEditMode);
+                        } else {
+                            console.error('ERROR WHILE UPDATING ITEM SAMPLE DATA.', response.message);
+                        }
+                    },
+                    (error) => {
+                        console.error('API request failed:', error);
+                    }
+                );
+            } else {
+                this.isValidate = false;
+                // IF THERE ARE NO VALID ROWS
+                // this.noValidRowsMessage = 'Enter valid values in the required fields.';
+                // this.validatingSamplingRange = this.validatingSamplingRange || 'No valid rows to update.';
+                // console.error(this.validatingSamplingRange);
+                this._snackBar.open('No changes were made in Ranges. Redirecting to the main screen.', 'Close', {
+                    duration: 1500,
+                    panelClass: ['snackbar-error']
+                });
+                setTimeout(() => {
+                    this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                }, 1500);
+                this.clearingSessionStorage();
+                console.log('this.isEditMode.', this.isEditMode);
             }
-        );
+        } else {
+            // this.isValidate = false;
+            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
     }
     // UPDATE ITEM SAMPLE ENDS
+
+    // CLEARING SESSION STORAGE
+    clearingSessionStorage(): void {
+        sessionStorage.removeItem('stepperDataQR');
+        sessionStorage.removeItem('stepperDataUOM');
+        sessionStorage.removeItem('stepperDataICH');
+        sessionStorage.removeItem('stepperDataIC');
+        sessionStorage.removeItem('stepperDataIS');
+        sessionStorage.removeItem('stepperDataIIC');
+        this.isEditMode = false;
+    }
 }
