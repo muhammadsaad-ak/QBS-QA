@@ -1537,8 +1537,10 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         if (this.rowDataIC) {
             // this.isEditMode = true;
-            // console.log('RECEIVED QR DATA:', this.rowDataQR);
-            // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
+            this.isEditMode = this.rowDataIC.isEditMode ?? false;
+            console.log('isEditMode:', this.isEditMode);
+            // console.log('RECEIVED IC DATA:', this.rowDataIC);
+            // POPULATE FORM, fifthFormGroup, WITH RECEIVED DATA - rowDataIC
             this.populateICData(this.rowDataIC);
             // 🆕 Characteristics load kar rahe hain yahan:
             this.loadCharacteristicsInspectionCard(this.rowDataIC.id); // Yeh API call hogi ab
