@@ -2706,7 +2706,7 @@ export class TestingStepperComponent implements AfterViewInit {
             );
     }
 
-    onUpdateItemInspectionCard(): void {
+    XonUpdateItemInspectionCard(): void {
         console.log('UPDATED IIC FORM VALUES:', this.itemsInspectionCardsForm.value);
         const formValue = this.itemsInspectionCardsForm.value;
 
@@ -2751,7 +2751,7 @@ export class TestingStepperComponent implements AfterViewInit {
         };
 
         console.log("Final API Request Body:", putRequestBodyIIC);
-        // return;
+        return;
 
         this._itemInspectionCardService
             .onUpdateItemInspectionCardBothCharacteristics(putRequestBodyIIC)
@@ -2777,6 +2777,95 @@ export class TestingStepperComponent implements AfterViewInit {
                 }
             );
     }
+    onUpdateItemInspectionCard(): void {
+        console.log('✅ FORM RAW VALUES:', this.itemsInspectionCardsForm.value);
+        
+        const formValue = this.itemsInspectionCardsForm.value;
+    
+        // Ensure qualitativeInspectionObjects is properly initialized
+        const qualitativeInspectionObjects = formValue.qualitativeInspectionObjects && Array.isArray(formValue.qualitativeInspectionObjects)
+            ? formValue.qualitativeInspectionObjects.map((item: any) => {
+                console.log("🔍 Processing qualitative item:", item);
+    
+                const qualitativeResultPassStatusResults = item.qualitativeResultPassStatusObjects 
+                    ? item.qualitativeResultPassStatusObjects.map((result: any) => {
+                        console.log("✅ Found qualitativeResultPassStatus BEFORE:", result);
+                        
+                        const transformedResult = {
+                            qualitativeResultId: result.qualitativeResultId ?? null,
+                            isPassed: result.isPassed ?? false,
+                        };
+    
+                        console.log("✅ Transformed qualitativeResultPassStatus:", transformedResult);
+    
+                        return transformedResult;
+                    }) 
+                    : [];
+    
+                console.log("✅ Final qualitativeResultPassStatusResults for item:", qualitativeResultPassStatusResults);
+    
+                return {
+                    id: item.id ?? null,
+                    qualitativeInspectionId: item.qualitativeInspectionId ?? null,
+                    isActive: true,
+                    isMandatory: item.mandatory ?? false,
+                    qualitativeResultPassStatusResults: qualitativeResultPassStatusResults,
+                    qualitativeResultFailStatusResults: item.qualitativeResultFailStatusObjects 
+                        ? item.qualitativeResultFailStatusObjects.map((result: any) => ({
+                            qualitativeResultId: result.qualitativeResultId ?? null,
+                            isPassed: result.isPassed ?? false,
+                        })) 
+                        : [],
+                };
+            })
+            : [];
+    
+        console.log("✅ FINAL qualitativeInspectionObjects:", qualitativeInspectionObjects);
+    
+        // Ensure quantitativeInspectionObjects is properly initialized
+        const quantitativeInspectionObjects = formValue.quantitativeInspectionObjects && Array.isArray(formValue.quantitativeInspectionObjects)
+            ? formValue.quantitativeInspectionObjects.map((item: any) => ({
+                id: item.id ?? null,
+                quantitiveInspectionId: item.characteristicId ?? null,
+                isActive: true,
+                isMandatory: item.mandatoryQty ?? false,
+                uoMId: item.uoMId ?? '',
+                target: item.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
+                max: item.passCriteriaMax !== undefined ? parseFloat(item.passCriteriaMax) : null,
+                min: item.passCriteriaMin !== undefined ? parseFloat(item.passCriteriaMin) : null,
+            }))
+            : [];
+    
+        console.log("✅ FINAL quantitativeInspectionObjects:", quantitativeInspectionObjects);
+    
+        // Creating the request body for the PUT request
+        const putRequestBodyIIC = {
+            id: formValue.id ?? null,
+            isActive: true,
+            qualitativeInspectionResults: qualitativeInspectionObjects,
+            quantitativeInspectionResults: quantitativeInspectionObjects,
+        };
+    
+        console.log("🚀 FINAL API Request Body:", putRequestBodyIIC);
+    
+        this._itemInspectionCardService
+            .onUpdateItemInspectionCardBothCharacteristics(putRequestBodyIIC)
+            .subscribe(
+                (response) => {
+                    console.log('✅ API Response:', response);
+    
+                    if (response.isRequestSuccess) {
+                        console.log('🎉 API RUN SUCCESSFULLY.', putRequestBodyIIC);
+                    } else {
+                        console.error('❌ ERROR WHILE UPDATING ITEM INSPECTION CARD:', response.message);
+                    }
+                },
+                (error) => {
+                    console.error('❌ API REQUEST FAILED:', error);
+                }
+            );
+    }
+    
 
 
 
