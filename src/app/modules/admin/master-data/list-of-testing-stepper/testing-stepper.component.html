@@ -113,6 +113,10 @@
             <mat-form-field style="flex: 1 1 calc(70% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="description" required>
+              <mat-error
+                *ngIf="fourthFormGroup.get('description').invalid && (isValidate || fourthFormGroup.get('description').touched)">
+                Required.
+              </mat-error>
             </mat-form-field>
             <!-- Active Checkbox -->
             <mat-checkbox formControlName="isActive" class="text-lg">Active</mat-checkbox>
@@ -122,7 +126,7 @@
             <div class="w-full" *ngIf="!isEditMode">
               <div class="mt-2">
                 <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"
-                  [value]="'just-good'">
+                  (change)="updateSingleCriteriaValidation()">
                   <mat-radio-button class="mb-2" [value]="'qualitative'"
                     [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
                     Qualitative Inspection
@@ -148,24 +152,24 @@
                   <tbody>
                     <tr>
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="singleCriteria"
-                          class="w-full" />
+                        <input type="text" placeholder="Enter Criteria" formControlName="singleCriteria" class="w-full"
+                          [required]="fourthFormGroup.get('type')?.value === 'qualitative'" />
                       </td>
                     </tr>
                   </tbody>
-                  <!-- <tbody formArrayName="qualitativeCriteriaObjects" class="hidden">
-                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
-                      <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
-                      </td>
-                    </tr>
-                  </tbody> -->
                 </table>
+                <span>
+                  <mat-error *ngIf="fourthFormGroup.get('singleCriteria').invalid 
+                  && (isValidate || fourthFormGroup.get('singleCriteria').touched) 
+                  && fourthFormGroup.get('type')?.value === 'qualitative'">
+                    Required.
+                  </mat-error>
+                </span>
               </div>
               <div class="step-navigation">
                 <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
-                <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCharacteristics()"
-                  matStepperNext>Next</button>
+                <button mat-button class="next-button" *ngIf="!isEditMode"
+                  (click)="onSubmitInspectionCharacteristics()">Next</button>
               </div>
             </div>
             <!-- IF isEditMode - UPDATE MODE -->
@@ -204,13 +208,6 @@
                       </td>
                     </tr>
                   </tbody>
-                  <!-- <tbody formArrayName="qualitativeCriteriaObjects" class="hidden">
-                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
-                      <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full " />
-                      </td>
-                    </tr>
-                  </tbody> -->
                 </table>
               </div>
               <div class="step-navigation">
