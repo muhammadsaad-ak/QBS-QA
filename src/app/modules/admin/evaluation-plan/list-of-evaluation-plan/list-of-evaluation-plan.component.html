@@ -148,15 +148,10 @@
                                       <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
                                     </button>
                                     <mat-menu #menu="matMenu">
-                                      <button mat-menu-item class="text-blue-400" (click)="openStepperToUpdateICH(element)">
-                                        <!-- (click)="openUpdateInspectionDrawer('visitprofile', element)" -->
-                                        Perform QA
-                                        <mat-icon svgIcon="heroicons_outline:pencil" class="text-blue-400"></mat-icon>
-                                      </button>
-                                      <button mat-menu-item class="text-red-400">
-                                        Perform QC
-                                        <mat-icon svgIcon="heroicons_outline:trash" class="text-red-400"></mat-icon>
-                                      </button>
+                                        <button mat-menu-item class="text-red-400" (click)="navigateToOrderForm()">
+                                            Perform QC
+                                            <mat-icon svgIcon="" class="text-red-400"></mat-icon>
+                                        </button>
                                     </mat-menu>
                                   </td>
                             </ng-container>

@@ -23,6 +23,7 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime } from 'rxjs';
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 
+
 @Component({
   selector: 'app-list-of-evaluation-plan',
   standalone: true,
@@ -261,6 +262,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemSamplesService: ItemSamplesService,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -353,5 +355,19 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       state: { data: element }, 
       relativeTo: this._activatedRoute 
     });
+
+  }
+
+  // navigateToPlanPurchaseOrderForm() {
+  //   this.router.navigate(['/evaluation-plan/plan-purchase-order'],  { relativeTo: this._activatedRoute });
+  // }
+
+  navigateToOrderForm() {
+    const orderType = this.orderTypeControl.value; // Check selected order type
+    if (orderType === 'purchaseOrder') {
+      this.router.navigate(['/evaluation-plan/plan-purchase-order'],  { relativeTo: this._activatedRoute });
+    } else if (orderType === 'productionOrder') {
+      this.router.navigate(['/evaluation-plan/plan-production-order'] ,  { relativeTo: this._activatedRoute });;
+    }
   }
 }
