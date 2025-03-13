@@ -220,7 +220,7 @@
       </mat-step>
       <!-- Fourth Step - Inspection Characterisitic ENDS -->
 
-      <!-- Fifth Step - Inspection Card -->
+      <!-- fifthFormGroup - Inspection Card STARTS -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
         <form [formGroup]="fifthFormGroup">
           <!-- (ngSubmit)="onSubmit()" -->
@@ -255,7 +255,7 @@
                 <label class="text-lg">Active</label>
               </div>
             </div>
-
+            <!-- mat-tab STARTS -->
             <mat-tab-group class="w-full">
               <!-- Qualitative Inspection Tab -->
               <mat-tab label="Qualitative Inspection">
@@ -291,8 +291,8 @@
                   <ng-template #dialogTemplateItems let-data="data">
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
-                        <h2 class="text-lg font-semibold">
-                          Qualitative Inspection characteristics </h2>
+                        <!-- Qualitative Inspection Characteristics -->
+                        <h2 class="text-lg font-semibold">Qualitative&nbsp;Inspection&nbsp;characteristics </h2>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
@@ -301,47 +301,46 @@
                         <mat-label>Search</mat-label>
                         <input matInput (keyup)="applyFilterItems($event)" #input>
                       </mat-form-field>
-                      <!-- ITEMS TABLE STARTS -->
-                      <mat-table [dataSource]="dataSourceItems" class="flex-grow">
-                        <!-- ITEM CODE & CHECKBOX COLUMN -->
-                        <ng-container matColumnDef="intCode">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                            <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItems(row)">
-                              <!-- [matTooltip]="row.itemDescription" -->
-                              <!-- [matTooltip]="selectedItemDescription" -->
-                            </mat-checkbox> {{row.intCode}} </mat-cell>
-                        </ng-container>
-                        <!-- ITEM DESCRIPTION COLUMN -->
-                        <ng-container matColumnDef="description">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                            {{row.description}} </mat-cell>
-                        </ng-container>
-                        <!-- ITEM GROUP COLUMN -->
-                        <ng-container matColumnDef="type">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Type</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.type ? row.type : '-' }}
-                          </mat-cell>
-                        </ng-container>
+                      <div class="table-container flex-grow overflow-auto">
+                        <!-- TABLE STARTS -->
+                        <mat-table [dataSource]="dataSourceItems">
+                          <!-- ITEM CODE & CHECKBOX COLUMN -->
+                          <ng-container matColumnDef="intCode">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItems(row)"
+                                [disabled]="!row.isActive">
+                                <!-- [matTooltip]="row.itemDescription" -->
+                                <!-- [matTooltip]="selectedItemDescription" -->
+                              </mat-checkbox> {{row.intCode}} </mat-cell>
+                          </ng-container>
+                          <!-- ITEM DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="description">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              {{row.description}} </mat-cell>
+                          </ng-container>
+                          <!-- ITEM GROUP COLUMN -->
+                          <ng-container matColumnDef="type">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Inspection Type</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                              {{ row.type ? row.type : '-' }}
+                            </mat-cell>
+                          </ng-container>
+                          <!-- STATUS COLUMN  -->
+                          <ng-container matColumnDef="isActive">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                              {{ row.isActive ? 'Active' : 'Inactive' }}
+                            </mat-cell>
+                          </ng-container>
 
-                        <ng-container matColumnDef="isActive">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.isActive ? 'Active' : 'Inactive' }}
-                          </mat-cell>
-                        </ng-container>
 
-
-                        <mat-header-row *matHeaderRowDef="displayedColumnsItems"></mat-header-row>
-                        <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
-                        <!-- <tr class="mat-row" *matNoDataRow>
-                          <td class="mat-cell" colspan="4">No data matched with
-                            "{{input.value}}"</td>
-                        </tr> -->
-                      </mat-table>
-                      <!-- ITEMS TABLE TABLE ENDS -->
+                          <mat-header-row *matHeaderRowDef="displayedColumnsItems;  sticky: true"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
+                        </mat-table>
+                        <!-- TABLE ENDS -->
+                      </div>
                       <!-- SAVE & CLOSE -->
                       <div class="flex justify-end mt-auto">
                         <button mat-flat-button color="primary" (click)="addSelectedRowItem()">
@@ -352,7 +351,6 @@
                   </ng-template>
                 </div>
               </mat-tab>
-
 
               <!-- Quantitative Inspection Tab -->
               <mat-tab label="Quantitative Inspection">
@@ -392,7 +390,8 @@
                   <ng-template #dialogTemplateItemsX let-data="data">
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
-                        <h2 class="text-lg font-semibold">Quantitative Inspection Characteristics</h2>
+                        <!-- Quantitative Inspection Characteristics -->
+                        <h2 class="text-lg font-semibold">Quantitative&nbsp;Inspection&nbsp;Characteristics</h2>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
@@ -401,42 +400,44 @@
                         <mat-label>Search</mat-label>
                         <input matInput (keyup)="applyFilterItemsX($event)" #input>
                       </mat-form-field>
-                      <!-- ITEMS TABLE STARTS -->
-                      <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
-                        <!-- ITEM CODE COLUMN -->
-                        <ng-container matColumnDef="intCode">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                            <mat-checkbox [checked]="row.isSelected"
-                              (change)="onRowCheckboxChangeItemsX(row)"></mat-checkbox>
-                            {{ row.intCode }}
-                          </mat-cell>
-                        </ng-container>
-                        <!-- ITEM DESCRIPTION COLUMN -->
-                        <ng-container matColumnDef="description">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">{{ row.description
-                            }}</mat-cell>
-                        </ng-container>
-                        <!-- ITEM GROUP COLUMN -->
-                        <ng-container matColumnDef="type">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Type</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.type ? row.type : '-' }}
-                          </mat-cell>
-                        </ng-container>
+                      <!-- TABLE STARTS -->
+                      <div class="table-container flex-grow overflow-auto">
+                        <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
+                          <!-- ITEM CODE COLUMN -->
+                          <ng-container matColumnDef="intCode">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected"
+                                (change)="onRowCheckboxChangeItemsX(row)"></mat-checkbox>
+                              {{ row.intCode }}
+                            </mat-cell>
+                          </ng-container>
+                          <!-- ITEM DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="description">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">{{ row.description
+                              }}</mat-cell>
+                          </ng-container>
+                          <!-- ITEM GROUP COLUMN -->
+                          <ng-container matColumnDef="type">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Type</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                              {{ row.type ? row.type : '-' }}
+                            </mat-cell>
+                          </ng-container>
+                          <!-- STATUS COLUMN -->
+                          <ng-container matColumnDef="isActive">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                              {{ row.isActive ? 'Active' : 'Inactive' }}
+                            </mat-cell>
+                          </ng-container>
 
-                        <ng-container matColumnDef="isActive">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.isActive ? 'Active' : 'Inactive' }}
-                          </mat-cell>
-                        </ng-container>
-
-
-                        <mat-header-row *matHeaderRowDef="displayedColumnsItemsX"></mat-header-row>
-                        <mat-row *matRowDef="let row; columns: displayedColumnsItemsX;"></mat-row>
-                      </mat-table>
+                          <mat-header-row *matHeaderRowDef="displayedColumnsItemsX; sticky: true"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsItemsX;"></mat-row>
+                        </mat-table>
+                      </div>
+                      <!-- TABLE ENDS -->
                       <!-- SAVE & CLOSE -->
                       <div class="flex justify-end mt-auto">
                         <button mat-flat-button color="primary"
@@ -446,10 +447,8 @@
                   </ng-template>
                 </div>
               </mat-tab>
-
             </mat-tab-group>
-
-
+            <!-- mat-tab ENDS -->
           </div>
           <div class="step-navigation">
             <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
@@ -458,9 +457,9 @@
           </div>
         </form>
       </mat-step>
+      <!-- fifthFormGroup - Inspection Card ENDS -->
 
-      <!-- 5th  - FIFTH STEP STARTS -->
-      <!-- ITEM INSPECTION CARD STARTS -->
+      <!-- itemsInspectionCardsForm  - Item Inspection Card STARTS -->
       <mat-step [stepControl]="itemsInspectionCardsForm" label="Item Inspection Card">
         <form [formGroup]="itemsInspectionCardsForm">
 
@@ -1168,8 +1167,7 @@
           </div>
         </form>
       </mat-step>
-      <!-- ITEM INSPECTION CARD ENDS -->
-      <!-- 5th  - FIFTH STEP ENDS -->
+      <!-- itemsInspectionCardsForm  - Item Inspection Card ENDS -->
 
       <!-- ITEM SAMPLE STARTS -->
       <mat-step [stepControl]="itemSamplingForm" label="Item Sample">
