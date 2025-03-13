@@ -47,6 +47,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   qualitativeInspectionForm: FormGroup;
   quantitativeInspectionForm: FormGroup;
   isFormSaved = false; // Initialize to false
+  isDropdownOpen = false;
+
     
   
   // Plan Purchase DataSources for tables
@@ -387,6 +389,18 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
   }
+
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+  
+  action1() {
+    console.log("Action 1 selected");
+  }
+  
+  // action2() {
+  //   console.log("Action 2 selected");
+  // }
   
 
   

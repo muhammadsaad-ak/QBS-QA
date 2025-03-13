@@ -137,11 +137,11 @@
                                 readonly>
                         </mat-form-field>
 
-                        <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px;">
+                        <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px;">
                             <mat-label>Inspection Qty:</mat-label>
                             <input matInput formControlName="inspectionQtyModalPO" placeholder="Enter Code" required
                                 readonly>
-                        </mat-form-field>
+                        </mat-form-field> -->
 
                         <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px;">
                             <mat-label>Inspection By</mat-label>
@@ -410,9 +410,22 @@
                     Cancel
                 </button>
 
-                <button mat-flat-button color="primary">
-                    Post to SAP
-                </button>
+                <!-- Button with cut design & dropdown -->
+                <div class="custom-button-container">
+                    <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button">
+                        Post to SAP
+                        <!-- <mat-icon class="arrow-icon">arrow_drop_down</mat-icon> -->
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div *ngIf="isDropdownOpen" class="dropdown-menu">
+                        <button mat-menu-item (click)="action1()">Good Receipt PO (GRN)</button>
+                        <!-- <button mat-menu-item (click)="action2()">Inventory Transfer</button> -->
+
+                      
+                    </div>
+                </div>
+
             </div>
 
 

@@ -181,7 +181,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'SAP Connector Module',
       qty: 30,
       openQty: 10,
-      status: 'Open'
+      status: 'Open',
+      inspectionStatus: 'Open'
     },
     {
       docNo: 'PO-102',
@@ -190,7 +191,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'Database Integration Kit',
       qty: 20,
       openQty: 20,
-      status: 'Open'
+      status: 'Open',
+      inspectionStatus: 'In Progress'
     },
     {
       docNo: 'PO-103',
@@ -199,7 +201,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'SAP API License',
       qty: 5,
       openQty: 0,
-      status: 'Open'
+      status: 'Open',
+      inspectionStatus: 'Pass'
     },
     {
       docNo: 'PO-104',
@@ -208,7 +211,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'ERP Module Extension',
       qty: 15,
       openQty: 5,
-      status: 'Open'
+      status: 'Open',
+      inspectionStatus: 'Fail'
     }
   ];
 
@@ -302,7 +306,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       this.pageTitle = 'List of SAP Documents';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status','inspectionStatus', 'action'];
         this.dataSource.data = this.sapDocPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'productName', 'qty', 'openQty', 'status', 'action'];
@@ -370,4 +374,20 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       this.router.navigate(['/evaluation-plan/plan-production-order'] ,  { relativeTo: this._activatedRoute });;
     }
   }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Open':
+        return 'text-blue';
+      case 'In Progress':
+        return 'text-orange';
+      case 'Pass':
+        return 'text-green';
+      case 'Fail':
+        return 'text-red';
+      default:
+        return ''; // Default class if no match
+    }
+  }
+  
 }
