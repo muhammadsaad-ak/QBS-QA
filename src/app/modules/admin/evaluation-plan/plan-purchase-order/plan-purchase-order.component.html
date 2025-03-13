@@ -100,12 +100,12 @@
 
             <div class="flex flex-wrap gap-2 mt-4" *ngIf="isFormSaved">
                 <div *ngFor="let sample of samplesPurchaseOrder" class="sample-card"
-                    [style.background-color]="sample.cardColor"
-                    (click)="onEditSample(sample)">
+                    [style.background-color]="sample.cardColor">
                     <h3 style="font-weight: 500;">Sample {{sample.id}}</h3>
                     <div style="font-weight: 400;">Inspection Time: {{sample.inspectionTime}}</div>
                     <div style="font-weight: 400;">Inspection By: {{sample.inspectionBy}}</div>
                 </div>
+                <!-- (click)="onEditSample(sample)"> -->
 
                 <div class="sample-card add-sample-card" *ngIf="samplesPurchaseOrder.length < sampleQuantity"
                     (click)="onPurchaseOrderModal()">

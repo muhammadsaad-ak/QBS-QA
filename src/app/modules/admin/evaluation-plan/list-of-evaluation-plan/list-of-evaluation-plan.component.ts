@@ -292,7 +292,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       this.pageTitle = 'List of Evaluation Plan';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
         this.dataSource.data = this.evalPlanPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'productName', 'qty', 'status', 'action']; 

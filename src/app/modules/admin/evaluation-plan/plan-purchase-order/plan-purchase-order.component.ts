@@ -302,27 +302,27 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     });
   }
 
-  onEditSample(sample: any): void {
-    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-      width: '70%',
-      height: '75vh',
-      data: { 
-        allItems: this.dataSourceItems,
-        selectedSample: { ...sample } // Clone object to avoid direct mutation
-      },
-    });
+  // onEditSample(sample: any): void {
+  //   const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+  //     width: '70%',
+  //     height: '75vh',
+  //     data: { 
+  //       allItems: this.dataSourceItems,
+  //       selectedSample: { ...sample } // Clone object to avoid direct mutation
+  //     },
+  //   });
   
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        // Find index of the edited sample in the array
-        const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
-        if (index !== -1) {
-          this.samplesPurchaseOrder[index] = result; // Update the existing sample instead of pushing new one
-        }
-      }
-      console.log('EDIT DIALOG CLOSED');
-    });
-  }
+  //   dialogRef.afterClosed().subscribe((result) => {
+  //     if (result) {
+  //       // Find index of the edited sample in the array
+  //       const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
+  //       if (index !== -1) {
+  //         this.samplesPurchaseOrder[index] = result; // Update the existing sample instead of pushing new one
+  //       }
+  //     }
+  //     console.log('EDIT DIALOG CLOSED');
+  //   });
+  // }
   
   
   
