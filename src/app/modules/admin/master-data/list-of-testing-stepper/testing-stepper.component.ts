@@ -1537,8 +1537,10 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         if (this.rowDataIC) {
             // this.isEditMode = true;
-            // console.log('RECEIVED QR DATA:', this.rowDataQR);
-            // POPULATE FORM, firstFormGroup, WITH RECEIVED DATA - rowDataQR
+            this.isEditMode = this.rowDataIC.isEditMode ?? false;
+            console.log('isEditMode:', this.isEditMode);
+            // console.log('RECEIVED IC DATA:', this.rowDataIC);
+            // POPULATE FORM, fifthFormGroup, WITH RECEIVED DATA - rowDataIC
             this.populateICData(this.rowDataIC);
             // 🆕 Characteristics load kar rahe hain yahan:
             this.loadCharacteristicsInspectionCard(this.rowDataIC.id); // Yeh API call hogi ab
@@ -1783,27 +1785,43 @@ export class TestingStepperComponent implements AfterViewInit {
         this.dataSourceItems.filter = filterValue.trim().toLowerCase();
     }
 
+    // DUPLICATE VALIDATION
     addSelectedRowItem(): void {
         this.dialog.closeAll();
 
         const selectedRow = this.dataSourceItems.data.find(
             (row) => row.isSelected
         );
-        if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
+
+        if (!selectedRow) {
+            console.log('NO ROW SELECTED');
+            return;
+        }
+
+        // CHECK IF CHARACTERISTIC IS ALREADY EXISTS
+        const isDuplicateCharacteristic = this.qualitativeTableCriteria.controls.some((control) => {
+            const formGroup = control as FormGroup;
+            return formGroup.get('parameter')?.value === selectedRow.description;
+        });
+
+        if (isDuplicateCharacteristic) {
+            this._snackBar.open('DUPLICATE ENTRY: SELECTED CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+
+        if (this.selectedControlAccountRowIndex !== -1) {
             const rowFormGroup = this.qualitativeTableCriteria.at(
                 this.selectedControlAccountRowIndex
             ) as FormGroup;
-            rowFormGroup.get('parameter')?.setValue(selectedRow.description); // Set the value for this row's parameter
+            rowFormGroup.get('parameter')?.setValue(selectedRow.description);
             this.selectedInspectionCode = selectedRow.intCode;
             this.selectedItemDescription = selectedRow.description;
 
             console.log('SELECTED ROW:', selectedRow);
-            console.log(
-                'UPDATED ROW INDEX:',
-                this.selectedControlAccountRowIndex
-            );
-        } else {
-            console.log('NO ROW SELECTED');
+            console.log('UPDATED ROW INDEX:', this.selectedControlAccountRowIndex);
         }
 
         // Reset the index after selection
@@ -1860,20 +1878,45 @@ export class TestingStepperComponent implements AfterViewInit {
         this.dataSourceItemsX.filter = filterValue.trim().toLowerCase();
     }
 
+    // DUPLICATE VALIDATION
     addSelectedRowItemX(): void {
         this.dialog.closeAll();
 
         const selectedRow = this.dataSourceItemsX.data.find(
             (row) => row.isSelected
         );
-        if (selectedRow && this.selectedControlAccountRowIndex !== -1) {
+
+        if (!selectedRow) {
+            console.log('NO ROW SELECTED');
+            return;
+        }
+
+        // CHECK IF CHARACTERISTIC IS ALREADY EXISTS
+        const isDuplicate = this.quantitativeTableCriteria.controls.some((control) => {
+            const formGroup = control as FormGroup;
+            return formGroup.get('parameterX')?.value === selectedRow.description;
+        });
+
+        if (isDuplicate) {
+            this._snackBar.open('DUPLICATE ENTRY: SELECTED CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+
+        if (this.selectedControlAccountRowIndex !== -1) {
             const rowFormGroup = this.quantitativeTableCriteria.at(
                 this.selectedControlAccountRowIndex
             ) as FormGroup;
             rowFormGroup.get('parameterX')?.setValue(selectedRow.description);
-            console.log('Selected row:', selectedRow);
+            rowFormGroup.get('id')?.setValue(selectedRow.id); // Storing the `id` in form
+
+            console.log('SELECTED ROW:', selectedRow);
         }
-        this.selectedControlAccountRowIndex = -1; // Reset index
+
+        // Reset the index after selection
+        this.selectedControlAccountRowIndex = -1;
     }
 
     // XonSubmitQualitativeResult(): void {
@@ -2308,7 +2351,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 .subscribe(
                     (response) => {
                         if (response.isRequestSuccess) {
-                            console.log('API RUN SUCCESSFULLY.', payload);                           
+                            console.log('API RUN SUCCESSFULLY.', payload);
                             this._snackBar.open('Record Updated Successfully.', 'Close', {
                                 duration: 1500,
                                 panelClass: ['snackbar-error']
@@ -2438,12 +2481,13 @@ export class TestingStepperComponent implements AfterViewInit {
                 (response) => {
                     if (response.isRequestSuccess) {
                         console.log('✅ API RUN SUCCESSFULLY.', payload);
-                        setTimeout(() => {
-                            this._router.navigate(
-                                ['/master-data/list-of-inspection-card'],
-                                { relativeTo: this._activatedRoute }
-                            );
-                        }, 1500);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
+                        this._router.navigate(['/master-data/list-of-inspection-card'], { relativeTo: this._activatedRoute });
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode.', this.isEditMode);
                     } else {
                         console.error('❌ ERROR WHILE UPDATING DATA.', response.message);
                     }
