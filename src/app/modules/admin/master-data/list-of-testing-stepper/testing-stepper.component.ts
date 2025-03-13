@@ -2082,75 +2082,84 @@ export class TestingStepperComponent implements AfterViewInit {
     // Submit Inspection Card
 
     onSubmitInspectionCard() {
-        const formValue = this.fifthFormGroup.value;
+        if (this.fifthFormGroup.valid) {
+            const formValue = this.fifthFormGroup.value;
 
-        // ✅ Validation: At least one qualitative and one quantitative characteristic required in form
-        const hasQualitative = formValue.qualitativeTableCriteria.length > 0;
-        const hasQuantitative = formValue.quantitativeTableCriteria.length > 0;
+            // ✅ Validation: At least one qualitative and one quantitative characteristic required in form
+            const hasQualitative = formValue.qualitativeTableCriteria.length > 0;
+            const hasQuantitative = formValue.quantitativeTableCriteria.length > 0;
 
-        if (!hasQualitative || !hasQuantitative) {
-            this._snackBar.open('At least one qualitative and one quantitative characteristic is required.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
-
-        // Fetch all inspection characteristics first
-        this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
-            const mappedIds = charResponse.data.map((char: any) => ({
-                description: char.description,
-                id: char.id,
-            }));
-
-            // Find matching qualitative IDs
-            const qualitativeIds = formValue.qualitativeTableCriteria
-                .map((item) => mappedIds.find((char) => char.description === item.parameter)?.id)
-                .filter(Boolean);
-
-            // Find matching quantitative IDs
-            const quantitativeIds = formValue.quantitativeTableCriteria
-                .map((item) => mappedIds.find((char) => char.description === item.parameterX)?.id)
-                .filter(Boolean);
-
-            // ✅ Validation: Ensure mapped IDs are not empty
-            if (qualitativeIds.length === 0 || quantitativeIds.length === 0) {
-                this._snackBar.open('At least one valid qualitative and one valid quantitative characteristic is required.', 'Close', {
+            if (!hasQualitative || !hasQuantitative) {
+                this._snackBar.open('At least one qualitative and one quantitative characteristic is required.', 'Close', {
                     duration: 3000,
                     panelClass: ['snackbar-error']
                 });
                 return;
             }
 
-            // ✅ Final API payload
-            const apiPayload = {
-                description: formValue.description,
-                isActive: formValue.isActive,
-                characteristicsIds: [...qualitativeIds, ...quantitativeIds],
-            };
+            // Fetch all inspection characteristics first
+            this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
+                const mappedIds = charResponse.data.map((char: any) => ({
+                    description: char.description,
+                    id: char.id,
+                }));
 
-            console.log('Final API Payload:', apiPayload);
+                // Find matching qualitative IDs
+                const qualitativeIds = formValue.qualitativeTableCriteria
+                    .map((item) => mappedIds.find((char) => char.description === item.parameter)?.id)
+                    .filter(Boolean);
 
-            this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
-                (response) => {
-                    console.log('✅ API Response:', response);
+                // Find matching quantitative IDs
+                const quantitativeIds = formValue.quantitativeTableCriteria
+                    .map((item) => mappedIds.find((char) => char.description === item.parameterX)?.id)
+                    .filter(Boolean);
 
-                    if (response?.isRequestSuccess) { // ✅ Correct condition
-                        console.log('🎉 API RUN SUCCESSFULLY:', apiPayload);
-                        this.stepper.next(); // ✅ Stepper ab aage badega
-                    } else {
-                        console.warn('⚠️ API Response Did Not Succeed:', response);
-                    }
-                },
-                (error) => {
-                    console.error('❌ API Error:', error);
-                    this._snackBar.open('Something went wrong. Please try again.', 'Close', {
+                // ✅ Validation: Ensure mapped IDs are not empty
+                if (qualitativeIds.length === 0 || quantitativeIds.length === 0) {
+                    this._snackBar.open('At least one valid qualitative and one valid quantitative characteristic is required.', 'Close', {
                         duration: 3000,
                         panelClass: ['snackbar-error']
                     });
+                    return;
                 }
-            );
-        });
+
+                // ✅ Final API payload
+                const apiPayload = {
+                    description: formValue.description,
+                    isActive: formValue.isActive,
+                    characteristicsIds: [...qualitativeIds, ...quantitativeIds],
+                };
+
+                console.log('Final API Payload:', apiPayload);
+
+                this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
+                    (response) => {
+                        console.log('✅ API Response:', response);
+
+                        if (response?.isRequestSuccess) { // ✅ Correct condition
+                            console.log('🎉 API RUN SUCCESSFULLY:', apiPayload);
+                            this.stepper.next(); // ✅ Stepper ab aage badega
+                        } else {
+                            console.warn('⚠️ API Response Did Not Succeed:', response);
+                        }
+                    },
+                    (error) => {
+                        console.error('❌ API Error:', error);
+                        this._snackBar.open('Something went wrong. Please try again.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                    }
+                );
+            });
+        }
+        else {
+            this._snackBar.open('Fill the mandatory Description field.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
     }
 
 
