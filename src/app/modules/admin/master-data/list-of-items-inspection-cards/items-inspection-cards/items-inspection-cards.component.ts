@@ -112,33 +112,29 @@ export class ItemsInspectionCardsComponent {
       .subscribe((searchTerm: string) => {
         this.applyFilter(searchTerm);
       });
+
+    // X ngOnInit
+    // this._itemInspectionCardService.ListAllItemsInspectionCards().subscribe((items) => {
+    //   this.dataSourceItemsInspectionCards.data = items.data;
+    // })
+    // const navigationState = history.state.updatedData;  // CHECK IF THERE IS UPDATED DATA FROM NAVIGATION
+    // if (navigationState) {
+    //   const updatedData = navigationState;
+    //   // UPDATING ListIAlltemsInspectionCards WITH THE NEW DATA
+    //   this.ListIAlltemsInspectionCards = this.ListIAlltemsInspectionCards.map(item =>
+    //     item.cardCode === updatedData.cardCode ? updatedData : item
+    //   );
+    //   // REFRESHING THE TABLE DATA SOURCE - dataSourceItemsInspectionCards
+    //   this.dataSourceItemsInspectionCards = new MatTableDataSource<any>(this.ListIAlltemsInspectionCards);
+    // }
+    // this.searchInputControl.valueChanges
+    //   .pipe(debounceTime(300))
+    //   .subscribe((searchTerm: string) => {
+    //     this.applyFilter(searchTerm);
+    //   });
+    // X ngOnInit
   }
-
-
-  XngOnInit(): void {
-    this._itemInspectionCardService.ListAllItemsInspectionCards().subscribe((items) => {
-      this.dataSourceItemsInspectionCards.data = items.data;
-    })
-
-    // Check if there is updated data from navigation
-    const navigationState = history.state.updatedData;
-    if (navigationState) {
-      const updatedData = navigationState;
-      // Now update the ListIAlltemsInspectionCards with the new data
-      this.ListIAlltemsInspectionCards = this.ListIAlltemsInspectionCards.map(item =>
-        item.cardCode === updatedData.cardCode ? updatedData : item
-      );
-      // Refresh the table data source
-      this.dataSourceItemsInspectionCards = new MatTableDataSource<any>(this.ListIAlltemsInspectionCards);
-    }
-
-    this.searchInputControl.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe((searchTerm: string) => {
-        this.applyFilter(searchTerm);
-      });
-  }
-
+  
   ngOnDestroy(): void { }
 
   applyFilter(searchTerm: string): void {
@@ -160,7 +156,10 @@ export class ItemsInspectionCardsComponent {
 
   openStepperToUpdateIIC(rowDataIIC: any): void {
     console.log('SENDING IIC DATA:', rowDataIIC);
-    sessionStorage.setItem('stepperDataIIC', JSON.stringify(rowDataIIC));
+    const dataToSendIntoStepperIIC = {
+      ...rowDataIIC, isEditMode: true
+    };
+    sessionStorage.setItem('stepperDataIIC', JSON.stringify(dataToSendIntoStepperIIC));
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
       queryParams: { step: 4 }
     });
