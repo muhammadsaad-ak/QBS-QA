@@ -25,11 +25,13 @@
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="resultDescription" required>
+              <mat-error
+                *ngIf="firstFormGroup.get('resultDescription').invalid && (isValidate || firstFormGroup.get('resultDescription').touched)">Required.</mat-error>
             </mat-form-field>
           </div>
 
           <!-- Checkboxes Section -->
-          <div class="flex flex-col w-full">
+          <div class="flex flex-col w-full" *ngIf="isEditMode">
             <div class="flex items-center">
               <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
               <label class="text-lg">Active</label>
@@ -37,8 +39,8 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitQualitativeResult()"
-              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode"
+              (click)="onSubmitQualitativeResult()">Next</button>
             <button mat-button class="next-button" *ngIf="isEditMode"
               (click)="onUpdateQualitativeResult()">Update</button>
           </div>
@@ -67,17 +69,19 @@
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>UOM Code</mat-label>
               <input matInput formControlName="uoMCode" placeholder="Enter UOM Code" required>
+              <mat-error>Required.</mat-error>
             </mat-form-field>
 
             <!-- UOM Name Field -->
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>UOM Name</mat-label>
               <input matInput formControlName="description" placeholder="Enter UOM Name" required>
+              <mat-error>Required.</mat-error>
             </mat-form-field>
 
           </div>
           <!-- Checkboxes Section -->
-          <div class="flex flex-col w-full">
+          <div class="flex flex-col w-full" *ngIf="isEditMode">
             <div class="flex items-center">
               <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
               <label class="text-lg">Active</label>
@@ -86,9 +90,8 @@
 
           <div class="step-navigation">
             <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()"
-              matStepperNext>Next</button>
-            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update UOM</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()">Next</button>
+            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update</button>
           </div>
         </form>
       </mat-step>
@@ -98,7 +101,7 @@
       <!-- Fourth Step - Inspection Characterisitic STARTS -->
       <mat-step [stepControl]="fourthFormGroup" label="Inspection Characterisitic">
         <form [formGroup]="fourthFormGroup">
-          <h1 class="custom-heading">Inspection Characterisitic</h1>
+          <h1 class="custom-heading">Inspection Characteristic</h1>
           <!-- Responsive Flexbox Container -->
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px; ">
@@ -110,6 +113,10 @@
             <mat-form-field style="flex: 1 1 calc(70% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="description" required>
+              <mat-error
+                *ngIf="fourthFormGroup.get('description').invalid && (isValidate || fourthFormGroup.get('description').touched)">
+                Required.
+              </mat-error>
             </mat-form-field>
             <!-- Active Checkbox -->
             <mat-checkbox formControlName="isActive" class="text-lg">Active</mat-checkbox>
@@ -119,7 +126,7 @@
             <div class="w-full" *ngIf="!isEditMode">
               <div class="mt-2">
                 <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"
-                  [value]="'just-good'">
+                  (change)="updateSingleCriteriaValidation()">
                   <mat-radio-button class="mb-2" [value]="'qualitative'"
                     [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
                     Qualitative Inspection
@@ -145,24 +152,24 @@
                   <tbody>
                     <tr>
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="singleCriteria"
-                          class="w-full" />
+                        <input type="text" placeholder="Enter Criteria" formControlName="singleCriteria" class="w-full"
+                          [required]="fourthFormGroup.get('type')?.value === 'qualitative'" />
                       </td>
                     </tr>
                   </tbody>
-                  <!-- <tbody formArrayName="qualitativeCriteriaObjects" class="hidden">
-                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
-                      <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full" />
-                      </td>
-                    </tr>
-                  </tbody> -->
                 </table>
+                <span>
+                  <mat-error *ngIf="fourthFormGroup.get('singleCriteria').invalid 
+                  && (isValidate || fourthFormGroup.get('singleCriteria').touched) 
+                  && fourthFormGroup.get('type')?.value === 'qualitative'">
+                    Required.
+                  </mat-error>
+                </span>
               </div>
               <div class="step-navigation">
                 <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
-                <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCharacteristics()"
-                  matStepperNext>Next</button>
+                <button mat-button class="next-button" *ngIf="!isEditMode"
+                  (click)="onSubmitInspectionCharacteristics()">Next</button>
               </div>
             </div>
             <!-- IF isEditMode - UPDATE MODE -->
@@ -171,7 +178,8 @@
                 <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'">
                   <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'" class="mb-2"
                     [value]="'qualitative'"
-                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}"
+                    (change)="updateSingleCriteriaValidation()">
                     Qualitative Inspection
                   </mat-radio-button>
                   <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'" class="mb-2"
@@ -201,13 +209,6 @@
                       </td>
                     </tr>
                   </tbody>
-                  <!-- <tbody formArrayName="qualitativeCriteriaObjects" class="hidden">
-                    <tr *ngFor="let row of qualitativeCriteriaObjects.controls; let i = index" [formGroupName]="i">
-                      <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="description" class="w-full " />
-                      </td>
-                    </tr>
-                  </tbody> -->
                 </table>
               </div>
               <div class="step-navigation">
@@ -219,7 +220,7 @@
       </mat-step>
       <!-- Fourth Step - Inspection Characterisitic ENDS -->
 
-      <!-- Fifth Step - Inspection Card -->
+      <!-- fifthFormGroup - Inspection Card STARTS -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
         <form [formGroup]="fifthFormGroup">
           <!-- (ngSubmit)="onSubmit()" -->
@@ -242,6 +243,9 @@
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="description" required>
+              <mat-error
+                *ngIf="fifthFormGroup.get('description').invalid && (isValidate || fifthFormGroup.get('description').touched)">Required.</mat-error>
+
             </mat-form-field>
 
             <!-- Checkboxes Section -->
@@ -251,7 +255,7 @@
                 <label class="text-lg">Active</label>
               </div>
             </div>
-
+            <!-- mat-tab STARTS -->
             <mat-tab-group class="w-full">
               <!-- Qualitative Inspection Tab -->
               <mat-tab label="Qualitative Inspection">
@@ -272,14 +276,12 @@
                       <tr *ngFor="let control of qualitativeTableCriteria.controls; let i = index" [formGroupName]="i">
                         <td class="p-2 border border-gray-300">
                           <div class="flex justify-between items-center">
-                            <input matInput formControlName="parameter" placeholder="Enter Parameter Name"
-                              class="w-full" />
-                            <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClick(i)"
-                              svgIcon="heroicons_outline:bars-3">
+                            <input matInput formControlName="parameter" readonly class="w-full" />
+                            <mat-icon *ngIf="!qualitativeTableCriteria.controls[i].get('parameter')?.value" matSuffix
+                              style="margin-left: 8px;" (click)="onItemCodeClick(i)" svgIcon="heroicons_outline:bars-3">
                             </mat-icon>
                             <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
                               (click)="removeRow(i)">delete</mat-icon>
-
                           </div>
                         </td>
                       </tr>
@@ -289,57 +291,56 @@
                   <ng-template #dialogTemplateItems let-data="data">
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
-                        <h2 class="text-lg font-semibold">
-                          List Of Inspection Characterisitics </h2>
+                        <!-- Qualitative Inspection Characteristics -->
+                        <h2 class="text-lg font-semibold">Qualitative&nbsp;Inspection&nbsp;characteristics </h2>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
                       </div>
                       <mat-form-field>
-                        <mat-label>Filter</mat-label>
+                        <mat-label>Search</mat-label>
                         <input matInput (keyup)="applyFilterItems($event)" #input>
                       </mat-form-field>
-                      <!-- ITEMS TABLE STARTS -->
-                      <mat-table [dataSource]="dataSourceItems" class="flex-grow">
-                        <!-- ITEM CODE & CHECKBOX COLUMN -->
-                        <ng-container matColumnDef="intCode">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                            <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItems(row)">
-                              <!-- [matTooltip]="row.itemDescription" -->
-                              <!-- [matTooltip]="selectedItemDescription" -->
-                            </mat-checkbox> {{row.intCode}} </mat-cell>
-                        </ng-container>
-                        <!-- ITEM DESCRIPTION COLUMN -->
-                        <ng-container matColumnDef="description">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                            {{row.description}} </mat-cell>
-                        </ng-container>
-                        <!-- ITEM GROUP COLUMN -->
-                        <ng-container matColumnDef="type">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Type</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.type ? row.type : '-' }}
-                          </mat-cell>
-                        </ng-container>
+                      <div class="table-container flex-grow overflow-auto">
+                        <!-- TABLE STARTS -->
+                        <mat-table [dataSource]="dataSourceItems">
+                          <!-- ITEM CODE & CHECKBOX COLUMN -->
+                          <ng-container matColumnDef="intCode">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItems(row)"
+                                [disabled]="!row.isActive">
+                                <!-- [matTooltip]="row.itemDescription" -->
+                                <!-- [matTooltip]="selectedItemDescription" -->
+                              </mat-checkbox> {{row.intCode}} </mat-cell>
+                          </ng-container>
+                          <!-- ITEM DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="description">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              {{row.description}} </mat-cell>
+                          </ng-container>
+                          <!-- ITEM GROUP COLUMN -->
+                          <ng-container matColumnDef="type">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Inspection Type</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                              {{ row.type ? row.type : '-' }}
+                            </mat-cell>
+                          </ng-container>
+                          <!-- STATUS COLUMN  -->
+                          <ng-container matColumnDef="isActive">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                              {{ row.isActive ? 'Active' : 'Inactive' }}
+                            </mat-cell>
+                          </ng-container>
 
-                        <ng-container matColumnDef="isActive">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.isActive ? 'Active' : 'Inactive' }}
-                          </mat-cell>
-                        </ng-container>
 
-
-                        <mat-header-row *matHeaderRowDef="displayedColumnsItems"></mat-header-row>
-                        <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
-                        <!-- <tr class="mat-row" *matNoDataRow>
-                                                <td class="mat-cell" colspan="4">No data matched with
-                                                    "{{input.value}}"</td>
-                                            </tr> -->
-                      </mat-table>
-                      <!-- ITEMS TABLE TABLE ENDS -->
+                          <mat-header-row *matHeaderRowDef="displayedColumnsItems;  sticky: true"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
+                        </mat-table>
+                        <!-- TABLE ENDS -->
+                      </div>
                       <!-- SAVE & CLOSE -->
                       <div class="flex justify-end mt-auto">
                         <button mat-flat-button color="primary" (click)="addSelectedRowItem()">
@@ -350,7 +351,6 @@
                   </ng-template>
                 </div>
               </mat-tab>
-
 
               <!-- Quantitative Inspection Tab -->
               <mat-tab label="Quantitative Inspection">
@@ -371,10 +371,14 @@
                       <tr *ngFor="let control of quantitativeTableCriteria.controls; let i = index" [formGroupName]="i">
                         <td class="p-2 border border-gray-300">
                           <div class="flex justify-between items-center">
-                            <input matInput formControlName="parameterX" placeholder="Enter Parameter Name"
-                              class="w-full" />
-                            <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
-                              svgIcon="heroicons_outline:bars-3"></mat-icon>
+                            <input matInput formControlName="parameterX" readonly class="w-full" />
+                            <!-- <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
+                              svgIcon="heroicons_outline:bars-3">
+                            </mat-icon> -->
+                            <mat-icon *ngIf="!quantitativeTableCriteria.controls[i].get('parameterX')?.value" matSuffix
+                              style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
+                              svgIcon="heroicons_outline:bars-3">
+                            </mat-icon>
                             <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
                               (click)="removeRowX(i)">delete</mat-icon>
                           </div>
@@ -386,51 +390,54 @@
                   <ng-template #dialogTemplateItemsX let-data="data">
                     <div class="dialog-container flex flex-col h-full">
                       <div class="flex justify-between items-center p-4 border-b text-primary">
-                        <div class="text-lg font-semibold">List Of Inspection Characterisitics</div>
+                        <!-- Quantitative Inspection Characteristics -->
+                        <h2 class="text-lg font-semibold">Quantitative&nbsp;Inspection&nbsp;Characteristics</h2>
                         <span (click)="closeDialog()" class="header-close-x">
                           <mat-icon class="text-primary">close</mat-icon>
                         </span>
                       </div>
                       <mat-form-field>
-                        <mat-label>Filter</mat-label>
+                        <mat-label>Search</mat-label>
                         <input matInput (keyup)="applyFilterItemsX($event)" #input>
                       </mat-form-field>
-                      <!-- ITEMS TABLE STARTS -->
-                      <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
-                        <!-- ITEM CODE COLUMN -->
-                        <ng-container matColumnDef="intCode">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">
-                            <mat-checkbox [checked]="row.isSelected"
-                              (change)="onRowCheckboxChangeItemsX(row)"></mat-checkbox>
-                            {{ row.intCode }}
-                          </mat-cell>
-                        </ng-container>
-                        <!-- ITEM DESCRIPTION COLUMN -->
-                        <ng-container matColumnDef="description">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm">{{ row.description
-                            }}</mat-cell>
-                        </ng-container>
-                        <!-- ITEM GROUP COLUMN -->
-                        <ng-container matColumnDef="type">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Type</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.type ? row.type : '-' }}
-                          </mat-cell>
-                        </ng-container>
+                      <!-- TABLE STARTS -->
+                      <div class="table-container flex-grow overflow-auto">
+                        <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
+                          <!-- ITEM CODE COLUMN -->
+                          <ng-container matColumnDef="intCode">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Inspection Code</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">
+                              <mat-checkbox [checked]="row.isSelected"
+                                (change)="onRowCheckboxChangeItemsX(row)"></mat-checkbox>
+                              {{ row.intCode }}
+                            </mat-cell>
+                          </ng-container>
+                          <!-- ITEM DESCRIPTION COLUMN -->
+                          <ng-container matColumnDef="description">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm">{{ row.description
+                              }}</mat-cell>
+                          </ng-container>
+                          <!-- ITEM GROUP COLUMN -->
+                          <ng-container matColumnDef="type">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Type</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                              {{ row.type ? row.type : '-' }}
+                            </mat-cell>
+                          </ng-container>
+                          <!-- STATUS COLUMN -->
+                          <ng-container matColumnDef="isActive">
+                            <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                              {{ row.isActive ? 'Active' : 'Inactive' }}
+                            </mat-cell>
+                          </ng-container>
 
-                        <ng-container matColumnDef="isActive">
-                          <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
-                          <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                            {{ row.isActive ? 'Active' : 'Inactive' }}
-                          </mat-cell>
-                        </ng-container>
-
-
-                        <mat-header-row *matHeaderRowDef="displayedColumnsItemsX"></mat-header-row>
-                        <mat-row *matRowDef="let row; columns: displayedColumnsItemsX;"></mat-row>
-                      </mat-table>
+                          <mat-header-row *matHeaderRowDef="displayedColumnsItemsX; sticky: true"></mat-header-row>
+                          <mat-row *matRowDef="let row; columns: displayedColumnsItemsX;"></mat-row>
+                        </mat-table>
+                      </div>
+                      <!-- TABLE ENDS -->
                       <!-- SAVE & CLOSE -->
                       <div class="flex justify-end mt-auto">
                         <button mat-flat-button color="primary"
@@ -440,22 +447,19 @@
                   </ng-template>
                 </div>
               </mat-tab>
-
             </mat-tab-group>
-
-
+            <!-- mat-tab ENDS -->
           </div>
           <div class="step-navigation">
             <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCard()"
-              matStepperNext>Next</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCard()">Next</button>
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateInspectionCard()">Update</button>
           </div>
         </form>
       </mat-step>
+      <!-- fifthFormGroup - Inspection Card ENDS -->
 
-      <!-- 5th  - FIFTH STEP STARTS -->
-      <!-- ITEM INSPECTION CARD STARTS -->
+      <!-- itemsInspectionCardsForm  - Item Inspection Card STARTS -->
       <mat-step [stepControl]="itemsInspectionCardsForm" label="Item Inspection Card">
         <form [formGroup]="itemsInspectionCardsForm">
 
@@ -1159,8 +1163,7 @@
           </div>
         </form>
       </mat-step>
-      <!-- ITEM INSPECTION CARD ENDS -->
-      <!-- 5th  - FIFTH STEP ENDS -->
+      <!-- itemsInspectionCardsForm  - Item Inspection Card ENDS -->
 
       <!-- ITEM SAMPLE STARTS -->
       <mat-step [stepControl]="itemSamplingForm" label="Item Sample">
@@ -1170,7 +1173,8 @@
             <!-- Sample Code -->
             <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
               <mat-label>Sample Code</mat-label>
-              <input matInput formControlName="sampleCodeIS" required>
+              <input class="view-mode-bg-grey" matInput formControlName="sampleCodeIS" readonly
+                style="cursor: not-allowed;">
             </mat-form-field>
             <!-- Item Code -->
             <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
@@ -1179,12 +1183,16 @@
                 (click)="onItemSampleItemCodeClick()" *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="itemCode" required readonly
                 [value]="selectedItemCodeIS ? selectedItemCodeIS : ''">
+              <mat-error>Required.</mat-error>
             </mat-form-field>
             <!-- Item Description -->
             <mat-form-field style="flex: 0 1 55%; min-width: 100px;">
               <mat-label>Item Description</mat-label>
               <input matInput formControlName="itemDescription" required readonly=""
                 [value]="selectedItemDescriptionIS ? selectedItemDescriptionIS : ''">
+              <mat-error
+                *ngIf="itemSamplingForm.get('itemCode').invalid && (isValidate || itemSamplingForm.get('itemCode').touched)">
+                Required.</mat-error>
             </mat-form-field>
             <!-- Item ID -->
             <mat-form-field style="flex: 0 1 55%; min-width: 100px;" class="hidden">
@@ -1273,7 +1281,7 @@
                   </span>
                 </div>
                 <mat-form-field>
-                  <mat-label>Filter</mat-label>
+                  <mat-label>Search</mat-label>
                   <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
                 </mat-form-field>
                 <!-- ITEMS TABLE STARTS -->
@@ -1344,8 +1352,14 @@
                       Lot Size Min
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
-                      <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('lotSizeMin')"
+                      <input matInput type="number" min="1" [formControl]="samplingRangeObjects.at(i).get('lotSizeMin')"
                         placeholder="Minimum Lot Size">
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.controls[i].get('lotSizeMin').invalid">
+                        Required.
+                      </mat-error>
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.at(i).get('lotSizeMin').hasError('min')">
+                        Must be greater than or equal to 1.
+                      </mat-error>
                     </td>
                   </ng-container>
                   <!-- Lot Size Max COLUMN -->
@@ -1354,18 +1368,30 @@
                       Lot Size Max
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
-                      <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('lotSizeMax')"
+                      <input matInput type="number" min="1" [formControl]="samplingRangeObjects.at(i).get('lotSizeMax')"
                         placeholder="Maximum Lot Size">
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.controls[i].get('lotSizeMax').invalid">
+                        Required.
+                      </mat-error>
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.at(i).get('lotSizeMax').hasError('min')">
+                        Must be greater than or equal to 1.
+                      </mat-error>
                     </td>
                   </ng-container>
-                  <!-- Sample Size COLUMN -->
+                  <!-- Sample Qty COLUMN -->
                   <ng-container matColumnDef="sampleQty">
                     <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                       Sample Qty
                     </th>
                     <td mat-cell *matCellDef="let element; let i = index" class="text-sm whitespace-nowrap text-center">
-                      <input matInput type="number" min="0" [formControl]="samplingRangeObjects.at(i).get('sampleQty')"
+                      <input matInput type="number" min="1" [formControl]="samplingRangeObjects.at(i).get('sampleQty')"
                         placeholder="Enter Sample Qty">
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.controls[i].get('sampleQty').invalid">
+                        Required.
+                      </mat-error>
+                      <mat-error *ngIf="isValidate && samplingRangeObjects.at(i).get('sampleQty').hasError('min')">
+                        Must be greater than or equal to 1.
+                      </mat-error>
                     </td>
                   </ng-container>
                   <!-- Critical Defect COLUMN -->
@@ -1404,6 +1430,9 @@
             </div>
           </div>
           <!-- SAMPLING RANGE TABLE SECTION ENDS -->
+          <div *ngIf="validatingSamplingRange" class="error-message text-red-600">
+            {{ validatingSamplingRange }}
+          </div>
           <div class="step-navigation">
             <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
             <button mat-button class="next-button" *ngIf="!isEditMode"
