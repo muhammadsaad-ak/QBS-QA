@@ -18,6 +18,8 @@ import { ChangeDetectorRef } from '@angular/core';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { MatSelectModule } from '@angular/material/select';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/evaluation-plan-purchase-order.service';
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -48,6 +50,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   quantitativeInspectionForm: FormGroup;
   isFormSaved = false; // Initialize to false
   isDropdownOpen = false;
+  isValidate = false;
+
 
     
   
@@ -92,33 +96,58 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     private dialog: MatDialog,
     private _inspectionCardModal: InspectionCardService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private _snackBar: MatSnackBar,
+    private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService
   ) {}
 
+  // planPurchaseOrderFormGroup = this._formBuilder.group({
+  //   isActive: [true],
+  //   docNoPO: ['DOC-2024-001'],
+  //   itemCodePO: ['ITEM-123'],
+  //   itemDescriptionPO: ['Test Item Description'],
+  //   inspectionDateTimePO: ['2024-02-27 10:00 AM'],
+  //   datePO: ['2024-02-20'],
+  //   purchaseOrderPO: ['PO-2024-001'],
+  //   quantityPO: ['1000'],
+  //   openQuantityPO: ['500'],
+  //   vendorPO: ['Vendor XYZ'],
+  //   qcLotNoPO: ['', Validators.required],
+  //   receiveQtyPO: ['', Validators.required],
+  //   inspectionQtyPO: ['', Validators.required],
+  //   samplePO: ['2'],
+  //   locationPO: ['Warehouse A'],
+  //   itemCodeModalPO: ['ITEM-123'],
+  //   inspectionQtyModalPO: ['50'],
+  //   inspectionByModalPO: ['Mr. Kamran'],
+  //   inspectionTimeModalPO: ['10:30 AM'],
+  //   remarks: ['']
+
+  // });
+
   planPurchaseOrderFormGroup = this._formBuilder.group({
-    isActive: [true],
-    docNoPO: ['DOC-2024-001'],
-    itemCodePO: ['ITEM-123'],
-    itemDescriptionPO: ['Test Item Description'],
-    inspectionDateTimePO: ['2024-02-27 10:00 AM'],
-    datePO: ['2024-02-20'],
-    purchaseOrderPO: ['PO-2024-001'],
-    quantityPO: ['1000'],
-    openQuantityPO: ['500'],
-    vendorPO: ['Vendor XYZ'],
-    qcLotNoPO: ['', Validators.required],
-    receiveQtyPO: ['', Validators.required],
-    inspectionQtyPO: ['', Validators.required],
-    samplePO: ['2'],
-    locationPO: ['Warehouse A'],
-    itemCodeModalPO: ['ITEM-123'],
-    inspectionQtyModalPO: ['50'],
-    inspectionByModalPO: ['Mr. Kamran'],
-    inspectionTimeModalPO: ['10:30 AM'],
-    remarks: ['']
-
+    id: [null], // string
+    intCode: [0], // number
+    documentNumber: [5], // number
+    openQuantity: [20], // number
+    status: ['true'], // string
+    documentType: ['true'], // string
+    documentDate: [new Date().toISOString()], // Date string
+    lineNo: [0], // number
+    receiveQuantity: [1000], // number
+    inspectionQuantity: [200], // number
+    inspectionDateTime: [new Date().toISOString()], // Date string
+    qcLotNo: [56], // number
+    poDate: [new Date().toISOString()], // Date string
+    poCode: ['88'], // string
+    location: ['KHI'], // string
+    poQuantity: [32], // number
+    sampleQuantity: [5], // number
+    vendor: ['QBS'], // string
+    remarks: ['remarks'], // string
+    itemId: ['43a3787f-5bad-4ecb-8781-94a7ef55e864'] // string
   });
-
+  
   get sampleQuantity(): number {
     return Number(this.planPurchaseOrderFormGroup.get('samplePO')?.value) || 0;
   }  
@@ -136,6 +165,39 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     this.isFormSaved = true;
 
   }
+
+  onSubmitPurchaseOrder(): void {
+    this.isValidate = true;
+    if (this.planPurchaseOrderFormGroup.valid) {
+      const formData = this.planPurchaseOrderFormGroup.value;
+      console.log('SENDING PURCHASE ORDER PAYLOAD:', formData);
+
+      this._evaluationPurchaseOrderService.AddPurchaseOrder(formData).subscribe(
+        (response) => {
+          if (response.succeeded) {
+            console.log('API RUN SUCCESSFULLY.', formData);
+            this._snackBar.open('Purchase Order added successfully!', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            });
+          }
+        },
+        (error) => {
+          this._snackBar.open('Error adding purchase order.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      );
+    } else {
+      this.isValidate = false;
+      this._snackBar.open('Please fill all mandatory fields.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    }
+  }
+
   cancelForm() {
     // Reset the form or navigate away
     this.planPurchaseOrderFormGroup.reset();
@@ -157,7 +219,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       hour12: false
     });
 
-    this.planPurchaseOrderFormGroup.get('inspectionDateTimePO')?.setValue(formattedDateTime);
+    this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.setValue(formattedDateTime);
   }
 
 
