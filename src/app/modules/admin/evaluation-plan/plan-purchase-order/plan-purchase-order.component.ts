@@ -126,26 +126,26 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   // });
 
   planPurchaseOrderFormGroup = this._formBuilder.group({
-    id: [null], // string
+    id: [''], // ✅ Empty string if null not allowed
     intCode: [0], // number
     documentNumber: [5], // number
     openQuantity: [20], // number
-    status: ['true'], // string
-    documentType: ['true'], // string
-    documentDate: [new Date().toISOString()], // Date string
-    lineNo: [0], // number
+    status: ['Approved Really'], // ✅ Meaningful status
+    documentType: ['PurchaseOrder'], // ✅ Meaningful type
+    documentDate: [new Date().toISOString()], // ✅ Correct ISO format
+    lineNo: [null], // ✅ Keep null if API supports
     receiveQuantity: [1000], // number
     inspectionQuantity: [200], // number
-    inspectionDateTime: [new Date().toISOString()], // Date string
+    inspectionDateTime: [new Date().toISOString()], // ✅ Correct ISO format
     qcLotNo: [56], // number
-    poDate: [new Date().toISOString()], // Date string
+    poDate: [new Date().toISOString()], // ✅ Correct ISO format
     poCode: ['88'], // string
     location: ['KHI'], // string
     poQuantity: [32], // number
     sampleQuantity: [5], // number
     vendor: ['QBS'], // string
     remarks: ['remarks'], // string
-    itemId: ['43a3787f-5bad-4ecb-8781-94a7ef55e864'] // string
+    // itemId: null // ✅ Empty string instead of null
   });
   
   get sampleQuantity(): number {
@@ -207,20 +207,20 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
 
   
 
-  setInspectionDateTime() {
-    const now = new Date();
-    const formattedDateTime = now.toLocaleString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
+  // setInspectionDateTime() {
+  //   const now = new Date();
+  //   const formattedDateTime = now.toLocaleString('en-US', {
+  //     year: 'numeric',
+  //     month: '2-digit',
+  //     day: '2-digit',
+  //     hour: '2-digit',
+  //     minute: '2-digit',
+  //     second: '2-digit',
+  //     hour12: false
+  //   });
 
-    this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.setValue(formattedDateTime);
-  }
+  //   this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.setValue(formattedDateTime);
+  // }
 
 
   
@@ -288,7 +288,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     // Add static quantitative inspection data
     this.addQuantitativeData();
 
-    this.setInspectionDateTime(); // Fetch date-time on load
+    // this.setInspectionDateTime(); // Fetch date-time on load
 
     
     // Initialize data sources
