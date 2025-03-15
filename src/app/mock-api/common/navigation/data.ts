@@ -127,7 +127,14 @@ export const compactNavigation: QbsNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:clipboard-document-check',
                 link: '/evaluation-plan/list-of-item-cavity',
-            }
+            },
+            // {
+            //     id: 'evaluation-plan.plan-purchase-order',
+            //     title: 'Plan Purchase Order ',
+            //     type: 'basic',
+            //     icon: 'heroicons_outline:clipboard-document-check',
+            //     link: '/evaluation-plan/plan-purchase-order',
+            // },
         ],
     },
     {

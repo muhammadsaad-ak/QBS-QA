@@ -1,0 +1,257 @@
+.custom-input-quality {
+    width: 25%;
+    /* Ensures the input field takes full width */
+  }
+  
+  .custom-input input {
+    height: 50px;
+    /* Adjust the height */
+    font-size: 18px;
+    /* Increase font size */
+    padding: 10px;
+    /* Add padding for better spacing */
+  }
+  
+  .custom-input mat-label {
+    font-size: 16px;
+    /* Increase the label font size if needed */
+  }
+  
+  .custom-heading {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 30px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+  }
+  
+  //Removing Numbers from the stepper
+  .mat-step-header .mat-step-icon {
+    display: none;
+  }
+  
+  
+  .custom-stepper .mat-step-header {
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s ease;
+    height: 40px;
+  }
+  
+  .custom-stepper .mat-step-header[aria-selected="true"] {
+    border-bottom: 3px solid #5046E5;
+    /* Blue underline on selected step */
+    color: wheat;
+    /* Blue text on selected step */
+  }
+  
+  .mat-horizontal-stepper-header-container {
+    margin-bottom: 10px;
+  }
+  
+  .mat-mdc-tab-group .mat-mdc-tab-body-content {
+    padding: 0px;
+  }
+  
+  /* Additional styles for buttons */
+  .step-navigation {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+  
+    button {
+      &.back-button {
+        border: 1px solid #5046E5;
+        color: #5046E5;
+        width: 140px;
+  
+      }
+  
+      &.next-button {
+        background-color: #5046E5;
+        color: white;
+        width: 140px;
+      }
+  
+      .next-button:hover {
+        background-color: #3e38b8;
+      }
+    }
+  }
+  .mat-form-field {
+    margin-bottom: 2px !important; /* Reduce the space below each field */
+  }
+
+  .custom-divider {
+    border: none;
+    height: 2px;
+    background-color: #ddd; /* Light Grey */
+    margin: 20px 0;
+}
+
+// .add-sample-card {
+//     border: 2px solid #5046E5; /* Blue border */
+//     border-radius: 10px;
+//     font-weight: 600;
+//     color: #5046E5;
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     justify-content: center;
+//     padding: 16px;
+//     min-width: 150px;
+//     min-height: 100px;
+//     cursor: pointer;
+//     transition: all 0.3s ease-in-out;
+//   }
+
+  .add-sample-card {
+    border: 2px solid #5046E5; /* Blue border */
+    width: 336px;
+    height: 114px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: #5046E5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .add-sample-card:hover {
+    background-color: rgba(63, 81, 181, 0.1); /* Light blue hover effect */
+  }
+  
+  
+  .add-sample-card:hover {
+    background-color: rgba(63, 81, 181, 0.1); /* Light blue hover effect */
+  }
+
+  .custom-add-icon {
+    color: #5046E5;
+}
+
+// Add this to your component's SCSS file
+.sample-card {
+  min-width: 336px;
+  height: 114px;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+// .add-sample-card {
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   cursor: pointer;
+//   border: 2px dashed #ccc;
+//   background-color: #ffffff;
+//   transition: all 0.2s;
+  
+  // &:hover {
+  //   background-color: #f5f5f5;
+  //   border-color: #999;
+  // }
+  
+  // .custom-add-icon {
+  //   margin-left: 8px;
+  //   color: #3f51b5;
+  // }
+
+/* Completed steps should stay blue */
+.mat-step-header.completed-step .mat-step-label {
+  color: #5046E5 !important;
+}
+
+/* Active step should also be blue */
+.mat-step-header[aria-selected="true"] .mat-step-label {
+  color: #5046E5 !important;
+}
+
+/* Default steps should remain black */
+.mat-step-header:not(.completed-step):not([aria-selected="true"]) .mat-step-label {
+  color:#ABB7C2
+  !important;
+}
+
+/* Button container */
+.custom-button-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Custom button with cut design */
+.custom-button {
+    position: relative;
+    padding-right: 36px; /* Space for dropdown icon */
+    border-bottom-right-radius: 0px; /* Remove bottom right border */
+}
+
+/* Cut design using ::after pseudo-element */
+.custom-button::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 38px;
+    background-color: rgb(74, 21, 110);
+    clip-path: polygon(132% 0, 0 132%, 100% 100%);
+    border-radius: 18px;
+    
+}
+
+/* Improved Dropdown Menu Styles */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px; /* Rounded corners */
+  padding: 8px 0;
+  min-width: 180px;
+  z-index: 1000;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Dropdown Menu Items */
+.dropdown-menu button {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 12px 20px; /* Better spacing */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Hover Effect */
+.dropdown-menu button:hover {
+  background: #5046E5; /* Blue on hover */
+  color: white;
+}
+
+/* First and Last button rounded corners */
+.dropdown-menu button:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.dropdown-menu button:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}

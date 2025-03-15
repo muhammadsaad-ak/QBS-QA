@@ -23,6 +23,7 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime } from 'rxjs';
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
 
+
 @Component({
   selector: 'app-list-of-evaluation-plan',
   standalone: true,
@@ -180,7 +181,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'SAP Connector Module',
       qty: 30,
       openQty: 10,
-      status: 'Open'
+      status: 'Open',
+      inspectionStatus: 'Open'
     },
     {
       docNo: 'PO-102',
@@ -189,7 +191,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'Database Integration Kit',
       qty: 20,
       openQty: 20,
-      status: 'Open'
+      status: 'Open',
+      inspectionStatus: 'In Progress'
     },
     {
       docNo: 'PO-103',
@@ -198,7 +201,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'SAP API License',
       qty: 5,
       openQty: 0,
-      status: 'Open'
+      status: 'Open',
+      inspectionStatus: 'Pass'
     },
     {
       docNo: 'PO-104',
@@ -207,7 +211,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemDescription: 'ERP Module Extension',
       qty: 15,
       openQty: 5,
-      status: 'Open'
+      status: 'Open',
+      inspectionStatus: 'Fail'
     }
   ];
 
@@ -261,6 +266,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemSamplesService: ItemSamplesService,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -290,7 +296,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       this.pageTitle = 'List of Evaluation Plan';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
         this.dataSource.data = this.evalPlanPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'productName', 'qty', 'status', 'action']; 
@@ -300,7 +306,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       this.pageTitle = 'List of SAP Documents';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status','inspectionStatus', 'action'];
         this.dataSource.data = this.sapDocPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'productName', 'qty', 'openQty', 'status', 'action'];
@@ -353,5 +359,35 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       state: { data: element }, 
       relativeTo: this._activatedRoute 
     });
+
   }
+
+  // navigateToPlanPurchaseOrderForm() {
+  //   this.router.navigate(['/evaluation-plan/plan-purchase-order'],  { relativeTo: this._activatedRoute });
+  // }
+
+  navigateToOrderForm() {
+    const orderType = this.orderTypeControl.value; // Check selected order type
+    if (orderType === 'purchaseOrder') {
+      this.router.navigate(['/evaluation-plan/plan-purchase-order'],  { relativeTo: this._activatedRoute });
+    } else if (orderType === 'productionOrder') {
+      this.router.navigate(['/evaluation-plan/plan-production-order'] ,  { relativeTo: this._activatedRoute });;
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Open':
+        return 'text-blue';
+      case 'In Progress':
+        return 'text-orange';
+      case 'Pass':
+        return 'text-green';
+      case 'Fail':
+        return 'text-red';
+      default:
+        return ''; // Default class if no match
+    }
+  }
+  
 }
