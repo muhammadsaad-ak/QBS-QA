@@ -27,7 +27,7 @@ export class ItemInspectionCardService {
     private _listUnitOfMeasureIIC = new BehaviorSubject<any[]>([]);
     private _listQualitativeResultsIIC = new BehaviorSubject<any[]>([]);
     private _bothCharacteristicsIIC = new BehaviorSubject<any[]>([]);
-    
+
 
     // Observable to expose role data state
     listItemsInspectionCardsIIC$: Observable<any[]> = this._listItemsInspectionCardsIIC.asObservable();
@@ -259,6 +259,30 @@ export class ItemInspectionCardService {
                 catchError((error) => {
                     console.error('ERROR WHILE FETCHING LIST OF BOTH CHARACTERISTICS', error);
                     return throwError(error);
+                })
+            );
+    }
+    // UPDATE ITEM INSPECTION CARD
+    onUpdateItemInspectionCardBothCharacteristics(data: any): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+        });
+        console.log('SENDING PAYLOAD', data);
+        return this._httpClient
+            .put(
+                `${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/UpdateItemInspectionCard`,
+                data,
+                { headers }
+            )
+            .pipe(
+                tap((response) => console.log('RESPONSE:', response)),
+                catchError((error) => {
+                    console.error(
+                        'ERROR WHILE UPDATING ITEM INSPECTION CARD',
+                        error
+                    );
+                    return throwError(() => error);
                 })
             );
     }
