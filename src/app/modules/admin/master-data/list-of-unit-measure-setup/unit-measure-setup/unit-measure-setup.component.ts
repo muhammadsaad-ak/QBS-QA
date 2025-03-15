@@ -64,7 +64,7 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
   configForm: UntypedFormGroup;
   searchInputControl: UntypedFormControl = new UntypedFormControl();
 
-  addUserBtn = "Add UoM";
+  addUserBtn = "Add";
 
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
   drawerMode: 'side' | 'over';
@@ -162,15 +162,8 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
 
 
   }
-  goToStepper() {
-    this.router.navigate(['/master-data/list-of-testing-stepper'], {
-      queryParams: { step: 1 },  // Pass step index (0-based)
-    });
-  }
-  ngOnDestroy(): void {
 
-
-  }
+  ngOnDestroy(): void { }
 
   // Method to apply filter on the dataSource
   applyFilter(searchTerm: string): void {
@@ -185,41 +178,29 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
     this._router.navigate(['./'], { relativeTo: this._activatedRoute });
   }
 
-  openAddInspectionDrawer(type: 'visitprofile'): void {
-    this.matDrawer.open();
-    this._router.navigate(['/master-data/list-of-testing-stepper'], { queryParams: { step: 1 } });
-  }
-
-
-  openUpdateUoMDrawer(type: 'visitprofile', element: any): void {
-    this.matDrawer.open();
-    this._router.navigate(['edit-unit-measure-setup', element.uomCode], { relativeTo: this._activatedRoute, state: { element } });
-  }
-
-  openStepperToUpdateUOM(rowDataUOM: any): void {
-    console.log('SENDING DATA:', rowDataUOM);
-    sessionStorage.setItem('stepperDataUOM', JSON.stringify(rowDataUOM));
+  openStepperToAddUOM(): void {
+    sessionStorage.removeItem('stepperDataUOM');
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
       queryParams: { step: 1 }
     });
   }
 
-  /**
-     * Open confirmation dialog
-     */
-  //   deleteUser(type: 'visitprofile'): void {
-  //     // Open the dialog and save the reference of it
-  //     const dialogRef = this._qbsConfirmationService.open(
-  //         this.configForm.value
-  //     );
 
-  //     // Subscribe to afterClosed from the dialog reference
-  //     dialogRef.afterClosed().subscribe((result) => {
-  //         console.log(result);
-  //     });
-  // }
+  openUpdateUoMDrawer(type: 'visitprofile', element: any): void {
+    this.matDrawer.open();
+    this._router.navigate(['edit-unit-measure-setup', element.uomCode],
+      { relativeTo: this._activatedRoute, state: { element } });
+  }
 
-
-
+  openStepperToUpdateUOM(rowDataUOM: any): void {
+    // console.log('SENDING DATA:', rowDataUOM);
+    const dataToSendIntoStepperUOM = {
+      ...rowDataUOM, isEditMode: true
+    };
+    sessionStorage.setItem('stepperDataUOM', JSON.stringify(dataToSendIntoStepperUOM));
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 1 }
+    });
+  }
 
 }
