@@ -234,7 +234,7 @@ currentPage = 1;    // Current page number
       this.pageTitle = 'List of Evaluation Plan';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
         this.dataSource.data = this.evalPlanPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
@@ -307,4 +307,20 @@ currentPage = 1;    // Current page number
       this.router.navigate(['/evaluation-plan/plan-production-order'] ,  { relativeTo: this._activatedRoute });;
     }
   }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Open':
+        return 'text-blue';
+      case 'In Progress':
+        return 'text-orange';
+      case 'Pass':
+        return 'text-green';
+      case 'Fail':
+        return 'text-red';
+      default:
+        return ''; // Default class if no match
+    }
+  }
+  
 }

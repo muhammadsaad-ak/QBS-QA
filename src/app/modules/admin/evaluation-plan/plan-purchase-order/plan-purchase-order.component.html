@@ -10,89 +10,91 @@
             <div style="display: flex; gap: 2px 8px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Doc No.</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="docNoPO" placeholder="Enter Code"
+                    <input class="view-mode-bg-grey" matInput formControlName="documentNumber" placeholder="Enter Code"
                         required readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Item Code</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="itemCodePO" required
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter "  
                         readonly style=" cursor: not-allowed;">
                 </mat-form-field>
+                <!-- formControlName="itemCodePO" -->
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Item Description</mat-label>
                     <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput
-                        formControlName="itemDescriptionPO" placeholder="Enter Code" required readonly
+                         placeholder="Enter Code" required readonly
                         style=" cursor: not-allowed;">
                 </mat-form-field>
+                <!-- formControlName="itemDescriptionPO" -->
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Inspection Date & Time</mat-label>
-                    <input class="view-mode-bg-grey text-left pr-10" matInput formControlName="inspectionDateTimePO"
+                    <input class="view-mode-bg-grey text-left pr-10" matInput formControlName="inspectionDateTime"
                         readonly style="cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>P.O Date</mat-label>
-                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="datePO"
+                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="poDate"
                         placeholder="Enter Code" required readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Purchase Order</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="purchaseOrderPO"
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="poCode"
                         required readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Location</mat-label>
-                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="locationPO"
+                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="location"
                         placeholder="Enter Code" required readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>P.O Qty:</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="quantityPO" required
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="poQuantity" required
                         readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Open Qty:</mat-label>
-                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="openQuantityPO"
+                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="openQuantity"
                         placeholder="Enter Code" required readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Vendor</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="vendorPO" required
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="vendor" required
                         readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Sample Qty</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="samplePO" placeholder="Enter Code"
+                    <input class="view-mode-bg-grey" matInput formControlName="sampleQuantity" placeholder="Enter Code"
                         required readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>QC Lot No:</mat-label>
-                    <input matInput placeholder="Enter " formControlName="qcLotNoPO" required>
+                    <input matInput placeholder="Enter " formControlName="qcLotNo" required>
                 </mat-form-field>
 
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
                     <mat-label>Receive Qty</mat-label>
-                    <input matInput formControlName="receiveQtyPO" placeholder="Enter Code" required>
+                    <input matInput formControlName="receiveQuantity" placeholder="Enter Code" required>
                 </mat-form-field>
 
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
                     <mat-label>Inspection Qty:</mat-label>
-                    <input matInput placeholder="Enter " formControlName="inspectionQtyPO" required>
+                    <input matInput placeholder="Enter " formControlName="inspectionQuantity" required>
                 </mat-form-field>
             </div>
 
             <button mat-flat-button color="primary"
-                *ngIf="planPurchaseOrderFormGroup.get('inspectionQtyPO').valid && !isFormSaved" (click)="saveForm()">
+                *ngIf="planPurchaseOrderFormGroup.get('inspectionQuantity').valid && !isFormSaved" (click)="onSubmitPurchaseOrder()">
                 Save
             </button>
 
@@ -100,12 +102,12 @@
 
             <div class="flex flex-wrap gap-2 mt-4" *ngIf="isFormSaved">
                 <div *ngFor="let sample of samplesPurchaseOrder" class="sample-card"
-                    [style.background-color]="sample.cardColor"
-                    (click)="onEditSample(sample)">
+                    [style.background-color]="sample.cardColor">
                     <h3 style="font-weight: 500;">Sample {{sample.id}}</h3>
                     <div style="font-weight: 400;">Inspection Time: {{sample.inspectionTime}}</div>
                     <div style="font-weight: 400;">Inspection By: {{sample.inspectionBy}}</div>
                 </div>
+                <!-- (click)="onEditSample(sample)"> -->
 
                 <div class="sample-card add-sample-card" *ngIf="samplesPurchaseOrder.length < sampleQuantity"
                     (click)="onPurchaseOrderModal()">
@@ -137,11 +139,11 @@
                                 readonly>
                         </mat-form-field>
 
-                        <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px;">
+                        <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px;">
                             <mat-label>Inspection Qty:</mat-label>
                             <input matInput formControlName="inspectionQtyModalPO" placeholder="Enter Code" required
                                 readonly>
-                        </mat-form-field>
+                        </mat-form-field> -->
 
                         <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px;">
                             <mat-label>Inspection By</mat-label>
@@ -410,9 +412,22 @@
                     Cancel
                 </button>
 
-                <button mat-flat-button color="primary">
-                    Post to SAP
-                </button>
+                <!-- Button with cut design & dropdown -->
+                <div class="custom-button-container">
+                    <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button">
+                        Post to SAP
+                        <!-- <mat-icon class="arrow-icon">arrow_drop_down</mat-icon> -->
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div *ngIf="isDropdownOpen" class="dropdown-menu">
+                        <button mat-menu-item (click)="action1()">Good Receipt PO (GRN)</button>
+                        <!-- <button mat-menu-item (click)="action2()">Inventory Transfer</button> -->
+
+                      
+                    </div>
+                </div>
+
             </div>
 
 

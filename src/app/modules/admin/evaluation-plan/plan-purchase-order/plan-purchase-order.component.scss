@@ -180,3 +180,78 @@
   color:#ABB7C2
   !important;
 }
+
+/* Button container */
+.custom-button-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Custom button with cut design */
+.custom-button {
+    position: relative;
+    padding-right: 36px; /* Space for dropdown icon */
+    border-bottom-right-radius: 0px; /* Remove bottom right border */
+}
+
+/* Cut design using ::after pseudo-element */
+.custom-button::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 38px;
+    background-color: rgb(74, 21, 110);
+    clip-path: polygon(132% 0, 0 132%, 100% 100%);
+    border-radius: 18px;
+    
+}
+
+/* Improved Dropdown Menu Styles */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px; /* Rounded corners */
+  padding: 8px 0;
+  min-width: 180px;
+  z-index: 1000;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Dropdown Menu Items */
+.dropdown-menu button {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 12px 20px; /* Better spacing */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Hover Effect */
+.dropdown-menu button:hover {
+  background: #5046E5; /* Blue on hover */
+  color: white;
+}
+
+/* First and Last button rounded corners */
+.dropdown-menu button:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.dropdown-menu button:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}

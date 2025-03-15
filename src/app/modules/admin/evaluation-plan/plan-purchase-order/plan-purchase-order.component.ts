@@ -18,6 +18,8 @@ import { ChangeDetectorRef } from '@angular/core';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { MatSelectModule } from '@angular/material/select';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/evaluation-plan-purchase-order.service';
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -47,6 +49,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   qualitativeInspectionForm: FormGroup;
   quantitativeInspectionForm: FormGroup;
   isFormSaved = false; // Initialize to false
+  isDropdownOpen = false;
+  isValidate = false;
+
+
     
   
   // Plan Purchase DataSources for tables
@@ -90,33 +96,58 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     private dialog: MatDialog,
     private _inspectionCardModal: InspectionCardService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private _snackBar: MatSnackBar,
+    private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService
   ) {}
 
+  // planPurchaseOrderFormGroup = this._formBuilder.group({
+  //   isActive: [true],
+  //   docNoPO: ['DOC-2024-001'],
+  //   itemCodePO: ['ITEM-123'],
+  //   itemDescriptionPO: ['Test Item Description'],
+  //   inspectionDateTimePO: ['2024-02-27 10:00 AM'],
+  //   datePO: ['2024-02-20'],
+  //   purchaseOrderPO: ['PO-2024-001'],
+  //   quantityPO: ['1000'],
+  //   openQuantityPO: ['500'],
+  //   vendorPO: ['Vendor XYZ'],
+  //   qcLotNoPO: ['', Validators.required],
+  //   receiveQtyPO: ['', Validators.required],
+  //   inspectionQtyPO: ['', Validators.required],
+  //   samplePO: ['2'],
+  //   locationPO: ['Warehouse A'],
+  //   itemCodeModalPO: ['ITEM-123'],
+  //   inspectionQtyModalPO: ['50'],
+  //   inspectionByModalPO: ['Mr. Kamran'],
+  //   inspectionTimeModalPO: ['10:30 AM'],
+  //   remarks: ['']
+
+  // });
+
   planPurchaseOrderFormGroup = this._formBuilder.group({
-    isActive: [true],
-    docNoPO: ['DOC-2024-001'],
-    itemCodePO: ['ITEM-123'],
-    itemDescriptionPO: ['Test Item Description'],
-    inspectionDateTimePO: ['2024-02-27 10:00 AM'],
-    datePO: ['2024-02-20'],
-    purchaseOrderPO: ['PO-2024-001'],
-    quantityPO: ['1000'],
-    openQuantityPO: ['500'],
-    vendorPO: ['Vendor XYZ'],
-    qcLotNoPO: ['', Validators.required],
-    receiveQtyPO: ['', Validators.required],
-    inspectionQtyPO: ['', Validators.required],
-    samplePO: ['2'],
-    locationPO: ['Warehouse A'],
-    itemCodeModalPO: ['ITEM-123'],
-    inspectionQtyModalPO: ['50'],
-    inspectionByModalPO: ['Mr. Kamran'],
-    inspectionTimeModalPO: ['10:30 AM'],
-    remarks: ['']
-
+    id: [''], // ✅ Empty string if null not allowed
+    intCode: [0], // number
+    documentNumber: [5], // number
+    openQuantity: [20], // number
+    status: ['Approved Really'], // ✅ Meaningful status
+    documentType: ['PurchaseOrder'], // ✅ Meaningful type
+    documentDate: [new Date().toISOString()], // ✅ Correct ISO format
+    lineNo: [null], // ✅ Keep null if API supports
+    receiveQuantity: [1000], // number
+    inspectionQuantity: [200], // number
+    inspectionDateTime: [new Date().toISOString()], // ✅ Correct ISO format
+    qcLotNo: [56], // number
+    poDate: [new Date().toISOString()], // ✅ Correct ISO format
+    poCode: ['88'], // string
+    location: ['KHI'], // string
+    poQuantity: [32], // number
+    sampleQuantity: [5], // number
+    vendor: ['QBS'], // string
+    remarks: ['remarks'], // string
+    // itemId: null // ✅ Empty string instead of null
   });
-
+  
   get sampleQuantity(): number {
     return Number(this.planPurchaseOrderFormGroup.get('samplePO')?.value) || 0;
   }  
@@ -134,6 +165,39 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     this.isFormSaved = true;
 
   }
+
+  onSubmitPurchaseOrder(): void {
+    this.isValidate = true;
+    if (this.planPurchaseOrderFormGroup.valid) {
+      const formData = this.planPurchaseOrderFormGroup.value;
+      console.log('SENDING PURCHASE ORDER PAYLOAD:', formData);
+
+      this._evaluationPurchaseOrderService.AddPurchaseOrder(formData).subscribe(
+        (response) => {
+          if (response.succeeded) {
+            console.log('API RUN SUCCESSFULLY.', formData);
+            this._snackBar.open('Purchase Order added successfully!', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            });
+          }
+        },
+        (error) => {
+          this._snackBar.open('Error adding purchase order.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      );
+    } else {
+      this.isValidate = false;
+      this._snackBar.open('Please fill all mandatory fields.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    }
+  }
+
   cancelForm() {
     // Reset the form or navigate away
     this.planPurchaseOrderFormGroup.reset();
@@ -143,20 +207,20 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
 
   
 
-  setInspectionDateTime() {
-    const now = new Date();
-    const formattedDateTime = now.toLocaleString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
+  // setInspectionDateTime() {
+  //   const now = new Date();
+  //   const formattedDateTime = now.toLocaleString('en-US', {
+  //     year: 'numeric',
+  //     month: '2-digit',
+  //     day: '2-digit',
+  //     hour: '2-digit',
+  //     minute: '2-digit',
+  //     second: '2-digit',
+  //     hour12: false
+  //   });
 
-    this.planPurchaseOrderFormGroup.get('inspectionDateTimePO')?.setValue(formattedDateTime);
-  }
+  //   this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.setValue(formattedDateTime);
+  // }
 
 
   
@@ -224,7 +288,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     // Add static quantitative inspection data
     this.addQuantitativeData();
 
-    this.setInspectionDateTime(); // Fetch date-time on load
+    // this.setInspectionDateTime(); // Fetch date-time on load
 
     
     // Initialize data sources
@@ -302,27 +366,27 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     });
   }
 
-  onEditSample(sample: any): void {
-    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-      width: '70%',
-      height: '75vh',
-      data: { 
-        allItems: this.dataSourceItems,
-        selectedSample: { ...sample } // Clone object to avoid direct mutation
-      },
-    });
+  // onEditSample(sample: any): void {
+  //   const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+  //     width: '70%',
+  //     height: '75vh',
+  //     data: { 
+  //       allItems: this.dataSourceItems,
+  //       selectedSample: { ...sample } // Clone object to avoid direct mutation
+  //     },
+  //   });
   
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        // Find index of the edited sample in the array
-        const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
-        if (index !== -1) {
-          this.samplesPurchaseOrder[index] = result; // Update the existing sample instead of pushing new one
-        }
-      }
-      console.log('EDIT DIALOG CLOSED');
-    });
-  }
+  //   dialogRef.afterClosed().subscribe((result) => {
+  //     if (result) {
+  //       // Find index of the edited sample in the array
+  //       const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
+  //       if (index !== -1) {
+  //         this.samplesPurchaseOrder[index] = result; // Update the existing sample instead of pushing new one
+  //       }
+  //     }
+  //     console.log('EDIT DIALOG CLOSED');
+  //   });
+  // }
   
   
   
@@ -387,6 +451,18 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
   }
+
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+  
+  action1() {
+    console.log("Action 1 selected");
+  }
+  
+  // action2() {
+  //   console.log("Action 2 selected");
+  // }
   
 
   

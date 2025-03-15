@@ -89,7 +89,7 @@
                             <!-- QTY COLUMN -->
                             <ng-container matColumnDef="qty">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
-                                    QTY </th>
+                                    Qty </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{ element.qty ? element.qty : '-' }}
                                 </td>
@@ -97,7 +97,7 @@
                             <!-- Open QTY COLUMN -->
                             <ng-container matColumnDef="openQty">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
-                                    Open QTY </th>
+                                    Open Qty </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{ element.openQty !== undefined ? element.openQty : '-' }}
                                 </td>
@@ -110,6 +110,17 @@
                                     {{ element.status ? element.status : '-' }}
                                 </td>
                             </ng-container>
+                            <!-- QA/QC Status -->
+                            <ng-container matColumnDef="inspectionStatus">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                    QA / QC Status 
+                                </th>
+                                <td mat-cell *matCellDef="let element" style="text-align: center;" 
+                                    class="px-10" [ngClass]="getStatusClass(element.inspectionStatus)">
+                                    {{ element.inspectionStatus ? element.inspectionStatus : '-' }}
+                                </td>
+                            </ng-container>
+                            
                             <!-- Action COLUMN -->
                             <!-- <ng-container matColumnDef="action">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
@@ -144,7 +155,7 @@
                                     <mat-menu #menu="matMenu">
                                         <button mat-menu-item class="text-red-400" (click)="navigateToOrderForm()">
                                             Perform QC
-                                            <mat-icon svgIcon="" class="text-red-400"></mat-icon>
+                                            <!-- <mat-icon svgIcon="" class="text-red-400"></mat-icon> -->
                                         </button>
                                     </mat-menu>
                                   </td>
