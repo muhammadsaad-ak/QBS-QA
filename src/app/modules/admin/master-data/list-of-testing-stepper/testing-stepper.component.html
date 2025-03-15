@@ -504,7 +504,7 @@
           </div>
 
           <!-- HIDDEN FIELDS -->
-          <!-- itemName,itemType,itemGroupCode,itemU_QACard,itemUoMGroupEntry,Card ID -->
+          <!-- itemName,itemType,itemGroupCode,itemU_QACard,itemUoMGroupEntry,inspectionCardId,id -->
           <div class="w-full mt-4 hidden">
             <div class="px-6 flex space-x-10">
               <div class="w-full">
@@ -546,13 +546,13 @@
                   <input matInput type="text" class="text-sm" formControlName="inspectionCardId" readonly>
                 </mat-form-field>
               </div>
-            </div>
-            <!-- ITEM INSPECTION CARD ID -->
-            <div class="w-full">
-              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                <mat-label>INSPECTION CARD ID</mat-label>
-                <input matInput type="text" class="text-sm" formControlName="id" readonly>
-              </mat-form-field>
+              <!-- ITEM INSPECTION CARD ID -->
+              <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                  <mat-label>ITEM INSPECTION CARD ID</mat-label>
+                  <input matInput type="text" class="text-sm" formControlName="id" readonly>
+                </mat-form-field>
+              </div>
             </div>
           </div>
           <!-- UPPER FIELDS SECTION ENDS -->
