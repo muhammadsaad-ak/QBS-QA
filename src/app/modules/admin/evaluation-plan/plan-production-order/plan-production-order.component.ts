@@ -47,11 +47,13 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   // Plan Purchase Form groups
   qualitativeInspectionForm: FormGroup;
   quantitativeInspectionForm: FormGroup;
+  isFormSaved = false; // Initialize to false
+
   
   
   // Plan Purchase DataSources for tables
-  dataSourceQualitativeInspection: MatTableDataSource<any>;
-  dataSourceQuantitativeInspection: MatTableDataSource<any>;
+  dataSourceQualitativeInspectionPP: MatTableDataSource<any>;
+  dataSourceQuantitativeInspectionPP: MatTableDataSource<any>;
   dataSourceUoMIIC: MatTableDataSource<any>;
   dataSourceAddQuantitativeIIC: MatTableDataSource<any>;
   
@@ -92,35 +94,13 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef
   ) {}
-
-  planPurchaseOrderFormGroup = this._formBuilder.group({
-    isActive: [true],
-    docNoPO: ['DOC-2024-001'],
-    itemCodePO: ['ITEM-123'],
-    itemDescriptionPO: ['Test Item Description'],
-    inspectionDateTimePO: ['2024-02-27 10:00 AM'],
-    datePO: ['2024-02-20'],
-    purchaseOrderPO: ['PO-2024-001'],
-    quantityPO: ['1000'],
-    openQuantityPO: ['500'],
-    vendorPO: ['Vendor XYZ'],
-    qcLotNoPO: ['QC-001', Validators.required],
-    receiveQtyPO: ['750', Validators.required],
-    inspectionQtyPO: ['50', Validators.required],
-    samplePO: ['3'],
-    locationPO: ['Warehouse A'],
-    itemCodeModalPO: ['ITEM-123'],
-    inspectionQtyModalPO: ['50'],
-    inspectionByModalPO: ['Mr. Kamran'],
-    inspectionTimeModalPO: ['10:30 AM'],
-  });
   
 
   planProductionOrderFormGroup = this._formBuilder.group({
     docNoPP: ['DOC-2024-001'],
     itemCodePP: ['ITEM-123'],
     itemDescriptionPP: ['Test Item Description'],
-    inspectionDateTimePP: ['2024-02-27 10:00 AM'],
+    inspectionDateTimePP: ['2024-02-27 10:00 AM' as string],
     datePP: ['2024-02-20'],
     productionOrderPP: ['PO-2024-001'],
     locationPP: ['1000'],
@@ -135,9 +115,55 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     analyzedByPP: ['50'],
     inspectionByModalPP: ['Mr. Kamran'],
     inspectionTimeModalPP: ['10:30 AM'],
+    itemCodeModalPO: [''],
+    inspectionQtyModalPO: [''],
+    inspectionByModalPO: [''],
+    inspectionTimeModalPO: [''],
+    receiveQtyPO: [''],
+    inspectionDateTimePO:['']
+
+    
 
   })
 
+  saveForm(): void {
+    this.isFormSaved = true;
+
+    if (this.planProductionOrderFormGroup.valid) {
+      console.log(this.planProductionOrderFormGroup.value);
+      // You can also add your save logic here, e.g., calling an API
+    } else {
+      console.error('Form is not valid');
+    }
+    this.isFormSaved = true;
+
+  }
+
+  cancelForm() {
+    // Reset the form or navigate away
+    this.planProductionOrderFormGroup.reset();
+    // Or navigate back to previous page
+    // this.router.navigate(['/previous-page']);
+  }
+
+  
+
+  setInspectionDateTime() {
+    const now = new Date();
+    const formattedDateTime = now.toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+
+    this.planProductionOrderFormGroup.get('inspectionDateTimePO')?.setValue(formattedDateTime);
+  }
+
+  
 
   isLinear = false;
   
@@ -150,11 +176,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     return this.quantitativeInspectionForm.get('quantitativeObjects') as FormArray;
   }
   
-  samplesPurchaseOrder = [
-    { id: 1, inspectionTime: '10:30 AM', inspectionBy: 'Mr.kamran', cardColor: '#e8f5e9' },
-    { id: 2, inspectionTime: '10:31 AM', inspectionBy: 'Mr.kamran', cardColor: '#ffebee' },
-    
-  ];
+
 
   samplesProductionOrder = [
     { id: 1, inspectionTime: '11:54 AM', inspectionBy: 'Mr.Hamza', cardColor: '#e8f5e9' },
@@ -163,24 +185,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   ];
 
   nextSampleId: number = 3; // Since you already have samples 1-4
-  addNewSampleForPurchaseOrder(): void {
-    // Create a new sample object with form data
-    const newSample = {
-      id: this.nextSampleId,
-      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionTimeModalPO').value,
-      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionByModalPO').value,
-      cardColor: this.getRandomCardColor() // Function to get a color
-    };
-    
-    // Add to samples array
-    this.samplesPurchaseOrder.push(newSample);
-    
-    // Increment the sample ID for next time
-    this.nextSampleId++;
-    
-    // Close the dialog
-    this.closeDialog();
-  }
+
 
   addNewSampleForProductionOrder(): void {
     const newSample = {
@@ -202,7 +207,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   
  
   
-  @ViewChild('dialogTemplateItems') dialogTemplateItems;
+  @ViewChild('dialogTemplateItemsPP') dialogTemplateItemsPP;
   dataSourceItems = new MatTableDataSource([]);
   selectedControlAccountRowIndex: number = -1;
   
@@ -221,10 +226,13 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     
     // Add static quantitative inspection data
     this.addQuantitativeData();
+
+    this.setInspectionDateTime(); // Fetch date-time on load
+
     
     // Initialize data sources
-    this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
-    this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+    this.dataSourceQualitativeInspectionPP = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
+    this.dataSourceQuantitativeInspectionPP = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
     this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
@@ -282,26 +290,11 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     });
   }
   
-  // Display Item Modal
-  onItemCodeClick(): void {
-    // console.log('Row Index:', rowIndex);
-    // this.selectedControlAccountRowIndex = rowIndex;
-    // console.log(this.selectedControlAccountRowIndex);
-    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-      width: '70%',
-      height: '75vh',
-      data: this.dataSourceItems,
-    });
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('DIALOG CLOSED');
-    });
-  }
-  
   onItemCodeClickPP(): void {
     // console.log('Row Index:', rowIndex);
     // this.selectedControlAccountRowIndex = rowIndex;
     // console.log(this.selectedControlAccountRowIndex);
-    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+    const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
       width: '70%',
       height: '75vh',
       data: this.dataSourceItems,
@@ -363,7 +356,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
           remarks: ['']
         })
       );
-      this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+      this.dataSourceQuantitativeInspectionPP = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
     }
     this.closeDialog();
   }
@@ -373,5 +366,4 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
   }
 
-  
 }

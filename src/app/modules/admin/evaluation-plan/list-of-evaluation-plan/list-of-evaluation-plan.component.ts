@@ -19,11 +19,24 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
-import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime } from 'rxjs';
-import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
+import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
+import { PageEvent } from '@angular/material/paginator';
 
 
+
+ interface PurchaseOrderResponse {
+  statusCode: number;
+  succeeded: boolean;
+  message: string;
+  errors: string[];
+  data: {
+      totalRecords: number;
+      pageSize: number;
+      pageNumber: number;
+      values: any[];
+  };
+}
 @Component({
   selector: 'app-list-of-evaluation-plan',
   standalone: true,
@@ -76,6 +89,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = [];
   dataSource = new MatTableDataSource<any>([]);
+  
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   
@@ -88,44 +102,9 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       itemCode: 'ITM-1001',
       itemDescription: 'Steel Plate 10mm',
       qty: 50,
-      status: 'Pass'
+      status: 'Pas'
     },
-    {
-      docNo: 'PO-001',
-      docDate: '2025-02-10',
-      lineNo: '2',
-      itemCode: 'ITM-1002',
-      itemDescription: 'Aluminum Sheet 5mm',
-      qty: 100,
-      status: 'Fail'
-    },
-    {
-      docNo: 'PO-002',
-      docDate: '2025-02-15',
-      lineNo: '1',
-      itemCode: 'ITM-2001',
-      itemDescription: 'Copper Wire 2mm',
-      qty: 200,
-      status: 'In Progress'
-    },
-    {
-      docNo: 'PO-003',
-      docDate: '2025-02-18',
-      lineNo: '1',
-      itemCode: 'ITM-3001',
-      itemDescription: 'Plastic Resin Type A',
-      qty: 500,
-      status: 'Pass'
-    },
-    {
-      docNo: 'PO-004',
-      docDate: '2025-02-20',
-      lineNo: '1',
-      itemCode: 'ITM-4001',
-      itemDescription: 'Electronic Component X-42',
-      qty: 1000,
-      status: 'Pass'
-    }
+
   ];
 
   // Static data for Evaluation Plan - Production Orders
@@ -138,82 +117,22 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       qty: 25,
       status: 'Fail'
     },
-    {
-      docNo: 'PRO-002',
-      docDate: '2025-02-14',
-      itemCode: 'PROD-102',
-      productName: 'Circuit Board v2',
-      qty: 100,
-      status: 'Fail'
-    },
-    {
-      docNo: 'PRO-003',
-      docDate: '2025-02-19',
-      itemCode: 'PROD-103',
-      productName: 'Plastic Housing Type B',
-      qty: 50,
-      status: 'Pass'
-    },
-    {
-      docNo: 'PRO-004',
-      docDate: '2025-02-22',
-      itemCode: 'PROD-104',
-      productName: 'Final Product Assembly',
-      qty: 30,
-      status: 'Pass'
-    },
-    {
-      docNo: 'PRO-005',
-      docDate: '2025-02-24',
-      itemCode: 'PROD-105',
-      productName: 'Custom Component Z-99',
-      qty: 150,
-      status: 'In Progress'
-    }
+    
   ];
 
   // Static data for SAP Documents - Purchase Orders
   sapDocPurchaseOrderData = [
-    {
-      docNo: 'PO-101',
-      lineNo: '1',
-      itemCode: 'SAP-1001',
-      itemDescription: 'SAP Connector Module',
-      qty: 30,
-      openQty: 10,
-      status: 'Open',
-      inspectionStatus: 'Open'
-    },
-    {
-      docNo: 'PO-102',
-      lineNo: '1',
-      itemCode: 'SAP-1002',
-      itemDescription: 'Database Integration Kit',
-      qty: 20,
-      openQty: 20,
-      status: 'Open',
-      inspectionStatus: 'In Progress'
-    },
-    {
-      docNo: 'PO-103',
-      lineNo: '1',
-      itemCode: 'SAP-1003',
-      itemDescription: 'SAP API License',
-      qty: 5,
-      openQty: 0,
-      status: 'Open',
-      inspectionStatus: 'Pass'
-    },
-    {
-      docNo: 'PO-104',
-      lineNo: '1',
-      itemCode: 'SAP-1004',
-      itemDescription: 'ERP Module Extension',
-      qty: 15,
-      openQty: 5,
-      status: 'Open',
-      inspectionStatus: 'Fail'
-    }
+    // {
+    //   docNo: 'PO-101',
+    //   docDate:'32',
+    //   lineNo: '1',
+    //   itemCode: 'SAP-1001',
+    //   itemDescription: 'SAP Connector Module',
+    //   qty: 30,
+    //   openQty: 10,
+    //   status: 'Open'
+    // },
+
   ];
 
   // Static data for SAP Documents - Production Orders
@@ -227,33 +146,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       openQty: 3,
       status: 'Open'
     },
-    {
-      docNo: 'PRO-202',
-      docDate: '2025-02-10',
-      itemCode: 'SAPPR-102',
-      productName: 'ERP System Core',
-      qty: 5,
-      openQty: 5,
-      status: 'Open'
-    },
-    {
-      docNo: 'PRO-203',
-      docDate: '2025-02-15',
-      itemCode: 'SAPPR-103',
-      productName: 'Database Connector',
-      qty: 20,
-      openQty: 0,
-      status: 'Open'
-    },
-    {
-      docNo: 'PRO-204',
-      docDate: '2025-02-20',
-      itemCode: 'SAPPR-104',
-      productName: 'SAP Analytics Module',
-      qty: 8,
-      openQty: 4,
-      status: 'Open'
-    }
+    
   ];
 
   ngAfterViewInit() {
@@ -262,14 +155,26 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
-    private _qbsConfirmationService: QbsConfirmationService,
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
-    private _itemSamplesService: ItemSamplesService,
     private router: Router,
-  ) { }
+    private _purchaseOrderService:SapPlanPurchaseOrderService,
+  ) {
+    this.dataSource = new MatTableDataSource([]);
+   }
+
+   totalRecords = 0;  // Total items in API
+pageSize = 10;      // Default page size
+currentPage = 1;    // Current page number
+// dataSource = new MatTableDataSource([]);
+
+   
 
   ngOnInit(): void {
+
+    // SAP Documents ke purchase order fetch karna
+    this.fetchSapDocPurchaseOrders();
+
    // Set the initial view to 'sapDocuments' instead of 'evaluationPlan'
    this.currentView = 'sapDocuments';
   
@@ -288,6 +193,39 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
         this.applyFilter(searchTerm);
       });
   }
+  // API se SAP Documents ke Purchase Orders fetch karna
+  fetchSapDocPurchaseOrders(): void {
+    this._purchaseOrderService.getPurchaseOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
+      if (response.succeeded) {
+        this.sapDocPurchaseOrderData = response.data.values.map((order, index) => ({
+          serialId: index + 1 + (this.currentPage - 1) * this.pageSize, 
+          docNo: order.docNum,
+          docDate: order.docDate,
+          lineNo: order.lineNum,
+          itemCode: order.itemCode,
+          itemDescription: order.itemDescription,
+          qty: order.quantity,
+          openQty: order.remainingOpenQuantity,
+          status: order.lineStatus,
+          action: 'View'
+        }));
+  
+        // ✅ MatTableDataSource ko update karo
+        this.dataSource = new MatTableDataSource(this.sapDocPurchaseOrderData);
+  
+        // ✅ Total records ko update karo, taake paginator sahi kaam kare
+        this.totalRecords = response.data.totalRecords;
+      } else {
+        console.error('Failed to fetch SAP Purchase Orders', response.message);
+      }
+    });
+  }
+
+  onPageChange(event: PageEvent) {
+    this.currentPage = event.pageIndex + 1; // Angular ka paginator 0-based index use karta hai
+    this.pageSize = event.pageSize;
+    this.fetchSapDocPurchaseOrders(); // ✅ Har page switch pe new data fetch hoga
+  }
 
   updateTableView(): void {
     const orderType = this.orderTypeControl.value;
@@ -299,17 +237,17 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
         this.dataSource.data = this.evalPlanPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'productName', 'qty', 'status', 'action']; 
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
         this.dataSource.data = this.evalPlanProductionOrderData;
       }
     } else if (this.currentView === 'sapDocuments') {
       this.pageTitle = 'List of SAP Documents';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status','inspectionStatus', 'action'];
+        this.displayedColumns = ['serialId', 'docNo',  'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'action'];
         this.dataSource.data = this.sapDocPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'productName', 'qty', 'openQty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'action'];
         this.dataSource.data = this.sapDocProductionOrderData;
       }
     }
@@ -359,12 +297,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
       state: { data: element }, 
       relativeTo: this._activatedRoute 
     });
-
   }
-
-  // navigateToPlanPurchaseOrderForm() {
-  //   this.router.navigate(['/evaluation-plan/plan-purchase-order'],  { relativeTo: this._activatedRoute });
-  // }
 
   navigateToOrderForm() {
     const orderType = this.orderTypeControl.value; // Check selected order type
