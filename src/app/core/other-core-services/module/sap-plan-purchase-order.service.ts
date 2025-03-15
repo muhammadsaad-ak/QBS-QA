@@ -31,9 +31,9 @@ export class SapPlanPurchaseOrderService {
     getPurchaseOrders(pageNumber: number, pageSize: number): Observable<any> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
-            Accept: 'application/json',
+            'X-API-KEY': 'super',  // Ensure you pass API key if required
+            Accept: 'application/json'
         });
-
         return this._httpClient
             .get(
                 `${environment.appApiUrlSAP}/B1PurchaseOrders/ListAllPurchaseOrders?pageNumber=${pageNumber}&pageSize=${pageSize}`,

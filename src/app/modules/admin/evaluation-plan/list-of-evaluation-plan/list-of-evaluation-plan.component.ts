@@ -21,6 +21,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { debounceTime } from 'rxjs';
 import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
+import { PageEvent } from '@angular/material/paginator';
+
+
 
  interface PurchaseOrderResponse {
   statusCode: number;
@@ -160,6 +163,13 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     this.dataSource = new MatTableDataSource([]);
    }
 
+   totalRecords = 0;  // Total items in API
+pageSize = 10;      // Default page size
+currentPage = 1;    // Current page number
+// dataSource = new MatTableDataSource([]);
+
+   
+
   ngOnInit(): void {
 
     // SAP Documents ke purchase order fetch karna
@@ -185,10 +195,10 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
   }
   // API se SAP Documents ke Purchase Orders fetch karna
   fetchSapDocPurchaseOrders(): void {
-    this._purchaseOrderService.getPurchaseOrders(1,10).subscribe((response: PurchaseOrderResponse) => {
+    this._purchaseOrderService.getPurchaseOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
       if (response.succeeded) {
         this.sapDocPurchaseOrderData = response.data.values.map((order, index) => ({
-          serialId: index + 1, // Adding serial number
+          serialId: index + 1 + (this.currentPage - 1) * this.pageSize, 
           docNo: order.docNum,
           docDate: order.docDate,
           lineNo: order.lineNum,
@@ -197,13 +207,24 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
           qty: order.quantity,
           openQty: order.remainingOpenQuantity,
           status: order.lineStatus,
-          action: 'View' // You can modify this
+          action: 'View'
         }));
-        this.updateTableView(); // Refresh table
+  
+        // ✅ MatTableDataSource ko update karo
+        this.dataSource = new MatTableDataSource(this.sapDocPurchaseOrderData);
+  
+        // ✅ Total records ko update karo, taake paginator sahi kaam kare
+        this.totalRecords = response.data.totalRecords;
       } else {
         console.error('Failed to fetch SAP Purchase Orders', response.message);
       }
     });
+  }
+
+  onPageChange(event: PageEvent) {
+    this.currentPage = event.pageIndex + 1; // Angular ka paginator 0-based index use karta hai
+    this.pageSize = event.pageSize;
+    this.fetchSapDocPurchaseOrders(); // ✅ Har page switch pe new data fetch hoga
   }
 
   updateTableView(): void {
