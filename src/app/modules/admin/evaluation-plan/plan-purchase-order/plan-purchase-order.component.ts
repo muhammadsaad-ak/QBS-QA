@@ -146,32 +146,37 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     vendor: ['QBS'], // string
     remarks: ['remarks'], // string
     // itemId: null // ✅ Empty string instead of null
+
+  itemCodeModalPO: ['ITEM-123'],
+    inspectionQtyModalPO: ['50'],
+    inspectionByModalPO: ['Mr. Kamran'],
+    inspectionTimeModalPO: ['10:30 AM'],
+    receiveQtyPO: ['Item'],
+
+
+
   });
   
   get sampleQuantity(): number {
-    return Number(this.planPurchaseOrderFormGroup.get('samplePO')?.value) || 0;
+    return Number(this.planPurchaseOrderFormGroup.get('sampleQuantity')?.value) || 0;
   }  
   
 
-  saveForm(): void {
-    this.isFormSaved = true;
-
-    if (this.planPurchaseOrderFormGroup.valid) {
-      console.log(this.planPurchaseOrderFormGroup.value);
-      // You can also add your save logic here, e.g., calling an API
-    } else {
-      console.error('Form is not valid');
-    }
-    this.isFormSaved = true;
-
-  }
+  // saveForm(): void {
+  //   if (this.planPurchaseOrderFormGroup.valid) {
+  //     console.log('Form Saved!');
+  //     this.isFormSaved = true; // UI trigger karega
+  //   } else {
+  //     console.error('Form is not valid');
+  //   }
+  // }
 
   onSubmitPurchaseOrder(): void {
     this.isValidate = true;
     if (this.planPurchaseOrderFormGroup.valid) {
       const formData = this.planPurchaseOrderFormGroup.value;
       console.log('SENDING PURCHASE ORDER PAYLOAD:', formData);
-
+      this.isFormSaved = true; // UI trigger karega
       this._evaluationPurchaseOrderService.AddPurchaseOrder(formData).subscribe(
         (response) => {
           if (response.succeeded) {
