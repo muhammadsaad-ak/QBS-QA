@@ -2,7 +2,7 @@ export const environment = {
     production: false,
     // apiUrl: 'http://connect.qbscocloud.net:5004',
     authApiUrl: 'http://qa-addon.qbscocloud.net:8080',  // For login
-    appApiUrl: 'http://qa-addon.qbscocloud.net:8090',   // For other APIs
+    appApiUrl: 'http://qa-addon.qbscocloud.net:8081',   // For other APIs
     appApiUrlSAP: 'http://connect.qbscocloud.net:5007/api', 
 
     useMockAPi: true
