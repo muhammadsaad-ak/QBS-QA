@@ -64,28 +64,17 @@
                             </ng-container>
                             <!-- Action COLUMN -->
                             <ng-container matColumnDef="action">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Action </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;">
-                                    <button mat-icon-button [matMenuTriggerFor]="menu">
-                                        <mat-icon class="icon-size-5"
-                                            [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
-                                    </button>
-                                    <mat-menu #menu="matMenu">
-                                        <button mat-menu-item class="text-blue-400"
-                                            (click)="openStepperToUpdateIIC(element)">
-                                            <!-- (click)="actionEdittemsInspectionCards(element, element.inspectionCardId)" -->
-                                            Edit
-                                            <mat-icon svgIcon="heroicons_outline:pencil"
-                                                class="text-blue-400"></mat-icon>
-                                        </button>
-                                    </mat-menu>
-                                </td>
+                                    <td mat-cell *matCellDef="let element">
+                                        <mat-icon svgIcon="heroicons_outline:pencil" class="mat-icon-primary cursor-pointer"
+                                        (click)="openStepperToUpdateIIC(element)"></mat-icon>
+                                    </td>
                             </ng-container>
                             <tr mat-header-row *matHeaderRowDef="displayedColumnsItemsInspectionCards"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumnsItemsInspectionCards;"></tr>
                         </table>
-                        <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons
+                        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
                             aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">
                         </mat-paginator>
                     </div>
