@@ -57,9 +57,9 @@
                             <!-- itemCode COLUMN -->
                             <ng-container matColumnDef="itemCode">
                                 <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important; text-align: center;">
+                                    style="background-color: #e2e8f0 !important;">
                                     Item Code </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                <td mat-cell *matCellDef="let element" >
                                     {{element.itemCode ? element.itemCode : '-'}} </td>
                             </ng-container>
                             <!-- itemDescription COLUMN -->
@@ -96,19 +96,8 @@
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Action </th>
                                 <td mat-cell *matCellDef="let element">
-                                    <button mat-icon-button [matMenuTriggerFor]="menu">
-                                        <mat-icon class="icon-size-5"
-                                            [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
-                                    </button>
-                                    <mat-menu #menu="matMenu">
-                                        <button mat-menu-item class="text-blue-400"
-                                            (click)="openStepperToUpdateIS(element)">
-                                            <!-- (click)="actionEditItemData(element)" -->
-                                            Edit
-                                            <mat-icon svgIcon="heroicons_outline:pencil"
-                                                class="text-blue-400"></mat-icon>
-                                        </button>
-                                    </mat-menu>
+                                    <mat-icon svgIcon="heroicons_outline:pencil" class="mat-icon-primary cursor-pointer"
+                                    (click)="openStepperToUpdateIS(element)"></mat-icon>
                                 </td>
                             </ng-container>
                             <tr mat-header-row *matHeaderRowDef="displayedColumnsItemSamples"></tr>

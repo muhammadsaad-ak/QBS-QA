@@ -61,7 +61,7 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
   configForm: UntypedFormGroup;
   searchInputControl: UntypedFormControl = new UntypedFormControl();
 
-  addUserBtn = "Add Inspection";
+  addUserBtn = "Add";
 
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
   drawerMode: 'side' | 'over';
@@ -201,8 +201,10 @@ this.dataSource.filterPredicate = (data: any, filter: string) => {
 
   openStepperToUpdateICH(rowDataICH: any): void {
     console.log('SENDING DATA:', rowDataICH);
-    // return;
-    sessionStorage.setItem('stepperDataICH', JSON.stringify(rowDataICH));
+    const dataToSendIntoStepperICH = {
+      ...rowDataICH, isEditMode: true // Send isEditMode as true
+    };
+    sessionStorage.setItem('stepperDataICH', JSON.stringify(dataToSendIntoStepperICH));
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
       queryParams: { step: 2 }
     });

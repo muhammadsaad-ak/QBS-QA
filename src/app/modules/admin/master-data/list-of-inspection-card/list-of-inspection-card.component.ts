@@ -201,7 +201,10 @@ this.dataSource.filterPredicate = (data: any, filter: string) => {
 
     openStepperToUpdateIC(rowDataIC: any): void {
         console.log('SENDING DATA:', rowDataIC);
-        sessionStorage.setItem('stepperDataIC', JSON.stringify(rowDataIC));
+        const dataToSendIntoStepperIC = {
+            ...rowDataIC, isEditMode: true // Send isEditMode as true
+          };
+          sessionStorage.setItem('stepperDataIC', JSON.stringify(dataToSendIntoStepperIC));
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
           queryParams: { step: 3 }
         });
