@@ -12,11 +12,12 @@ export class SapPlanPurchaseOrderService {
     // BehaviorSubject to hold role data state
     // private _UnitOfMeasure = new BehaviorSubject<any[]>([]);
     private _purchaseOrders = new BehaviorSubject<any[]>([]);
+    private _productionOrders = new BehaviorSubject<any[]>([]);
 
     // Observable to expose role data state
     // unitofmeasure$: Observable<any[]> = this._UnitOfMeasure.asObservable();
     sappurchaseorder$: Observable<any[]> = this._purchaseOrders.asObservable();
-
+    sapproductionorder$: Observable<any[]> = this._productionOrders.asObservable();
     /**
      * Setter & getter for access token
      */
@@ -56,4 +57,30 @@ export class SapPlanPurchaseOrderService {
                 })
             );
     }
+
+    getProductionOrders(pageNumber: number, pageSize: number): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'X-API-KEY': 'super',
+            Accept: 'application/json'
+        });
+    
+        return this._httpClient
+            .get(
+                `${environment.appApiUrlSAP}/B1ProductionOrders/ListAllProductionOrders?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+                { headers }
+            )
+            .pipe(
+                tap((response: any) => {
+                    const productionOrders = response?.data?.values ?? [];
+                    this._productionOrders.next(productionOrders);
+                    console.log('Fetched Production Orders:', productionOrders);
+                }),
+                catchError((error) => {
+                    console.error('Error fetching Production Orders', error);
+                    return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`));
+                })
+            );
+    }
+    
 }
