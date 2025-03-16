@@ -23,20 +23,6 @@ import { debounceTime } from 'rxjs';
 import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
 import { PageEvent } from '@angular/material/paginator';
 
-
-
- interface PurchaseOrderResponse {
-  statusCode: number;
-  succeeded: boolean;
-  message: string;
-  errors: string[];
-  data: {
-      totalRecords: number;
-      pageSize: number;
-      pageNumber: number;
-      values: any[];
-  };
-}
 @Component({
   selector: 'app-list-of-evaluation-plan',
   standalone: true,
@@ -76,6 +62,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
   configForm: UntypedFormGroup;
   searchInputControl: UntypedFormControl = new UntypedFormControl();
   orderTypeControl = new FormControl('purchaseOrder');
+  orderType: string = 'purchaseOrder'; // ✅ Isko define karna zaroori hai
   currentView = 'evaluationPlan'; // Options: 'evaluationPlan' or 'sapDocuments'
 
   pageTitle = 'List of Evaluation Plan';
@@ -122,31 +109,11 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
 
   // Static data for SAP Documents - Purchase Orders
   sapDocPurchaseOrderData = [
-    // {
-    //   docNo: 'PO-101',
-    //   docDate:'32',
-    //   lineNo: '1',
-    //   itemCode: 'SAP-1001',
-    //   itemDescription: 'SAP Connector Module',
-    //   qty: 30,
-    //   openQty: 10,
-    //   status: 'Open'
-    // },
 
   ];
 
   // Static data for SAP Documents - Production Orders
   sapDocProductionOrderData = [
-    {
-      docNo: 'PRO-201',
-      docDate: '2025-02-05',
-      itemCode: 'SAPPR-101',
-      productName: 'SAP Integration Gateway',
-      qty: 10,
-      openQty: 3,
-      status: 'Open'
-    },
-    
   ];
 
   ngAfterViewInit() {
@@ -170,10 +137,17 @@ currentPage = 1;    // Current page number
 
    
 
-  ngOnInit(): void {
+ngOnInit(): void {
+  // ✅ Dropdown value change hone par API call karega
+  this.orderTypeControl.valueChanges.subscribe((orderType) => {
+    this.orderType = orderType; // ✅ Value ko store karna zaroori hai
+      this.onOrderTypeChange(orderType);
+  });
 
-    // SAP Documents ke purchase order fetch karna
-    this.fetchSapDocPurchaseOrders();
+  // ✅ Initial API call
+  this.fetchSapDocPurchaseOrders(); 
+
+  
 
    // Set the initial view to 'sapDocuments' instead of 'evaluationPlan'
    this.currentView = 'sapDocuments';
@@ -193,6 +167,13 @@ currentPage = 1;    // Current page number
         this.applyFilter(searchTerm);
       });
   }
+  onOrderTypeChange(orderType: string): void {
+    if (orderType === 'purchaseOrder') {
+        this.fetchSapDocPurchaseOrders();
+    } else if (orderType === 'productionOrder') {
+        this.fetchSapDocProductionOrders();
+    }
+}
   // API se SAP Documents ke Purchase Orders fetch karna
   fetchSapDocPurchaseOrders(): void {
     this._purchaseOrderService.getPurchaseOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
@@ -206,7 +187,7 @@ currentPage = 1;    // Current page number
           itemDescription: order.itemDescription,
           qty: order.quantity,
           openQty: order.remainingOpenQuantity,
-          status: order.lineStatus,
+          status: order.documentStatus,
           action: 'View'
         }));
   
@@ -221,12 +202,43 @@ currentPage = 1;    // Current page number
     });
   }
 
-  onPageChange(event: PageEvent) {
-    this.currentPage = event.pageIndex + 1; // Angular ka paginator 0-based index use karta hai
-    this.pageSize = event.pageSize;
-    this.fetchSapDocPurchaseOrders(); // ✅ Har page switch pe new data fetch hoga
-  }
+//Fetching Production Orders API
+  fetchSapDocProductionOrders(): void {
+    this._purchaseOrderService.getProductionOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
+        if (response.succeeded) {
+            this.sapDocProductionOrderData = response.data.values.map((order, index) => ({
+                serialId: index + 1 + (this.currentPage - 1) * this.pageSize,
+                docNo: order.docNum,
+                docDate: order.docDate,
+                itemCode: order.itemCode,
+                itemDescription: order.productName,
+                qty: order.plannedQuantity,
+                openQty: order.plannedQuantity - order.completedQuantity,
+                status: order.lineStatus,
+                action: 'View'
+            }));
 
+            // ✅ MatTableDataSource ko update karo
+            this.dataSource = new MatTableDataSource(this.sapDocProductionOrderData);
+
+            // ✅ Total records ko update karo, taake paginator sahi kaam kare
+            this.totalRecords = response.data.totalRecords;
+        } else {
+            console.error('Failed to fetch SAP Production Orders', response.message);
+        }
+    });
+}
+
+  onPageChange(event: PageEvent) {
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+
+    if (this.currentView === 'sapDocuments' && this.orderType === 'purchaseOrder') {
+        this.fetchSapDocPurchaseOrders();
+    } else if (this.currentView === 'sapDocuments' && this.orderType === 'productionOrder') {
+        this.fetchSapDocProductionOrders();
+    }
+}
   updateTableView(): void {
     const orderType = this.orderTypeControl.value;
     
