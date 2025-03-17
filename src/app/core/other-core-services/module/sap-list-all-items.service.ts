@@ -48,7 +48,7 @@ export class SAPItemsService {
             .get(`${environment.SAPitemsApiUrl}/api/B1Items/ListAllItems?pageSize=${pageSize}&pageNumber=${pageNumber}`, { headers, responseType: 'text' })
             .pipe(
                 tap((itemsSAP) => {
-                    console.log('FETCHED SAP LIST ALL ITEMS:', itemsSAP);
+                    // console.log('FETCHED SAP LIST ALL ITEMS:', itemsSAP);
                     this._listAllItemsSAP.next(itemsSAP ? JSON.parse(itemsSAP) : []);
                 }),
                 catchError((error) => {
