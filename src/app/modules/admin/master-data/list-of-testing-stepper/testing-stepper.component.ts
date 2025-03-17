@@ -595,7 +595,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         // console.log('LIST ALL ITEMS API', parsedResponse);
 
                         this.dataSourceItemCodeIIC = new MatTableDataSource(parsedResponse.data.values);
-                        this.totalRecords = parsedResponse.data.totalRecords; 
+                        this.totalRecords = parsedResponse.data.totalRecords;
 
                         console.log('FETCHED SAP ITEMS:', this.dataSourceItemCodeIIC.data);
                     } else {
@@ -1656,9 +1656,9 @@ export class TestingStepperComponent implements AfterViewInit {
         // });
 
         // Inspection Card Modal - Qualitative and Quantitative
-        this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
-            this.inspectionCardModalList = inspectionCardModal.data;
-        });
+        // this._inspectionCardModal.getInspectionCardModal().subscribe((inspectionCardModal) => {
+        //     this.inspectionCardModalList = inspectionCardModal.data;
+        // });
 
 
 
@@ -2030,21 +2030,14 @@ export class TestingStepperComponent implements AfterViewInit {
 
         this.dataSourceItems = new MatTableDataSource(qualitativeData);
         //Item Inspection Card Modal
-        // this._inspectionCardModal
-        //     .getInspectionCardModal()
-        //     .subscribe((inspectionCardModal) => {
-        //         const qualitativeData = inspectionCardModal.data.filter(
-        //             (item: any) => item.type === 'qualitative' && item.isActive
-        //         );
-        //         const quantitativeData = inspectionCardModal.data.filter(
-        //             (item: any) => item.type === 'quantitative' && item.isActive
-        //         );
-
-        //         this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
-        //         this.dataSourceItemsX = new MatTableDataSource(
-        //             quantitativeData
-        //         ); // Quantitative data
-        //     });
+        this._inspectionCardModal
+            .getInspectionCardModal()
+            .subscribe((inspectionCardModal) => {
+                const qualitativeData = inspectionCardModal.data.filter(
+                    (item: any) => item.type === 'qualitative' && item.isActive
+                );
+                this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
+            });
 
         console.log('Row Index:', rowIndex);
         this.selectedControlAccountRowIndex = rowIndex;
@@ -2146,6 +2139,14 @@ export class TestingStepperComponent implements AfterViewInit {
         );
 
         this.dataSourceItemsX = new MatTableDataSource(quantitativeData);
+        this._inspectionCardModal
+            .getInspectionCardModal()
+            .subscribe((inspectionCardModal) => {
+                const quantitativeData = inspectionCardModal.data.filter(
+                    (item: any) => item.type === 'quantitative' && item.isActive
+                );
+                this.dataSourceItemsX = new MatTableDataSource(quantitativeData); // Quantitative data
+            });
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
             width: '70%',
@@ -2156,6 +2157,7 @@ export class TestingStepperComponent implements AfterViewInit {
             console.log('Dialog closed');
         });
     }
+
 
     displayedColumnsItemsX: string[] = [
         'intCode',
