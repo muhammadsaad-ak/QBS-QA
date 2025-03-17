@@ -595,7 +595,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         // console.log('LIST ALL ITEMS API', parsedResponse);
 
                         this.dataSourceItemCodeIIC = new MatTableDataSource(parsedResponse.data.values);
-                        this.totalRecords = parsedResponse.data.totalRecords; 
+                        this.totalRecords = parsedResponse.data.totalRecords;
 
                         console.log('FETCHED SAP ITEMS:', this.dataSourceItemCodeIIC.data);
                     } else {
@@ -731,6 +731,7 @@ export class TestingStepperComponent implements AfterViewInit {
     dataSourceCardCodeIIC = new MatTableDataSource<any>([]);
 
     onCardCodeClickIIC() {
+        this.fetchListAllCards();
         const dialogRef = this.dialog.open(this.dialogTemplateCardCodeIIC, {
             width: '75vw',
             height: '75vh',
@@ -1680,7 +1681,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // Item Inspection Card
         this.initializeTableDataItemInspectionCard();
         this.fetchListAllItemsSAP();
-        this.fetchListAllCards();
+        // this.fetchListAllCards();
 
         // GET INSPECTION CHARACTERISTICS API
         this._itemInspectionCardService
