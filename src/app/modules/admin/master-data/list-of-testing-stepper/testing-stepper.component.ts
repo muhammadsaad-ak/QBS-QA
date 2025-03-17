@@ -410,6 +410,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 this.fb.group({
                     parameterQty: [quantitativeItem.parameterQty],
                     uoMId: [quantitativeItem.uoMId],
+                    uoMCode: [quantitativeItem.uoMCode],
                     mandatoryQty: [quantitativeItem.mandatoryQty],
                     passCriteriaTarget: [quantitativeItem.passCriteriaTarget],
                     passCriteriaMax: [quantitativeItem.passCriteriaMax],
@@ -523,6 +524,7 @@ export class TestingStepperComponent implements AfterViewInit {
             id: [id],
             parameterQty: [description],
             uoMId: [''],
+            uoMCode: [''],
             mandatoryQty: [false],
             passCriteriaTarget: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
             passCriteriaMax: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
@@ -824,6 +826,7 @@ export class TestingStepperComponent implements AfterViewInit {
                             id: characteristic.id, // Assigning quantitative ID
                             parameterQty: characteristic.description,
                             uoMId: '',
+                            uoMCode: '',
                             mandatoryQty: false,
                             passCriteriaTarget: '',
                             passCriteriaMax: '',
@@ -913,6 +916,11 @@ export class TestingStepperComponent implements AfterViewInit {
                 this.selectedRowIndexUoM
             ].patchValue({
                 uoMId: selectedRow.id, // Save only in the row that triggered the modal
+            });
+            this.quantitativeInspectionObjects.controls[
+                this.selectedRowIndexUoM
+            ].patchValue({
+                uoMCode: selectedRow.description, // Save only in the row that triggered the modal
             });
 
             // Reset after update
@@ -2863,6 +2871,9 @@ export class TestingStepperComponent implements AfterViewInit {
                                             quantitative.uoMId,
                                             Validators.required,
                                         ],
+                                        uoMCode: [
+                                            quantitative.uoMCode,
+                                        ],
                                         target: [
                                             quantitative.target,
                                             Validators.required,
@@ -2955,6 +2966,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                     characteristicId: [quantitative.quantitativeInspectionId ?? null], // ✅ FIXED: Save characteristicId
                                     parameterQty: [quantitative.inspectionCharacteristicName, Validators.required],
                                     uoMId: [quantitative.uoMId, Validators.required],
+                                    uoMCode: [quantitative.uoMCode],
                                     mandatoryQty: [quantitative.isMandatory],
                                     passCriteriaTarget: [quantitative.target, Validators.required],
                                     passCriteriaMax: [quantitative.max, Validators.required],
@@ -3015,6 +3027,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 isActive: true,
                 isMandatory: item.mandatoryQty,
                 uoMId: item.uoMId,
+                uoMCode: item.uoMCode,
                 target: item.passCriteriaTarget ? parseFloat(item.passCriteriaTarget) : null,
                 max: item.passCriteriaMax ? parseFloat(item.passCriteriaMax) : null,
                 min: item.passCriteriaMin ? parseFloat(item.passCriteriaMin) : null,
@@ -3109,6 +3122,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 isActive: true,
                 isMandatory: item.mandatoryQty ?? false,
                 uoMId: item.uoMId ?? '',
+                uoMCode: item.uoMCode ?? '',
                 target: item.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
                 max: item.passCriteriaMax !== undefined ? parseFloat(item.passCriteriaMax) : null,
                 min: item.passCriteriaMin !== undefined ? parseFloat(item.passCriteriaMin) : null,

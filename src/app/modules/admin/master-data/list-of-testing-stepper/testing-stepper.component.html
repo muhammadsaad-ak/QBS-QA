@@ -984,15 +984,13 @@
                             <input matInput formControlName="parameterQty" readonly>
                           </td>
                         </ng-container>
-                        <!-- uoMId - UOM COLUMN -->
+                        <!-- uoMId - uoMCode UOM COLUMN -->
                         <ng-container matColumnDef="uoMId">
                           <th mat-header-cell *matHeaderCellDef class="text-sm">UOM</th>
                           <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6"
                             [formGroup]="quantitativeInspectionObjects.controls[i]">
-                            <!-- <input matInput type="text" class="text-sm w-full" readonly formControlName="uoMId"
-                              [value]="uoMId ? selectedUoMCode : ''"> -->
-                            <input matInput type="text" class="text-sm w-full" readonly formControlName="uoMId"
-                              [value]="quantitativeInspectionObjects.controls[i].get('uoMId')?.value ? selectedUoMCode : ''">
+                            <input matInput type="text" class="text-sm w-full" readonly formControlName="uoMCode">
+                            <input matInput type="text" class="text-sm w-full hidden" readonly formControlName="uoMId">
                             <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                               (click)="onUoMQtyClickIIC(i)">
                             </mat-icon>

@@ -16,6 +16,7 @@ export interface qualitativeResultsInspectionIF {
 export interface quantitativeInspectionIF {
     parameterQty: string;
     uoMId: string;
+    uoMCode: string;
     mandatoryQty: boolean;
     passCriteriaTarget: string;
     passCriteriaMax: string;
