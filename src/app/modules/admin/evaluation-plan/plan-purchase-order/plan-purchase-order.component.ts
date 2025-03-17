@@ -54,26 +54,26 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   isValidate = false;
 
 
-    
-  
+
+
   // Plan Purchase DataSources for tables
   dataSourceQualitativeInspection: MatTableDataSource<any>;
   dataSourceQuantitativeInspection: MatTableDataSource<any>;
   dataSourceUoMIIC: MatTableDataSource<any>;
   dataSourceAddQuantitativeIIC: MatTableDataSource<any>;
-  
+
   // Selected row index for UoM
   selectedRowIndexUoM: number = -1;
-  
+
   // Selected UoM Code
   selectedUoMCode: string = '';
-  
+
   // Plan Purchase Display columns
   displayedColumnsQualitative: string[] = ['parameter', 'passCriteria', 'mandatory', 'result', 'remarks'];
   displayedColumnsQuantitative: string[] = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin', 'result', 'remarks'];
   displayedColumnsUoMIIC: string[] = ['code', 'description'];
   displayedColumnsAddQuantitativeIIC: string[] = ['inspectionCode', 'inspectionDescription'];
-  
+
   // Static data for UoM
   uomData = [
     { id: 1, uoMCode: 'KG', description: 'Kilogram', isSelected: false },
@@ -82,7 +82,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     { id: 4, uoMCode: 'ML', description: 'Milliliter', isSelected: false },
     { id: 5, uoMCode: 'CM', description: 'Centimeter', isSelected: false }
   ];
-  
+
   // Static data for Add Quantitative
   quantitativeCharacteristics = [
     { id: 1, intCode: 'WT001', description: 'Weight Check', isSelected: false },
@@ -91,7 +91,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     { id: 4, intCode: 'PH001', description: 'pH Level', isSelected: false },
     { id: 5, intCode: 'VS001', description: 'Viscosity', isSelected: false }
   ];
-  
+
   constructor(
     private _formBuilder: FormBuilder,
     private dialog: MatDialog,
@@ -101,7 +101,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     private _snackBar: MatSnackBar,
     private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService,
     private router: Router,
-  ) {}
+  ) { }
 
   // planPurchaseOrderFormGroup = this._formBuilder.group({
   //   isActive: [true],
@@ -147,21 +147,21 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     sampleQuantity: [3], // number
     vendor: [''], // string
     remarks: ['remarks'], // string
-    // itemId: null // ✅ Empty string instead of null
+    itemId: null, // ✅ Empty string instead of null
     itemCode: [''],
     itemDescription: [''],
 
-  itemCodeModalPO: ['ITEM-123'],
+    itemCodeModalPO: ['ITEM-123'],
     inspectionQtyModalPO: ['50'],
     inspectionByModalPO: ['Mr. Kamran'],
     inspectionTimeModalPO: ['10:30 AM'],
     receiveQtyPO: ['Item'],
   });
-  
+
   get sampleQuantity(): number {
     return Number(this.planPurchaseOrderFormGroup.get('sampleQuantity')?.value) || 0;
-  }  
-  
+  }
+
 
   // saveForm(): void {
   //   if (this.planPurchaseOrderFormGroup.valid) {
@@ -211,7 +211,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     // this.router.navigate(['/previous-page']);
   }
 
-  
+
 
   // setInspectionDateTime() {
   //   const now = new Date();
@@ -229,21 +229,21 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   // }
 
 
-  
+
 
 
   isLinear = false;
-  
+
   // Get form array controls
   get qualitativeInspectionObjects(): FormArray {
     return this.qualitativeInspectionForm.get('qualitativeObjects') as FormArray;
   }
-  
+
   get quantitativeInspectionObjects(): FormArray {
     return this.quantitativeInspectionForm.get('quantitativeObjects') as FormArray;
   }
-  
-  samplesPurchaseOrder = [    ];
+
+  samplesPurchaseOrder = [];
 
 
   nextSampleId: number = 1; // Since you already have samples 1-4
@@ -255,13 +255,13 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionByModalPO').value,
       cardColor: this.getRandomCardColor() // Function to get a color
     };
-    
+
     // Add to samples array
     this.samplesPurchaseOrder.push(newSample);
-    
+
     // Increment the sample ID for next time
     this.nextSampleId++;
-    
+
     // Close the dialog
     this.closeDialog();
   }
@@ -271,38 +271,39 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
     return colors[Math.floor(Math.random() * colors.length)];
   }
-  
- 
-  
+
+
+
   @ViewChild('dialogTemplateItems') dialogTemplateItems;
   dataSourceItems = new MatTableDataSource([]);
   selectedControlAccountRowIndex: number = -1;
-  
+
   ngOnInit() {
 
     this.selectedOrder = history.state.selectedOrder; // Access the passed data
     if (this.selectedOrder) {
       this.populateForm(this.selectedOrder); // Populate the form with the data
+      this.getItemId(this.selectedOrder.itemCode);
     }
 
     // Initialize form groups
     this.qualitativeInspectionForm = this.fb.group({
       qualitativeObjects: this.fb.array([])
     });
-    
+
     this.quantitativeInspectionForm = this.fb.group({
       quantitativeObjects: this.fb.array([])
     });
-    
+
     // Add static qualitative inspection data
     this.addQualitativeData();
-    
+
     // Add static quantitative inspection data
     this.addQuantitativeData();
 
     // this.setInspectionDateTime(); // Fetch date-time on load
 
-    
+
     // Initialize data sources
     this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
     this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
@@ -336,11 +337,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     });
   }
 
-  
+
   ngAfterViewInit() {
     this.cdr.detectChanges();
   }
-  
+
   // Add static qualitative data
   addQualitativeData() {
     const qualitativeData = [
@@ -350,7 +351,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       { parameter: 'Package Integrity', passCriteria: 'No damage to packaging', mandatory: true, result: '', remarks: '' },
       { parameter: 'Label Verification', passCriteria: 'All labels present and correct', mandatory: true, result: '', remarks: '' }
     ];
-    
+
     qualitativeData.forEach(item => {
       this.qualitativeInspectionObjects.push(
         this.fb.group({
@@ -363,7 +364,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       );
     });
   }
-  
+
   // Add static quantitative data
   addQuantitativeData() {
     const quantitativeData = [
@@ -373,7 +374,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       { parameterQty: 'Height', uoMId: 'CM', mandatoryQty: false, passCriteriaTarget: '5.0', passCriteriaMax: '5.2', passCriteriaMin: '4.8', result: '', remarks: '' },
       { parameterQty: 'Volume', uoMId: 'ML', mandatoryQty: false, passCriteriaTarget: '500.0', passCriteriaMax: '510.0', passCriteriaMin: '490.0', result: '', remarks: '' }
     ];
-    
+
     quantitativeData.forEach(item => {
       this.quantitativeInspectionObjects.push(
         this.fb.group({
@@ -389,7 +390,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       );
     });
   }
-  
+
   // Display Item Modal
   onPurchaseOrderModal(): void {
     // console.log('Row Index:', rowIndex);
@@ -414,7 +415,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   //       selectedSample: { ...sample } // Clone object to avoid direct mutation
   //     },
   //   });
-  
+
   //   dialogRef.afterClosed().subscribe((result) => {
   //     if (result) {
   //       // Find index of the edited sample in the array
@@ -426,26 +427,26 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   //     console.log('EDIT DIALOG CLOSED');
   //   });
   // }
-  
-  
-  
+
+
+
   // Close dialog
   closeDialog(): void {
     this.dialog.closeAll();
   }
-  
+
   // // UoM interaction methods
   // onUoMQtyClickIIC(index: number): void {
   //   this.selectedRowIndexUoM = index;
   //   // Open UoM dialog (implementation would be in template)
   // }
-  
+
   onRowChangeUoMIIC(row: any): void {
     this.uomData.forEach(item => item.isSelected = false);
     row.isSelected = true;
     this.selectedUoMCode = row.uoMCode;
   }
-  
+
   addSelectedRowUoMIIC(index: number): void {
     const selectedUoM = this.uomData.find(item => item.isSelected);
     if (selectedUoM && index >= 0) {
@@ -453,19 +454,19 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     }
     this.closeDialog();
   }
-  
+
   // // Filter methods
   // applyFilterUoMIIC(event: Event): void {
   //   const filterValue = (event.target as HTMLInputElement).value;
   //   this.dataSourceUoMIIC.filter = filterValue.trim().toLowerCase();
   // }
-  
+
   // Quantitative inspection methods
   onRowChangeAddQuantitativeIIC(row: any): void {
     this.quantitativeCharacteristics.forEach(item => item.isSelected = false);
     row.isSelected = true;
   }
-  
+
   addSelectedRowQuantitativeIIC(): void {
     const selectedChar = this.quantitativeCharacteristics.find(item => item.isSelected);
     if (selectedChar) {
@@ -485,7 +486,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     }
     this.closeDialog();
   }
-  
+
   applyFilterAddQuantitativeIIC(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
@@ -494,15 +495,37 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
-  
+
   action1() {
     console.log("Action 1 selected");
   }
-  
+
   // action2() {
   //   console.log("Action 2 selected");
   // }
-  
 
-  
+  // GET ITEM ID API
+  getItemId(itemCode: any): void {
+    // console.log(itemCode);
+    this._evaluationPurchaseOrderService.GetItemIdByCode(itemCode).subscribe({
+      next: (response) => {
+        try {
+          if (response && response.data && response.data.length > 0) {
+            const itemId = response.data[0].id;
+            console.log('Item ID:', itemId);
+            if (this.planPurchaseOrderFormGroup) {
+              this.planPurchaseOrderFormGroup.get('itemId')?.setValue(itemId);
+            }
+          } else {
+            console.log('NO ITEMS FOUND IN RESPONSE');
+          }
+        } catch (error) {
+          console.error('PROCESSING ERROR:', error);
+        }
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      },
+    });
+  }
 }
