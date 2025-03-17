@@ -16,14 +16,14 @@
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Item Code</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter "  
+                    <input class="view-mode-bg-grey" matInput formControlName="itemCode" placeholder="Enter "  
                         readonly style=" cursor: not-allowed;">
                 </mat-form-field>
                 <!-- formControlName="itemCodePO" -->
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Item Description</mat-label>
-                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput
+                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="itemDescription"
                          placeholder="Enter Code" required readonly
                         style=" cursor: not-allowed;">
                 </mat-form-field>
@@ -74,7 +74,7 @@
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Sample Qty</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="sampleQuantity" placeholder="Enter Code"
-                        required readonly style=" cursor: not-allowed;">
+                         readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">

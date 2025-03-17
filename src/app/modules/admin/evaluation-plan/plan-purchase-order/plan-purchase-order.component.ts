@@ -12,7 +12,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { qbsAnimations } from '@qbs/animations';
 import { ChangeDetectorRef } from '@angular/core';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
@@ -46,6 +46,7 @@ import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services
 export class PlanPurchaseOrderComponent implements AfterViewInit {
   i: number;
   // Plan Purchase Form groups
+  selectedOrder: any;
   qualitativeInspectionForm: FormGroup;
   quantitativeInspectionForm: FormGroup;
   isFormSaved = false; // Initialize to false
@@ -98,7 +99,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
     private _snackBar: MatSnackBar,
-    private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService
+    private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService,
+    private router: Router,
   ) {}
 
   // planPurchaseOrderFormGroup = this._formBuilder.group({
@@ -130,31 +132,30 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     intCode: [0], // number
     documentNumber: [5], // number
     openQuantity: [20], // number
-    status: ['Approved Really'], // ✅ Meaningful status
-    documentType: ['PurchaseOrder'], // ✅ Meaningful type
+    status: [''], // ✅ Meaningful status
+    documentType: [''], // ✅ Meaningful type
     documentDate: [new Date().toISOString()], // ✅ Correct ISO format
     lineNo: [null], // ✅ Keep null if API supports
-    receiveQuantity: [1000], // number
-    inspectionQuantity: [200], // number
+    receiveQuantity: [], // number
+    inspectionQuantity: [], // number
     inspectionDateTime: [new Date().toISOString()], // ✅ Correct ISO format
-    qcLotNo: [56], // number
+    qcLotNo: [], // number
     poDate: [new Date().toISOString()], // ✅ Correct ISO format
-    poCode: ['88'], // string
-    location: ['KHI'], // string
-    poQuantity: [32], // number
-    sampleQuantity: [5], // number
-    vendor: ['QBS'], // string
+    poCode: [], // string
+    location: [''], // string
+    poQuantity: [], // number
+    sampleQuantity: [3], // number
+    vendor: [''], // string
     remarks: ['remarks'], // string
     // itemId: null // ✅ Empty string instead of null
+    itemCode: [''],
+    itemDescription: [''],
 
   itemCodeModalPO: ['ITEM-123'],
     inspectionQtyModalPO: ['50'],
     inspectionByModalPO: ['Mr. Kamran'],
     inspectionTimeModalPO: ['10:30 AM'],
     receiveQtyPO: ['Item'],
-
-
-
   });
   
   get sampleQuantity(): number {
@@ -278,6 +279,12 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   selectedControlAccountRowIndex: number = -1;
   
   ngOnInit() {
+
+    this.selectedOrder = history.state.selectedOrder; // Access the passed data
+    if (this.selectedOrder) {
+      this.populateForm(this.selectedOrder); // Populate the form with the data
+    }
+
     // Initialize form groups
     this.qualitativeInspectionForm = this.fb.group({
       qualitativeObjects: this.fb.array([])
@@ -302,6 +309,33 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
+  populateForm(data: any): void {
+    this.planPurchaseOrderFormGroup.patchValue({
+      id: "", // Add missing field
+      intCode: 0, // Add missing field
+      documentNumber: data.docNo,
+      openQuantity: data.openQty,
+      status: data.status, // Add missing field
+      documentType: "", // Add missing field
+      documentDate: new Date().toISOString(), // Add missing field
+      lineNo: 0, // Add missing field
+      receiveQuantity: 0, // Add missing field
+      inspectionQuantity: 0, // Add missing field
+      inspectionDateTime: new Date().toISOString(), // Add missing field
+      qcLotNo: [], // Add missing field
+      poDate: data.docDate,
+      poCode: data.docNo.toString(), // Convert to string
+      location: data.warehouse,
+      poQuantity: data.qty,
+      sampleQuantity: 3, // Add missing field
+      vendor: data.cardName,
+      remarks: "", // Add missing field
+      itemDescription: data.itemDescription,
+      itemCode: data.itemCode,
+      // itemId: data.itemCode, // Map itemCode to itemId
+    });
+  }
+
   
   ngAfterViewInit() {
     this.cdr.detectChanges();
