@@ -16,15 +16,15 @@
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Item Code</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="itemCode" placeholder="Enter "  
-                        readonly style=" cursor: not-allowed;">
+                    <input class="view-mode-bg-grey" matInput formControlName="itemCode" placeholder="Enter " readonly
+                        style=" cursor: not-allowed;">
                 </mat-form-field>
                 <!-- formControlName="itemCodePO" -->
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Item Description</mat-label>
-                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="itemDescription"
-                         placeholder="Enter Code" required readonly
+                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput
+                        formControlName="itemDescription" placeholder="Enter Code" required readonly
                         style=" cursor: not-allowed;">
                 </mat-form-field>
                 <!-- formControlName="itemDescriptionPO" -->
@@ -43,8 +43,8 @@
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Purchase Order</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="poCode"
-                        required readonly style=" cursor: not-allowed;">
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="poCode" required
+                        readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
@@ -74,7 +74,7 @@
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Sample Qty</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="sampleQuantity" placeholder="Enter Code"
-                         readonly style=" cursor: not-allowed;">
+                        readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
@@ -91,10 +91,16 @@
                     <mat-label>Inspection Qty:</mat-label>
                     <input matInput placeholder="Enter " formControlName="inspectionQuantity" required>
                 </mat-form-field>
+
+                <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;">
+                    <mat-label>Item ID:</mat-label>
+                    <input class="view-mode-bg-grey" matInput formControlName="itemId" required>
+                </mat-form-field>
             </div>
 
             <button mat-flat-button color="primary"
-                *ngIf="planPurchaseOrderFormGroup.get('inspectionQuantity').valid && !isFormSaved" (click)="onSubmitPurchaseOrder()">
+                *ngIf="planPurchaseOrderFormGroup.get('inspectionQuantity').valid && !isFormSaved"
+                (click)="onSubmitPurchaseOrder()">
                 Save
             </button>
 
@@ -115,12 +121,12 @@
                     <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
                 </div>
             </div>
-                <!-- Remarks Field -->
-                <mat-form-field *ngIf="isFormSaved && samplesPurchaseOrder.length === sampleQuantity"
-                    class="w-[330px] mt-2">
-                    <mat-label>Remarks</mat-label>
-                    <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
-                </mat-form-field>
+            <!-- Remarks Field -->
+            <mat-form-field *ngIf="isFormSaved && samplesPurchaseOrder.length === sampleQuantity"
+                class="w-[330px] mt-2">
+                <mat-label>Remarks</mat-label>
+                <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
+            </mat-form-field>
 
 
             <ng-template #dialogTemplateItems let-data="data">
@@ -424,7 +430,7 @@
                         <button mat-menu-item (click)="action1()">Good Receipt PO (GRN)</button>
                         <!-- <button mat-menu-item (click)="action2()">Inventory Transfer</button> -->
 
-                      
+
                     </div>
                 </div>
 
