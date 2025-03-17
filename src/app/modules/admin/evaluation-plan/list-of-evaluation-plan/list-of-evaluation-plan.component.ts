@@ -138,35 +138,35 @@ currentPage = 1;    // Current page number
    
 
 ngOnInit(): void {
-  // ✅ Dropdown value change hone par API call karega
+  // Set the initial view to 'sapDocuments'
+  this.currentView = 'sapDocuments';
+  
+  // Single subscription for orderTypeControl changes
   this.orderTypeControl.valueChanges.subscribe((orderType) => {
-    this.orderType = orderType; // ✅ Value ko store karna zaroori hai
+    this.orderType = orderType; // Store the value
+    
+    // Only fetch SAP data if we're in the sapDocuments view
+    if (this.currentView === 'sapDocuments') {
       this.onOrderTypeChange(orderType);
+    }
+    
+    // Always update the table view based on current view and order type
+    this.updateTableView();
   });
 
-  // ✅ Initial API call
-  this.fetchSapDocPurchaseOrders(); 
-
+  // Initial API call for SAP documents
+  this.fetchSapDocPurchaseOrders();
   
+  // Initialize the table with appropriate data
+  this.updateTableView();
 
-   // Set the initial view to 'sapDocuments' instead of 'evaluationPlan'
-   this.currentView = 'sapDocuments';
-  
-   // Call updateTableView to initialize the table with sapDocuments data
-   this.updateTableView();
- 
-    // React to order type changes
-    this.orderTypeControl.valueChanges.subscribe(() => {
-      this.updateTableView();
+  // Setup search functionality
+  this.searchInputControl.valueChanges
+    .pipe(debounceTime(300))
+    .subscribe((searchTerm: string) => {
+      this.applyFilter(searchTerm);
     });
-
-    // Setup search functionality
-    this.searchInputControl.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe((searchTerm: string) => {
-        this.applyFilter(searchTerm);
-      });
-  }
+}
   onOrderTypeChange(orderType: string): void {
     if (orderType === 'purchaseOrder') {
         this.fetchSapDocPurchaseOrders();
@@ -188,7 +188,10 @@ ngOnInit(): void {
           qty: order.quantity,
           openQty: order.remainingOpenQuantity,
           status: order.documentStatus,
-          action: 'View'
+          warehouse: order.warehouse,
+          cardName: order.cardName,
+          
+          // action: 'View'
         }));
   
         // ✅ MatTableDataSource ko update karo
@@ -214,7 +217,7 @@ ngOnInit(): void {
                 itemDescription: order.productName,
                 qty: order.plannedQuantity,
                 openQty: order.plannedQuantity - order.completedQuantity,
-                status: order.lineStatus,
+                status: order.productionOrderStatus,
                 action: 'View'
             }));
 
@@ -310,13 +313,20 @@ ngOnInit(): void {
       relativeTo: this._activatedRoute 
     });
   }
-
-  navigateToOrderForm() {
+///FINAL CHANGES
+  navigateToOrderForm(element: any) {
     const orderType = this.orderTypeControl.value; // Check selected order type
+    
     if (orderType === 'purchaseOrder') {
-      this.router.navigate(['/evaluation-plan/plan-purchase-order'],  { relativeTo: this._activatedRoute });
+      this.router.navigate(['/evaluation-plan/plan-purchase-order'], { 
+        relativeTo: this._activatedRoute,
+        state: { selectedOrder: element } // Pass the selected row data
+      });
     } else if (orderType === 'productionOrder') {
-      this.router.navigate(['/evaluation-plan/plan-production-order'] ,  { relativeTo: this._activatedRoute });;
+      this.router.navigate(['/evaluation-plan/plan-production-order'], { 
+        relativeTo: this._activatedRoute,
+        state: { selectedOrder: element } // Pass the selected row data
+      });
     }
   }
 
