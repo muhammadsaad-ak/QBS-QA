@@ -595,7 +595,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         // console.log('LIST ALL ITEMS API', parsedResponse);
 
                         this.dataSourceItemCodeIIC = new MatTableDataSource(parsedResponse.data.values);
-                        this.totalRecords = parsedResponse.data.totalRecords; 
+                        this.totalRecords = parsedResponse.data.totalRecords;
 
                         console.log('FETCHED SAP ITEMS:', this.dataSourceItemCodeIIC.data);
                     } else {
@@ -2133,22 +2133,6 @@ export class TestingStepperComponent implements AfterViewInit {
     @ViewChild('dialogTemplateItemsX') dialogTemplateItemsX;
     dataSourceItemsX = new MatTableDataSource([]);
 
-    XonItemCodeClickX(rowIndex: number): void {
-        const quantitativeData = this.inspectionCardModalList.filter(
-            (item: any) => item.type === 'quantitative' && item.isActive
-        );
-
-        this.dataSourceItemsX = new MatTableDataSource(quantitativeData);
-        this.selectedControlAccountRowIndex = rowIndex;
-        const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
-            width: '70%',
-            height: '75vh',
-            data: this.dataSourceItemsX,
-        });
-        dialogRef.afterClosed().subscribe(() => {
-            console.log('Dialog closed');
-        });
-    }
     onItemCodeClickX(rowIndex: number): void {
         const quantitativeData = this.inspectionCardModalList.filter(
             (item: any) => item.type === 'quantitative' && item.isActive
@@ -2173,6 +2157,7 @@ export class TestingStepperComponent implements AfterViewInit {
             console.log('Dialog closed');
         });
     }
+
 
     displayedColumnsItemsX: string[] = [
         'intCode',
