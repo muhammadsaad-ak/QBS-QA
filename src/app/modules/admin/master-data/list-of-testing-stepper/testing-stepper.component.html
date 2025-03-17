@@ -560,18 +560,20 @@
           <!-- ITEM CODE NG TEMPLATE DIALOG STARTS -->
           <ng-template #dialogTemplateItemCodeIIC>
             <div class="dialog-container flex flex-col h-full">
-              <div class="flex justify-between items-center p-4 border-b text-primary">
-                <!-- List of All Items -->
-                <h2 class="text-lg font-semibold">List&nbsp;of&nbsp;All&nbsp;Items</h2>
-                <span (click)="dialog.closeAll()" class="header-close-x">
+              <!-- HEADER ROW (SEARCH & CLOSE BUTTON) -->
+              <!-- SEARCH & CLOSE BUTTON CONTAINER -->
+              <div class="flex justify-between items-center gap-4 p-4 border-b text-primary">
+                <!-- SEARCH FIELD (FULL WIDTH) -->
+                <mat-form-field appearance="outline" class="w-full">
+                  <mat-label>Search</mat-label>
+                  <input matInput (keyup)="applyFilterItemCodeIIC($event)" #input>
+                </mat-form-field>
+                <!-- CLOSE BUTTON (absolute top) -->
+                <span (click)="dialog.closeAll()" class="absolute top-2 right-2 cursor-pointer">
                   <mat-icon class="text-primary">close</mat-icon>
                 </span>
               </div>
-              <!-- List of All Items Search -->
-              <mat-form-field>
-                <mat-label>Search</mat-label>
-                <input matInput (keyup)="applyFilterItemCodeIIC($event)" #input>
-              </mat-form-field>
+              <!-- Table Container -->
               <div class="table-container flex-grow overflow-auto">
                 <!-- ITEM CODE NG TABLE STARTS -->
                 <mat-table [dataSource]="dataSourceItemCodeIIC">
@@ -588,7 +590,7 @@
                   <ng-container matColumnDef="itemDescription">
                     <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
                     <mat-cell *matCellDef="let row" class="single-line text-sm">
-                      {{ row.name }}
+                      {{ row.itemName }}
                     </mat-cell>
                   </ng-container>
                   <!-- Item Group -->
@@ -608,10 +610,32 @@
                 </mat-table>
                 <!-- ITEM CODE NG TABLE ENDS -->
               </div>
-              <!-- Save & Close -->
-              <div class="save-close-container flex justify-end mt-auto py-2">
-                <button mat-flat-button color="primary"
-                  (click)="addSelectedRowItemCodeIIC()">Save&nbsp;&amp;&nbsp;Close</button>
+              <!-- PAGINATION CONTROLS & SAVE BUTTON (SAME ROW) -->
+              <div class="pagination-save-container flex justify-between items-center p-2 border-t">
+                <!-- PAGINATION CONTROLS (LEFT) -->
+                <div class="pagination-controls flex items-center gap-4">
+                  <!-- Page Size DROPDOWN -->
+                  <mat-form-field appearance="outline" class="w-32">
+                    <mat-label>Page Size</mat-label>
+                    <mat-select [(value)]="pageSize" (selectionChange)="onPageSizeChange($event.value)">
+                      <mat-option *ngFor="let size of [25, 50, 100]" [value]="size">
+                        {{ size }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <!-- Previous & Next BUTTONS -->
+                  <button mat-flat-button color="accent" (click)="previousPage()" [disabled]="pageNumber === 1">
+                    Previous
+                  </button>
+                  <span>Page {{ pageNumber }}</span>
+                  <button mat-flat-button color="accent" (click)="nextPage()">
+                    Next
+                  </button>
+                </div>
+                <!-- Save BUTTON (RIGHT) -->
+                <button mat-flat-button color="primary" (click)="addSelectedRowItemCodeIIC()">
+                  Save&nbsp;&amp;&nbsp;Close
+                </button>
               </div>
             </div>
           </ng-template>

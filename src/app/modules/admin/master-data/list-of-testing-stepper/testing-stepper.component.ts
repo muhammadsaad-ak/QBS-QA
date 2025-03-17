@@ -24,6 +24,7 @@ import { UomMasterService } from 'app/core/other-core-services/module/uom-master
 import { qualitativeInspectionIF, quantitativeInspectionIF, } from '../list-of-items-inspection-cards/items-inspection-cards/items-inspection-cards-interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
+import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
 
 
 
@@ -108,7 +109,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private _snackBar: MatSnackBar,
         // Item Inspection Card
         private _itemInspectionCardService: ItemInspectionCardService,
-        // private _SAPItemsService: SAPItemsService,
+        private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
     ) { }
@@ -451,7 +452,7 @@ export class TestingStepperComponent implements AfterViewInit {
             mandatory: [false],
             pass: [], // Multiple pass values in array
             fail: [], // Multiple fail values in array
-            
+
         });
 
         // Push the new form group into the FormArray
@@ -487,7 +488,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     // CUSTOM VALIDATORS
     triggerValidationTarget(index: number): void {
-        this.isValidate = false; 
+        this.isValidate = false;
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaTarget');
         if (control) {
             control.markAsTouched();
@@ -495,15 +496,15 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     triggerValidationMax(index: number): void {
-        this.isValidate = false; 
+        this.isValidate = false;
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaMax');
         if (control) {
             control.markAsTouched();
             control.updateValueAndValidity();
         }
-    }    
+    }
     triggerValidationMin(index: number): void {
-        this.isValidate = false; 
+        this.isValidate = false;
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaMin');
         if (control) {
             control.markAsTouched();
@@ -511,14 +512,14 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     onTabChange(event: MatTabChangeEvent): void {
-        if (event.index === 1) { 
+        if (event.index === 1) {
             this._snackBar.open('Fill the mandatory UOM, Target, Max, & Min Fields.', 'Close', {
                 duration: 5000,
                 panelClass: ['snackbar-error']
             });
         }
     }
-    
+
     addQuantitativeInspectionRow(id: string, description: string): void {
         const quantitativeInspectionFormGroup = this.fb.group({
             id: [id],
@@ -556,22 +557,53 @@ export class TestingStepperComponent implements AfterViewInit {
         ];
     }
 
-    
+
 
     // ITEM CODE API
+    // fetchListAllItemsSAP(): void {
+    //     this._itemInspectionCardService.getListAllItems().subscribe({
+    //         next: (response) => {
+    //             if (response && response.isRequestSuccess && response.data) {
+    //                 this.dataSourceItemCodeIIC = new MatTableDataSource(
+    //                     response.data
+    //                 );
+    //                 console.log(
+    //                     'FETCHED ITEMS:',
+    //                     this.dataSourceItemCodeIIC.data
+    //                 );
+    //             } else {
+    //                 console.warn('INVALID API RESPONSE:', response);
+    //                 this.dataSourceItemCodeIIC = new MatTableDataSource([]);
+    //             }
+    //         },
+    //         error: (err) => {
+    //             console.error('ERROR FETCHING ITEMS:', err);
+    //         },
+    //     });
+    // }
+    // SAP API  - SAP ITEM CODE API
+    pageSize = 25;
+    pageNumber = 1;
+    totalRecords = 0;
     fetchListAllItemsSAP(): void {
-        this._itemInspectionCardService.getListAllItems().subscribe({
+        this._SAPItemsService.getListAllItemsSAP(this.pageSize, this.pageNumber).subscribe({
             next: (response) => {
-                if (response && response.isRequestSuccess && response.data) {
-                    this.dataSourceItemCodeIIC = new MatTableDataSource(
-                        response.data
-                    );
-                    console.log(
-                        'FETCHED ITEMS:',
-                        this.dataSourceItemCodeIIC.data
-                    );
-                } else {
-                    console.warn('INVALID API RESPONSE:', response);
+                try {
+                    const parsedResponse = JSON.parse(response);
+
+                    if (parsedResponse && parsedResponse.data && parsedResponse.data.values) {
+                        // console.log('LIST ALL ITEMS API', parsedResponse);
+
+                        this.dataSourceItemCodeIIC = new MatTableDataSource(parsedResponse.data.values);
+                        this.totalRecords = parsedResponse.data.totalRecords; 
+
+                        console.log('FETCHED SAP ITEMS:', this.dataSourceItemCodeIIC.data);
+                    } else {
+                        console.warn('INVALID API RESPONSE:', parsedResponse);
+                        this.dataSourceItemCodeIIC = new MatTableDataSource([]);
+                    }
+                } catch (error) {
+                    console.error('JSON PARSE ERROR:', error);
                     this.dataSourceItemCodeIIC = new MatTableDataSource([]);
                 }
             },
@@ -580,23 +612,24 @@ export class TestingStepperComponent implements AfterViewInit {
             },
         });
     }
-    // SAP API  - SAP ITEM CODE API
-    // fetchListAllItemsSAP(): void {
-    //   this._SAPItemsService.getListAllItems().subscribe({
-    //     next: (response) => {
-    //       if (response) {
-    //         this.dataSourceItemCodeIIC = new MatTableDataSource(response);
-    //         console.log('FETCHED ITEMS:', this.dataSourceItemCodeIIC.data);
-    //       } else {
-    //         console.warn('INVALID API RESPONSE:', response);
-    //         this.dataSourceItemCodeIIC = new MatTableDataSource([]);
-    //       }
-    //     },
-    //     error: (err) => {
-    //       console.error('ERROR FETCHING ITEMS:', err);
-    //     },
-    //   });
-    // }
+    onPageSizeChange(newSize: number): void {
+        this.pageSize = newSize;
+        this.pageNumber = 1;
+        this.fetchListAllItemsSAP();
+    }
+    nextPage(): void {
+        const maxPages = Math.ceil(this.totalRecords / this.pageSize);
+        if (this.pageNumber < maxPages) {
+            this.pageNumber++;
+            this.fetchListAllItemsSAP();
+        }
+    }
+    previousPage(): void {
+        if (this.pageNumber > 1) {
+            this.pageNumber--;
+            this.fetchListAllItemsSAP();
+        }
+    }
 
     // CARD CODE API
     fetchListAllCards(): void {
@@ -625,7 +658,7 @@ export class TestingStepperComponent implements AfterViewInit {
     onItemCodeClickIIC() {
         const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIIC, {
             width: '75vw',
-            height: '75vh',
+            height: '90vh',
             data: this.dataSourceItemCodeIIC,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -662,7 +695,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 .setValue(selectedRow.itemCode);
             this.itemsInspectionCardsForm
                 .get('itemDescription')
-                .setValue(selectedRow.name);
+                .setValue(selectedRow.itemName);
 
             //  AGAINST SAP LIST ALL ITEMS
             // this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
@@ -677,7 +710,7 @@ export class TestingStepperComponent implements AfterViewInit {
             // console.log("addSelectedRowItemCodeIIC - this.selectedIntCodeIIC:", this.selectedIntCodeIIC)
             this.selectedItemCodeIIC = selectedRow.itemCode;
             // console.log("addSelectedRowItemCodeIIC - this.selectedItemCodeIIC:", this.selectedItemCodeIIC)
-            this.selectedItemDescriptionICC = selectedRow.name;
+            this.selectedItemDescriptionICC = selectedRow.itemName;
             // console.log("addSelectedRowItemCodeIIC - this.selectedItemDescriptionICC:", this.selectedItemDescriptionICC)
         } else {
             console.log('NO ROW SELECTED');
@@ -1212,7 +1245,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // SINGLE ARRAY IIC
     onSaveQualitativeResult(paramId: any, data: any): void {
-   
+
         // CLEAR THE ARRAY BEFORE ADDING NEW DATA TO AVOID DUPLICATION
         this.qualitativeResultPassStatusObjects = [];
 
@@ -1250,7 +1283,7 @@ export class TestingStepperComponent implements AfterViewInit {
         );
 
         if (qualitativeObject) {
-                 this.isValidate = false;
+            this.isValidate = false;
             qualitativeObject.qualitativeResultPassStatusObjects = [
                 ...this.qualitativeResultPassStatusObjects,
             ];
