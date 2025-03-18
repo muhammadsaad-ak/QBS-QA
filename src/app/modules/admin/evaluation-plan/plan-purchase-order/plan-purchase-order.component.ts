@@ -103,39 +103,15 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     private router: Router,
   ) {}
 
-  // planPurchaseOrderFormGroup = this._formBuilder.group({
-  //   isActive: [true],
-  //   docNoPO: ['DOC-2024-001'],
-  //   itemCodePO: ['ITEM-123'],
-  //   itemDescriptionPO: ['Test Item Description'],
-  //   inspectionDateTimePO: ['2024-02-27 10:00 AM'],
-  //   datePO: ['2024-02-20'],
-  //   purchaseOrderPO: ['PO-2024-001'],
-  //   quantityPO: ['1000'],
-  //   openQuantityPO: ['500'],
-  //   vendorPO: ['Vendor XYZ'],
-  //   qcLotNoPO: ['', Validators.required],
-  //   receiveQtyPO: ['', Validators.required],
-  //   inspectionQtyPO: ['', Validators.required],
-  //   samplePO: ['2'],
-  //   locationPO: ['Warehouse A'],
-  //   itemCodeModalPO: ['ITEM-123'],
-  //   inspectionQtyModalPO: ['50'],
-  //   inspectionByModalPO: ['Mr. Kamran'],
-  //   inspectionTimeModalPO: ['10:30 AM'],
-  //   remarks: ['']
-
-  // });
-
   planPurchaseOrderFormGroup = this._formBuilder.group({
     id: [''], // ✅ Empty string if null not allowed
     intCode: [0], // number
-    documentNumber: [5], // number
-    openQuantity: [20], // number
+    documentNumber: [], // number
+    openQuantity: [], // number
     status: [''], // ✅ Meaningful status
     documentType: [''], // ✅ Meaningful type
     documentDate: [new Date().toISOString()], // ✅ Correct ISO format
-    lineNo: [null], // ✅ Keep null if API supports
+    lineNum: [], // ✅ Keep null if API supports
     receiveQuantity: [], // number
     inspectionQuantity: [], // number
     inspectionDateTime: [new Date().toISOString()], // ✅ Correct ISO format
@@ -310,6 +286,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
   populateForm(data: any): void {
+    console.log('Selected Order:', data);
     this.planPurchaseOrderFormGroup.patchValue({
       id: "", // Add missing field
       intCode: 0, // Add missing field
@@ -318,11 +295,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       status: data.status, // Add missing field
       documentType: "", // Add missing field
       documentDate: new Date().toISOString(), // Add missing field
-      lineNo: 0, // Add missing field
+      lineNum: data.lineNum, // Add missing field
       receiveQuantity: 0, // Add missing field
       inspectionQuantity: 0, // Add missing field
       inspectionDateTime: new Date().toISOString(), // Add missing field
-      qcLotNo: [], // Add missing field
+      qcLotNo: 0, // Add missing field
       poDate: data.docDate,
       poCode: data.docNo.toString(), // Convert to string
       location: data.warehouse,

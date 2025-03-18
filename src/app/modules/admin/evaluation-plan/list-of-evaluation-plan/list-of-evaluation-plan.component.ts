@@ -21,6 +21,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { debounceTime } from 'rxjs';
 import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
+import { ListOfEvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/list-of-evaluation-plan-purchase-order.service';
 import { PageEvent } from '@angular/material/paginator';
 
 @Component({
@@ -82,15 +83,15 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
   
   // Static data for Evaluation Plan - Purchase Orders
   evalPlanPurchaseOrderData = [
-    {
-      docNo: 'PO-001',
-      docDate: '2025-02-10',
-      lineNo: '1',
-      itemCode: 'ITM-1001',
-      itemDescription: 'Steel Plate 10mm',
-      qty: 50,
-      status: 'Pas'
-    },
+    // {
+    //   docNo: 'PO-001',
+    //   docDate: '2025-02-10',
+    //   lineNo: '1',
+    //   itemCode: 'ITM-1001',
+    //   itemDescription: 'Steel Plate 10mm',
+    //   qty: 50,
+    //   status: 'Pas'
+    // },
 
   ];
 
@@ -126,6 +127,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _activatedRoute: ActivatedRoute,
     private router: Router,
     private _purchaseOrderService:SapPlanPurchaseOrderService,
+    private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService
   ) {
     this.dataSource = new MatTableDataSource([]);
    }
@@ -182,7 +184,7 @@ ngOnInit(): void {
           serialId: index + 1 + (this.currentPage - 1) * this.pageSize, 
           docNo: order.docNum,
           docDate: order.docDate,
-          lineNo: order.lineNum,
+          lineNum: order.lineNum,
           itemCode: order.itemCode,
           itemDescription: order.itemDescription,
           qty: order.quantity,
@@ -232,6 +234,26 @@ ngOnInit(): void {
     });
 }
 
+fetchEvaluationPlanPurchaseOrders(): void {
+  this._purchaseQCService.getEvaluationPlanPurchaseOrders().subscribe((response: any) => {
+      if (response.data) {
+          this.evalPlanPurchaseOrderData = response.data.map((order, index) => ({
+              serialId: index + 1,
+              docNo: order.documentNumber,
+              docDate: order.documentDate,
+              itemCode: order.itemDetails?.itemCode || '-',
+              itemDescription: order.itemDetails?.name || '-',
+              qty: order.poQuantity || 0,
+              status: order.status || '-'
+          }));
+
+          this.dataSource = new MatTableDataSource(this.evalPlanPurchaseOrderData);
+      } else {
+          console.error('Failed to fetch Evaluation Plan Purchase Orders', response.message);
+      }
+  });
+}
+
   onPageChange(event: PageEvent) {
     this.currentPage = event.pageIndex + 1;
     this.pageSize = event.pageSize;
@@ -276,6 +298,11 @@ ngOnInit(): void {
   toggleView(): void {
     this.currentView = this.currentView === 'evaluationPlan' ? 'sapDocuments' : 'evaluationPlan';
     this.updateTableView();
+
+     // Fetch data if switching to Evaluation Plan
+  if (this.currentView === 'evaluationPlan' && this.orderType === 'purchaseOrder') {
+    this.fetchEvaluationPlanPurchaseOrders();
+  }
   }
 
   ngOnDestroy(): void {
