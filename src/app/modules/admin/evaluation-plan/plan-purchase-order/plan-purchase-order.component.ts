@@ -120,7 +120,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     poCode: [], // string
     location: [''], // string
     poQuantity: [], // number
-    sampleQuantity: [3], // number
+    sampleQuantity: [], // number
     vendor: [''], // string
     remarks: ['remarks'], // string
     itemId: null, // ✅ Empty string instead of null
@@ -148,29 +148,41 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   //   }
   // }
 
+
   onSubmitPurchaseOrder(): void {
     this.isValidate = true;
     if (this.planPurchaseOrderFormGroup.valid) {
       const formData = this.planPurchaseOrderFormGroup.value;
-      console.log('SENDING PURCHASE ORDER PAYLOAD:', formData);
-      this.isFormSaved = true; // UI trigger karega
-      this._evaluationPurchaseOrderService.AddPurchaseOrder(formData).subscribe(
-        (response) => {
-          if (response.succeeded) {
-            console.log('API RUN SUCCESSFULLY.', formData);
-            this._snackBar.open('Purchase Order added successfully!', 'Close', {
+      console.log('PAYLOAD BEFORE sampleQuantity:', formData);
+
+      const inspectionQuantity: number = Number(formData.inspectionQuantity);
+      const itemId: string = String(formData.itemId);
+
+      this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
+
+        console.log('SENDING PURCHASE ORDER PAYLOAD:', this.planPurchaseOrderFormGroup.value);
+        this.isFormSaved = true; // UI trigger karega
+        // return;  
+        this._evaluationPurchaseOrderService.AddPurchaseOrder(this.planPurchaseOrderFormGroup.value).subscribe(
+          (response) => {
+            if (response.succeeded) {
+              console.log('API RUN SUCCESSFULLY.', this.planPurchaseOrderFormGroup.value);
+              this._snackBar.open('Purchase Order added successfully!', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-success']
+              });
+            }
+          },
+          (error) => {
+            this._snackBar.open('Error adding purchase order.', 'Close', {
               duration: 3000,
-              panelClass: ['snackbar-success']
+              panelClass: ['snackbar-error']
             });
           }
-        },
-        (error) => {
-          this._snackBar.open('Error adding purchase order.', 'Close', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      );
+        );
+      }).catch((error) => {
+        console.error('Error in getSampleQuantity:', error);
+      });
     } else {
       this.isValidate = false;
       this._snackBar.open('Please fill all mandatory fields.', 'Close', {
@@ -179,6 +191,33 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       });
     }
   }
+  // GET API CALL TO UPDATE sampleQuantity
+  getSampleQuantity(inspectionQuantity: number, itemId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this._evaluationPurchaseOrderService.getSampleQuantityRange(inspectionQuantity, itemId).subscribe(
+        (response) => {
+          console.log('API RESPONSE:', response);
+          if (response.isRequestSuccess) {
+            const sampleQuantity = response.data;
+            console.log('RECEIVED sampleQuantity:', sampleQuantity);
+            this.planPurchaseOrderFormGroup.get('sampleQuantity')?.setValue(sampleQuantity);
+            resolve();
+          }
+        },
+        (error) => {
+          console.error('ERROR FETCHING SAMPLE QUANTITY:', error);
+          this._snackBar.open('ERROR FETCHING SAMPLE QUANTITY.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error'],
+          });
+          reject(error);
+        }
+      );
+    });
+  }
+
+
+
 
   cancelForm() {
     // Reset the form or navigate away
@@ -305,7 +344,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       poCode: data.docNo.toString(), // Convert to string
       location: data.warehouse,
       poQuantity: data.qty,
-      sampleQuantity: 3, // Add missing field
+      // sampleQuantity: 3, // Add missing field
       vendor: data.cardName,
       remarks: "", // Add missing field
       itemDescription: data.itemDescription,
