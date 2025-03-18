@@ -892,6 +892,12 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedRowIndexUoM: number = -1; // Store the clicked row index
 
     onUoMQtyClickIIC(index: number) {
+        // UOM - UNIT OF MEASURE API
+        this._itemInspectionCardService
+            .getAllUnitOfMeasureIIC()
+            .subscribe((unitOfMeasure) => {
+                this.dataSourceUoMIIC.data = unitOfMeasure.data;
+            });
         this.selectedRowIndexUoM = index; //  Save index
         const dialogRef = this.dialog.open(this.dialogTemplateUoMIIC, {
             width: '75vw',
@@ -1730,11 +1736,11 @@ export class TestingStepperComponent implements AfterViewInit {
             });
 
         // UOM - UNIT OF MEASURE API
-        this._itemInspectionCardService
-            .getAllUnitOfMeasureIIC()
-            .subscribe((unitOfMeasure) => {
-                this.dataSourceUoMIIC.data = unitOfMeasure.data;
-            });
+        // this._itemInspectionCardService
+        //     .getAllUnitOfMeasureIIC()
+        //     .subscribe((unitOfMeasure) => {
+        //         this.dataSourceUoMIIC.data = unitOfMeasure.data;
+        //     });
 
         // UPDATE QUALITATIVE RESULT STARTS
         //  RETRIEVING rowDataQR
