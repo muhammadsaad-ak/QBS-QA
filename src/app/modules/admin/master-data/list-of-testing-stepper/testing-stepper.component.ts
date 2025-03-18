@@ -337,11 +337,11 @@ export class TestingStepperComponent implements AfterViewInit {
     // itemsInspectionCardsForm: FormGroup;
     itemsInspectionCardsForm = this._formBuilder.group({
         // ITEMS
-        itemName: ['TAPAL DANEDAR POUCH 900G', Validators.required],
-        itemType: ['itItems', Validators.required],
-        itemGroupCode: ['138', Validators.required],
+        itemName: ['', Validators.required],
+        itemType: ['', Validators.required],
+        itemGroupCode: ['', Validators.required],
         itemU_QACard: [null],
-        itemUoMGroupEntry: ['-1', Validators.required],
+        itemUoMGroupEntry: ['', Validators.required],
         itemCode: ['', Validators.required], // ITM000017
         itemDescription: ['', Validators.required], //  TAPAL DANEDAR POUCH 900G
 
@@ -690,21 +690,22 @@ export class TestingStepperComponent implements AfterViewInit {
         );
         if (selectedRow) {
             // console.log('SELECTED ROW:', selectedRow);
-            this.itemsInspectionCardsForm
-                .get('itemCode')
-                .setValue(selectedRow.itemCode);
-            this.itemsInspectionCardsForm
-                .get('itemDescription')
-                .setValue(selectedRow.itemName);
+            // this.itemsInspectionCardsForm
+            //     .get('itemCode')
+            //     .setValue(selectedRow.itemCode);
+            // this.itemsInspectionCardsForm
+            //     .get('itemDescription')
+            //     .setValue(selectedRow.itemName);
 
             //  AGAINST SAP LIST ALL ITEMS
-            // this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
-            // this.itemsInspectionCardsForm.get('itemType').setValue(selectedRow.itemType);
-            // this.itemsInspectionCardsForm.get('itemGroupCode').setValue(selectedRow.itemGroupCode);
-            // this.itemsInspectionCardsForm.get('itemU_QACard').setValue(selectedRow.itemU_QACard);
-            // this.itemsInspectionCardsForm.get('itemUoMGroupEntry').setValue(selectedRow.itemUoMGroupEntry);
-            // this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
-            // this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemDescription);
+            this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
+            this.itemsInspectionCardsForm.get('itemType').setValue(selectedRow.itemType);
+            this.itemsInspectionCardsForm.get('itemGroupCode').setValue(selectedRow.uoMGroupEntry);
+            this.itemsInspectionCardsForm.get('itemU_QACard').setValue(selectedRow.u_QACard);
+            this.itemsInspectionCardsForm.get('itemUoMGroupEntry').setValue(String(selectedRow.itemsGroupCode));
+            this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
+            this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemName);
+
 
             this.selectedIntCodeIIC = selectedRow.intCode;
             // console.log("addSelectedRowItemCodeIIC - this.selectedIntCodeIIC:", this.selectedIntCodeIIC)
