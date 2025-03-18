@@ -76,18 +76,22 @@
                     <input class="view-mode-bg-grey" matInput formControlName="sampleQuantity" placeholder="Enter Code"
                         readonly style=" cursor: not-allowed;">
                 </mat-form-field>
-
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                    <mat-label>QC Lot No:</mat-label>
-                    <input matInput placeholder="Enter " formControlName="qcLotNo" required>
+                    <mat-label>Line Num:</mat-label>
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="lineNum" required readonly>
                 </mat-form-field>
 
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
+                    <mat-label>QC Lot No:</mat-label>
+                    <input matInput placeholder="Enter" formControlName="qcLotNo" required>
+                </mat-form-field>
+                
+                <mat-form-field style="flex: 0 1 calc(26% - 10px); min-width: 100px;">
                     <mat-label>Receive Qty</mat-label>
                     <input matInput formControlName="receiveQuantity" placeholder="Enter Code" required>
                 </mat-form-field>
 
-                <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
+                <mat-form-field style="flex: 0 1 calc(26% - 10px); min-width: 100px;">
                     <mat-label>Inspection Qty:</mat-label>
                     <input matInput placeholder="Enter " formControlName="inspectionQuantity" required>
                 </mat-form-field>
