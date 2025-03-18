@@ -120,7 +120,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     inspectionByModalPO: [''],
     inspectionTimeModalPO: [''],
     receiveQtyPO: [''],
-    inspectionDateTimePO:['']
+    inspectionDateTimePO:[''],
+    lineNum: [''],
 
     
 
