@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ViewChild, ViewEncapsulation, inject, } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, ViewEncapsulation, inject, } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -20,6 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/evaluation-plan-purchase-order.service';
+import { SapPlanPurchaseOrderService } from '../../../../core/other-core-services/module/sap-plan-purchase-order.service'
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -43,7 +44,7 @@ import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services
   templateUrl: './plan-purchase-order.component.html',
   styleUrl: './plan-purchase-order.component.scss'
 })
-export class PlanPurchaseOrderComponent implements AfterViewInit {
+export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   i: number;
   // Plan Purchase Form groups
   selectedOrder: any;
@@ -52,6 +53,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   isFormSaved = false; // Initialize to false
   isDropdownOpen = false;
   isValidate = false;
+
+  cardCode: any
 
 
 
@@ -69,7 +72,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   selectedUoMCode: string = '';
 
   // Plan Purchase Display columns
-  displayedColumnsQualitative: string[] = ['parameter', 'passCriteria', 'mandatory', 'result', 'remarks'];
+  displayedColumnsQualitative: string[] = ['inspectionCharacteristicName', 'inspectionCharacteristicSingleCriteria', 'mandatory', 'result', 'remarks'];
   displayedColumnsQuantitative: string[] = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin', 'result', 'remarks'];
   displayedColumnsUoMIIC: string[] = ['code', 'description'];
   displayedColumnsAddQuantitativeIIC: string[] = ['inspectionCode', 'inspectionDescription'];
@@ -100,7 +103,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     private cdr: ChangeDetectorRef,
     private _snackBar: MatSnackBar,
     private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService,
+    private _sapPlanPurchaseOrderService: SapPlanPurchaseOrderService,
     private router: Router,
+    private _activeRoute: ActivatedRoute
   ) { }
 
   // planPurchaseOrderFormGroup = this._formBuilder.group({
@@ -127,6 +132,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
 
   // });
 
+  
+
   planPurchaseOrderFormGroup = this._formBuilder.group({
     id: [''], // ✅ Empty string if null not allowed
     intCode: [0], // number
@@ -150,13 +157,16 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     itemId: null, // ✅ Empty string instead of null
     itemCode: [''],
     itemDescription: [''],
-
     itemCodeModalPO: ['ITEM-123'],
     inspectionQtyModalPO: ['50'],
     inspectionByModalPO: ['Mr. Kamran'],
     inspectionTimeModalPO: ['10:30 AM'],
     receiveQtyPO: ['Item'],
+    qualitativeInspectionObjects: this.fb.array([]),
+    quantitativeInspectionObjects: this.fb.array([]),
   });
+
+  
 
   get sampleQuantity(): number {
     return Number(this.planPurchaseOrderFormGroup.get('sampleQuantity')?.value) || 0;
@@ -276,14 +286,76 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
 
   @ViewChild('dialogTemplateItems') dialogTemplateItems;
   dataSourceItems = new MatTableDataSource([]);
+  // qualitativeDataSource = new MatTableDataSource<any>([]);
+  // quantitativeDataSource = new MatTableDataSource<any>([]);
+ 
   selectedControlAccountRowIndex: number = -1;
 
-  ngOnInit() {
+  getCardByItemCode(itemCode: string) {
+    this._sapPlanPurchaseOrderService.getItemCode(itemCode).subscribe({
+      next: (response) => {
+        this.cardCode = response.data
+        console.log(this.cardCode, 'qualitativeDataSource');
+        if (this.cardCode) {
+        this.populateQualitativeAndQuantitativeData(this.cardCode);
+      }
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      },
+    })
+  }
 
+  populateQualitativeAndQuantitativeData(data: any) {
+    console.log(data, 'populateQualitativeAndQuantitativeData');
+    
+  const qualitativeArray = this.planPurchaseOrderFormGroup?.get('qualitativeInspectionObjects') as FormArray;
+  const quantitativeArray = this.planPurchaseOrderFormGroup?.get('quantitativeInspectionObjects') as FormArray;
+console.log(qualitativeArray, "qualitativeArray")
+  // qualitativeArray.clear();
+  // quantitativeArray.clear();
+
+  if (data.qualitativeInspectionObjects && data.qualitativeInspectionObjects.length > 0) {
+    data.qualitativeInspectionObjects.forEach((item: any) => {
+      console.log(item, 'qualitativeInspectionObjects_______--------');
+      
+      qualitativeArray.push(
+        this.fb.group({
+          inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
+          inspectionCharacteristicSingleCriteria: [item.inspectionCharacteristicSingleCriteria || ''],
+          mandatory: [item.mandatory ?? false],
+          result: [item.result || 'pending'],
+          remarks: [item.remarks || ''],
+        })
+      );
+    });
+  }
+
+  if (data.quantitativeInspectionObjects && data.quantitativeInspectionObjects.length > 0) {
+    data.quantitativeInspectionObjects.forEach((item: any) => {
+      quantitativeArray.push(
+        this.fb.group({
+          parameter: [item.parameter || ''],
+          unit: [item.unit || ''],
+          minValue: [item.minValue ?? 0],
+          maxValue: [item.maxValue ?? 0],
+          actualValue: [item.actualValue ?? ''],
+          remarks: [item.remarks || ''],
+        })
+      );
+    });
+  }
+}
+
+
+  ngOnInit() {   
     this.selectedOrder = history.state.selectedOrder; // Access the passed data
+    
     if (this.selectedOrder) {
       this.populateForm(this.selectedOrder); // Populate the form with the data
       this.getItemId(this.selectedOrder.itemCode);
+     
+      
     }
 
     // Initialize form groups
@@ -296,10 +368,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     });
 
     // Add static qualitative inspection data
-    this.addQualitativeData();
+    // this.addQualitativeData();
 
     // Add static quantitative inspection data
-    this.addQuantitativeData();
+    // this.addQuantitativeData();
 
     // this.setInspectionDateTime(); // Fetch date-time on load
 
@@ -309,8 +381,13 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
     this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
+  
+    
+
   }
   populateForm(data: any): void {
+    console.log(data, '------------');
+    
     this.planPurchaseOrderFormGroup.patchValue({
       id: "", // Add missing field
       intCode: 0, // Add missing field
@@ -335,6 +412,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       itemCode: data.itemCode,
       // itemId: data.itemCode, // Map itemCode to itemId
     });
+
   }
 
 
@@ -343,53 +421,53 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   }
 
   // Add static qualitative data
-  addQualitativeData() {
-    const qualitativeData = [
-      { parameter: 'Visual Inspection', passCriteria: 'No visible defects', mandatory: true, result: '', remarks: '' },
-      { parameter: 'Color Check', passCriteria: 'Matches standard color', mandatory: true, result: '', remarks: '' },
-      { parameter: 'Odor Test', passCriteria: 'No unusual odor', mandatory: false, result: '', remarks: '' },
-      { parameter: 'Package Integrity', passCriteria: 'No damage to packaging', mandatory: true, result: '', remarks: '' },
-      { parameter: 'Label Verification', passCriteria: 'All labels present and correct', mandatory: true, result: '', remarks: '' }
-    ];
+  // addQualitativeData() {
+  //   const qualitativeData = [
+  //     { parameter: 'Visual Inspection', passCriteria: 'No visible defects', mandatory: true, result: '', remarks: '' },
+  //     { parameter: 'Color Check', passCriteria: 'Matches standard color', mandatory: true, result: '', remarks: '' },
+  //     { parameter: 'Odor Test', passCriteria: 'No unusual odor', mandatory: false, result: '', remarks: '' },
+  //     { parameter: 'Package Integrity', passCriteria: 'No damage to packaging', mandatory: true, result: '', remarks: '' },
+  //     { parameter: 'Label Verification', passCriteria: 'All labels present and correct', mandatory: true, result: '', remarks: '' }
+  //   ];
 
-    qualitativeData.forEach(item => {
-      this.qualitativeInspectionObjects.push(
-        this.fb.group({
-          parameter: [item.parameter],
-          passCriteria: [item.passCriteria],
-          mandatory: [item.mandatory],
-          result: [item.result],
-          remarks: [item.remarks]
-        })
-      );
-    });
-  }
+  //   qualitativeData.forEach(item => {
+  //     this.qualitativeInspectionObjects.push(
+  //       this.fb.group({
+  //         parameter: [item.parameter],
+  //         passCriteria: [item.passCriteria],
+  //         mandatory: [item.mandatory],
+  //         result: [item.result],
+  //         remarks: [item.remarks]
+  //       })
+  //     );
+  //   });
+  // }
 
   // Add static quantitative data
-  addQuantitativeData() {
-    const quantitativeData = [
-      { parameterQty: 'Weight', uoMId: 'KG', mandatoryQty: true, passCriteriaTarget: '10.0', passCriteriaMax: '10.5', passCriteriaMin: '9.5', result: '', remarks: '' },
-      { parameterQty: 'Length', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '20.0', passCriteriaMax: '20.2', passCriteriaMin: '19.8', result: '', remarks: '' },
-      { parameterQty: 'Width', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '15.0', passCriteriaMax: '15.2', passCriteriaMin: '14.8', result: '', remarks: '' },
-      { parameterQty: 'Height', uoMId: 'CM', mandatoryQty: false, passCriteriaTarget: '5.0', passCriteriaMax: '5.2', passCriteriaMin: '4.8', result: '', remarks: '' },
-      { parameterQty: 'Volume', uoMId: 'ML', mandatoryQty: false, passCriteriaTarget: '500.0', passCriteriaMax: '510.0', passCriteriaMin: '490.0', result: '', remarks: '' }
-    ];
+  // addQuantitativeData() {
+  //   const quantitativeData = [
+  //     { parameterQty: 'Weight', uoMId: 'KG', mandatoryQty: true, passCriteriaTarget: '10.0', passCriteriaMax: '10.5', passCriteriaMin: '9.5', result: '', remarks: '' },
+  //     { parameterQty: 'Length', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '20.0', passCriteriaMax: '20.2', passCriteriaMin: '19.8', result: '', remarks: '' },
+  //     { parameterQty: 'Width', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '15.0', passCriteriaMax: '15.2', passCriteriaMin: '14.8', result: '', remarks: '' },
+  //     { parameterQty: 'Height', uoMId: 'CM', mandatoryQty: false, passCriteriaTarget: '5.0', passCriteriaMax: '5.2', passCriteriaMin: '4.8', result: '', remarks: '' },
+  //     { parameterQty: 'Volume', uoMId: 'ML', mandatoryQty: false, passCriteriaTarget: '500.0', passCriteriaMax: '510.0', passCriteriaMin: '490.0', result: '', remarks: '' }
+  //   ];
 
-    quantitativeData.forEach(item => {
-      this.quantitativeInspectionObjects.push(
-        this.fb.group({
-          parameterQty: [item.parameterQty],
-          uoMId: [item.uoMId],
-          mandatoryQty: [item.mandatoryQty],
-          passCriteriaTarget: [item.passCriteriaTarget],
-          passCriteriaMax: [item.passCriteriaMax],
-          passCriteriaMin: [item.passCriteriaMin],
-          result: [item.result],
-          remarks: [item.remarks]
-        })
-      );
-    });
-  }
+  //   quantitativeData.forEach(item => {
+  //     this.quantitativeInspectionObjects.push(
+  //       this.fb.group({
+  //         parameterQty: [item.parameterQty],
+  //         uoMId: [item.uoMId],
+  //         mandatoryQty: [item.mandatoryQty],
+  //         passCriteriaTarget: [item.passCriteriaTarget],
+  //         passCriteriaMax: [item.passCriteriaMax],
+  //         passCriteriaMin: [item.passCriteriaMin],
+  //         result: [item.result],
+  //         remarks: [item.remarks]
+  //       })
+  //     );
+  //   });
+  // }
 
   // Display Item Modal
   onPurchaseOrderModal(): void {
@@ -399,8 +477,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
       height: '75vh',
-      data: this.dataSourceItems,
+      data: this.cardCode,
     });
+     this.getCardByItemCode(this.selectedOrder.itemCode)
     dialogRef.afterClosed().subscribe((result) => {
       console.log('DIALOG CLOSED');
     });

@@ -13,11 +13,13 @@ export class SapPlanPurchaseOrderService {
     // private _UnitOfMeasure = new BehaviorSubject<any[]>([]);
     private _purchaseOrders = new BehaviorSubject<any[]>([]);
     private _productionOrders = new BehaviorSubject<any[]>([]);
+    private _cardByCode = new BehaviorSubject<any[]>([])
 
     // Observable to expose role data state
     // unitofmeasure$: Observable<any[]> = this._UnitOfMeasure.asObservable();
     sappurchaseorder$: Observable<any[]> = this._purchaseOrders.asObservable();
     sapproductionorder$: Observable<any[]> = this._productionOrders.asObservable();
+    cardbycode$: Observable<any[]> = this._cardByCode.asObservable();
     /**
      * Setter & getter for access token
      */
@@ -81,6 +83,28 @@ export class SapPlanPurchaseOrderService {
                     return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`));
                 })
             );
+    }
+
+    getItemCode(itemCode: string): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'X-API-KEY': 'super',
+            Accept: 'application/json'
+        });
+
+        return this._httpClient.get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/GetCardByCodeWithBothCharacteristics?itemCode=${itemCode}`,
+            { headers }
+        )
+        .pipe(
+            tap((response: any) => {
+                const cardByCode = response?.data?.value ?? []
+                this._cardByCode.next(cardByCode);
+            }),
+            catchError((error) => {
+                console.error('Error fetching item code', error);
+                return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`))
+            })
+        )
     }
     
 }
