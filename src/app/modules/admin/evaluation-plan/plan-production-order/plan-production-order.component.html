@@ -39,7 +39,7 @@
               </mat-form-field>
   
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                <mat-label>Production Order</mat-label>
+                <mat-label>Production Order No.</mat-label>
                 <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="productionOrderPP" required
                 readonly style=" cursor: not-allowed;">
               </mat-form-field>
@@ -50,79 +50,90 @@
                   readonly style=" cursor: not-allowed;">
               </mat-form-field>
   
-              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                <mat-label>Lot No:</mat-label>
-                <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="lotPP" required
-                readonly style=" cursor: not-allowed;">
-              </mat-form-field>
-
+              
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                 <mat-label>Sample Qty:</mat-label>
                 <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="sampleQtyPP" placeholder="Enter Code" required
-                  readonly style=" cursor: not-allowed;">
+                readonly style=" cursor: not-allowed;">
               </mat-form-field>
-  
+              
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                 <mat-label>Open Qty:</mat-label>
                 <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="openQtyPP" required
                 readonly style=" cursor: not-allowed;">
               </mat-form-field>
-
+              
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                <mat-label>Lot Size (Units)</mat-label>
+                <mat-label>Quantity</mat-label>
                 <input class="view-mode-bg-grey" matInput formControlName="lotSizeUnitPP" placeholder="Enter Code" required
-                  readonly style=" cursor: not-allowed;">
+                readonly style=" cursor: not-allowed;">
               </mat-form-field>
+              
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Lot No:</mat-label>
+                <input matInput placeholder="Enter " formControlName="lotPP">
+              </mat-form-field>
+              <!-- <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Line Num:</mat-label>
+                <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="lineNum" required readonly>
+            </mat-form-field> -->
   
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                 <mat-label>Shift:</mat-label>
-                <input matInput placeholder="Enter " formControlName="shiftPP" required
-                readonly>
+                <input matInput placeholder="Enter " formControlName="shiftPP" >
               </mat-form-field>
 
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                 <mat-label>Machine No:</mat-label>
-                <input matInput formControlName="machineNoPP" placeholder="Enter Code" required
-                  readonly>
+                <input matInput formControlName="machineNoPP" placeholder="Enter Code">
               </mat-form-field>
   
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                 <mat-label>Variant:</mat-label>
-                <input matInput placeholder="Enter " formControlName="variantPP" required
-                readonly>
+                <input matInput placeholder="Enter " formControlName="variantPP" >
               </mat-form-field>
 
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                 <mat-label>BMR No:</mat-label>
-                <input matInput formControlName="bmrPP" placeholder="Enter Code" required
-                  readonly>
+                <input matInput formControlName="bmrPP" placeholder="Enter Code" >
               </mat-form-field>
   
-              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+              <mat-form-field style="flex: 0 1 calc(26% - 16px); min-width: 100px;">
                 <mat-label>Analyzed By:</mat-label>
-                <input matInput placeholder="Enter " formControlName="analyzedByPP" required
-                readonly>
+                <input matInput placeholder="Enter " formControlName="analyzedByPP">
               </mat-form-field>
             </div>
 
             
-            <hr class="custom-divider">
-           
+            <button mat-flat-button color="primary"
+            *ngIf="planProductionOrderFormGroup.get('analyzedByPP').valid && !isFormSaved"
+            (click)="saveForm()">
+            Save
+            </button>
 
-            <div class="flex flex-wrap gap-2 mt-4">
-                <div *ngFor="let sample of samplesProductionOrder" 
-                     class="sample-card" 
+        <hr class="custom-divider" *ngIf="isFormSaved">           
+
+            <div class="flex flex-wrap gap-2 mt-4"  *ngIf="isFormSaved">
+                <div *ngFor="let sample of samplesProductionOrder" class="sample-card" 
                      [style.background-color]="sample.cardColor">
                   <h3 style="font-weight: 500;">Sample {{sample.id}}</h3>
                   <div style="font-weight: 400;">Inspection Time: {{sample.inspectionTime}}</div>
                   <div style="font-weight: 400;">Inspection By: {{sample.inspectionBy}}</div>
                 </div>
             
-                <div class="sample-card add-sample-card" (click)="onItemCodeClickPP()">
+                <div class="sample-card add-sample-card" 
+                    *ngIf="samplesProductionOrder.length < sampleQuantity"
+                    (click)="onItemCodeClickPP()">
                   <span>Add Sample</span>
                   <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
                 </div>
             </div>
+
+            <mat-form-field *ngIf="isFormSaved && samplesProductionOrder.length === sampleQuantity"
+            class="w-[330px] mt-2">
+            <mat-label>Remarks</mat-label>
+            <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
+        </mat-form-field>
             
 
             <ng-template #dialogTemplateItemsPP let-data="data">
@@ -364,4 +375,34 @@
                   </div>
                 </div>
               </ng-template>
+
+              <div class="button-container flex justify-end gap-2 mt-4" *ngIf="isFormSaved">
+                <button mat-flat-button color="primary">
+                    Save
+                </button>
+
+                <button mat-flat-button color="warn" (click)="cancelForm()">
+                    Cancel
+                </button>
+
+                <!-- Button with cut design & dropdown -->
+                <div class="custom-button-container">
+                    <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button">
+                        Post to SAP
+                        <!-- <mat-icon class="arrow-icon">arrow_drop_down</mat-icon> -->
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div *ngIf="isDropdownOpen" class="dropdown-menu">
+                        <button mat-menu-item (click)="action1()">Good Receipt PO (GRN)</button>
+                        <!-- <button mat-menu-item (click)="action2()">Inventory Transfer</button> -->
+
+
+                    </div>
+                </div>
+
+            </div>
+
           </form>
+        </div>
+</div>
