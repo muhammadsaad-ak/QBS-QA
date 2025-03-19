@@ -185,7 +185,6 @@ export class TestingStepperComponent implements AfterViewInit {
     // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
     @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
     onItemSampleItemCodeClick() {
-        this.fetchListAllItems();
         const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
             width: '80%',
             height: '75vh',
@@ -1671,7 +1670,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
 
-        // this.fetchListAllItems();
+        this.fetchListAllItems();
         this.addNewRowItemSampling();
         // ITEM INSPECTION CARD 3.1
 
@@ -2254,12 +2253,30 @@ export class TestingStepperComponent implements AfterViewInit {
             // return;
             this._qualitativeResultsService
                 .AddQualitativeResult(payload)
-                .subscribe((response) => {
-                    if (response.succeeded) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
+                .subscribe(
+                    (response) => {
+                        if (response.succeeded) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                        }
+                        this.stepper.next();
+                    },
+                    (error) => {
+                        console.error('API REQUEST FAILED:', error);
+                        let errorMessage = "This description is already being used and cannot be duplicated.";
+                        if (error.error) {
+                            console.log('API ERROR RESPONSE:', error.error);
+                            if (error.error.exception?.resultDescription?.length) {
+                                errorMessage = error.error.exception.resultDescription[0];
+                            } else if (error.error.message) {
+                                errorMessage = error.error.message;
+                            }
+                        }
+                        this._snackBar.open(errorMessage, 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
                     }
-                });
-            this.stepper.next();
+                );
         } else {
             this.isValidate = false;
             this._snackBar.open('Fill the mandatory Description field.', 'Close', {
@@ -2520,7 +2537,23 @@ export class TestingStepperComponent implements AfterViewInit {
                         }
                     },
                     (error) => {
-                        console.error('API request failed:', error);
+                        console.error('API REQUEST FAILED:', error);
+                        // EXTRACT error message FROM API RESPONSE
+                        let errorMessage = 'Something went wrong. Please try again.';
+                        if (error.error && error.error.exception && error.error.exception.id) {
+                            errorMessage = error.error.exception.id[0] || errorMessage;
+                        }
+                        this._snackBar.open(errorMessage, 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
+                        setTimeout(() => {
+                            this._router.navigate(['/master-data/list-of-qualitative-result'], {
+                                relativeTo: this._activatedRoute,
+                            });
+                            this.clearingSessionStorage();
+                            console.log('this.isEditMode.', this.isEditMode);
+                        }, 2000);
                     }
                 );
         } else {
