@@ -235,8 +235,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
                 qty: order.plannedQuantity,
                 openQty: order.plannedQuantity - order.completedQuantity,
                 status: order.productionOrderStatus,
-                action: 'View'
-            }));
+                warehouse: order.warehouse,
+              }));
 
             // ✅ MatTableDataSource ko update karo
             this.dataSource = new MatTableDataSource(this.sapDocProductionOrderData);
