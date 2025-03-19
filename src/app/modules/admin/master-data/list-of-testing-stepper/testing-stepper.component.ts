@@ -185,6 +185,7 @@ export class TestingStepperComponent implements AfterViewInit {
     // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
     @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
     onItemSampleItemCodeClick() {
+        this.fetchListAllItems();
         const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
             width: '80%',
             height: '75vh',
@@ -1670,7 +1671,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
 
-        this.fetchListAllItems();
+        // this.fetchListAllItems();
         this.addNewRowItemSampling();
         // ITEM INSPECTION CARD 3.1
 
