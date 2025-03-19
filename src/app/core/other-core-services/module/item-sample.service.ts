@@ -73,7 +73,7 @@ export class ItemSamplesService {
                 tap((results) => {
                     const itemSamples = (results as any).data ?? [];
                     this._listItemSamples.next(itemSamples);
-                    console.log('FETCHED RESULTS', itemSamples);
+                    console.log('FETCHED SAMPLES', itemSamples);
                 }),
                 catchError((error) => {
                     console.error('ERROR FETCHING ITEM SAMPLES', error);
@@ -81,7 +81,7 @@ export class ItemSamplesService {
                 })
             );
     }
-    // GET ALL SAP ITEMS API
+    // GET IIC ITEMS API
     getListAllItems(): Observable<any> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
@@ -95,10 +95,10 @@ export class ItemSamplesService {
                 tap((itemsSAP) => {
                     const listAllItemsSAP = (itemsSAP as any) ?? [];
                     this._listAllItems.next(listAllItemsSAP);
-                    console.log('FETCHED ITEMS:', listAllItemsSAP);
+                    console.log('FETCHED IIC ITEMS:', listAllItemsSAP);
                 }),
                 catchError((error) => {
-                    console.error('ERROR FETCHING RESULT', error);
+                    console.error('ERROR FETCHING IIC ITEMS', error);
                     return throwError(error);
                 })
             );
