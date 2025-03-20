@@ -2288,7 +2288,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onSubmitUnitOfMeasure(): void {
-        this.isValidate = true
+        this.isValidate = true;
         if (this.secondFormGroup.valid) {
             // console.log('UOM FORM VALUES:', this.secondFormGroup.value);
             const formValues = this.secondFormGroup.value;
@@ -2297,12 +2297,53 @@ export class TestingStepperComponent implements AfterViewInit {
             // return;
             this._uommasterservice
                 .AddUnitOfMeasure(payload)
-                .subscribe((response) => {
-                    if (response.succeeded) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
+                .subscribe(
+                    (response) => {
+                        if (response.succeeded) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                        }
+                        this.stepper.next();
+                    },
+                    (error) => {
+                        console.error('API REQUEST FAILED:', error);
+                        console.log('FULL ERROR OBJECT:', JSON.stringify(error, null, 2));
+                        let errorMessages = [];
+
+                        if (error.error && error.error.exception) {
+                            const exception = error.error.exception;
+                            const hasDescriptionError = exception.description?.length > 0;
+                            const hasUoMCodeError = exception.uoMCode?.length > 0;
+                            // IF uoMCode & description BOTH ARE DUPLICATE
+                            if (hasDescriptionError && hasUoMCodeError) {
+                                errorMessages.push("Duplicate data cannot be added. This record already exists.");
+                            } else {
+                                // IF description IS DUPLICATE
+                                if (hasDescriptionError) {
+                                    errorMessages.push(exception.description[0]);
+                                }
+                                // IF uoMCode IS DUPLICATE
+                                if (hasUoMCodeError) {
+                                    errorMessages.push(exception.uoMCode[0]);
+                                }
+                            }
+                        }
+
+                        // fallback
+                        if (errorMessages.length === 0) {
+                            errorMessages.push(
+                                error.error?.message || "Error adding UnitOfMeasure"
+                            );
+                        }
+
+                        const finalErrorMessage = errorMessages.join(' ');
+                        console.log('FINAL MESSAGE:', finalErrorMessage);
+
+                        this._snackBar.open(finalErrorMessage, 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
                     }
-                });
-            this.stepper.next();
+                );
         } else {
             this.isValidate = false;
             this._snackBar.open('Fill all the mandatory fields.', 'Close', {
@@ -2584,7 +2625,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateUoM(): void {
-        this.isValidate = true
+        this.isValidate = true;
         if (this.secondFormGroup.valid) {
             const payload = this.secondFormGroup.value;
             console.log(payload);
@@ -2595,10 +2636,10 @@ export class TestingStepperComponent implements AfterViewInit {
                         console.log('API RUN SUCCESSFULLY.', payload);
                         this._snackBar.open('Record Updated Successfully.', 'Close', {
                             duration: 1500,
-                            panelClass: ['snackbar-error']
+                            panelClass: ['snackbar-success']
                         });
                         this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
-                            relativeTo: this._activatedRoute,
+                            relativeTo: this._activatedRoute
                         });
                         this.clearingSessionStorage();
                         console.log('this.isEditMode.', this.isEditMode);
@@ -2606,10 +2647,15 @@ export class TestingStepperComponent implements AfterViewInit {
                 },
                 (error) => {
                     console.error('API REQUEST FAILED:', error);
-                    // EXTRACT error message FROM API RESPONSE
-                    let errorMessage = 'Something went wrong. Please try again.';
-                    if (error.error && error.error.exception && error.error.exception.id) {
-                        errorMessage = error.error.exception.id[0] || errorMessage;
+                    let errorMessage = 'Duplicate data cannot be updated. This record already exists.';
+                    if (error.error) {
+                        if (error.error.statusCode === 400) {
+                            errorMessage = error.error.message || 'Details already exist for another record';
+                        } else if (error.error.statusCode === 402) {
+                            errorMessage = 'Already being used so cannot be updated';
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message;
+                        }
                     }
                     this._snackBar.open(errorMessage, 'Close', {
                         duration: 1500,
@@ -2617,16 +2663,15 @@ export class TestingStepperComponent implements AfterViewInit {
                     });
                     setTimeout(() => {
                         this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
-                            relativeTo: this._activatedRoute,
+                            relativeTo: this._activatedRoute
                         });
                         this.clearingSessionStorage();
                         console.log('this.isEditMode.', this.isEditMode);
                     }, 2000);
                 }
-
             );
         } else {
-            this.isValidate = false
+            this.isValidate = false;
             this._snackBar.open('Fill all the mandatory fields.', 'Close', {
                 duration: 1500,
                 panelClass: ['snackbar-error']
