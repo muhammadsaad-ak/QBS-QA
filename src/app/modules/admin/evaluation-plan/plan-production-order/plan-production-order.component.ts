@@ -18,6 +18,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { MatSelectModule } from '@angular/material/select';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
+import { EvaluationPlanProductionOrderService } from 'app/core/other-core-services/module/evaluation-plan-production-order.service';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -95,7 +96,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     private dialog: MatDialog,
     private _inspectionCardModal: InspectionCardService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+        private _evaluationProductionOrderService: EvaluationPlanProductionOrderService,
   ) {}
   
 
@@ -158,6 +160,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     inspectionDateTimePO: [new Date().toISOString()], // API: docDate (Converted to ISO)
     // lineNum: [''], // No direct mapping, keep empty
     remarks: ['remarks'], // No direct mapping, default value
+    itemId: null,
   });
   
 
@@ -263,6 +266,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     this.selectedOrder = history.state.selectedOrder; // Access the passed data
     if (this.selectedOrder) {
       this.populateProductionOrderForm(this.selectedOrder); // Populate the form with the data
+      this.getItemId(this.selectedOrder.itemCode);
     }
     // Initialize form groups
     this.qualitativeInspectionForm = this.fb.group({
@@ -445,4 +449,28 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     console.log("Action 1 selected");
   }
 
+  // GET ITEM ID API
+  getItemId(itemCode: any): void {
+    // console.log(itemCode);
+    this._evaluationProductionOrderService.GetItemIdByCode(itemCode).subscribe({
+      next: (response) => {
+        try {
+          if (response && response.data && response.data.length > 0) {
+            const itemId = response.data[0].id;
+            console.log('Item ID:', itemId);
+            if (this.planProductionOrderFormGroup) {
+              this.planProductionOrderFormGroup.get('itemId')?.setValue(itemId);
+            }
+          } else {
+            console.log('NO ITEMS FOUND IN RESPONSE');
+          }
+        } catch (error) {
+          console.error('PROCESSING ERROR:', error);
+        }
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      },
+    });
+  }
 }
