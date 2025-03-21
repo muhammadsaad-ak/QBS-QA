@@ -912,7 +912,7 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
 
-    displayedColumnsUoMIIC: string[] = ['code', 'description'];
+    displayedColumnsUoMIIC: string[] = ['code', 'description', 'isActiveStatus'];
     selectedUoMCode: string = '';
     selectedUoMDescription: string = '';
 
@@ -972,6 +972,11 @@ export class TestingStepperComponent implements AfterViewInit {
         } else {
             console.log('NO ROW SELECTED');
         }
+    }
+
+    applyFilterUoMIIC(event: Event): void {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceUoMIIC.filter = filterValue.trim().toLowerCase();
     }
 
     // ADD QUALITATIVE INSPECTION NG TEMPLATE STARTS
