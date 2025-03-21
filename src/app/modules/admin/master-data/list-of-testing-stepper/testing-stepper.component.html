@@ -39,8 +39,14 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="next-button" *ngIf="!isEditMode"
-              (click)="onSubmitQualitativeResult()">Next</button>
+            <div *ngIf="isLoading" class="loader">
+              <mat-spinner diameter="33"></mat-spinner>
+            </div>
+            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+            (click)="onSubmitQualitativeResult()">Save</button>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickQR()">
+              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+            </button>
             <button mat-button class="next-button" *ngIf="isEditMode"
               (click)="onUpdateQualitativeResult()">Update</button>
           </div>

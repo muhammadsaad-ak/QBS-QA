@@ -25,6 +25,7 @@ import { qualitativeInspectionIF, quantitativeInspectionIF, } from '../list-of-i
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 
@@ -65,6 +66,7 @@ interface itemSamplingRangeIF {
             MatTableModule,
             MatTabsModule,
             MatSelectModule,
+            MatProgressSpinnerModule,
         ],
     animations: qbsAnimations,
     templateUrl: './testing-stepper.component.html',
@@ -73,6 +75,7 @@ interface itemSamplingRangeIF {
 export class TestingStepperComponent implements AfterViewInit {
     isEditMode: boolean = false;
     isValidate: boolean = false;
+    isLoading: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
@@ -2246,25 +2249,45 @@ export class TestingStepperComponent implements AfterViewInit {
     onSubmitQualitativeResult(): void {
         this.isValidate = true;
         if (this.firstFormGroup.valid) {
-            // console.log('QR FORM VALUES:', this.firstFormGroup.value);
             const formValues = this.firstFormGroup.value;
             const { data, ...payload } = formValues; // EXCLUDING `data`
-            console.log('SENDING QR PAYLOAD:', payload);
-            // return;
+            console.log('SENDING QR PAYLOAD:', payload); // 
+
+            this.isLoading = true;  // 
             this._qualitativeResultsService
                 .AddQualitativeResult(payload)
                 .subscribe(
                     (response) => {
-                        if (response.succeeded) {
+                        if (response.isRequestSuccess) {
                             console.log('API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Data saved successfully!', 'Close', {
+                                duration: 1550,
+                                panelClass: ['snackbar-success']
+                            });
+                            this.firstFormGroup.get('resultDescription')?.setValue(null);
+                            this._qualityResultsCode
+                                .getQualitativeResultCode()
+                                .subscribe(
+                                    (qualityResultCode) => {
+                                        const fullCode = `QR-000${qualityResultCode.data || ''}`;
+                                        this.firstFormGroup.get('data')?.setValue(fullCode);
+                                        console.log('NEW DATA VALUE:', this.firstFormGroup.get('data')?.value);
+                                        setTimeout(() => {
+                                            this.isLoading = false;
+                                        }, 1500);
+                                    },
+                                    (error) => {
+                                        console.error('GET QUALITY CODE FAILED:', error);
+                                        this.isLoading = false;
+                                    }
+                                );
                         }
-                        this.stepper.next();
                     },
                     (error) => {
                         console.error('API REQUEST FAILED:', error);
+                        console.log('API ERROR RESPONSE:', error.error);
                         let errorMessage = "This description is already being used and cannot be duplicated.";
                         if (error.error) {
-                            console.log('API ERROR RESPONSE:', error.error);
                             if (error.error.exception?.resultDescription?.length) {
                                 errorMessage = error.error.exception.resultDescription[0];
                             } else if (error.error.message) {
@@ -2275,6 +2298,7 @@ export class TestingStepperComponent implements AfterViewInit {
                             duration: 1500,
                             panelClass: ['snackbar-error']
                         });
+                        this.isLoading = false;
                     }
                 );
         } else {
@@ -2283,7 +2307,6 @@ export class TestingStepperComponent implements AfterViewInit {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
-            return;
         }
     }
 
@@ -3497,5 +3520,31 @@ export class TestingStepperComponent implements AfterViewInit {
         sessionStorage.removeItem('stepperDataIS');
         sessionStorage.removeItem('stepperDataIIC');
         this.isEditMode = false;
+    }
+
+    XonNextClickQR(): void {
+        const formValues = this.firstFormGroup.value;
+        const isFormEmpty = Object.values(formValues).every(value => !value);
+        if (isFormEmpty) {
+            this.stepper.next();
+        } else {
+            this._snackBar.open('Save the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
+    onNextClickQR(): void {
+        const descriptionValue = this.firstFormGroup.get('resultDescription')?.value;
+        const isDescriptionEmpty = !descriptionValue; // CHECKING IF resultDescription IS null, undefined, OR empty
+
+        if (isDescriptionEmpty) {
+            this.stepper.next(); // IF IS null, undefined, OR empty, MOVE TO NEXT
+        } else {
+            this._snackBar.open('Save the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
     }
 }
