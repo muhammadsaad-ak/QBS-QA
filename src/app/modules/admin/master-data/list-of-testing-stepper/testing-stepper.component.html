@@ -1106,8 +1106,10 @@
                             <!-- code - UOM Code & CHECKBOX COLUMN -->
                             <ng-container matColumnDef="code">
                               <mat-header-cell *matHeaderCellDef class="single-line">UOM&nbsp;Code</mat-header-cell>
-                              <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                <mat-checkbox [checked]="row.isSelected" (change)="onRowChangeUoMIIC(row)">
+                              <mat-cell *matCellDef="let row" class="single-line text-sm"
+                                [ngClass]="{'cursor-no-drop': !row.isActive}">
+                                <mat-checkbox [checked]="row.isSelected" (change)="onRowChangeUoMIIC(row)"
+                                  [disabled]="!row.isActive">
                                 </mat-checkbox> {{row.uoMCode}} </mat-cell>
                             </ng-container>
                             <!-- description - UOM Name COLUMN -->
@@ -1116,6 +1118,17 @@
                               <mat-cell *matCellDef="let row" class="single-line text-sm">
                                 {{row.description}} </mat-cell>
                             </ng-container>
+                            <!-- status - isActive COLUMN -->
+                            <ng-container matColumnDef="isActiveStatus">
+                              <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                              <mat-cell *matCellDef="let row" class="single-line text-sm" [ngClass]="{
+                                              'text-green-500': row.isActive, 
+                                              'text-amber-500': !row.isActive
+                                            }">
+                                {{ row.isActive ? 'Active' : 'Inactive' }}
+                              </mat-cell>
+                            </ng-container>
+
                             <mat-header-row *matHeaderRowDef="displayedColumnsUoMIIC; sticky: true"></mat-header-row>
                             <mat-row *matRowDef="let row; columns: displayedColumnsUoMIIC;"></mat-row>
 
