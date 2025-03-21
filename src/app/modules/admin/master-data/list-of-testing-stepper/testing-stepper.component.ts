@@ -2261,32 +2261,26 @@ export class TestingStepperComponent implements AfterViewInit {
                         if (response.isRequestSuccess) {
                             console.log('API RUN SUCCESSFULLY.', payload);
                             this._snackBar.open('Data saved successfully!', 'Close', {
-                                duration: 1700,
+                                duration: 1550,
                                 panelClass: ['snackbar-success']
                             });
-                            setTimeout(() => {
-                                // this.firstFormGroup.reset();
-                                // console.log('FORM AFTER RESET:', this.firstFormGroup.value);
-                                // CALLING GetNextIntCount API
-                                this._qualityResultsCode
-                                    .getQualitativeResultCode()
-                                    .subscribe(
-                                        (qualityResultCode) => {
-                                            const fullCode = `QR-000${qualityResultCode.data || ''}`;
-                                            this.firstFormGroup.get('data')?.setValue(fullCode);
-                                            console.log('NEW DATA VALUE:', this.firstFormGroup.get('data')?.value);
-                                            // this.isLoading = false;
-                                            setTimeout(() => {
-                                                this.isLoading = false;
-                                            }, 1000);
-                                        },
-                                        (error) => {
-                                            console.error('GET QUALITY CODE FAILED:', error);
+                            this.firstFormGroup.get('resultDescription')?.setValue(null);
+                            this._qualityResultsCode
+                                .getQualitativeResultCode()
+                                .subscribe(
+                                    (qualityResultCode) => {
+                                        const fullCode = `QR-000${qualityResultCode.data || ''}`;
+                                        this.firstFormGroup.get('data')?.setValue(fullCode);
+                                        console.log('NEW DATA VALUE:', this.firstFormGroup.get('data')?.value);
+                                        setTimeout(() => {
                                             this.isLoading = false;
-                                        }
-                                    );
-                                this.firstFormGroup.get('resultDescription')?.setValue(null);
-                            }, 1000);
+                                        }, 1500);
+                                    },
+                                    (error) => {
+                                        console.error('GET QUALITY CODE FAILED:', error);
+                                        this.isLoading = false;
+                                    }
+                                );
                         }
                     },
                     (error) => {
