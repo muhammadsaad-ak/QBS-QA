@@ -2448,6 +2448,30 @@ export class TestingStepperComponent implements AfterViewInit {
             const formValues = this.itemSamplingForm.value;
             // const payload = { ...formValues, };
             const { id, itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
+
+            // VALIDATION CHECKS FOR samplingRangeObjects
+            const samplingRanges = payload.samplingRangeObjects as Array<{ sampleQty: number; lotSizeMin: number; lotSizeMax: number }>;
+            for (let i = 0; i < samplingRanges.length; i++) {
+                const range = samplingRanges[i];
+                if (range.lotSizeMin >= range.lotSizeMax) {
+                    const errorMessage = "Lot Size Min must be less than Lot Size Max.";
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    return;
+                }
+                if (range.sampleQty <= range.lotSizeMin || range.sampleQty >= range.lotSizeMax) {
+                    const errorMessage = "Sample Qty must be between the Lot Size Min and Lot Size Max.";
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    return;
+                }
+
+            }
+
             console.log('FORM SUBMISSION PAYLOAD:', payload);
             // this.itemSamplingForm.reset();
             // return;
@@ -2456,14 +2480,23 @@ export class TestingStepperComponent implements AfterViewInit {
                 .subscribe((response) => {
                     if (response.isRequestSuccess) {
                         console.log('API RUN SUCCESSFULLY.', payload);
+                        this._snackBar.open('Data saved successfully!', 'Close', {
+                            duration: 2000,
+                            panelClass: ['snackbar-success']
+                        });
+                        this.itemSamplingForm.reset();
+                        this.stepper.next();
                     } else {
-                        console.error(
-                            'ERROR WHILE ADDIND DATA.',
-                            response.message
-                        );
+                        const apiErrorMessage = response.exception?.[`samplingRangeObjects[0]`]?.[0] ||
+                            response.message ||
+                            'Error while adding data.';
+                        this._snackBar.open(apiErrorMessage, 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        console.error('ERROR WHILE ADDING DATA.', response.message);
                     }
                 });
-            this.stepper.next();
         } else {
             this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
                 duration: 3000,
@@ -2472,6 +2505,8 @@ export class TestingStepperComponent implements AfterViewInit {
             return;
         }
     }
+
+
     // Submit Inspection Card
 
     onSubmitInspectionCard() {
