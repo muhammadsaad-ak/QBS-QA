@@ -172,9 +172,9 @@ export class TestingStepperComponent implements AfterViewInit {
 
     addNewRowItemSampling(): void {
         const itemSamplingFormGroup = this.fb.group({
-            lotSizeMin: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
-            lotSizeMax: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
-            sampleQty: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
+            lotSizeMin: [null, [Validators.required, Validators.min(1)]],
+            lotSizeMax: [null, [Validators.required, Validators.min(1)]],
+            sampleQty: [null, [Validators.required, Validators.min(1)]],
             criticalDefects: [null],
             majorDefects: [null],
             minorDefects: [null],
