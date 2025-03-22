@@ -13,11 +13,15 @@ export class EvaluationPlanPurchaseOrderService {
   private _listQualitativeResults = new BehaviorSubject<any[]>([]);
   private _itemIdSAP = new BehaviorSubject<any[]>([]);
   private _sampleQty = new BehaviorSubject<any[]>([]);
+  private _qcPurchaseCode = new BehaviorSubject<any[]>([]);
 
   // Observable to expose role data state
   listQualitativeResults$: Observable<any[]> = this._listQualitativeResults.asObservable();
   itemIdSAP$: Observable<any[]> = this._itemIdSAP.asObservable();
   sampleQty$: Observable<any[]> = this._sampleQty.asObservable();
+  qcPurchaseCode$: Observable<any[]> = this._qcPurchaseCode.asObservable(); // For Purchase QC API
+
+
 
 
 
@@ -98,4 +102,25 @@ export class EvaluationPlanPurchaseOrderService {
         })
       );
   }
+
+  getPurchaseQCCode(): Observable<any> {
+    const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        Accept: 'text/plain',
+    });
+
+    return this._httpClient
+        .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=purchase_qc`, { headers })
+        .pipe(
+            tap((purchaseQCCode) => {
+                const purchaseQCResultsCode = (purchaseQCCode as any) ?? [];
+                this._qcPurchaseCode.next(purchaseQCResultsCode);
+                console.log('Fetched code for Purchase QC:', purchaseQCResultsCode);
+            }),
+            catchError((error) => {
+                console.error('Error fetching Purchase QC Code:', error);
+                return throwError(() => new Error('Error fetching Purchase QC Code'));
+            })
+        );
+}
 }

@@ -105,7 +105,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
 
   planPurchaseOrderFormGroup = this._formBuilder.group({
     id: [''], // ✅ Empty string if null not allowed
-    intCode: [0], // number
+    intCode: [""], // number
     documentNumber: [], // number
     openQuantity: [], // number
     status: [''], // ✅ Meaningful status
@@ -126,6 +126,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     itemId: null, // ✅ Empty string instead of null
     itemCode: [''],
     itemDescription: [''],
+    analyzedBy: [""], // String
+    // purchaseQcCode:[""], // String  
+
 
     itemCodeModalPO: ['ITEM-123'],
     inspectionQtyModalPO: ['50'],
@@ -301,6 +304,14 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       this.getItemId(this.selectedOrder.itemCode);
     }
 
+    this._evaluationPurchaseOrderService.getPurchaseQCCode().subscribe((purchaseQCCode) => { 
+      console.log('Purchase QC Code:', purchaseQCCode); // Debugging ke liye
+  
+      const fullCode = `PQC-000${purchaseQCCode.data || ''}`; // Code format
+      this.planPurchaseOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+  });
+
+
     // Initialize form groups
     this.qualitativeInspectionForm = this.fb.group({
       qualitativeObjects: this.fb.array([])
@@ -316,6 +327,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     // Add static quantitative inspection data
     this.addQuantitativeData();
 
+    
     // this.setInspectionDateTime(); // Fetch date-time on load
 
 
@@ -329,7 +341,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     console.log('Selected Order:', data);
     this.planPurchaseOrderFormGroup.patchValue({
       id: "", // Add missing field
-      intCode: 0, // Add missing field
+      // intCode: "", // Add missing field
       documentNumber: data.docNo,
       openQuantity: data.openQty,
       status: data.status, // Add missing field
