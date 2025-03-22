@@ -2469,7 +2469,17 @@ export class TestingStepperComponent implements AfterViewInit {
                     });
                     return;
                 }
-
+                for (let j = 0; j < i; j++) {
+                    const prevRange = samplingRanges[j];
+                    if (range.lotSizeMin <= prevRange.lotSizeMax) {
+                        const errorMessage = "The defined sampling ranges must not overlap.";
+                        this._snackBar.open(errorMessage, 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        return;
+                    }
+                }
             }
 
             console.log('FORM SUBMISSION PAYLOAD:', payload);
