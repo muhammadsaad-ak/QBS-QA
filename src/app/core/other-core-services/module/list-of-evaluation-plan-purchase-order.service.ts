@@ -11,7 +11,10 @@ export class ListOfEvaluationPlanPurchaseOrderService {
 
   
   private _listEvaluationPlanPurchaseOrders = new BehaviorSubject<any[]>([]);
+  private _listEvaluationPlanProductionOrders = new BehaviorSubject<any[]>([]);
+  
   listEvaluationPlanPurchaseOrders$: Observable<any[]> = this._listEvaluationPlanPurchaseOrders.asObservable();
+  listEvaluationPlanProductionOrders$: Observable<any[]> = this._listEvaluationPlanProductionOrders.asObservable();
   
         /**
      * Setter & getter for access token
@@ -39,6 +42,25 @@ export class ListOfEvaluationPlanPurchaseOrderService {
                 catchError((error) => {
                     console.error('Error fetching Evaluation Plan Purchase Orders', error);
                     return throwError(() => new Error('Error fetching Evaluation Plan Purchase Orders'));
+                })
+            );
+    }
+
+      getEvaluationPlanProductionOrders(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'application/json',
+        });
+    
+        return this._httpClient.get(`${environment.appApiUrl}/CSAPI/IProductionQCFeature/ListAllProductionQCsWithItem`, { headers })
+            .pipe(
+                tap((response: any) => {
+                    console.log('API Response:', response);
+                    this._listEvaluationPlanProductionOrders.next(response);
+                }),
+                catchError((error) => {
+                    console.error('Error fetching Evaluation Plan Production Orders', error);
+                    return throwError(() => new Error('Error fetching Evaluation Plan Production Orders'));
                 })
             );
     }}
