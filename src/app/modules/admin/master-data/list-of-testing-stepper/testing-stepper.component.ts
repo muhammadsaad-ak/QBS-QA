@@ -3502,69 +3502,115 @@ export class TestingStepperComponent implements AfterViewInit {
                             this.validatingSamplingRange += 'Sample Qty is required. ';
                         }
                         this.isValidate = false;
-                        return;
-                        // return null; // SKIP INVALID ROWS
+                        return null; // SKIP INVALID ROWS
                     }
 
-                    // IF ALL REQUIRED FIELDS ARE PRESENT, RETURN THE OBJECT
+                    // CONVERT TO NUMBERS FOR VALIDATION
+                    const lotSizeMin = Number(object.lotSizeMin);
+                    const lotSizeMax = Number(object.lotSizeMax);
+                    const sampleQty = Number(object.sampleQty);
+                    // VALIDATION: lotSizeMin < lotSizeMax
+                    if (lotSizeMin >= lotSizeMax) {
+                        this.validatingSamplingRange = 'Lot Size Min must be less than Lot Size Max.';
+                        this.isValidate = false;
+                        return null;
+                    }
+                    // VALIDATION: sampleQty STRICTLY BETWEEN lotSizeMin & lotSizeMax
+                    if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
+                        this.validatingSamplingRange = 'Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.';
+                        this.isValidate = false;
+                        return null;
+                    }
+
+                    // RETURN VALID OBJECT
                     return {
                         id: object.id || undefined,
-                        lotSizeMin: object.lotSizeMin,
-                        lotSizeMax: object.lotSizeMax,
-                        sampleQty: object.sampleQty,
-                        criticalDefects: object.criticalDefects,  // OPTIONAL FIELD, CAN BE null or 0
-                        majorDefects: object.majorDefects,        // OPTIONAL FIELD, CAN BE null or 0
-                        minorDefects: object.minorDefects         // OPTIONAL FIELD, CAN BE null or 0
+                        lotSizeMin: lotSizeMin,
+                        lotSizeMax: lotSizeMax,
+                        sampleQty: sampleQty,
+                        criticalDefects: object.criticalDefects,
+                        majorDefects: object.majorDefects,
+                        minorDefects: object.minorDefects
                     };
                 })
-                .filter((object: any) => object !== null); // REMOVE NULL ROWS IF ANY
+                .filter((object: any) => object !== null); // REMOVE NULL ROWS
 
-            // IF NO VALID ROWS, SET MESSAGE AND PREVENT FORM SUBMISSION
-            if (updatedSamplingRangeObjects.length > 0) {
-                const sendingPayloadIS = {
-                    ...payload,
-                    samplingRangeObjects: updatedSamplingRangeObjects,
-                    id: formValues.id
-                };
-                console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
-
-                this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
-                    (response) => {
-                        if (response.isRequestSuccess) {
-                            console.log('API run successfully.', sendingPayloadIS);
-                            this._snackBar.open('Record Updated Successfully.', 'Close', {
-                                duration: 1500,
-                                panelClass: ['snackbar-error']
-                            });
-                            setTimeout(() => {
-                                this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-                            }, 1500);
-                            this.clearingSessionStorage();
-                            console.log('this.isEditMode.', this.isEditMode);
-                        } else {
-                            console.error('ERROR WHILE UPDATING ITEM SAMPLE DATA.', response.message);
-                        }
-                    },
-                    (error) => {
-                        console.error('API request failed:', error);
+            // VALIDATION: OVERLAPPING RANGES
+            for (let i = 0; i < updatedSamplingRangeObjects.length; i++) {
+                const range = updatedSamplingRangeObjects[i];
+                for (let j = 0; j < i; j++) {
+                    const prevRange = updatedSamplingRangeObjects[j];
+                    if (range.lotSizeMin <= prevRange.lotSizeMax) {
+                        this.validatingSamplingRange = 'The defined sampling ranges must not overlap.'; //  'Ranges cannot overlap with existing'
+                        this.isValidate = false;
+                        this._snackBar.open(this.validatingSamplingRange, 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        return;
                     }
-                );
-            } else {
+                }
+            }
+
+            // IF NO VALID ROWS OR VALIDATION FAILED
+            if (updatedSamplingRangeObjects.length === 0 || !this.isValidate) {
                 this.isValidate = false;
-                // IF THERE ARE NO VALID ROWS
-                // this.noValidRowsMessage = 'Enter valid values in the required fields.';
-                // this.validatingSamplingRange = this.validatingSamplingRange || 'No valid rows to update.';
-                // console.error(this.validatingSamplingRange);
-                this._snackBar.open('No changes were made in Ranges. Redirecting to the main screen.', 'Close', {
-                    duration: 1500,
+                const errorMessage = this.validatingSamplingRange || 'No changes were made in Ranges. Redirecting to the main screen.';
+                this._snackBar.open(errorMessage, 'Close', {
+                    duration: 2050,
                     panelClass: ['snackbar-error']
                 });
-                setTimeout(() => {
-                    this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-                }, 1500);
-                this.clearingSessionStorage();
-                console.log('this.isEditMode.', this.isEditMode);
+                if (!this.validatingSamplingRange) {
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                    }, 2000);
+                    this.clearingSessionStorage();
+                }
+                return;
             }
+
+            const sendingPayloadIS = {
+                ...payload,
+                samplingRangeObjects: updatedSamplingRangeObjects,
+                id: formValues.id
+            };
+            console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
+
+            this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API run successfully.', sendingPayloadIS);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-success'] 
+                        });
+                        setTimeout(() => {
+                            this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                        }, 1500);
+                        this.clearingSessionStorage();
+                    } else {
+                        console.log('API RESPONSE (NON-ERROR):', response);
+                    }
+                },
+                (error) => {
+                    console.error('API request failed:', error);
+                    console.log('API ERROR RESPONSE:', error.error);
+                    let errorMessage = 'Error while updating data.';
+                    if (error.error) {
+                        if (error.error.exception?.[`samplingRangeObjects[0]`]?.length) {
+                            errorMessage = error.error.exception[`samplingRangeObjects[0]`][0];
+                        } else if (error.error.exception?.samplingRangeObjects?.length) {
+                            errorMessage = error.error.exception.samplingRangeObjects[0];
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message; // "Ranges cannot overlap with existing"
+                        }
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                }
+            );
         } else {
             // this.isValidate = false;
             this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
