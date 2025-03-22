@@ -2461,8 +2461,8 @@ export class TestingStepperComponent implements AfterViewInit {
                     });
                     return;
                 }
-                if (range.sampleQty <= range.lotSizeMin || range.sampleQty >= range.lotSizeMax) {
-                    const errorMessage = "Sample Qty must be between the Lot Size Min and Lot Size Max.";
+                if (range.sampleQty < range.lotSizeMin || range.sampleQty > range.lotSizeMax) {
+                    const errorMessage = "Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.";
                     this._snackBar.open(errorMessage, 'Close', {
                         duration: 3000,
                         panelClass: ['snackbar-error']
