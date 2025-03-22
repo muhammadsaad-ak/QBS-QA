@@ -2477,28 +2477,43 @@ export class TestingStepperComponent implements AfterViewInit {
             // return;
             this._itemSamplesService
                 .AddSampleWithRanges(payload)
-                .subscribe((response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                        this._snackBar.open('Data saved successfully!', 'Close', {
-                            duration: 2000,
-                            panelClass: ['snackbar-success']
-                        });
-                        this.itemSamplingForm.reset();
-                        this.stepper.next();
-                    } else {
-                        const apiErrorMessage = response.exception?.[`samplingRangeObjects[0]`]?.[0] ||
-                            response.message ||
-                            'Error while adding data.';
-                        this._snackBar.open(apiErrorMessage, 'Close', {
+                .subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('DATA SAVED SUCCESSFULLY!', 'Close', {
+                                duration: 2000,
+                                panelClass: ['snackbar-success']
+                            });
+                            this.itemSamplingForm.reset();
+                            this.stepper.next();
+                        } else {
+                            console.log('API RESPONSE (NON-ERROR):', response);
+                        }
+                    },
+                    (error) => {
+                        console.error('API REQUEST FAILED:', error);
+                        console.log('API ERROR RESPONSE:', error.error);
+                        let errorMessage = 'Error while adding data.';
+                        if (error.error) {
+                            if (error.error.exception?.itemId?.length) {
+                                errorMessage = "SAME ITEM CANNOT BE DUPLICATED. THIS ITEM ALREADY EXISTS.";
+                                // API RESPONSE 
+                                // message: errorMessage = error.error.exception.itemId[0];
+                            } else if (error.error.exception?.[`samplingRangeObjects[0]`]?.length) {
+                                errorMessage = error.error.exception[`samplingRangeObjects[0]`][0];
+                            } else if (error.error.message) {
+                                errorMessage = error.error.message;
+                            }
+                        }
+                        this._snackBar.open(errorMessage, 'Close', {
                             duration: 3000,
                             panelClass: ['snackbar-error']
                         });
-                        console.error('ERROR WHILE ADDING DATA.', response.message);
                     }
-                });
+                );
         } else {
-            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+            this._snackBar.open('FILL ALL THE MANDATORY FIELDS WITH VALID VALUES.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
