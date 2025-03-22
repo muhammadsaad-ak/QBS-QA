@@ -173,7 +173,7 @@ export class ItemSamplesService {
         });
         console.log("SENDING PAYLOAD", data);
         return this._httpClient.put(
-            `${environment.appApiUrl}/CSAPI/IItemSampleFeature/UpdateItemSample`,
+            `${environment.appApiUrl}/CSAPI/IItemSampleFeature/UpdateSampleWithRanges`, // UpdateItemSample
             data,
             { headers }
         ).pipe(
