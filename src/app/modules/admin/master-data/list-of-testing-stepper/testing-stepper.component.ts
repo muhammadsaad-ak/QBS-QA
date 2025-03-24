@@ -188,8 +188,9 @@ export class TestingStepperComponent implements AfterViewInit {
     // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
     @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
     onItemSampleItemCodeClick() {
+        this.fetchListAllItems();
         const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
-            width: '80%',
+            width: '75vw',
             height: '75vh',
             data: this.dataSourceItemCodeIS,
         });
@@ -263,7 +264,7 @@ export class TestingStepperComponent implements AfterViewInit {
     //
     onItemSampleItemCodeClickx() {
         const dialogRef = this.dialog.open(this.dialogTemplateItemSampleItems, {
-            width: '75%',
+            width: '75vw',
             height: '75vh',
             data: this.dataSourceItemSampleCode,
         });
@@ -1678,7 +1679,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
 
-        this.fetchListAllItems();
+        // this.fetchListAllItems();
         this.addNewRowItemSampling();
         // ITEM INSPECTION CARD 3.1
 
@@ -2059,7 +2060,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.selectedControlAccountRowIndex = rowIndex;
         console.log(this.selectedControlAccountRowIndex);
         const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-            width: '70%',
+            width: '75vw',
             height: '75vh',
             data: this.dataSourceItems,
         });
@@ -2165,7 +2166,7 @@ export class TestingStepperComponent implements AfterViewInit {
             });
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
-            width: '70%',
+            width: '75vw',
             height: '75vh',
             data: this.dataSourceItemsX,
         });
