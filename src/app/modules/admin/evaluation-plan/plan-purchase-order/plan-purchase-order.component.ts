@@ -103,8 +103,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     inspectionDateTime: [new Date().toISOString()],
     qcLotNo: [],
     poDate: [new Date().toISOString()],
-    poCode: [],
-    location: [''],
+    docNo: [],
+    warehouse: [''],
     poQuantity: [],
     sampleQuantity: [3],
     vendor: [''],
@@ -120,32 +120,33 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     qualitativeInspectionObjects: this.fb.array([]),
     quantitativeInspectionResults: this.fb.array([]),
     inspectionBy: [''],
+    // inspectionBy: ['', Validators.required], // Required hai
     qcId: [''],
     result: [0],
     inspectionObjects: this.fb.array([this.createInspectionObject()])
   });
 
   createInspectionObject(): FormGroup {
-  return this.fb.group({
-    qualitativeInspectionMappingId: [''],
-    quantitativeInspectionMappingId: [''],
-    qualitativeResultId: [''],
-    isQualitativeResultPassed: [true], 
-    // quantitativeResult: [0],
-    isQuantitativeResultPassed: [true], 
-    remarks: ['']
-  });
-  
-}
+    return this.fb.group({
+      qualitativeInspectionMappingId: [''],
+      quantitativeInspectionMappingId: [''],
+      qualitativeResultId: [''],
+      isQualitativeResultPassed: [true],
+      // quantitativeResult: [0],
+      isQuantitativeResultPassed: [true],
+      remarks: ['']
+    });
+
+  }
 
   get inspectionObjects(): FormArray {
     return this.planPurchaseOrderFormGroup.get('inspectionObjects') as FormArray;
   }
 
- getQualitativeResultPassStatusResults(index: number): FormArray {
-  return this.planPurchaseOrderFormGroup
-    .get('qualitativeInspectionObjects')?.get(`${index}.qualitativeResultPassStatusResults`) as FormArray;
-}
+  getQualitativeResultPassStatusResults(index: number): FormArray {
+    return this.planPurchaseOrderFormGroup
+      .get('qualitativeInspectionObjects')?.get(`${index}.qualitativeResultPassStatusResults`) as FormArray;
+  }
 
   addInspectionObject() {
     this.inspectionObjects.push(this.createInspectionObject());
@@ -196,92 +197,220 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   samplesPurchaseOrder = [];
   nextSampleId: number = 1;
 
-    getPurchaseByQcCode(itemCode: string, docNo: number, lineNo: number) {
+  XXXgetPurchaseByQcCode(itemCode: string, docNo: number, lineNo: number) {
     this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNo).subscribe({
       next: (response) => {
         this.purchaseQcId = response.data;
         console.log(this.purchaseQcId, 'purchaseQcId');
         this.addNewSampleForPurchaseOrder()
-        },
-        error: (err) => {
-          console.error('SERVICE ERROR:', err);
-          }
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      }
     })
   }
 
-addNewSampleForPurchaseOrder(): void {
-  if (!this.planPurchaseOrderFormGroup.valid) {
-    console.error("Form is invalid");
-    return;
+  getPurchaseByQcCode(itemCode: string, docNo: number, lineNo: number) {
+    this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNo).subscribe({
+      next: (response) => {
+        this.purchaseQcId = response.data;
+        // this.purchaseQcId = response.qcId; // Yeh already set ho raha hai
+        this.planPurchaseOrderFormGroup.patchValue({
+          // inspectionBy: response.inspectionBy || '', 
+          inspectionDateTime: response.inspectionDateTime || new Date().toISOString() // Default to current date if not provided
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('QC SERVICE ERROR:', err);
+      }
+    });
   }
 
-  if (!this.purchaseQcId) {
-    console.error('QC ID is missing, cannot proceed!');
-    return;
-  }
+  xxxaddNewSampleForPurchaseOrder(): void {
+    if (!this.planPurchaseOrderFormGroup.valid) {
+      console.error("Form is invalid");
+      console.log("Form Errors:", this.planPurchaseOrderFormGroup.errors);
+      console.log("Form Value:", this.planPurchaseOrderFormGroup.value);
+      console.log("Inspection By Errors:", this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
+      console.log("Inspection DateTime Errors:", this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.errors);
 
-  const formValue = this.planPurchaseOrderFormGroup.value;
-
-
- const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
-  const qualitativeResultPassStatusResults = item?.qualitativeResultPassStatusResults || [];
-
-let qualitativeResultId = "";
-let qualitativeResultIds: any[] = [];
-
-if (qualitativeResultPassStatusResults.length > 0) {
-  qualitativeResultPassStatusResults.forEach((status, index) => {
- 
-    if (status.qualitativeResultId) {
-      qualitativeResultId = status.qualitativeResultId;
+      alert('Please fill all required fields, including Inspection By.');
+      this.planPurchaseOrderFormGroup.markAllAsTouched();
+      return;
     }
 
-    qualitativeResultIds.push({ rowIndex: index, qualitativeResultId });
-  });
-}
+    if (!this.purchaseQcId) {
+      console.error('QC ID is missing, cannot proceed!');
+      return;
+    }
 
-  return {
-    qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
-    qualitativeResultId, 
-    isQualitativeResultPassed: !(item?.qualitativeResultPassStatusResults?.some((status: any) => status.isPassed === false)) || true,
-    remarks: item?.remarks || "",
-  };
-}) || [];
- 
+    const formValue = this.planPurchaseOrderFormGroup.value;
 
-  const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => ({
-    quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
 
-    quantitativeResult: item?.quantitativeResult !== undefined && item?.quantitativeResult !== null 
-    ? item.quantitativeResult 
-    : 0,
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const qualitativeResultPassStatusResults = item?.qualitativeResultPassStatusResults || [];
+
+      let qualitativeResultId = "";
+      let qualitativeResultIds: any[] = [];
+
+      if (qualitativeResultPassStatusResults.length > 0) {
+        qualitativeResultPassStatusResults.forEach((status, index) => {
+
+          if (status.qualitativeResultId) {
+            qualitativeResultId = status.qualitativeResultId;
+          }
+
+          qualitativeResultIds.push({ rowIndex: index, qualitativeResultId });
+        });
+      }
+
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        // qualitativeResultId,
+        qualitativeResultId: item?.qualitativeResultId || "",
+        isQualitativeResultPassed: !(item?.qualitativeResultPassStatusResults?.some((status: any) => status.isPassed === false)) || true,
+        remarks: item?.remarks || "",
+      };
+    }) || [];
+
+
+    // const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => ({
+    //   quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+    //   quantitativeResult: item?.result !== undefined && item?.result !== null
+    //     ? item.result : '',
+    //   isQuantitativeResultPassed: (item?.result !== undefined &&
+    //     item.result >= (item.min ?? 0) &&
+    //     item.result <= (item.max ?? 0)) ? true : false,
+    //   remarks: item?.remarks || "",
+    // })) || [];
+
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      // Convert item.result to a number, default to 0 if invalid or undefined
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
     
-   isQuantitativeResultPassed: (item?.quantitativeResult !== undefined &&
-    item.quantitativeResult >= (item.min ?? 0) &&
-    item.quantitativeResult <= (item.max ?? 0)) ? true : false,
+      return {
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeResult: item?.result !== undefined && item?.result !== null ? item.result : '',
+        isQuantitativeResultPassed: item?.result !== undefined && 
+          !isNaN(resultValue) && 
+          resultValue >= (item.min ?? 0) && 
+          resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || "",
+      };
+    }) || [];
 
-    remarks: item?.remarks || "",
-  })) || [];
+    const newSamplePayload = {
+      inspectionDateTime: new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.purchaseQcId.id,
+      inspectionObjects: [...qualitativeInspections, ...quantitativeInspections],
+    };
+    console.log('Final Payload:', newSamplePayload);
 
-  const newSamplePayload = {
-    inspectionDateTime: new Date().toISOString(), 
-    inspectionBy: formValue.inspectionBy || "", 
-    qcId: this.purchaseQcId.id,
-    inspectionObjects: [...qualitativeInspections, ...quantitativeInspections], 
-  };
-  console.log('Final Payload:', newSamplePayload);
+    // Step 7: Call the service to send the payload to the API
+    // this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
+    //   next: (response) => {
+    //     console.log('API Response:', response);
+    //     this.closeDialog(); 
+    //   },
+    //   error: (error) => {
+    //     console.error('API Error:', error);
+    //   }
+    // });
+    this.closeDialog();
+  }
 
-  // Step 7: Call the service to send the payload to the API
-  // this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
-  //   next: (response) => {
-  //     console.log('API Response:', response);
-  //     this.closeDialog(); 
-  //   },
-  //   error: (error) => {
-  //     console.error('API Error:', error);
-  //   }
-  // });
-}
+  addNewSampleForPurchaseOrder(): void {
+    if (!this.planPurchaseOrderFormGroup.valid) {
+      console.error("Form is invalid");
+      console.log("Form Errors:", this.planPurchaseOrderFormGroup.errors);
+      console.log("Form Value:", this.planPurchaseOrderFormGroup.value);
+      console.log("Inspection By Errors:", this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
+      console.log("Inspection DateTime Errors:", this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.errors);
+  
+      alert('Please fill all required fields, including Inspection By.');
+      this.planPurchaseOrderFormGroup.markAllAsTouched();
+      return;
+    }
+  
+    if (!this.purchaseQcId) {
+      console.error('QC ID is missing, cannot proceed!');
+      return;
+    }
+  
+    const formValue = this.planPurchaseOrderFormGroup.value;
+  
+    // Step 1: Prepare qualitative inspections
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+        (status: any) => status.qualitativeResultId === item.qualitativeResultId
+      );
+  
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeInspectionMappingId: null, // Empty for qualitative
+        qualitativeResultId: item?.qualitativeResultId || null,
+        isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+        quantitativeResult: 0, // Default for qualitative
+        isQuantitativeResultPassed: false, // Default for qualitative
+        remarks: item?.remarks || "" // Qualitative ka remark
+      };
+    }) || [];
+  
+    // Step 2: Prepare quantitative inspections
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
+  
+      return {
+        qualitativeInspectionMappingId: null, // Empty for quantitative
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+        qualitativeResultId: null, // Empty for quantitative
+        isQualitativeResultPassed: false, // Default for quantitative
+        quantitativeResult: item?.result !== undefined && item?.result !== null ? parseFloat(item.result) : 0, // Convert to number
+        isQuantitativeResultPassed: item?.result !== undefined && 
+          !isNaN(resultValue) && 
+          resultValue >= (item.min ?? 0) && 
+          resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || "" // Quantitative ka remark
+      };
+    }) || [];
+  
+    // Step 3: Combine qualitative and quantitative inspections into inspectionObjects
+    const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+  
+    // Step 4: Create the final payload
+    const newSamplePayload = {
+      name: "SAMPLE-1", // Static value as requested
+      inspectionDateTime: new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.purchaseQcId.id,
+      inspectionObjects: inspectionObjects
+    };
+  
+    console.log('Final Payload:', newSamplePayload);
+  
+    // Step 5: Call the API
+        this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
+      next: (response) => {
+        console.log('API Response:', response);
+        this.closeDialog(); 
+      },
+      error: (error) => {
+        console.error('API Error:', error);
+      }
+    });
+    // this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
+    //   next: (response) => {
+    //     console.log('API Response:', response);
+    //     // this.closeDialog(); // Already handled in onPurchaseOrderModal
+    //   },
+    //   error: (error) => {
+    //     console.error('API Error:', error);
+    //     alert('Failed to save sample. Please try again.');
+    //   }
+    // });
+  }
 
   getRandomCardColor(): string {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
@@ -292,13 +421,13 @@ if (qualitativeResultPassStatusResults.length > 0) {
 
   ngOnInit() {
     this.selectedOrder = history.state.selectedOrder;
-    
+
     if (this.selectedOrder) {
       this.populateForm(this.selectedOrder);
       this.getItemId(this.selectedOrder.itemCode);
     }
 
-    
+
 
     this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
     this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionResults.controls);
@@ -315,21 +444,21 @@ if (qualitativeResultPassStatusResults.length > 0) {
       status: data.status,
       documentType: "",
       documentDate: new Date().toISOString(),
-      lineNo: 0,
+      lineNo: data.lineNo,
       receiveQuantity: 0,
       inspectionQuantity: 0,
       inspectionDateTime: new Date().toISOString(),
       qcLotNo: [],
       poDate: data.docDate,
-      poCode: data.docNo.toString(),
-      location: data.warehouse,
+      docNo: data.docNo.toString(),
+      warehouse: data.warehouse,
       poQuantity: data.qty,
       sampleQuantity: 3,
       vendor: data.cardName,
       remarks: "",
       itemDescription: data.itemDescription,
       itemCode: data.itemCode,
-      
+
     });
   }
 
@@ -343,15 +472,44 @@ if (qualitativeResultPassStatusResults.length > 0) {
       height: '75vh',
       data: this.cardCode,
     });
+    // DYNAMICALLY ADD Validators.required TO inspectionBy
+    const inspectionByControl = this.planPurchaseOrderFormGroup.get('inspectionBy');
+    if (inspectionByControl) {
+      inspectionByControl.setValidators(Validators.required);
+      inspectionByControl.updateValueAndValidity(); // Re-validate the control
+    }
+
     this.getCardByItemCode(this.selectedOrder.itemCode);
     this.getPurchaseByQcCode(
-      this.selectedOrder.itemCode, 
-      this.selectedOrder.docNo, 
+      this.selectedOrder.itemCode,
+      this.selectedOrder.docNo,
       this.selectedOrder.lineNo
     )
 
+    // Immediately log form state
+    console.log('Form Initial State (Immediate):', this.planPurchaseOrderFormGroup.value);
+    console.log('Form Valid (Immediate):', this.planPurchaseOrderFormGroup.valid);
+    console.log('Inspection By Errors (Immediate):', this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
+
+    // Log after 1 second to check if state changes
+    setTimeout(() => {
+      console.log('Form Initial State (After 1s):', this.planPurchaseOrderFormGroup.value);
+      console.log('Form Valid (After 1s):', this.planPurchaseOrderFormGroup.valid);
+      console.log('Inspection By Errors (After 1s):', this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
+    }, 1000);
+
+    if (!this.selectedOrder || !this.selectedOrder.itemCode || !this.selectedOrder.docNo || !this.selectedOrder.lineNo) {
+      console.error('Selected order data is incomplete:', this.selectedOrder);
+      return;
+    }
+
     dialogRef.afterClosed().subscribe((result) => {
       console.log('DIALOG CLOSED');
+      if (inspectionByControl) {
+        inspectionByControl.clearValidators();
+        inspectionByControl.updateValueAndValidity();
+      }
+      this.closeDialog();
     });
   }
 
@@ -363,10 +521,12 @@ if (qualitativeResultPassStatusResults.length > 0) {
     this._sapPlanPurchaseOrderService.getItemCode(itemCode).subscribe({
       next: (response) => {
         this.cardCode = response.data;
-          console.log(this.cardCode);
+        console.log(this.cardCode);
         if (this.cardCode) {
-        
-          
+          this.planPurchaseOrderFormGroup.patchValue({
+            itemCode: this.cardCode.itemId || '',
+            itemDescription: this.cardCode.itemDescription || ''
+          });
           this.populateQualitativeAndQuantitativeData(this.cardCode);
           this.cdr.detectChanges();
         }
@@ -379,7 +539,7 @@ if (qualitativeResultPassStatusResults.length > 0) {
 
 
 
-  
+
 
   populateQualitativeAndQuantitativeData(data: any) {
     const qualitativeArray = this.planPurchaseOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
@@ -395,18 +555,18 @@ if (qualitativeResultPassStatusResults.length > 0) {
             inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
             inspectionCharacteristicSingleCriteria: [item.inspectionCharacteristicSingleCriteria || ''],
             inspectionCharacterisicMappingId: [item.inspectionCharacterisicMappingId],
-            
             isMandatory: [item.isMandatory ?? false],
             remarks: [item.remarks || ''],
-          qualitativeResultPassStatusResults: this.fb.array(  
-            item.qualitativeResultPassStatusResults?.map((status: any) =>
-              this.fb.group({
-                resultDescription: [status.resultDescription || false],
-                qualitativeResultId: [status.qualitativeResultId],
-                isPassed: [status.isPassed]
-              })
-            ) || []
-          )
+            qualitativeResultId: [item.qualitativeResultId || ''],
+            qualitativeResultPassStatusResults: this.fb.array(
+              item.qualitativeResultPassStatusResults?.map((status: any) =>
+                this.fb.group({
+                  resultDescription: [status.resultDescription || false],
+                  qualitativeResultId: [status.qualitativeResultId],
+                  isPassed: [status.isPassed]
+                })
+              ) || []
+            )
           })
         );
       });
@@ -414,7 +574,7 @@ if (qualitativeResultPassStatusResults.length > 0) {
 
     if (data.quantitativeInspectionResults && data.quantitativeInspectionResults.length > 0) {
       data.quantitativeInspectionResults.forEach((item: any) => {
-        
+
         quantitativeArray.push(
           this.fb.group({
             inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
@@ -424,6 +584,7 @@ if (qualitativeResultPassStatusResults.length > 0) {
             target: [item.target || ''],
             max: [item.max || ''],
             min: [item.min || ''],
+            result: [item.result || ''],
             remarks: [item.remarks || '']
           })
         );
@@ -463,10 +624,10 @@ if (qualitativeResultPassStatusResults.length > 0) {
           passCriteriaMin: [''],
           result: [''],
           remarks: [''],
-        
+
         })
       );
-    
+
     }
     this.closeDialog();
   }
