@@ -47,7 +47,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   isDropdownOpen = false;
   isValidate = false;
   cardCode: any;
-
+  purchaseQcId: any
   dataSourceQualitativeInspection: MatTableDataSource<any>;
   dataSourceQuantitativeInspection: MatTableDataSource<any>;
   dataSourceUoMIIC: MatTableDataSource<any>;
@@ -56,8 +56,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   selectedRowIndexUoM: number = -1;
   selectedUoMCode: string = '';
 
-  displayedColumnsQualitative: string[] = ['inspectionCharacteristicName', 'inspectionCharacteristicSingleCriteria', 'mandatory', 'result', 'remarks'];
-  displayedColumnsQuantitative: string[] = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin', 'result', 'remarks'];
+  displayedColumnsQualitative: string[] = ['inspectionCharacteristicName', 'inspectionCharacteristicSingleCriteria', 'isMandatory', 'qualitativeResultId', 'remarks'];
+  displayedColumnsQuantitative: string[] = ['inspectionCharacteristicName', 'uoMCode', 'isMandatory', 'target', 'max', 'min', 'quantitativeResult', 'remarks'];
   displayedColumnsUoMIIC: string[] = ['code', 'description'];
   displayedColumnsAddQuantitativeIIC: string[] = ['inspectionCode', 'inspectionDescription'];
 
@@ -118,8 +118,42 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     inspectionTimeModalPO: ['10:30 AM'],
     receiveQtyPO: ['Item'],
     qualitativeInspectionObjects: this.fb.array([]),
-    quantitativeInspectionObjects: this.fb.array([])
+    quantitativeInspectionResults: this.fb.array([]),
+    inspectionBy: [''],
+    qcId: [''],
+    result: [0],
+    inspectionObjects: this.fb.array([this.createInspectionObject()])
   });
+
+  createInspectionObject(): FormGroup {
+  return this.fb.group({
+    qualitativeInspectionMappingId: [''],
+    quantitativeInspectionMappingId: [''],
+    qualitativeResultId: [''],
+    isQualitativeResultPassed: [true], 
+    // quantitativeResult: [0],
+    isQuantitativeResultPassed: [true], 
+    remarks: ['']
+  });
+  
+}
+
+  get inspectionObjects(): FormArray {
+    return this.planPurchaseOrderFormGroup.get('inspectionObjects') as FormArray;
+  }
+
+ getQualitativeResultPassStatusResults(index: number): FormArray {
+  return this.planPurchaseOrderFormGroup
+    .get('qualitativeInspectionObjects')?.get(`${index}.qualitativeResultPassStatusResults`) as FormArray;
+}
+
+  addInspectionObject() {
+    this.inspectionObjects.push(this.createInspectionObject());
+  }
+
+  removeInspectionObject(index: number) {
+    this.inspectionObjects.removeAt(index);
+  }
 
   get sampleQuantity(): number {
     return Number(this.planPurchaseOrderFormGroup.get('sampleQuantity')?.value) || 0;
@@ -129,8 +163,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     return this.planPurchaseOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
   }
 
-  get quantitativeInspectionObjects(): FormArray {
-    return this.planPurchaseOrderFormGroup.get('quantitativeInspectionObjects') as FormArray;
+  get quantitativeInspectionResults(): FormArray {
+    return this.planPurchaseOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
   }
 
   onSubmitPurchaseOrder(): void {
@@ -162,17 +196,93 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   samplesPurchaseOrder = [];
   nextSampleId: number = 1;
 
-  addNewSampleForPurchaseOrder(): void {
-    const newSample = {
-      id: this.nextSampleId,
-      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionTimeModalPO')?.value,
-      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionByModalPO')?.value,
-      cardColor: this.getRandomCardColor()
-    };
-    this.samplesPurchaseOrder.push(newSample);
-    this.nextSampleId++;
-    this.closeDialog();
+    getPurchaseByQcCode(itemCode: string, docNo: number, lineNo: number) {
+    this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNo).subscribe({
+      next: (response) => {
+        this.purchaseQcId = response.data;
+        console.log(this.purchaseQcId, 'purchaseQcId');
+        this.addNewSampleForPurchaseOrder()
+        },
+        error: (err) => {
+          console.error('SERVICE ERROR:', err);
+          }
+    })
   }
+
+addNewSampleForPurchaseOrder(): void {
+  if (!this.planPurchaseOrderFormGroup.valid) {
+    console.error("Form is invalid");
+    return;
+  }
+
+  if (!this.purchaseQcId) {
+    console.error('QC ID is missing, cannot proceed!');
+    return;
+  }
+
+  const formValue = this.planPurchaseOrderFormGroup.value;
+
+
+ const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+  const qualitativeResultPassStatusResults = item?.qualitativeResultPassStatusResults || [];
+
+let qualitativeResultId = "";
+let qualitativeResultIds: any[] = [];
+
+if (qualitativeResultPassStatusResults.length > 0) {
+  qualitativeResultPassStatusResults.forEach((status, index) => {
+ 
+    if (status.qualitativeResultId) {
+      qualitativeResultId = status.qualitativeResultId;
+    }
+
+    qualitativeResultIds.push({ rowIndex: index, qualitativeResultId });
+  });
+}
+
+  return {
+    qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+    qualitativeResultId, 
+    isQualitativeResultPassed: !(item?.qualitativeResultPassStatusResults?.some((status: any) => status.isPassed === false)) || true,
+    remarks: item?.remarks || "",
+  };
+}) || [];
+ 
+
+  const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => ({
+    quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+
+    // quantitativeResult: item?.quantitativeResult !== undefined && item?.quantitativeResult !== null 
+    // ? item.quantitativeResult 
+    // : 0,
+    
+   isQuantitativeResultPassed: (item?.quantitativeResult !== undefined &&
+    item.quantitativeResult >= (item.min ?? 0) &&
+    item.quantitativeResult <= (item.max ?? 0)) ? true : false,
+
+    remarks: item?.remarks || "",
+  })) || [];
+
+  const newSamplePayload = {
+    inspectionDateTime: new Date().toISOString(), 
+    inspectionBy: formValue.inspectionBy || "", 
+    qcId: this.purchaseQcId.id,
+    quantitativeResult: formValue.result || 0,
+    inspectionObjects: [...qualitativeInspections, ...quantitativeInspections], 
+  };
+  console.log('Final Payload:', newSamplePayload);
+
+  // Step 7: Call the service to send the payload to the API
+  // this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
+  //   next: (response) => {
+  //     console.log('API Response:', response);
+  //     this.closeDialog(); 
+  //   },
+  //   error: (error) => {
+  //     console.error('API Error:', error);
+  //   }
+  // });
+}
 
   getRandomCardColor(): string {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
@@ -183,13 +293,16 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
   ngOnInit() {
     this.selectedOrder = history.state.selectedOrder;
+    
     if (this.selectedOrder) {
       this.populateForm(this.selectedOrder);
       this.getItemId(this.selectedOrder.itemCode);
     }
 
+    
+
     this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
-    this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+    this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionResults.controls);
     this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
@@ -216,7 +329,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       vendor: data.cardName,
       remarks: "",
       itemDescription: data.itemDescription,
-      itemCode: data.itemCode
+      itemCode: data.itemCode,
+      
     });
   }
 
@@ -231,6 +345,12 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       data: this.cardCode,
     });
     this.getCardByItemCode(this.selectedOrder.itemCode);
+    this.getPurchaseByQcCode(
+      this.selectedOrder.itemCode, 
+      this.selectedOrder.docNo, 
+      this.selectedOrder.lineNo
+    )
+
     dialogRef.afterClosed().subscribe((result) => {
       console.log('DIALOG CLOSED');
     });
@@ -244,10 +364,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this._sapPlanPurchaseOrderService.getItemCode(itemCode).subscribe({
       next: (response) => {
         this.cardCode = response.data;
+          console.log(this.cardCode);
         if (this.cardCode) {
+        
+          
           this.populateQualitativeAndQuantitativeData(this.cardCode);
-          this.dataSourceQualitativeInspection.data = this.qualitativeInspectionObjects.controls;
-          this.dataSourceQuantitativeInspection.data = this.quantitativeInspectionObjects.controls;
           this.cdr.detectChanges();
         }
       },
@@ -257,9 +378,13 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
   }
 
+
+
+  
+
   populateQualitativeAndQuantitativeData(data: any) {
     const qualitativeArray = this.planPurchaseOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
-    const quantitativeArray = this.planPurchaseOrderFormGroup.get('quantitativeInspectionObjects') as FormArray;
+    const quantitativeArray = this.planPurchaseOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
 
     qualitativeArray.clear();
     quantitativeArray.clear();
@@ -270,25 +395,36 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
           this.fb.group({
             inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
             inspectionCharacteristicSingleCriteria: [item.inspectionCharacteristicSingleCriteria || ''],
-            mandatory: [item.mandatory ?? false],
-            result: [item.result || 'pending'],
-            remarks: [item.remarks || '']
+            inspectionCharacterisicMappingId: [item.inspectionCharacterisicMappingId],
+            
+            isMandatory: [item.isMandatory ?? false],
+            remarks: [item.remarks || ''],
+          qualitativeResultPassStatusResults: this.fb.array(  
+            item.qualitativeResultPassStatusResults?.map((status: any) =>
+              this.fb.group({
+                resultDescription: [status.resultDescription || false],
+                qualitativeResultId: [status.qualitativeResultId],
+                isPassed: [status.isPassed]
+              })
+            ) || []
+          )
           })
         );
       });
     }
 
-    if (data.quantitativeInspectionObjects && data.quantitativeInspectionObjects.length > 0) {
-      data.quantitativeInspectionObjects.forEach((item: any) => {
+    if (data.quantitativeInspectionResults && data.quantitativeInspectionResults.length > 0) {
+      data.quantitativeInspectionResults.forEach((item: any) => {
+        
         quantitativeArray.push(
           this.fb.group({
-            parameterQty: [item.parameter || ''],
-            uoMId: [item.unit || ''],
-            mandatoryQty: [item.mandatory ?? false],
-            passCriteriaTarget: [item.target || ''],
-            passCriteriaMax: [item.maxValue || ''],
-            passCriteriaMin: [item.minValue || ''],
-            result: [item.result || 'pending'],
+            inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
+            inspectionCharacterisicMappingId: [item.inspectionCharacterisicMappingId],
+            uoMCode: [item.uoMCode || ''],
+            isMandatory: [item.isMandatory ?? false],
+            target: [item.target || ''],
+            max: [item.max || ''],
+            min: [item.min || ''],
             remarks: [item.remarks || '']
           })
         );
@@ -305,7 +441,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   addSelectedRowUoMIIC(index: number): void {
     const selectedUoM = this.uomData.find(item => item.isSelected);
     if (selectedUoM && index >= 0) {
-      this.quantitativeInspectionObjects.at(index).get('uoMId')?.setValue(selectedUoM.uoMCode);
+      this.quantitativeInspectionResults.at(index).get('uoMId')?.setValue(selectedUoM.uoMCode);
     }
     this.closeDialog();
   }
@@ -318,7 +454,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   addSelectedRowQuantitativeIIC(): void {
     const selectedChar = this.quantitativeCharacteristics.find(item => item.isSelected);
     if (selectedChar) {
-      this.quantitativeInspectionObjects.push(
+      this.quantitativeInspectionResults.push(
         this.fb.group({
           parameterQty: [selectedChar.description],
           uoMId: [''],
@@ -327,10 +463,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
           passCriteriaMax: [''],
           passCriteriaMin: [''],
           result: [''],
-          remarks: ['']
+          remarks: [''],
+        
         })
       );
-      this.dataSourceQuantitativeInspection.data = this.quantitativeInspectionObjects.controls;
+    
     }
     this.closeDialog();
   }
