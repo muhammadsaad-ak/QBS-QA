@@ -252,9 +252,9 @@ if (qualitativeResultPassStatusResults.length > 0) {
   const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => ({
     quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
 
-    // quantitativeResult: item?.quantitativeResult !== undefined && item?.quantitativeResult !== null 
-    // ? item.quantitativeResult 
-    // : 0,
+    quantitativeResult: item?.quantitativeResult !== undefined && item?.quantitativeResult !== null 
+    ? item.quantitativeResult 
+    : 0,
     
    isQuantitativeResultPassed: (item?.quantitativeResult !== undefined &&
     item.quantitativeResult >= (item.min ?? 0) &&
@@ -267,7 +267,6 @@ if (qualitativeResultPassStatusResults.length > 0) {
     inspectionDateTime: new Date().toISOString(), 
     inspectionBy: formValue.inspectionBy || "", 
     qcId: this.purchaseQcId.id,
-    quantitativeResult: formValue.result || 0,
     inspectionObjects: [...qualitativeInspections, ...quantitativeInspections], 
   };
   console.log('Final Payload:', newSamplePayload);
