@@ -2324,14 +2324,24 @@ export class TestingStepperComponent implements AfterViewInit {
             const payload = { ...formValues };
             // console.log('SENDING UOM PAYLOAD:', payload);
             // return;
+            this.isLoading = true;  // 
             this._uommasterservice
                 .AddUnitOfMeasure(payload)
                 .subscribe(
                     (response) => {
-                        if (response.succeeded) {
+                        if (response.isRequestSuccess) {
                             console.log('API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Data saved successfully!', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-success']
+                            });
+                            this.secondFormGroup.get('uoMCode')?.setValue(null);
+                            this.secondFormGroup.get('description')?.setValue(null);
+                            setTimeout(() => {
+                                this.isLoading = false;
+                            }, 1550);
                         }
-                        this.stepper.next();
+                        // this.stepper.next();
                     },
                     (error) => {
                         console.error('API REQUEST FAILED:', error);
@@ -2355,6 +2365,9 @@ export class TestingStepperComponent implements AfterViewInit {
                                     errorMessages.push(exception.uoMCode[0]);
                                 }
                             }
+                            setTimeout(() => {
+                                this.isLoading = false;
+                            }, 2000);
                         }
 
                         // fallback
@@ -2362,6 +2375,9 @@ export class TestingStepperComponent implements AfterViewInit {
                             errorMessages.push(
                                 error.error?.message || "Error adding UnitOfMeasure"
                             );
+                            setTimeout(() => {
+                                this.isLoading = false;
+                            }, 2000);
                         }
 
                         const finalErrorMessage = errorMessages.join(' ');
@@ -3634,18 +3650,6 @@ export class TestingStepperComponent implements AfterViewInit {
         this.isEditMode = false;
     }
 
-    XonNextClickQR(): void {
-        const formValues = this.firstFormGroup.value;
-        const isFormEmpty = Object.values(formValues).every(value => !value);
-        if (isFormEmpty) {
-            this.stepper.next();
-        } else {
-            this._snackBar.open('Save the data before moving to the next step.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-        }
-    }
     onNextClickQR(): void {
         const descriptionValue = this.firstFormGroup.get('resultDescription')?.value;
         const isDescriptionEmpty = !descriptionValue; // CHECKING IF resultDescription IS null, undefined, OR empty
@@ -3653,7 +3657,22 @@ export class TestingStepperComponent implements AfterViewInit {
         if (isDescriptionEmpty) {
             this.stepper.next(); // IF IS null, undefined, OR empty, MOVE TO NEXT
         } else {
-            this._snackBar.open('Save the data before moving to the next step.', 'Close', {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
+    onNextClickUOM(): void {
+        const uomCodeValue = this.secondFormGroup.get('uoMCode')?.value;
+        const descriptionValue = this.secondFormGroup.get('description')?.value;
+        const isUoMCodeEmpty = !uomCodeValue; // CHECKING IF IS null, undefined, OR empty
+        const isDescriptionEmpty = !descriptionValue; // CHECKING IF IS null, undefined, OR empty
+
+        if (isDescriptionEmpty && isUoMCodeEmpty) {
+            this.stepper.next(); // IF IS null, undefined, OR empty, MOVE TO NEXT
+        } else {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
