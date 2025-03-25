@@ -102,10 +102,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     inspectionQuantity: [],
     inspectionDateTime: [new Date().toISOString()],
     qcLotNo: [],
-    poDate: [new Date().toISOString()],
+    docDate: [new Date().toISOString()],
     docNo: [],
     warehouse: [''],
-    poQuantity: [],
+    sapQuantity: [],
     sampleQuantity: [3],
     vendor: [''],
     remarks: ['remarks'],
@@ -173,7 +173,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       const formData = this.planPurchaseOrderFormGroup.value;
       console.log('SENDING PURCHASE ORDER PAYLOAD:', formData);
       this.isFormSaved = true;
-      return;
+      // return;
       this._evaluationPurchaseOrderService.AddPurchaseOrder(formData).subscribe(
         (response) => {
           if (response.succeeded) {
@@ -334,10 +334,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       inspectionQuantity: 0,
       inspectionDateTime: new Date().toISOString(),
       qcLotNo: [],
-      poDate: data.docDate,
+      docDate: data.docDate,
       docNo: data.docNo.toString(),
       warehouse: data.warehouse,
-      poQuantity: data.qty,
+      sapQuantity: data.qty,
       sampleQuantity: 3,
       vendor: data.cardName,
       remarks: "",
