@@ -95,8 +95,16 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()">Next</button>
+            <div *ngIf="isLoading" class="loader">
+              <mat-spinner diameter="33"></mat-spinner>
+            </div>
+            <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
+              <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+            </button>
+            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" (click)="onSubmitUnitOfMeasure()">Save</button>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickUOM()">
+              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+            </button>
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update</button>
           </div>
         </form>

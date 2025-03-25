@@ -167,7 +167,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
 
         console.log('SENDING PURCHASE ORDER PAYLOAD:', this.planPurchaseOrderFormGroup.value);
         this.isFormSaved = true; // UI trigger karega
-        // return;  
+        return;  
         this._evaluationPurchaseOrderService.AddPurchaseOrder(this.planPurchaseOrderFormGroup.value).subscribe(
           (response) => {
             if (response.succeeded) {
@@ -366,13 +366,13 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
 
   populateEditForm(data: any): void {
     console.log('Populating Edit QC Form:', data);
-
+  
     this.planPurchaseOrderFormGroup.patchValue({
-      documentNumber: data.docNo ?? "",  
+      intCode: data.intCode ?? "",  
       itemCode: data.itemCode ?? "",  
-      itemDescription: data.itemDescription ?? "", 
+      itemDescription: data.itemDescription ?? "",  
       openQuantity: data.openQuantity ?? 0,  
-      analyzedBy: data.analyzedBy ?? "",  
+      analyzedBy: data.analyzedBy,  
       status: data.status ?? "",  
       documentType: data.docType ?? "",  
       documentDate: data.docDate ? new Date(data.docDate).toISOString() : new Date().toISOString(),  
@@ -381,15 +381,17 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       inspectionQuantity: data.inspectionQuantity ?? 0,  
       inspectionDateTime: data.inspectionDateTime ? new Date(data.inspectionDateTime).toISOString() : new Date().toISOString(),  
       qcLotNo: data.qcLotNo ?? "",  
-      poDate: data.docDate,  
-      poCode: data.poCode ?? "",  
+      poDate: data.docDate ?? "",  
+      poCode: data.docNo ?? "",  
       location: data.warehouse ?? "",  
       poQuantity: data.sapQuantity ?? 0,  
       sampleQuantity: data.sampleQuantity ?? 0,  
       vendor: data.vendor ?? "",  
-      remarks: data.remarks ?? "",  });}
-
-
+      remarks: data.remarks ?? "",  
+      itemId: data.itemDetails?.id ?? ""
+    });
+  }
+  
 
   ngAfterViewInit() {
     this.cdr.detectChanges();
