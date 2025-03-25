@@ -254,8 +254,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
       if (response.data) {
           this.evalPlanPurchaseOrderData = response.data.map((order, index) => ({
               // serialId: index + 1,
-              docNo: order.documentNumber,
-              docDate: order.documentDate,
+              docNo: order.docNo,
+              docDate: order.docDate,
               itemCode: order.itemDetails?.itemCode || '-',
               itemDescription: order.itemDetails?.name || '-',
               qty: order.poQuantity || 0,
@@ -386,22 +386,51 @@ onEvaluationPlanTypeChange(orderType: string): void {
       relativeTo: this._activatedRoute 
     });
   }
-///FINAL CHANGES
-  navigateToOrderForm(element: any) {
-    const orderType = this.orderTypeControl.value; // Check selected order type
+//FINAL CHANGES
+  // navigateToOrderForm(element: any) {
+  //   const orderType = this.orderTypeControl.value; // Check selected order type
     
-    if (orderType === 'purchaseOrder') {
-      this.router.navigate(['/evaluation-plan/plan-purchase-order'], { 
-        relativeTo: this._activatedRoute,
-        state: { selectedOrder: element } // Pass the selected row data
-      });
-    } else if (orderType === 'productionOrder') {
-      this.router.navigate(['/evaluation-plan/plan-production-order'], { 
-        relativeTo: this._activatedRoute,
-        state: { selectedOrder: element } // Pass the selected row data
-      });
+  //   if (orderType === 'purchaseOrder') {
+  //     this.router.navigate(['/evaluation-plan/plan-purchase-order'], { 
+  //       relativeTo: this._activatedRoute,
+  //       state: { selectedOrder: element } // Pass the selected row data
+  //     });
+  //   } else if (orderType === 'productionOrder') {
+  //     this.router.navigate(['/evaluation-plan/plan-production-order'], { 
+  //       relativeTo: this._activatedRoute,
+  //       state: { selectedOrder: element } // Pass the selected row data
+  //     });
+  //   }
+  // }
+
+  navigateToOrderForm(element: any) {
+    const orderType = this.orderTypeControl.value; // Get selected order type
+  
+    if (this.currentView === 'sapDocuments') {
+      // Navigating from SAP Documents (Perform QC)
+      if (orderType === 'purchaseOrder') {
+        this.router.navigate(['/evaluation-plan/plan-purchase-order'], {
+          state: { selectedOrder: element, from: 'sapDocuments' } // Pass origin info
+        });
+      } else if (orderType === 'productionOrder') {
+        this.router.navigate(['/evaluation-plan/plan-production-order'], {
+          state: { selectedOrder: element, from: 'sapDocuments' }
+        });
+      }
+    } else if (this.currentView === 'evaluationPlan') {
+      // Navigating from Evaluation Plan (Edit QC)
+      if (orderType === 'purchaseOrder') {
+        this.router.navigate(['/evaluation-plan/plan-purchase-order'], {
+          state: { selectedOrder: element, from: 'evaluationPlan' }
+        });
+      } else if (orderType === 'productionOrder') {
+        this.router.navigate(['/evaluation-plan/plan-production-order'], {
+          state: { selectedOrder: element, from: 'evaluationPlan' }
+        });
+      }
     }
   }
+  
 
   getStatusClass(status: string): string {
     switch (status) {

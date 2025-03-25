@@ -52,6 +52,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   isFormSaved = false; // Initialize to false
   isDropdownOpen = false;
   isValidate = false;
+  isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
+
 
 
 
@@ -219,17 +221,12 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     });
   }
 
-
-
-
   cancelForm() {
     // Reset the form or navigate away
     this.planPurchaseOrderFormGroup.reset();
     // Or navigate back to previous page
     // this.router.navigate(['/previous-page']);
   }
-
-
 
   // setInspectionDateTime() {
   //   const now = new Date();
@@ -245,10 +242,6 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
 
   //   this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.setValue(formattedDateTime);
   // }
-
-
-
-
 
   isLinear = false;
 
@@ -299,10 +292,16 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   ngOnInit() {
 
     this.selectedOrder = history.state.selectedOrder; // Access the passed data
+    this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
+
     if (this.selectedOrder) {
-      this.populateForm(this.selectedOrder); // Populate the form with the data
+      if (this.isEditMode) {
+          this.populateEditForm(this.selectedOrder); // Call Edit QC function
+      } else {
+          this.populateForm(this.selectedOrder); // Call Perform QC function
+      }
       this.getItemId(this.selectedOrder.itemCode);
-    }
+  }
 
     this._evaluationPurchaseOrderService.getPurchaseQCCode().subscribe((purchaseQCCode) => { 
       console.log('Purchase QC Code:', purchaseQCCode); // Debugging ke liye
@@ -338,9 +337,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
   populateForm(data: any): void {
-    console.log('Selected Order:', data);
+    console.log('Perform QC - Selected Order:', data);
     this.planPurchaseOrderFormGroup.patchValue({
-      id: "", // Add missing field
+      // id: "", // Add missing field
       // intCode: "", // Add missing field
       documentNumber: data.docNo,
       openQuantity: data.openQty,
@@ -364,6 +363,32 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       // itemId: data.itemCode, // Map itemCode to itemId
     });
   }
+
+  populateEditForm(data: any): void {
+    console.log('Populating Edit QC Form:', data);
+
+    this.planPurchaseOrderFormGroup.patchValue({
+      documentNumber: data.docNo ?? "",  
+      itemCode: data.itemCode ?? "",  
+      itemDescription: data.itemDescription ?? "", 
+      openQuantity: data.openQuantity ?? 0,  
+      analyzedBy: data.analyzedBy ?? "",  
+      status: data.status ?? "",  
+      documentType: data.docType ?? "",  
+      documentDate: data.docDate ? new Date(data.docDate).toISOString() : new Date().toISOString(),  
+      lineNum: data.lineNo ?? 0,  
+      receiveQuantity: data.receiveQuantity ?? 0,  
+      inspectionQuantity: data.inspectionQuantity ?? 0,  
+      inspectionDateTime: data.inspectionDateTime ? new Date(data.inspectionDateTime).toISOString() : new Date().toISOString(),  
+      qcLotNo: data.qcLotNo ?? "",  
+      poDate: data.docDate,  
+      poCode: data.poCode ?? "",  
+      location: data.warehouse ?? "",  
+      poQuantity: data.sapQuantity ?? 0,  
+      sampleQuantity: data.sampleQuantity ?? 0,  
+      vendor: data.vendor ?? "",  
+      remarks: data.remarks ?? "",  });}
+
 
 
   ngAfterViewInit() {
