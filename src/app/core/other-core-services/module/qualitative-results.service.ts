@@ -54,7 +54,7 @@ export class QualitativeResultsService {
             tap(response => console.log('RESPONSE:', response)),
             catchError(error => {
                 console.error('Error adding qualitative result', error);
-                return throwError(() => new Error('Error adding qualitative result'));
+                return throwError(() => error);
             })
         );
     }

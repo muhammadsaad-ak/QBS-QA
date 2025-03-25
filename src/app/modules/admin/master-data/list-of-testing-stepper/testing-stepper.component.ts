@@ -25,6 +25,7 @@ import { qualitativeInspectionIF, quantitativeInspectionIF, } from '../list-of-i
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 
@@ -65,6 +66,7 @@ interface itemSamplingRangeIF {
             MatTableModule,
             MatTabsModule,
             MatSelectModule,
+            MatProgressSpinnerModule,
         ],
     animations: qbsAnimations,
     templateUrl: './testing-stepper.component.html',
@@ -73,6 +75,7 @@ interface itemSamplingRangeIF {
 export class TestingStepperComponent implements AfterViewInit {
     isEditMode: boolean = false;
     isValidate: boolean = false;
+    isLoading: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
     rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
@@ -169,9 +172,9 @@ export class TestingStepperComponent implements AfterViewInit {
 
     addNewRowItemSampling(): void {
         const itemSamplingFormGroup = this.fb.group({
-            lotSizeMin: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
-            lotSizeMax: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
-            sampleQty: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')]],
+            lotSizeMin: [null, [Validators.required, Validators.min(1)]],
+            lotSizeMax: [null, [Validators.required, Validators.min(1)]],
+            sampleQty: [null, [Validators.required, Validators.min(1)]],
             criticalDefects: [null],
             majorDefects: [null],
             minorDefects: [null],
@@ -185,8 +188,9 @@ export class TestingStepperComponent implements AfterViewInit {
     // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
     @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
     onItemSampleItemCodeClick() {
+        this.fetchListAllItems();
         const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
-            width: '80%',
+            width: '75vw',
             height: '75vh',
             data: this.dataSourceItemCodeIS,
         });
@@ -260,7 +264,7 @@ export class TestingStepperComponent implements AfterViewInit {
     //
     onItemSampleItemCodeClickx() {
         const dialogRef = this.dialog.open(this.dialogTemplateItemSampleItems, {
-            width: '75%',
+            width: '75vw',
             height: '75vh',
             data: this.dataSourceItemSampleCode,
         });
@@ -337,11 +341,11 @@ export class TestingStepperComponent implements AfterViewInit {
     // itemsInspectionCardsForm: FormGroup;
     itemsInspectionCardsForm = this._formBuilder.group({
         // ITEMS
-        itemName: ['TAPAL DANEDAR POUCH 900G', Validators.required],
-        itemType: ['itItems', Validators.required],
-        itemGroupCode: ['138', Validators.required],
+        itemName: ['', Validators.required],
+        itemType: ['', Validators.required],
+        itemGroupCode: ['', Validators.required],
         itemU_QACard: [null],
-        itemUoMGroupEntry: ['-1', Validators.required],
+        itemUoMGroupEntry: ['', Validators.required],
         itemCode: ['', Validators.required], // ITM000017
         itemDescription: ['', Validators.required], //  TAPAL DANEDAR POUCH 900G
 
@@ -690,21 +694,22 @@ export class TestingStepperComponent implements AfterViewInit {
         );
         if (selectedRow) {
             // console.log('SELECTED ROW:', selectedRow);
-            this.itemsInspectionCardsForm
-                .get('itemCode')
-                .setValue(selectedRow.itemCode);
-            this.itemsInspectionCardsForm
-                .get('itemDescription')
-                .setValue(selectedRow.itemName);
+            // this.itemsInspectionCardsForm
+            //     .get('itemCode')
+            //     .setValue(selectedRow.itemCode);
+            // this.itemsInspectionCardsForm
+            //     .get('itemDescription')
+            //     .setValue(selectedRow.itemName);
 
             //  AGAINST SAP LIST ALL ITEMS
-            // this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
-            // this.itemsInspectionCardsForm.get('itemType').setValue(selectedRow.itemType);
-            // this.itemsInspectionCardsForm.get('itemGroupCode').setValue(selectedRow.itemGroupCode);
-            // this.itemsInspectionCardsForm.get('itemU_QACard').setValue(selectedRow.itemU_QACard);
-            // this.itemsInspectionCardsForm.get('itemUoMGroupEntry').setValue(selectedRow.itemUoMGroupEntry);
-            // this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
-            // this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemDescription);
+            this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
+            this.itemsInspectionCardsForm.get('itemType').setValue(selectedRow.itemType);
+            this.itemsInspectionCardsForm.get('itemGroupCode').setValue(selectedRow.uoMGroupEntry);
+            this.itemsInspectionCardsForm.get('itemU_QACard').setValue(selectedRow.u_QACard);
+            this.itemsInspectionCardsForm.get('itemUoMGroupEntry').setValue(String(selectedRow.itemsGroupCode));
+            this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
+            this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemName);
+
 
             this.selectedIntCodeIIC = selectedRow.intCode;
             // console.log("addSelectedRowItemCodeIIC - this.selectedIntCodeIIC:", this.selectedIntCodeIIC)
@@ -891,6 +896,12 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedRowIndexUoM: number = -1; // Store the clicked row index
 
     onUoMQtyClickIIC(index: number) {
+        // UOM - UNIT OF MEASURE API
+        this._itemInspectionCardService
+            .getAllUnitOfMeasureIIC()
+            .subscribe((unitOfMeasure) => {
+                this.dataSourceUoMIIC.data = unitOfMeasure.data;
+            });
         this.selectedRowIndexUoM = index; //  Save index
         const dialogRef = this.dialog.open(this.dialogTemplateUoMIIC, {
             width: '75vw',
@@ -902,7 +913,7 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
 
-    displayedColumnsUoMIIC: string[] = ['code', 'description'];
+    displayedColumnsUoMIIC: string[] = ['code', 'description', 'isActiveStatus'];
     selectedUoMCode: string = '';
     selectedUoMDescription: string = '';
 
@@ -962,6 +973,11 @@ export class TestingStepperComponent implements AfterViewInit {
         } else {
             console.log('NO ROW SELECTED');
         }
+    }
+
+    applyFilterUoMIIC(event: Event): void {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceUoMIIC.filter = filterValue.trim().toLowerCase();
     }
 
     // ADD QUALITATIVE INSPECTION NG TEMPLATE STARTS
@@ -1663,7 +1679,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
 
-        this.fetchListAllItems();
+        // this.fetchListAllItems();
         this.addNewRowItemSampling();
         // ITEM INSPECTION CARD 3.1
 
@@ -1729,11 +1745,11 @@ export class TestingStepperComponent implements AfterViewInit {
             });
 
         // UOM - UNIT OF MEASURE API
-        this._itemInspectionCardService
-            .getAllUnitOfMeasureIIC()
-            .subscribe((unitOfMeasure) => {
-                this.dataSourceUoMIIC.data = unitOfMeasure.data;
-            });
+        // this._itemInspectionCardService
+        //     .getAllUnitOfMeasureIIC()
+        //     .subscribe((unitOfMeasure) => {
+        //         this.dataSourceUoMIIC.data = unitOfMeasure.data;
+        //     });
 
         // UPDATE QUALITATIVE RESULT STARTS
         //  RETRIEVING rowDataQR
@@ -2044,7 +2060,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.selectedControlAccountRowIndex = rowIndex;
         console.log(this.selectedControlAccountRowIndex);
         const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-            width: '70%',
+            width: '75vw',
             height: '75vh',
             data: this.dataSourceItems,
         });
@@ -2150,7 +2166,7 @@ export class TestingStepperComponent implements AfterViewInit {
             });
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
-            width: '70%',
+            width: '75vw',
             height: '75vh',
             data: this.dataSourceItemsX,
         });
@@ -2239,45 +2255,140 @@ export class TestingStepperComponent implements AfterViewInit {
     onSubmitQualitativeResult(): void {
         this.isValidate = true;
         if (this.firstFormGroup.valid) {
-            // console.log('QR FORM VALUES:', this.firstFormGroup.value);
             const formValues = this.firstFormGroup.value;
             const { data, ...payload } = formValues; // EXCLUDING `data`
-            console.log('SENDING QR PAYLOAD:', payload);
-            // return;
+            console.log('SENDING QR PAYLOAD:', payload); // 
+
+            this.isLoading = true;  // 
             this._qualitativeResultsService
                 .AddQualitativeResult(payload)
-                .subscribe((response) => {
-                    if (response.succeeded) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
+                .subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Data saved successfully!', 'Close', {
+                                duration: 1550,
+                                panelClass: ['snackbar-success']
+                            });
+                            this.firstFormGroup.get('resultDescription')?.setValue(null);
+                            this._qualityResultsCode
+                                .getQualitativeResultCode()
+                                .subscribe(
+                                    (qualityResultCode) => {
+                                        const fullCode = `QR-000${qualityResultCode.data || ''}`;
+                                        this.firstFormGroup.get('data')?.setValue(fullCode);
+                                        console.log('NEW DATA VALUE:', this.firstFormGroup.get('data')?.value);
+                                        setTimeout(() => {
+                                            this.isLoading = false;
+                                        }, 1500);
+                                    },
+                                    (error) => {
+                                        console.error('GET QUALITY CODE FAILED:', error);
+                                        this.isLoading = false;
+                                    }
+                                );
+                        }
+                    },
+                    (error) => {
+                        console.error('API REQUEST FAILED:', error);
+                        console.log('API ERROR RESPONSE:', error.error);
+                        let errorMessage = "This description is already being used and cannot be duplicated.";
+                        if (error.error) {
+                            if (error.error.exception?.resultDescription?.length) {
+                                errorMessage = error.error.exception.resultDescription[0];
+                            } else if (error.error.message) {
+                                errorMessage = error.error.message;
+                            }
+                        }
+                        this._snackBar.open(errorMessage, 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
+                        this.isLoading = false;
                     }
-                });
-            this.stepper.next();
+                );
         } else {
             this.isValidate = false;
             this._snackBar.open('Fill the mandatory Description field.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
-            return;
         }
     }
 
     onSubmitUnitOfMeasure(): void {
-        this.isValidate = true
+        this.isValidate = true;
         if (this.secondFormGroup.valid) {
             // console.log('UOM FORM VALUES:', this.secondFormGroup.value);
             const formValues = this.secondFormGroup.value;
             const payload = { ...formValues };
             // console.log('SENDING UOM PAYLOAD:', payload);
             // return;
+            this.isLoading = true;  // 
             this._uommasterservice
                 .AddUnitOfMeasure(payload)
-                .subscribe((response) => {
-                    if (response.succeeded) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
+                .subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Data saved successfully!', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-success']
+                            });
+                            this.secondFormGroup.get('uoMCode')?.setValue(null);
+                            this.secondFormGroup.get('description')?.setValue(null);
+                            setTimeout(() => {
+                                this.isLoading = false;
+                            }, 1550);
+                        }
+                        // this.stepper.next();
+                    },
+                    (error) => {
+                        console.error('API REQUEST FAILED:', error);
+                        console.log('FULL ERROR OBJECT:', JSON.stringify(error, null, 2));
+                        let errorMessages = [];
+
+                        if (error.error && error.error.exception) {
+                            const exception = error.error.exception;
+                            const hasDescriptionError = exception.description?.length > 0;
+                            const hasUoMCodeError = exception.uoMCode?.length > 0;
+                            // IF uoMCode & description BOTH ARE DUPLICATE
+                            if (hasDescriptionError && hasUoMCodeError) {
+                                errorMessages.push("Duplicate data cannot be added. This record already exists.");
+                            } else {
+                                // IF description IS DUPLICATE
+                                if (hasDescriptionError) {
+                                    errorMessages.push(exception.description[0]);
+                                }
+                                // IF uoMCode IS DUPLICATE
+                                if (hasUoMCodeError) {
+                                    errorMessages.push(exception.uoMCode[0]);
+                                }
+                            }
+                            setTimeout(() => {
+                                this.isLoading = false;
+                            }, 2000);
+                        }
+
+                        // fallback
+                        if (errorMessages.length === 0) {
+                            errorMessages.push(
+                                error.error?.message || "Error adding UnitOfMeasure"
+                            );
+                            setTimeout(() => {
+                                this.isLoading = false;
+                            }, 2000);
+                        }
+
+                        const finalErrorMessage = errorMessages.join(' ');
+                        console.log('FINAL MESSAGE:', finalErrorMessage);
+
+                        this._snackBar.open(finalErrorMessage, 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
                     }
-                });
-            this.stepper.next();
+                );
         } else {
             this.isValidate = false;
             this._snackBar.open('Fill all the mandatory fields.', 'Close', {
@@ -2354,30 +2465,90 @@ export class TestingStepperComponent implements AfterViewInit {
             const formValues = this.itemSamplingForm.value;
             // const payload = { ...formValues, };
             const { id, itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
+
+            // VALIDATION CHECKS FOR samplingRangeObjects
+            const samplingRanges = payload.samplingRangeObjects as Array<{ sampleQty: number; lotSizeMin: number; lotSizeMax: number }>;
+            for (let i = 0; i < samplingRanges.length; i++) {
+                const range = samplingRanges[i];
+                if (range.lotSizeMin >= range.lotSizeMax) {
+                    const errorMessage = "Lot Size Min must be less than Lot Size Max.";
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    return;
+                }
+                if (range.sampleQty < range.lotSizeMin || range.sampleQty > range.lotSizeMax) {
+                    const errorMessage = "Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.";
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    return;
+                }
+                for (let j = 0; j < i; j++) {
+                    const prevRange = samplingRanges[j];
+                    if (range.lotSizeMin <= prevRange.lotSizeMax) {
+                        const errorMessage = "The defined sampling ranges must not overlap.";
+                        this._snackBar.open(errorMessage, 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        return;
+                    }
+                }
+            }
+
             console.log('FORM SUBMISSION PAYLOAD:', payload);
             // this.itemSamplingForm.reset();
             // return;
             this._itemSamplesService
                 .AddSampleWithRanges(payload)
-                .subscribe((response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                    } else {
-                        console.error(
-                            'ERROR WHILE ADDIND DATA.',
-                            response.message
-                        );
+                .subscribe(
+                    (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('DATA SAVED SUCCESSFULLY!', 'Close', {
+                                duration: 2000,
+                                panelClass: ['snackbar-success']
+                            });
+                            this.itemSamplingForm.reset();
+                            this.stepper.next();
+                        } else {
+                            console.log('API RESPONSE (NON-ERROR):', response);
+                        }
+                    },
+                    (error) => {
+                        console.error('API REQUEST FAILED:', error);
+                        console.log('API ERROR RESPONSE:', error.error);
+                        let errorMessage = 'Error while adding data.';
+                        if (error.error) {
+                            if (error.error.exception?.itemId?.length) {
+                                errorMessage = "SAME ITEM CANNOT BE DUPLICATED. THIS ITEM ALREADY EXISTS.";
+                                // API RESPONSE 
+                                // message: errorMessage = error.error.exception.itemId[0];
+                            } else if (error.error.exception?.[`samplingRangeObjects[0]`]?.length) {
+                                errorMessage = error.error.exception[`samplingRangeObjects[0]`][0];
+                            } else if (error.error.message) {
+                                errorMessage = error.error.message;
+                            }
+                        }
+                        this._snackBar.open(errorMessage, 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
                     }
-                });
-            this.stepper.next();
+                );
         } else {
-            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+            this._snackBar.open('FILL ALL THE MANDATORY FIELDS WITH VALID VALUES.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
             return;
         }
     }
+
+
     // Submit Inspection Card
 
     onSubmitInspectionCard() {
@@ -2512,7 +2683,23 @@ export class TestingStepperComponent implements AfterViewInit {
                         }
                     },
                     (error) => {
-                        console.error('API request failed:', error);
+                        console.error('API REQUEST FAILED:', error);
+                        // EXTRACT error message FROM API RESPONSE
+                        let errorMessage = 'Something went wrong. Please try again.';
+                        if (error.error && error.error.exception && error.error.exception.id) {
+                            errorMessage = error.error.exception.id[0] || errorMessage;
+                        }
+                        this._snackBar.open(errorMessage, 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
+                        setTimeout(() => {
+                            this._router.navigate(['/master-data/list-of-qualitative-result'], {
+                                relativeTo: this._activatedRoute,
+                            });
+                            this.clearingSessionStorage();
+                            console.log('this.isEditMode.', this.isEditMode);
+                        }, 2000);
                     }
                 );
         } else {
@@ -2543,7 +2730,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     onUpdateUoM(): void {
-        this.isValidate = true
+        this.isValidate = true;
         if (this.secondFormGroup.valid) {
             const payload = this.secondFormGroup.value;
             console.log(payload);
@@ -2554,10 +2741,10 @@ export class TestingStepperComponent implements AfterViewInit {
                         console.log('API RUN SUCCESSFULLY.', payload);
                         this._snackBar.open('Record Updated Successfully.', 'Close', {
                             duration: 1500,
-                            panelClass: ['snackbar-error']
+                            panelClass: ['snackbar-success']
                         });
                         this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
-                            relativeTo: this._activatedRoute,
+                            relativeTo: this._activatedRoute
                         });
                         this.clearingSessionStorage();
                         console.log('this.isEditMode.', this.isEditMode);
@@ -2565,10 +2752,15 @@ export class TestingStepperComponent implements AfterViewInit {
                 },
                 (error) => {
                     console.error('API REQUEST FAILED:', error);
-                    // EXTRACT error message FROM API RESPONSE
-                    let errorMessage = 'Something went wrong. Please try again.';
-                    if (error.error && error.error.exception && error.error.exception.id) {
-                        errorMessage = error.error.exception.id[0] || errorMessage;
+                    let errorMessage = 'Duplicate data cannot be updated. This record already exists.';
+                    if (error.error) {
+                        if (error.error.statusCode === 400) {
+                            errorMessage = error.error.message || 'Details already exist for another record';
+                        } else if (error.error.statusCode === 402) {
+                            errorMessage = 'Already being used so cannot be updated';
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message;
+                        }
                     }
                     this._snackBar.open(errorMessage, 'Close', {
                         duration: 1500,
@@ -2576,16 +2768,15 @@ export class TestingStepperComponent implements AfterViewInit {
                     });
                     setTimeout(() => {
                         this._router.navigate(['/master-data/list-of-unit-measure-setup'], {
-                            relativeTo: this._activatedRoute,
+                            relativeTo: this._activatedRoute
                         });
                         this.clearingSessionStorage();
                         console.log('this.isEditMode.', this.isEditMode);
                     }, 2000);
                 }
-
             );
         } else {
-            this.isValidate = false
+            this.isValidate = false;
             this._snackBar.open('Fill all the mandatory fields.', 'Close', {
                 duration: 1500,
                 panelClass: ['snackbar-error']
@@ -3328,69 +3519,115 @@ export class TestingStepperComponent implements AfterViewInit {
                             this.validatingSamplingRange += 'Sample Qty is required. ';
                         }
                         this.isValidate = false;
-                        return;
-                        // return null; // SKIP INVALID ROWS
+                        return null; // SKIP INVALID ROWS
                     }
 
-                    // IF ALL REQUIRED FIELDS ARE PRESENT, RETURN THE OBJECT
+                    // CONVERT TO NUMBERS FOR VALIDATION
+                    const lotSizeMin = Number(object.lotSizeMin);
+                    const lotSizeMax = Number(object.lotSizeMax);
+                    const sampleQty = Number(object.sampleQty);
+                    // VALIDATION: lotSizeMin < lotSizeMax
+                    if (lotSizeMin >= lotSizeMax) {
+                        this.validatingSamplingRange = 'Lot Size Min must be less than Lot Size Max.';
+                        this.isValidate = false;
+                        return null;
+                    }
+                    // VALIDATION: sampleQty STRICTLY BETWEEN lotSizeMin & lotSizeMax
+                    if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
+                        this.validatingSamplingRange = 'Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.';
+                        this.isValidate = false;
+                        return null;
+                    }
+
+                    // RETURN VALID OBJECT
                     return {
                         id: object.id || undefined,
-                        lotSizeMin: object.lotSizeMin,
-                        lotSizeMax: object.lotSizeMax,
-                        sampleQty: object.sampleQty,
-                        criticalDefects: object.criticalDefects,  // OPTIONAL FIELD, CAN BE null or 0
-                        majorDefects: object.majorDefects,        // OPTIONAL FIELD, CAN BE null or 0
-                        minorDefects: object.minorDefects         // OPTIONAL FIELD, CAN BE null or 0
+                        lotSizeMin: lotSizeMin,
+                        lotSizeMax: lotSizeMax,
+                        sampleQty: sampleQty,
+                        criticalDefects: object.criticalDefects,
+                        majorDefects: object.majorDefects,
+                        minorDefects: object.minorDefects
                     };
                 })
-                .filter((object: any) => object !== null); // REMOVE NULL ROWS IF ANY
+                .filter((object: any) => object !== null); // REMOVE NULL ROWS
 
-            // IF NO VALID ROWS, SET MESSAGE AND PREVENT FORM SUBMISSION
-            if (updatedSamplingRangeObjects.length > 0) {
-                const sendingPayloadIS = {
-                    ...payload,
-                    samplingRangeObjects: updatedSamplingRangeObjects,
-                    id: formValues.id
-                };
-                console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
-
-                this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
-                    (response) => {
-                        if (response.isRequestSuccess) {
-                            console.log('API run successfully.', sendingPayloadIS);
-                            this._snackBar.open('Record Updated Successfully.', 'Close', {
-                                duration: 1500,
-                                panelClass: ['snackbar-error']
-                            });
-                            setTimeout(() => {
-                                this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-                            }, 1500);
-                            this.clearingSessionStorage();
-                            console.log('this.isEditMode.', this.isEditMode);
-                        } else {
-                            console.error('ERROR WHILE UPDATING ITEM SAMPLE DATA.', response.message);
-                        }
-                    },
-                    (error) => {
-                        console.error('API request failed:', error);
+            // VALIDATION: OVERLAPPING RANGES
+            for (let i = 0; i < updatedSamplingRangeObjects.length; i++) {
+                const range = updatedSamplingRangeObjects[i];
+                for (let j = 0; j < i; j++) {
+                    const prevRange = updatedSamplingRangeObjects[j];
+                    if (range.lotSizeMin <= prevRange.lotSizeMax) {
+                        this.validatingSamplingRange = 'The defined sampling ranges must not overlap.'; //  'Ranges cannot overlap with existing'
+                        this.isValidate = false;
+                        this._snackBar.open(this.validatingSamplingRange, 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        return;
                     }
-                );
-            } else {
+                }
+            }
+
+            // IF NO VALID ROWS OR VALIDATION FAILED
+            if (updatedSamplingRangeObjects.length === 0 || !this.isValidate) {
                 this.isValidate = false;
-                // IF THERE ARE NO VALID ROWS
-                // this.noValidRowsMessage = 'Enter valid values in the required fields.';
-                // this.validatingSamplingRange = this.validatingSamplingRange || 'No valid rows to update.';
-                // console.error(this.validatingSamplingRange);
-                this._snackBar.open('No changes were made in Ranges. Redirecting to the main screen.', 'Close', {
-                    duration: 1500,
+                const errorMessage = this.validatingSamplingRange || 'No changes were made in Ranges. Redirecting to the main screen.';
+                this._snackBar.open(errorMessage, 'Close', {
+                    duration: 2050,
                     panelClass: ['snackbar-error']
                 });
-                setTimeout(() => {
-                    this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-                }, 1500);
-                this.clearingSessionStorage();
-                console.log('this.isEditMode.', this.isEditMode);
+                if (!this.validatingSamplingRange) {
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                    }, 2000);
+                    this.clearingSessionStorage();
+                }
+                return;
             }
+
+            const sendingPayloadIS = {
+                ...payload,
+                samplingRangeObjects: updatedSamplingRangeObjects,
+                id: formValues.id
+            };
+            console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
+
+            this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API run successfully.', sendingPayloadIS);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-success'] 
+                        });
+                        setTimeout(() => {
+                            this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                        }, 1500);
+                        this.clearingSessionStorage();
+                    } else {
+                        console.log('API RESPONSE (NON-ERROR):', response);
+                    }
+                },
+                (error) => {
+                    console.error('API request failed:', error);
+                    console.log('API ERROR RESPONSE:', error.error);
+                    let errorMessage = 'Error while updating data.';
+                    if (error.error) {
+                        if (error.error.exception?.[`samplingRangeObjects[0]`]?.length) {
+                            errorMessage = error.error.exception[`samplingRangeObjects[0]`][0];
+                        } else if (error.error.exception?.samplingRangeObjects?.length) {
+                            errorMessage = error.error.exception.samplingRangeObjects[0];
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message; // "Ranges cannot overlap with existing"
+                        }
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                }
+            );
         } else {
             // this.isValidate = false;
             this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
@@ -3411,5 +3648,34 @@ export class TestingStepperComponent implements AfterViewInit {
         sessionStorage.removeItem('stepperDataIS');
         sessionStorage.removeItem('stepperDataIIC');
         this.isEditMode = false;
+    }
+
+    onNextClickQR(): void {
+        const descriptionValue = this.firstFormGroup.get('resultDescription')?.value;
+        const isDescriptionEmpty = !descriptionValue; // CHECKING IF resultDescription IS null, undefined, OR empty
+
+        if (isDescriptionEmpty) {
+            this.stepper.next(); // IF IS null, undefined, OR empty, MOVE TO NEXT
+        } else {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
+    onNextClickUOM(): void {
+        const uomCodeValue = this.secondFormGroup.get('uoMCode')?.value;
+        const descriptionValue = this.secondFormGroup.get('description')?.value;
+        const isUoMCodeEmpty = !uomCodeValue; // CHECKING IF IS null, undefined, OR empty
+        const isDescriptionEmpty = !descriptionValue; // CHECKING IF IS null, undefined, OR empty
+
+        if (isDescriptionEmpty && isUoMCodeEmpty) {
+            this.stepper.next(); // IF IS null, undefined, OR empty, MOVE TO NEXT
+        } else {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
     }
 }

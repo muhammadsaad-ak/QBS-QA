@@ -18,6 +18,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { MatSelectModule } from '@angular/material/select';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
+import { EvaluationPlanProductionOrderService } from 'app/core/other-core-services/module/evaluation-plan-production-order.service';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -45,9 +46,12 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   i: number;
   
   // Plan Purchase Form groups
+  selectedOrder: any;
   qualitativeInspectionForm: FormGroup;
   quantitativeInspectionForm: FormGroup;
   isFormSaved = false; // Initialize to false
+  isDropdownOpen = false;
+
 
   
   
@@ -92,51 +96,66 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     private dialog: MatDialog,
     private _inspectionCardModal: InspectionCardService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+        private _evaluationProductionOrderService: EvaluationPlanProductionOrderService,
   ) {}
-  
 
   planProductionOrderFormGroup = this._formBuilder.group({
-    docNoPP: ['DOC-2024-001'],
-    itemCodePP: ['ITEM-123'],
-    itemDescriptionPP: ['Test Item Description'],
-    inspectionDateTimePP: ['2024-02-27 10:00 AM' as string],
-    datePP: ['2024-02-20'],
-    productionOrderPP: ['PO-2024-001'],
-    locationPP: ['1000'],
-    lotPP: ['500'],
-    sampleQtyPP: ['Vendor XYZ'],
-    openQtyPP: ['QC-001', Validators.required],
-    lotSizeUnitPP: ['750', Validators.required],
-    shiftPP: ['50', Validators.required],
-    machineNoPP: ['10'],
-    variantPP: ['Warehouse A'],
-    bmrPP: ['ITEM-123'],
-    analyzedByPP: ['50'],
-    inspectionByModalPP: ['Mr. Kamran'],
-    inspectionTimeModalPP: ['10:30 AM'],
-    itemCodeModalPO: [''],
-    inspectionQtyModalPO: [''],
-    inspectionByModalPO: [''],
-    inspectionTimeModalPO: [''],
-    receiveQtyPO: [''],
-    inspectionDateTimePO:['']
+    intCode: [''], 
+    inspectionQuantity: [],
+    docNoPP: [''], // API: docNum
+    itemCodePP: [''], // API: itemCode
+    itemDescriptionPP: [''], // API: productName
+    inspectionDateTimePP: [new Date().toISOString()], // API: docDate (converted to ISO)
+    datePP: [new Date().toISOString().split('T')[0]], // API: docDate (only date part)
+    productionOrderPP: [''], // API: docEntry
+    locationPP: [''], // API: warehouse
+    lotPP: [], // API: uoM (Assuming it's a number)
+    sampleQtyPP: [2], // API: plannedQuantity
+    openQtyPP: [0, Validators.required], // API: completedQuantity
+    lotSizeUnitPP: [0, Validators.required], // API: rejectedQuantity
+    shiftPP: ['', Validators.required], // No direct mapping, keep empty
+    machineNoPP: [''], // No direct mapping, keep empty
+    variantPP: [''], // API: inventoryUOM
+    bmrPP: [''], // API: itemCode (Assuming same as itemCodePP)
+    analyzedByPP: [''], // No direct mapping, keep empty
+    inspectionByModalPP: [''], // No direct mapping, keep empty
+    inspectionTimeModalPP: [''], // No direct mapping, keep empty
+    itemCodeModalPO: [''], // No direct mapping, keep empty
+    inspectionQtyModalPO: [''], // No direct mapping, keep empty
+    inspectionByModalPO: [''], // No direct mapping, keep empty
+    inspectionTimeModalPO: [''], // No direct mapping, keep empty
+    receiveQtyPO: [''], // No direct mapping, keep empty
+    inspectionDateTimePO: [new Date().toISOString()], // API: docDate (Converted to ISO)
+    // lineNum: [''], // No direct mapping, keep empty
+    remarks: ['remarks'], // No direct mapping, default value
+    itemId: null,
+  });
+  
 
-    
+  get sampleQuantity(): number {
+    return Number(this.planProductionOrderFormGroup.get('sampleQtyPP')?.value) || 0;
+  }
 
-  })
+  // saveForm(): void {
+  //   this.isFormSaved = true;
 
-  saveForm(): void {
-    this.isFormSaved = true;
+  //   if (this.planProductionOrderFormGroup.valid) {
+  //     console.log(this.planProductionOrderFormGroup.value);
+  //     this.isFormSaved = true;
+  //     // You can also add your save logic here, e.g., calling an API
+  //   } else {
+  //     console.error('Form is not valid');
+  //   }
 
+   saveForm(): void {
     if (this.planProductionOrderFormGroup.valid) {
+      console.log('Form Saved!');
       console.log(this.planProductionOrderFormGroup.value);
-      // You can also add your save logic here, e.g., calling an API
+      this.isFormSaved = true; // UI trigger karega
     } else {
       console.error('Form is not valid');
     }
-    this.isFormSaved = true;
-
   }
 
   cancelForm() {
@@ -179,8 +198,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
 
 
   samplesProductionOrder = [
-    { id: 1, inspectionTime: '11:54 AM', inspectionBy: 'Mr.Hamza', cardColor: '#e8f5e9' },
-    { id: 2, inspectionTime: '08:12 AM', inspectionBy: 'Mr.Hamza', cardColor: '#ffebee' },
+    // { id: 1, inspectionTime: '11:54 AM', inspectionBy: 'Mr.Hamza', cardColor: '#e8f5e9' },
+    // { id: 2, inspectionTime: '08:12 AM', inspectionBy: 'Mr.Hamza', cardColor: '#ffebee' },
     
   ];
 
@@ -212,6 +231,20 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   selectedControlAccountRowIndex: number = -1;
   
   ngOnInit() {
+
+    this.selectedOrder = history.state.selectedOrder; // Access the passed data
+    if (this.selectedOrder) {
+      this.populateProductionOrderForm(this.selectedOrder); // Populate the form with the data
+      this.getItemId(this.selectedOrder.itemCode);
+    }
+
+    this._evaluationProductionOrderService.getProductionQCCode().subscribe((productionQCCode) => { 
+      console.log('Purchase QC Code:', productionQCCode); // Debugging ke liye
+  
+      const fullCode = `PQC-000${productionQCCode.data || ''}`; // Code format
+      this.planProductionOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+  });
+
     // Initialize form groups
     this.qualitativeInspectionForm = this.fb.group({
       qualitativeObjects: this.fb.array([])
@@ -236,6 +269,25 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
+
+  populateProductionOrderForm(data: any): void {
+    console.log('Selected Production Order:', data);
+    this.planProductionOrderFormGroup.patchValue({
+      // docNoPP: data.docNo, // ✅ API: docNo
+      itemCodePP: data.itemCode, // ✅ API: itemCode
+      itemDescriptionPP: data.itemDescription, // ✅ API: itemDescription
+      inspectionDateTimePP: new Date(data.docDate).toISOString(), // ✅ Convert to ISO
+      // datePP: data.docDate.split('T')[0], // ✅ Only extract date part
+      productionOrderPP: data.docNo, // ✅ Convert to string
+      locationPP: data.warehouse ?? '', // ✅ Handle missing warehouse field
+      // lotPP: data.qty ?? 0, // ✅ API: qty
+      openQtyPP: data.openQty ?? 0, // ✅ API: openQty
+      lotSizeUnitPP: data.qty ?? 0, // ✅ Same as qty
+      receiveQtyPO: '', // No direct mapping
+      inspectionDateTimePO: new Date().toISOString(), // ✅ Use current date
+    });
+  }
+  
   
   ngAfterViewInit() {
     this.cdr.detectChanges();
@@ -244,7 +296,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   // Add static qualitative data
   addQualitativeData() {
     const qualitativeData = [
-      { parameter: 'Visual Inspection', passCriteria: 'No visible defects', mandatory: true, result: '', remarks: '' },
+      { parameter: 'Visual Inspection Color', passCriteria: 'No visible defects', mandatory: true, result: '', remarks: '' },
       { parameter: 'Color Check', passCriteria: 'Matches standard color', mandatory: true, result: '', remarks: '' },
       { parameter: 'Odor Test', passCriteria: 'No unusual odor', mandatory: false, result: '', remarks: '' },
       { parameter: 'Package Integrity', passCriteria: 'No damage to packaging', mandatory: true, result: '', remarks: '' },
@@ -366,4 +418,36 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     this.dataSourceAddQuantitativeIIC.filter = filterValue.trim().toLowerCase();
   }
 
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  action1() {
+    console.log("Action 1 selected");
+  }
+
+  // GET ITEM ID API
+  getItemId(itemCode: any): void {
+    // console.log(itemCode);
+    this._evaluationProductionOrderService.GetItemIdByCode(itemCode).subscribe({
+      next: (response) => {
+        try {
+          if (response && response.data && response.data.length > 0) {
+            const itemId = response.data[0].id;
+            console.log('Item ID:', itemId);
+            if (this.planProductionOrderFormGroup) {
+              this.planProductionOrderFormGroup.get('itemId')?.setValue(itemId);
+            }
+          } else {
+            console.log('NO ITEMS FOUND IN RESPONSE');
+          }
+        } catch (error) {
+          console.error('PROCESSING ERROR:', error);
+        }
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      },
+    });
+  }
 }

@@ -6,23 +6,20 @@ import { BehaviorSubject, Observable, catchError, of, switchMap, tap, throwError
 @Injectable({
   providedIn: 'root'
 })
-export class EvaluationPlanPurchaseOrderService {
+
+export class EvaluationPlanProductionOrderService {
   private _httpClient = inject(HttpClient);
 
   // BehaviorSubject to hold role data state
-  private _listQualitativeResults = new BehaviorSubject<any[]>([]);
-  private _itemIdSAP = new BehaviorSubject<any[]>([]);
-  private _sampleQty = new BehaviorSubject<any[]>([]);
-  private _qcPurchaseCode = new BehaviorSubject<any[]>([]);
+  private _itemIdIIC = new BehaviorSubject<any[]>([]);
+  private _sampleQtyProduction = new BehaviorSubject<any[]>([]);
+  private _qcProductionCode = new BehaviorSubject<any[]>([]);
+
 
   // Observable to expose role data state
-  listQualitativeResults$: Observable<any[]> = this._listQualitativeResults.asObservable();
-  itemIdSAP$: Observable<any[]> = this._itemIdSAP.asObservable();
-  sampleQty$: Observable<any[]> = this._sampleQty.asObservable();
-  qcPurchaseCode$: Observable<any[]> = this._qcPurchaseCode.asObservable(); // For Purchase QC API
-
-
-
+  itemIdSAP$: Observable<any[]> = this._itemIdIIC.asObservable();
+  sampleQty$: Observable<any[]> = this._sampleQtyProduction.asObservable();
+  qcProductionCode$: Observable<any[]> = this._qcProductionCode.asObservable(); // For Purchase QC API
 
 
   /**
@@ -38,25 +35,9 @@ export class EvaluationPlanPurchaseOrderService {
 
   constructor() { }
 
-  // ADD PURCHASE ORDER API
-  AddPurchaseOrder(data: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.accessToken}`,
-      'Content-Type': 'application/json',
-    });
-
-    return this._httpClient.post(
-      `${environment.appApiUrl}/CSAPI/IPurchaseQCFeature/AddPurchaseQC`,
-      data,
-      { headers }
-    ).pipe(
-      tap(response => console.log('RESPONSE:', response)),
-      catchError(error => {
-        console.error('Error adding purchase order', error);
-        return throwError(() => new Error('Error adding purchase order'));
-      })
-    );
-  }
+  // ADD API
+  // GET API
+  // UPDATE API
 
   // GET ITEM ID API
   GetItemIdByCode(itemCode: string): Observable<any> {
@@ -71,7 +52,7 @@ export class EvaluationPlanPurchaseOrderService {
         tap((itemId) => {
           // console.log('API RESPONSE:', itemId);
           const fetchedItemId = (itemId as any).data ?? [];
-          this._itemIdSAP.next(fetchedItemId);
+          this._itemIdIIC.next(fetchedItemId);
           // console.log('FETCHED RESPONSE', fetchedItemId);
         }),
         catchError((error) => {
@@ -80,6 +61,7 @@ export class EvaluationPlanPurchaseOrderService {
         })
       );
   }
+  
   // GET SAMPLE QTY API
   getSampleQuantityRange(inspectionQuantity: number, itemId: string): Observable<any> {
     const headers = new HttpHeaders({
@@ -93,7 +75,7 @@ export class EvaluationPlanPurchaseOrderService {
         tap((sampleQuantity) => {
           console.log('API RESPONSE:', sampleQuantity);
           const fetchedSampleQuantity = (sampleQuantity as any).data ?? [];
-          this._sampleQty.next(fetchedSampleQuantity);
+          this._sampleQtyProduction.next(fetchedSampleQuantity);
           console.log('FETCHED RESPONSE', fetchedSampleQuantity);
         }),
         catchError((error) => {
@@ -103,23 +85,23 @@ export class EvaluationPlanPurchaseOrderService {
       );
   }
 
-  getPurchaseQCCode(): Observable<any> {
+  getProductionQCCode(): Observable<any> {
     const headers = new HttpHeaders({
         Authorization: `Bearer ${this.accessToken}`,
         Accept: 'text/plain',
     });
 
     return this._httpClient
-        .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=purchase_qc`, { headers })
+        .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=production_qc`, { headers })
         .pipe(
-            tap((purchaseQCCode) => {
-                const purchaseQCResultsCode = (purchaseQCCode as any) ?? [];
-                this._qcPurchaseCode.next(purchaseQCResultsCode);
-                console.log('Fetched code for Purchase QC:', purchaseQCResultsCode);
+            tap((productionQCCode) => {
+                const productionQCResultsCode = (productionQCCode as any) ?? [];
+                this._qcProductionCode.next(productionQCResultsCode);
+                console.log('Fetched code for Production QC:', productionQCResultsCode);
             }),
             catchError((error) => {
-                console.error('Error fetching Purchase QC Code:', error);
-                return throwError(() => new Error('Error fetching Purchase QC Code'));
+                console.error('Error fetching Production QC Code:', error);
+                return throwError(() => new Error('Error fetching Prodcution QC Code'));
             })
         );
 }

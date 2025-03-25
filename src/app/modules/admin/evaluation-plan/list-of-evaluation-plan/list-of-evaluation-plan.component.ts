@@ -21,6 +21,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { debounceTime } from 'rxjs';
 import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
+import { ListOfEvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/list-of-evaluation-plan-purchase-order.service';
 import { PageEvent } from '@angular/material/paginator';
 
 @Component({
@@ -82,15 +83,15 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
   
   // Static data for Evaluation Plan - Purchase Orders
   evalPlanPurchaseOrderData = [
-    {
-      docNo: 'PO-001',
-      docDate: '2025-02-10',
-      lineNo: '1',
-      itemCode: 'ITM-1001',
-      itemDescription: 'Steel Plate 10mm',
-      qty: 50,
-      status: 'Pas'
-    },
+    // {
+    //   docNo: 'PO-001',
+    //   docDate: '2025-02-10',
+    //   lineNo: '1',
+    //   itemCode: 'ITM-1001',
+    //   itemDescription: 'Steel Plate 10mm',
+    //   qty: 50,
+    //   status: 'Pas'
+    // },
 
   ];
 
@@ -109,6 +110,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
 
   // Static data for SAP Documents - Purchase Orders
   sapDocPurchaseOrderData = [
+    
 
   ];
 
@@ -126,6 +128,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _activatedRoute: ActivatedRoute,
     private router: Router,
     private _purchaseOrderService:SapPlanPurchaseOrderService,
+    private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService,
+    private _productionQCService: ListOfEvaluationPlanPurchaseOrderService
   ) {
     this.dataSource = new MatTableDataSource([]);
    }
@@ -148,6 +152,8 @@ ngOnInit(): void {
     // Only fetch SAP data if we're in the sapDocuments view
     if (this.currentView === 'sapDocuments') {
       this.onOrderTypeChange(orderType);
+    } else if (this.currentView === 'evaluationPlan') {
+      this.onEvaluationPlanTypeChange(orderType);
     }
     
     // Always update the table view based on current view and order type
@@ -172,8 +178,20 @@ ngOnInit(): void {
         this.fetchSapDocPurchaseOrders();
     } else if (orderType === 'productionOrder') {
         this.fetchSapDocProductionOrders();
-    }
+    } 
 }
+
+  // Handle API calls when order type changes in Evaluation Plan
+onEvaluationPlanTypeChange(orderType: string): void {
+  if (this.currentView !== 'evaluationPlan') return;
+
+  if (orderType === 'purchaseOrder') {
+    this.fetchEvaluationPlanPurchaseOrders();
+  } else if (orderType === 'productionOrder') {
+    this.fetchEvaluationPlanProductionOrders();
+  }
+}
+
   // API se SAP Documents ke Purchase Orders fetch karna
   fetchSapDocPurchaseOrders(): void {
     this._purchaseOrderService.getPurchaseOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
@@ -182,7 +200,7 @@ ngOnInit(): void {
           serialId: index + 1 + (this.currentPage - 1) * this.pageSize, 
           docNo: order.docNum,
           docDate: order.docDate,
-          lineNo: order.lineNum,
+          lineNum: order.lineNum,
           itemCode: order.itemCode,
           itemDescription: order.itemDescription,
           qty: order.quantity,
@@ -204,7 +222,6 @@ ngOnInit(): void {
       }
     });
   }
-
 //Fetching Production Orders API
   fetchSapDocProductionOrders(): void {
     this._purchaseOrderService.getProductionOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
@@ -218,8 +235,8 @@ ngOnInit(): void {
                 qty: order.plannedQuantity,
                 openQty: order.plannedQuantity - order.completedQuantity,
                 status: order.productionOrderStatus,
-                action: 'View'
-            }));
+                warehouse: order.warehouse,
+              }));
 
             // ✅ MatTableDataSource ko update karo
             this.dataSource = new MatTableDataSource(this.sapDocProductionOrderData);
@@ -230,7 +247,50 @@ ngOnInit(): void {
             console.error('Failed to fetch SAP Production Orders', response.message);
         }
     });
-}
+  }
+
+  fetchEvaluationPlanPurchaseOrders(): void {
+  this._purchaseQCService.getEvaluationPlanPurchaseOrders().subscribe((response: any) => {
+      if (response.data) {
+          this.evalPlanPurchaseOrderData = response.data.map((order, index) => ({
+              // serialId: index + 1,
+              docNo: order.documentNumber,
+              docDate: order.documentDate,
+              itemCode: order.itemDetails?.itemCode || '-',
+              itemDescription: order.itemDetails?.name || '-',
+              qty: order.poQuantity || 0,
+              status: order.status || '-'
+          }));
+
+          this.dataSource = new MatTableDataSource(this.evalPlanPurchaseOrderData);
+      } else {
+          console.error('Failed to fetch Evaluation Plan Purchase Orders', response.message);
+      }
+  });
+  }
+
+  fetchEvaluationPlanProductionOrders(): void {
+    this._productionQCService.getEvaluationPlanProductionOrders().subscribe((response: any) => {
+      if (response.data) {
+        this.evalPlanProductionOrderData = response.data.map((order, index) => ({
+          // serialId: index + 1,
+          docNo: order.documentNumber,
+          docDate: order.documentDate,
+          itemCode: order.itemDetails?.itemCode || '-',
+          itemDescription: order.itemDetails?.name || '-',
+          qty: order.poQuantity || 0,
+          status: order.status || '-',
+          // Adding the full order object to allow access to other fields if needed
+        }));
+  
+        if (this.orderType === 'productionOrder') {
+          this.dataSource = new MatTableDataSource(this.evalPlanProductionOrderData);
+        }
+      } else {
+        console.error('Failed to fetch Evaluation Plan Production Orders', response.message);
+      }
+    });
+  }
 
   onPageChange(event: PageEvent) {
     this.currentPage = event.pageIndex + 1;
@@ -238,8 +298,10 @@ ngOnInit(): void {
 
     if (this.currentView === 'sapDocuments' && this.orderType === 'purchaseOrder') {
         this.fetchSapDocPurchaseOrders();
+        console.log('SAP Purchase Orders fetched');
     } else if (this.currentView === 'sapDocuments' && this.orderType === 'productionOrder') {
         this.fetchSapDocProductionOrders();
+        console.log('SAP Production Orders fetched');
     }
 }
   updateTableView(): void {
@@ -249,7 +311,7 @@ ngOnInit(): void {
       this.pageTitle = 'List of Evaluation Plan';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'docDate','lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
         this.dataSource.data = this.evalPlanPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
@@ -259,10 +321,10 @@ ngOnInit(): void {
       this.pageTitle = 'List of SAP Documents';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo',  'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo',  'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status','inspectionStatus', 'action'];
         this.dataSource.data = this.sapDocPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'inspectionStatus', 'action'];
         this.dataSource.data = this.sapDocProductionOrderData;
       }
     }
@@ -275,6 +337,17 @@ ngOnInit(): void {
 
   toggleView(): void {
     this.currentView = this.currentView === 'evaluationPlan' ? 'sapDocuments' : 'evaluationPlan';
+    console.log('Current View:', this.currentView);
+    
+    // Fetch data if switching to Evaluation Plan
+    if (this.currentView === 'evaluationPlan') {
+      if (this.orderType === 'purchaseOrder') {
+        this.fetchEvaluationPlanPurchaseOrders();
+      } else if (this.orderType === 'productionOrder') {
+        this.fetchEvaluationPlanProductionOrders();
+      }
+    }
+    
     this.updateTableView();
   }
 
