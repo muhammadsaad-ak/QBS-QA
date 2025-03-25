@@ -103,39 +103,11 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   ) { }
 
 
-  // planProductionOrderFormGroup = this._formBuilder.group({
-  //   docNoPP: ['DOC-2024-001'],
-  //   itemCodePP: ['ITEM-123'],
-  //   itemDescriptionPP: ['Test Item Description'],
-  //   inspectionDateTimePP: ['2024-02-27 10:00 AM' as string],
-  //   datePP: ['2024-02-20'],
-  //   productionOrderPP: ['PO-2024-001'],
-  //   locationPP: ['1000'],
-  //   lotPP: ['500'],
-  //   sampleQuantity: ['3'],
-  //   openQtyPP: ['QC-001', Validators.required],
-  //   lotSizeUnitPP: ['750', Validators.required],
-  //   shiftPP: ['50', Validators.required],
-  //   machineNoPP: ['10'],
-  //   variantPP: ['Warehouse A'],
-  //   bmrPP: ['ITEM-123'],
-  //   analyzedByPP: ['50'],
-  //   inspectionByModalPP: ['Mr. Kamran'],
-  //   inspectionTimeModalPP: ['10:30 AM'],
-  //   itemCodeModalPO: [''],
-  //   inspectionQtyModalPO: [''],
-  //   inspectionByModalPO: [''],
-  //   inspectionTimeModalPO: [''],
-  //   receiveQtyPO: [''],
-  //   inspectionDateTimePO:[''],
-  //   lineNum: ['4'],
-  //   remarks: ['remarks'], // string
-
-    
-
-  // })
+ 
 
   planProductionOrderFormGroup = this._formBuilder.group({
+    intCode: [''], 
+    inspectionQuantity: [],
     docNoPP: [''], // API: docNum
     itemCodePP: [''], // API: itemCode
     itemDescriptionPP: [''], // API: productName
@@ -163,7 +135,6 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     // lineNum: [''], // No direct mapping, keep empty
     remarks: ['remarks'], // No direct mapping, default value
     itemId: null,
-    inspectionQuantity: [],
   });
 
 
@@ -310,6 +281,14 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       this.populateProductionOrderForm(this.selectedOrder); // Populate the form with the data
       this.getItemId(this.selectedOrder.itemCode);
     }
+
+    this._evaluationProductionOrderService.getProductionQCCode().subscribe((productionQCCode) => { 
+      console.log('Purchase QC Code:', productionQCCode); // Debugging ke liye
+  
+      const fullCode = `PQC-000${productionQCCode.data || ''}`; // Code format
+      this.planProductionOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+  });
+
     // Initialize form groups
     this.qualitativeInspectionForm = this.fb.group({
       qualitativeObjects: this.fb.array([])
@@ -338,7 +317,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   populateProductionOrderForm(data: any): void {
     console.log('Selected Production Order:', data);
     this.planProductionOrderFormGroup.patchValue({
-      docNoPP: data.docNo, // ✅ API: docNo
+      // docNoPP: data.docNo, // ✅ API: docNo
       itemCodePP: data.itemCode, // ✅ API: itemCode
       itemDescriptionPP: data.itemDescription, // ✅ API: itemDescription
       inspectionDateTimePP: new Date(data.docDate).toISOString(), // ✅ Convert to ISO

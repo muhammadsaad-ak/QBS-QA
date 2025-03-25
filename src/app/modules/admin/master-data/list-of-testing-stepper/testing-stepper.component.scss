@@ -104,3 +104,12 @@
   background-color: #2e7d32;
   color: #fff;
 }
+
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 5px;
+  // width: 100vw; 
+  // min-height: 40px;
+}

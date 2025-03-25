@@ -9,8 +9,8 @@
             <!-- Responsive Flexbox Container -->
             <div style="display: flex; gap: 2px 8px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                <mat-label>Doc No.</mat-label>
-                <input class="view-mode-bg-grey" matInput formControlName="docNoPP" placeholder="Enter Code" required
+                <mat-label>Q-Code.</mat-label>
+                <input class="view-mode-bg-grey" matInput formControlName="intCode" placeholder="Enter Code" required
                   readonly style=" cursor: not-allowed;">
               </mat-form-field>
   
@@ -33,19 +33,19 @@
               </mat-form-field>
 
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                <mat-label>P.O Date</mat-label>
+                <mat-label>Document Date</mat-label>
                 <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="datePP" placeholder="Enter Code" required
                   readonly style=" cursor: not-allowed;">
               </mat-form-field>
   
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                <mat-label>Production Order No.</mat-label>
+                <mat-label>Document Number.</mat-label>
                 <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="productionOrderPP" required
                 readonly style=" cursor: not-allowed;">
               </mat-form-field>
 
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                <mat-label>Location</mat-label>
+                <mat-label>Warehouse</mat-label>
                 <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="locationPP" placeholder="Enter Code" required
                   readonly style=" cursor: not-allowed;">
               </mat-form-field>
@@ -64,7 +64,7 @@
               </mat-form-field>
               
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                <mat-label>Quantity</mat-label>
+                <mat-label>Planned Quantity</mat-label>
                 <input class="view-mode-bg-grey" matInput formControlName="lotSizeUnitPP" placeholder="Enter Code" required
                 readonly style=" cursor: not-allowed;">
               </mat-form-field>
@@ -96,6 +96,11 @@
               <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                 <mat-label>BMR No:</mat-label>
                 <input matInput formControlName="bmrPP" placeholder="Enter Code" >
+              </mat-form-field>
+              
+              <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                <mat-label>Inspection Quantity:</mat-label>
+                <input matInput formControlName="inspectionQuantity" placeholder="Enter Code" >
               </mat-form-field>
   
               <mat-form-field style="flex: 0 1 calc(26% - 16px); min-width: 100px;">

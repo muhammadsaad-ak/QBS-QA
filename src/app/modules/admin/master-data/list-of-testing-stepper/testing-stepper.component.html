@@ -39,8 +39,14 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="next-button" *ngIf="!isEditMode"
-              (click)="onSubmitQualitativeResult()">Next</button>
+            <div *ngIf="isLoading" class="loader">
+              <mat-spinner diameter="33"></mat-spinner>
+            </div>
+            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+            (click)="onSubmitQualitativeResult()">Save</button>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickQR()">
+              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+            </button>
             <button mat-button class="next-button" *ngIf="isEditMode"
               (click)="onUpdateQualitativeResult()">Update</button>
           </div>
@@ -89,8 +95,16 @@
           </div>
 
           <div class="step-navigation">
-            <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitUnitOfMeasure()">Next</button>
+            <div *ngIf="isLoading" class="loader">
+              <mat-spinner diameter="33"></mat-spinner>
+            </div>
+            <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
+              <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+            </button>
+            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" (click)="onSubmitUnitOfMeasure()">Save</button>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickUOM()">
+              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+            </button>
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update</button>
           </div>
         </form>
@@ -1106,8 +1120,10 @@
                             <!-- code - UOM Code & CHECKBOX COLUMN -->
                             <ng-container matColumnDef="code">
                               <mat-header-cell *matHeaderCellDef class="single-line">UOM&nbsp;Code</mat-header-cell>
-                              <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                <mat-checkbox [checked]="row.isSelected" (change)="onRowChangeUoMIIC(row)">
+                              <mat-cell *matCellDef="let row" class="single-line text-sm"
+                                [ngClass]="{'cursor-no-drop': !row.isActive}">
+                                <mat-checkbox [checked]="row.isSelected" (change)="onRowChangeUoMIIC(row)"
+                                  [disabled]="!row.isActive">
                                 </mat-checkbox> {{row.uoMCode}} </mat-cell>
                             </ng-container>
                             <!-- description - UOM Name COLUMN -->
@@ -1116,6 +1132,17 @@
                               <mat-cell *matCellDef="let row" class="single-line text-sm">
                                 {{row.description}} </mat-cell>
                             </ng-container>
+                            <!-- status - isActive COLUMN -->
+                            <ng-container matColumnDef="isActiveStatus">
+                              <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                              <mat-cell *matCellDef="let row" class="single-line text-sm" [ngClass]="{
+                                              'text-green-500': row.isActive, 
+                                              'text-amber-500': !row.isActive
+                                            }">
+                                {{ row.isActive ? 'Active' : 'Inactive' }}
+                              </mat-cell>
+                            </ng-container>
+
                             <mat-header-row *matHeaderRowDef="displayedColumnsUoMIIC; sticky: true"></mat-header-row>
                             <mat-row *matRowDef="let row; columns: displayedColumnsUoMIIC;"></mat-row>
 
@@ -1476,7 +1503,7 @@
             </div>
           </div>
           <!-- SAMPLING RANGE TABLE SECTION ENDS -->
-          <div *ngIf="validatingSamplingRange" class="error-message text-red-600">
+          <div *ngIf="validatingSamplingRange" class="error-message text-red-600 hidden">
             {{ validatingSamplingRange }}
           </div>
           <div class="step-navigation">

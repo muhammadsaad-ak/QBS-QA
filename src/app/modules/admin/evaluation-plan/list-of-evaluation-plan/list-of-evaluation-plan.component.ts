@@ -128,7 +128,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _activatedRoute: ActivatedRoute,
     private router: Router,
     private _purchaseOrderService:SapPlanPurchaseOrderService,
-    private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService
+    private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService,
+    private _productionQCService: ListOfEvaluationPlanPurchaseOrderService
   ) {
     this.dataSource = new MatTableDataSource([]);
    }
@@ -187,7 +188,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
   if (orderType === 'purchaseOrder') {
     this.fetchEvaluationPlanPurchaseOrders();
   } else if (orderType === 'productionOrder') {
-    // this.fetchEvaluationPlanProductionOrders();
+    this.fetchEvaluationPlanProductionOrders();
   }
 }
 
@@ -221,7 +222,6 @@ onEvaluationPlanTypeChange(orderType: string): void {
       }
     });
   }
-
 //Fetching Production Orders API
   fetchSapDocProductionOrders(): void {
     this._purchaseOrderService.getProductionOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
@@ -247,13 +247,13 @@ onEvaluationPlanTypeChange(orderType: string): void {
             console.error('Failed to fetch SAP Production Orders', response.message);
         }
     });
-}
+  }
 
-fetchEvaluationPlanPurchaseOrders(): void {
+  fetchEvaluationPlanPurchaseOrders(): void {
   this._purchaseQCService.getEvaluationPlanPurchaseOrders().subscribe((response: any) => {
       if (response.data) {
           this.evalPlanPurchaseOrderData = response.data.map((order, index) => ({
-              serialId: index + 1,
+              // serialId: index + 1,
               docNo: order.documentNumber,
               docDate: order.documentDate,
               itemCode: order.itemDetails?.itemCode || '-',
@@ -267,7 +267,30 @@ fetchEvaluationPlanPurchaseOrders(): void {
           console.error('Failed to fetch Evaluation Plan Purchase Orders', response.message);
       }
   });
-}
+  }
+
+  fetchEvaluationPlanProductionOrders(): void {
+    this._productionQCService.getEvaluationPlanProductionOrders().subscribe((response: any) => {
+      if (response.data) {
+        this.evalPlanProductionOrderData = response.data.map((order, index) => ({
+          // serialId: index + 1,
+          docNo: order.documentNumber,
+          docDate: order.documentDate,
+          itemCode: order.itemDetails?.itemCode || '-',
+          itemDescription: order.itemDetails?.name || '-',
+          qty: order.poQuantity || 0,
+          status: order.status || '-',
+          // Adding the full order object to allow access to other fields if needed
+        }));
+  
+        if (this.orderType === 'productionOrder') {
+          this.dataSource = new MatTableDataSource(this.evalPlanProductionOrderData);
+        }
+      } else {
+        console.error('Failed to fetch Evaluation Plan Production Orders', response.message);
+      }
+    });
+  }
 
   onPageChange(event: PageEvent) {
     this.currentPage = event.pageIndex + 1;
@@ -315,12 +338,17 @@ fetchEvaluationPlanPurchaseOrders(): void {
   toggleView(): void {
     this.currentView = this.currentView === 'evaluationPlan' ? 'sapDocuments' : 'evaluationPlan';
     console.log('Current View:', this.currentView);
+    
+    // Fetch data if switching to Evaluation Plan
+    if (this.currentView === 'evaluationPlan') {
+      if (this.orderType === 'purchaseOrder') {
+        this.fetchEvaluationPlanPurchaseOrders();
+      } else if (this.orderType === 'productionOrder') {
+        this.fetchEvaluationPlanProductionOrders();
+      }
+    }
+    
     this.updateTableView();
-
-     // Fetch data if switching to Evaluation Plan
-  if (this.currentView === 'evaluationPlan' && this.orderType === 'purchaseOrder') {
-    this.fetchEvaluationPlanPurchaseOrders();
-  }
   }
 
   ngOnDestroy(): void {

@@ -50,9 +50,7 @@
                             <!-- Doc. No COLUMN -->
                             <ng-container matColumnDef="docNo">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
-                                    <span *ngIf="currentView === 'sapDocuments' && orderTypeControl.value === 'purchaseOrder'">Purchase Order</span>
-                                    <span *ngIf="currentView === 'sapDocuments' && orderTypeControl.value === 'productionOrder'">Production Order</span>
-                                    <span *ngIf="currentView !== 'sapDocuments'">Doc. No</span>
+                                    Document No
                                 </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{ element.docNo ? element.docNo : '-' }}
@@ -94,7 +92,7 @@
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
                                     Qty </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
-                                    {{ element.qty ? element.qty : '-' }}
+                                    {{ element.qty ? element.qty : '0' }}
                                 </td>
                             </ng-container>
                             <!-- Open QTY COLUMN -->
@@ -121,7 +119,7 @@
                             <!-- QA/QC Status -->
                             <ng-container matColumnDef="inspectionStatus">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
-                                    Inspection Status 
+                                    Q-Status 
                                 </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;" 
                                     class="px-10" [ngClass]="getStatusClass('In Progress')">

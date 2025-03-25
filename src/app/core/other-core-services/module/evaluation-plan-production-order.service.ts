@@ -13,10 +13,14 @@ export class EvaluationPlanProductionOrderService {
   // BehaviorSubject to hold role data state
   private _itemIdIIC = new BehaviorSubject<any[]>([]);
   private _sampleQtyProduction = new BehaviorSubject<any[]>([]);
+  private _qcProductionCode = new BehaviorSubject<any[]>([]);
+
 
   // Observable to expose role data state
   itemIdSAP$: Observable<any[]> = this._itemIdIIC.asObservable();
   sampleQty$: Observable<any[]> = this._sampleQtyProduction.asObservable();
+  qcProductionCode$: Observable<any[]> = this._qcProductionCode.asObservable(); // For Purchase QC API
+
 
   /**
    * Setter & getter for access token
@@ -80,4 +84,25 @@ export class EvaluationPlanProductionOrderService {
         })
       );
   }
+
+  getProductionQCCode(): Observable<any> {
+    const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        Accept: 'text/plain',
+    });
+
+    return this._httpClient
+        .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=production_qc`, { headers })
+        .pipe(
+            tap((productionQCCode) => {
+                const productionQCResultsCode = (productionQCCode as any) ?? [];
+                this._qcProductionCode.next(productionQCResultsCode);
+                console.log('Fetched code for Production QC:', productionQCResultsCode);
+            }),
+            catchError((error) => {
+                console.error('Error fetching Production QC Code:', error);
+                return throwError(() => new Error('Error fetching Prodcution QC Code'));
+            })
+        );
+}
 }
