@@ -108,20 +108,20 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
   planPurchaseOrderFormGroup = this._formBuilder.group({
     id: [''], // ✅ Empty string if null not allowed
     intCode: [""], // number
-    documentNumber: [], // number
+    docNo: [], // number
     openQuantity: [], // number
     status: [''], // ✅ Meaningful status
     documentType: [''], // ✅ Meaningful type
     documentDate: [new Date().toISOString()], // ✅ Correct ISO format
-    lineNum: [], // ✅ Keep null if API supports
+    lineNo: [], // ✅ Keep null if API supports
     receiveQuantity: [], // number
     inspectionQuantity: [], // number
     inspectionDateTime: [new Date().toISOString()], // ✅ Correct ISO format
     qcLotNo: [], // number
-    poDate: [new Date().toISOString()], // ✅ Correct ISO format
+    docDate: [new Date().toISOString()], // ✅ Correct ISO format
     poCode: [], // string
-    location: [''], // string
-    poQuantity: [], // number
+    warehouse: [''], // string
+    sapQuantity: [], // number
     sampleQuantity: [], // number
     vendor: [''], // string
     remarks: ['remarks'], // string
@@ -159,19 +159,22 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     if (this.planPurchaseOrderFormGroup.valid) {
       const formData = this.planPurchaseOrderFormGroup.value;
       console.log('PAYLOAD BEFORE sampleQuantity:', formData);
+      const { id, documentType, inspectionByModalPO, inspectionQtyModalPO, inspectionTimeModalPO, intCode, itemCode, itemCodeModalPO, itemDescription, poCode,receiveQtyPO,  
+        ...payload } = formData; // EXCLUDING `data`
+      console.log('SENDING AFTER EXCLUDED VALUES:', payload); // 
 
       const inspectionQuantity: number = Number(formData.inspectionQuantity);
       const itemId: string = String(formData.itemId);
 
       this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
 
-        console.log('SENDING PURCHASE ORDER PAYLOAD:', this.planPurchaseOrderFormGroup.value);
+        console.log('SENDING PURCHASE ORDER PAYLOAD:', payload);
         this.isFormSaved = true; // UI trigger karega
         return;  
-        this._evaluationPurchaseOrderService.AddPurchaseOrder(this.planPurchaseOrderFormGroup.value).subscribe(
+        this._evaluationPurchaseOrderService.AddPurchaseOrder(payload).subscribe(
           (response) => {
             if (response.succeeded) {
-              console.log('API RUN SUCCESSFULLY.', this.planPurchaseOrderFormGroup.value);
+              console.log('API RUN SUCCESSFULLY.', payload);
               this._snackBar.open('Purchase Order added successfully!', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-success']
@@ -341,20 +344,20 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
     this.planPurchaseOrderFormGroup.patchValue({
       // id: "", // Add missing field
       // intCode: "", // Add missing field
-      documentNumber: data.docNo,
+      docNo: data.docNo.toString(), // Convert to string
       openQuantity: data.openQty,
       status: data.status, // Add missing field
       documentType: "", // Add missing field
       documentDate: new Date().toISOString(), // Add missing field
-      lineNum: data.lineNum, // Add missing field
+      lineNo: data.lineNum, // Add missing field
       receiveQuantity: 0, // Add missing field
       inspectionQuantity: 0, // Add missing field
       inspectionDateTime: new Date().toISOString(), // Add missing field
       qcLotNo: 0, // Add missing field
-      poDate: data.docDate,
+      docDate: data.docDate,
       poCode: data.docNo.toString(), // Convert to string
-      location: data.warehouse,
-      poQuantity: data.qty,
+      warehouse: data.warehouse,
+      sapQuantity: data.qty,
       // sampleQuantity: 3, // Add missing field
       vendor: data.cardName,
       remarks: "", // Add missing field
@@ -376,15 +379,15 @@ export class PlanPurchaseOrderComponent implements AfterViewInit {
       status: data.status ?? "",  
       documentType: data.docType ?? "",  
       documentDate: data.docDate ? new Date(data.docDate).toISOString() : new Date().toISOString(),  
-      lineNum: data.lineNo ?? 0,  
+      lineNo: data.lineNo ?? 0,  
       receiveQuantity: data.receiveQuantity ?? 0,  
       inspectionQuantity: data.inspectionQuantity ?? 0,  
       inspectionDateTime: data.inspectionDateTime ? new Date(data.inspectionDateTime).toISOString() : new Date().toISOString(),  
       qcLotNo: data.qcLotNo ?? "",  
-      poDate: data.docDate ?? "",  
-      poCode: data.docNo ?? "",  
-      location: data.warehouse ?? "",  
-      poQuantity: data.sapQuantity ?? 0,  
+      docDate: data.docDate ?? "",  
+      docNo: data.docNo ?? "",  
+      warehouse: data.warehouse ?? "",  
+      sapQuantity: data.sapQuantity ?? 0,  
       sampleQuantity: data.sampleQuantity ?? 0,  
       vendor: data.vendor ?? "",  
       remarks: data.remarks ?? "",  

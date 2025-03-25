@@ -254,12 +254,23 @@ onEvaluationPlanTypeChange(orderType: string): void {
       if (response.data) {
           this.evalPlanPurchaseOrderData = response.data.map((order, index) => ({
               // serialId: index + 1,
-              docNo: order.docNo,
-              docDate: order.docDate,
+              id: order.id,
               itemCode: order.itemDetails?.itemCode || '-',
               itemDescription: order.itemDetails?.name || '-',
+              docDate: order.docDate,
+              docNo: order.docNo,
+              warehouse: order.warehouse,
+              sapQuantity: order.sapQuantity || 0,
+              openQuantity: order.openQuantity || 0,
+              vendor: order.vendor || '-',
+              sampleQuantity: order.sampleQuantity || 0,
+              lineNum: order.lineNum || '-', // Add line number
+              qcLotNo: order.qcLotNo || '-', // Add QC Lot number
+              receiveQuantity : order.receiveQuantity || 0,
+              inspectionQuantity: order.inspectionQuantity || 0,
+              analyzedBy: order.analyzedBy || '-',
               qty: order.poQuantity || 0,
-              status: order.status || '-'
+              status: order.status || '-',
           }));
 
           this.dataSource = new MatTableDataSource(this.evalPlanPurchaseOrderData);
@@ -311,8 +322,9 @@ onEvaluationPlanTypeChange(orderType: string): void {
       this.pageTitle = 'List of Evaluation Plan';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate','lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'action'];
-        this.dataSource.data = this.evalPlanPurchaseOrderData;
+        this.displayedColumns = ['serialId', 'docNo', 'docDate','lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'id', 'action'];
+        this.dataSource.data =  this.dataSource.data;
+        console.log('Purchase Order Data:', this.dataSource.data);
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
         this.dataSource.data = this.evalPlanProductionOrderData;
@@ -404,6 +416,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
   // }
 
   navigateToOrderForm(element: any) {
+    console.log('SENDING DATA:', element);
     const orderType = this.orderTypeControl.value; // Get selected order type
   
     if (this.currentView === 'sapDocuments') {
