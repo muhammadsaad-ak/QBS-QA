@@ -38,6 +38,8 @@ export class ListOfEvaluationPlanPurchaseOrderService {
                 tap((response: any) => {
                     console.log('API Response:', response);
                     this._listEvaluationPlanPurchaseOrders.next(response);
+                    console.log('Fetched EP Orders:', response);
+
                 }),
                 catchError((error) => {
                     console.error('Error fetching Evaluation Plan Purchase Orders', error);

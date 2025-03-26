@@ -34,33 +34,28 @@
                         readonly style="cursor: not-allowed" />
                 </mat-form-field>
 
-                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
-                    <mat-label>P.O Date</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="docDate" placeholder="Enter Code"
-                        required readonly style="cursor: not-allowed" />
+                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                    <mat-label>Document Date</mat-label>
+                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="docDate"
+                        placeholder="Enter Code" required readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
-                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
-                    <mat-label>Purchase Order</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter" formControlName="docNo" required
-                        readonly style="cursor: not-allowed" />
+                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                    <mat-label>Document No</mat-label>
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="docNo" required
+                        readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
-                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
-                    <mat-label>warehouse</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="warehouse" placeholder="Enter Code"
-                        required readonly style="cursor: not-allowed" />
-                </mat-form-field>
-                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
-                    <mat-label>LineNo</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="lineNo" placeholder="Enter Code" required
-                        readonly style="cursor: not-allowed" />
+                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                    <mat-label>Warehouse</mat-label>
+                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="warehouse"
+                        placeholder="Enter Code" required readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
-                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
-                    <mat-label>P.O Qty:</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter" formControlName="sapQuantity" required
-                        readonly style="cursor: not-allowed" />
+                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                    <mat-label>Quantity:</mat-label>
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="sapQuantity" required
+                        readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
@@ -78,7 +73,11 @@
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>Sample Qty</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="sampleQuantity" placeholder="Enter Code"
-                        readonly style="cursor: not-allowed" />
+                        readonly style=" cursor: not-allowed;">
+                </mat-form-field>
+                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                    <mat-label>Line Num:</mat-label>
+                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="lineNo" required readonly>
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
@@ -96,7 +95,17 @@
                     <input matInput placeholder="Enter" formControlName="inspectionQuantity" required />
                 </mat-form-field>
 
-                <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px">
+                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                    <mat-label>Analyzed By:</mat-label>
+                    <input matInput placeholder="Enter " formControlName="analyzedBy" required>
+                </mat-form-field>
+
+                <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
+                    <mat-label>Item ID:</mat-label>
+                    <input class="view-mode-bg-grey" matInput formControlName="itemId">
+                </mat-form-field>
+
+                <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
                     <mat-label>Item ID:</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="itemId" required readonly
                         style="cursor: not-allowed" />

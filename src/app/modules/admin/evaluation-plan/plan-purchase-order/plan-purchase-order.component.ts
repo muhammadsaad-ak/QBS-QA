@@ -46,6 +46,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   isFormSaved = false;
   isDropdownOpen = false;
   isValidate = false;
+  isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
+
   cardCode: any;
   purchaseQcId: any
   dataSourceQualitativeInspection: MatTableDataSource<any>;
@@ -90,26 +92,26 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   ) { }
 
   planPurchaseOrderFormGroup = this._formBuilder.group({
-    id: [''],
-    intCode: [0],
-    documentNumber: [5],
-    openQuantity: [20],
-    status: [''],
-    documentType: [''],
-    documentDate: [new Date().toISOString()],
-    lineNo: [null],
-    receiveQuantity: [],
-    inspectionQuantity: [],
-    inspectionDateTime: [new Date().toISOString()],
-    qcLotNo: [],
-    docDate: [new Date().toISOString()],
-    docNo: [],
-    warehouse: [''],
-    sapQuantity: [],
-    sampleQuantity: [3],
-    vendor: [''],
-    remarks: ['remarks'],
-    itemId: [null],
+    id: [''], // ✅ Empty string if null not allowed
+    intCode: [""], // number
+    docNo: [], // number
+    openQuantity: [], // number
+    status: [''], // ✅ Meaningful status
+    documentType: [''], // ✅ Meaningful type
+    documentDate: [new Date().toISOString()], // ✅ Correct ISO format
+    lineNo: [], // ✅ Keep null if API supports
+    receiveQuantity: [], // number
+    inspectionQuantity: [], // number
+    inspectionDateTime: [new Date().toISOString()], // ✅ Correct ISO format
+    qcLotNo: [], // number
+    docDate: [new Date().toISOString()], // ✅ Correct ISO format
+    poCode: [], // string
+    warehouse: [''], // string
+    sapQuantity: [], // number
+    sampleQuantity: [], // number
+    vendor: [''], // string
+    remarks: ['remarks'], // string
+    itemId: null, // ✅ Empty string instead of null
     itemCode: [''],
     itemDescription: [''],
     itemCodeModalPO: ['ITEM-123'],
@@ -171,24 +173,68 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this.isValidate = true;
     if (this.planPurchaseOrderFormGroup.valid) {
       const formData = this.planPurchaseOrderFormGroup.value;
-      console.log('SENDING PURCHASE ORDER PAYLOAD:', formData);
-      this.isFormSaved = true;
-      // return;
-      this._evaluationPurchaseOrderService.AddPurchaseOrder(formData).subscribe(
+      console.log('PAYLOAD BEFORE sampleQuantity:', formData);
+      const { id, documentType, inspectionByModalPO, inspectionQtyModalPO, inspectionTimeModalPO, intCode, itemCode, itemCodeModalPO, itemDescription, poCode,receiveQtyPO,  
+        ...payload } = formData; // EXCLUDING `data`
+      console.log('SENDING AFTER EXCLUDED VALUES:', payload); // 
+
+      const inspectionQuantity: number = Number(formData.inspectionQuantity);
+      const itemId: string = String(formData.itemId);
+
+      this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
+
+        console.log('SENDING PURCHASE ORDER PAYLOAD:', payload);
+        this.isFormSaved = true; // UI trigger karega
+        return;  
+        this._evaluationPurchaseOrderService.AddPurchaseOrder(payload).subscribe(
+          (response) => {
+            if (response.succeeded) {
+              console.log('API RUN SUCCESSFULLY.', payload);
+              this._snackBar.open('Purchase Order added successfully!', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-success']
+              });
+            }
+          },
+          (error) => {
+            this._snackBar.open('Error adding purchase order.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        );
+      }).catch((error) => {
+        console.error('Error in getSampleQuantity:', error);
+      });
+    } else {
+      this.isValidate = false;
+      this._snackBar.open('Please fill all mandatory fields.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    }
+  }
+  // GET API CALL TO UPDATE sampleQuantity
+  getSampleQuantity(inspectionQuantity: number, itemId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this._evaluationPurchaseOrderService.getSampleQuantityRange(inspectionQuantity, itemId).subscribe(
         (response) => {
           if (response.succeeded) {
             this._snackBar.open('Purchase Order added successfully!', 'Close', { duration: 3000, panelClass: ['snackbar-success'] });
+          } else {
+            this.isValidate = false;
+            this._snackBar.open('Please fill all mandatory fields.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
           }
+          resolve(); // Make sure to resolve the promise
         },
         (error) => {
           this._snackBar.open('Error adding purchase order.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
+          reject(error); // Reject the promise on error
         }
       );
-    } else {
-      this.isValidate = false;
-      this._snackBar.open('Please fill all mandatory fields.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
-    }
+    });
   }
+  
 
   cancelForm() {
     this.planPurchaseOrderFormGroup.reset();
@@ -307,10 +353,17 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   ngOnInit() {
     this.selectedOrder = history.state.selectedOrder;
 
+    this.selectedOrder = history.state.selectedOrder; // Access the passed data
+    this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
+
     if (this.selectedOrder) {
-      this.populateForm(this.selectedOrder);
+      if (this.isEditMode) {
+          this.populateEditForm(this.selectedOrder); // Call Edit QC function
+      } else {
+          this.populateForm(this.selectedOrder); // Call Perform QC function
+      }
       this.getItemId(this.selectedOrder.itemCode);
-    }
+  }
 
 
 
@@ -321,24 +374,25 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   }
 
   populateForm(data: any): void {
+    console.log('Perform QC - Selected Order:', data);
     this.planPurchaseOrderFormGroup.patchValue({
-      id: "",
-      intCode: 0,
-      documentNumber: data.docNo,
+      // id: "", // Add missing field
+      // intCode: "", // Add missing field
+      docNo: data.docNo.toString(), // Convert to string
       openQuantity: data.openQty,
-      status: data.status,
-      documentType: "",
-      documentDate: new Date().toISOString(),
-      lineNo: data.lineNum,
-      receiveQuantity: 0,
-      inspectionQuantity: 0,
-      inspectionDateTime: new Date().toISOString(),
-      qcLotNo: [],
+      status: data.status, // Add missing field
+      documentType: "", // Add missing field
+      documentDate: new Date().toISOString(), // Add missing field
+      lineNo: data.lineNum, // Add missing field
+      receiveQuantity: 0, // Add missing field
+      inspectionQuantity: 0, // Add missing field
+      inspectionDateTime: new Date().toISOString(), // Add missing field
+      qcLotNo: 0, // Add missing field
       docDate: data.docDate,
-      docNo: data.docNo.toString(),
+      poCode: data.docNo.toString(), // Convert to string
       warehouse: data.warehouse,
       sapQuantity: data.qty,
-      sampleQuantity: 3,
+      // sampleQuantity: 3, // Add missing field
       vendor: data.cardName,
       remarks: "",
       itemDescription: data.itemDescription,
@@ -346,6 +400,35 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
     });
   }
+
+  populateEditForm(data: any): void {
+    console.log('Populating Edit QC Form:', data);
+  
+    this.planPurchaseOrderFormGroup.patchValue({
+      intCode: data.intCode ?? "",  
+      itemCode: data.itemCode ?? "",  
+      itemDescription: data.itemDescription ?? "",  
+      openQuantity: data.openQuantity ?? 0,  
+      // analyzedBy: data.analyzedBy,  
+      status: data.status ?? "",  
+      documentType: data.docType ?? "",  
+      documentDate: data.docDate ? new Date(data.docDate).toISOString() : new Date().toISOString(),  
+      lineNo: data.lineNo ?? 0,  
+      receiveQuantity: data.receiveQuantity ?? 0,  
+      inspectionQuantity: data.inspectionQuantity ?? 0,  
+      inspectionDateTime: data.inspectionDateTime ? new Date(data.inspectionDateTime).toISOString() : new Date().toISOString(),  
+      qcLotNo: data.qcLotNo ?? "",  
+      docDate: data.docDate ?? "",  
+      docNo: data.docNo ?? "",  
+      warehouse: data.warehouse ?? "",  
+      sapQuantity: data.sapQuantity ?? 0,  
+      sampleQuantity: data.sampleQuantity ?? 0,  
+      vendor: data.vendor ?? "",  
+      remarks: data.remarks ?? "",  
+      itemId: data.itemDetails?.id ?? ""
+    });
+  }
+  
 
   ngAfterViewInit() {
     this.cdr.detectChanges();
