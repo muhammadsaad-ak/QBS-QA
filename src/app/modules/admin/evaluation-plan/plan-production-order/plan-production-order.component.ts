@@ -19,6 +19,7 @@ import { ItemInspectionCardService } from 'app/core/other-core-services/module/i
 import { MatSelectModule } from '@angular/material/select';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 import { EvaluationPlanProductionOrderService } from 'app/core/other-core-services/module/evaluation-plan-production-order.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -97,8 +98,12 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     private _inspectionCardModal: InspectionCardService,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
-        private _evaluationProductionOrderService: EvaluationPlanProductionOrderService,
-  ) {}
+    private _evaluationProductionOrderService: EvaluationPlanProductionOrderService,
+    private _snackBar: MatSnackBar,
+  ) { }
+
+
+ 
 
   planProductionOrderFormGroup = this._formBuilder.group({
     intCode: [''], 
@@ -111,7 +116,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     productionOrderPP: [''], // API: docEntry
     locationPP: [''], // API: warehouse
     lotPP: [], // API: uoM (Assuming it's a number)
-    sampleQtyPP: [2], // API: plannedQuantity
+    sampleQuantity: [], // API: plannedQuantity
     openQtyPP: [0, Validators.required], // API: completedQuantity
     lotSizeUnitPP: [0, Validators.required], // API: rejectedQuantity
     shiftPP: ['', Validators.required], // No direct mapping, keep empty
@@ -131,10 +136,10 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     remarks: ['remarks'], // No direct mapping, default value
     itemId: null,
   });
-  
+
 
   get sampleQuantity(): number {
-    return Number(this.planProductionOrderFormGroup.get('sampleQtyPP')?.value) || 0;
+    return Number(this.planProductionOrderFormGroup.get('sampleQuantity')?.value) || 0;
   }
 
   // saveForm(): void {
@@ -148,14 +153,53 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   //     console.error('Form is not valid');
   //   }
 
-   saveForm(): void {
+  saveForm(): void {
     if (this.planProductionOrderFormGroup.valid) {
-      console.log('Form Saved!');
       console.log(this.planProductionOrderFormGroup.value);
-      this.isFormSaved = true; // UI trigger karega
+
+      const formData = this.planProductionOrderFormGroup.value;
+      console.log('PAYLOAD BEFORE sampleQuantity:', formData);
+
+      const inspectionQuantity: number = Number(formData.inspectionQuantity);
+      const itemId: string = String(formData.itemId);
+
+      this.getSampleQuantity(inspectionQuantity, itemId)
+        .then(() => {
+          const updatedFormData = this.planProductionOrderFormGroup.value;
+          console.log('PAYLOAD AFTER sampleQuantity:', updatedFormData);
+          console.log('Form Saved!');
+          this.isFormSaved = true;
+        })
+        .catch((error) => {
+          console.error('Error in getSampleQuantity:', error);
+        });
     } else {
       console.error('Form is not valid');
     }
+  }
+  // GET API CALL TO UPDATE sampleQuantity
+  getSampleQuantity(inspectionQuantity: number, itemId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this._evaluationProductionOrderService.getSampleQuantityRange(inspectionQuantity, itemId).subscribe(
+        (response) => {
+          console.log('API RESPONSE:', response);
+          if (response.isRequestSuccess) {
+            const sampleQuantity = response.data;
+            console.log('RECEIVED sampleQuantity:', sampleQuantity);
+            this.planProductionOrderFormGroup.get('sampleQuantity')?.setValue(sampleQuantity);
+            resolve();
+          }
+        },
+        (error) => {
+          console.error('ERROR FETCHING SAMPLE QUANTITY:', error);
+          this._snackBar.open('ERROR FETCHING SAMPLE QUANTITY.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error'],
+          });
+          reject(error);
+        }
+      );
+    });
   }
 
   cancelForm() {
