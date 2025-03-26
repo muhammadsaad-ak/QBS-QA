@@ -105,10 +105,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     inspectionDateTime: [new Date().toISOString()], // ✅ Correct ISO format
     qcLotNo: [], // number
     docDate: [new Date().toISOString()], // ✅ Correct ISO format
+    analyzedBy: [''], // string
     poCode: [], // string
     warehouse: [''], // string
     sapQuantity: [], // number
-    sampleQuantity: [], // number
+    sampleQuantity: [2], // number
     vendor: [''], // string
     remarks: ['remarks'], // string
     itemId: null, // ✅ Empty string instead of null
@@ -364,6 +365,12 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       }
       this.getItemId(this.selectedOrder.itemCode);
   }
+  this._evaluationPurchaseOrderService.getPurchaseQCCode().subscribe((purchaseQCCode) => { 
+    console.log('Purchase QC Code:', purchaseQCCode); // Debugging ke liye
+
+    const fullCode = `PQC-000${purchaseQCCode.data || ''}`; // Code format
+    this.planPurchaseOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+});
 
 
 
@@ -384,6 +391,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       documentType: "", // Add missing field
       documentDate: new Date().toISOString(), // Add missing field
       lineNo: data.lineNum, // Add missing field
+      analyzedBy: data.analyzedBy,
       receiveQuantity: 0, // Add missing field
       inspectionQuantity: 0, // Add missing field
       inspectionDateTime: new Date().toISOString(), // Add missing field

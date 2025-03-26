@@ -11,8 +11,8 @@
                     align-items: flex-start;
                 ">
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
-                    <mat-label>Doc No.</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="documentNumber" placeholder="Enter Code"
+                    <mat-label>Q-Code</mat-label>
+                    <input class="view-mode-bg-grey" matInput formControlName="intCode" placeholder="Enter Code"
                         required readonly style="cursor: not-allowed" />
                 </mat-form-field>
 
@@ -105,11 +105,6 @@
                     <input class="view-mode-bg-grey" matInput formControlName="itemId">
                 </mat-form-field>
 
-                <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
-                    <mat-label>Item ID:</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="itemId" required readonly
-                        style="cursor: not-allowed" />
-                </mat-form-field>
             </div>
 
             <button mat-flat-button color="primary" *ngIf="
