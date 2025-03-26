@@ -109,21 +109,28 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     intCode: [''], 
     inspectionQuantity: [],
     docNoPP: [''], // API: docNum
-    itemCodePP: [''], // API: itemCode
-    itemDescriptionPP: [''], // API: productName
+    itemCode: [''], // API: itemCode
+    itemDescription: [''], // API: productName
     inspectionDateTimePP: [new Date().toISOString()], // API: docDate (converted to ISO)
     datePP: [new Date().toISOString().split('T')[0]], // API: docDate (only date part)
     productionOrderPP: [''], // API: docEntry
     locationPP: [''], // API: warehouse
-    lotPP: [], // API: uoM (Assuming it's a number)
+    lotNo: [''], // API: lotNo
+    shift: [''],
+    variant: [''], 
     sampleQuantity: [], // API: plannedQuantity
     openQtyPP: [0, Validators.required], // API: completedQuantity
     lotSizeUnitPP: [0, Validators.required], // API: rejectedQuantity
     shiftPP: ['', Validators.required], // No direct mapping, keep empty
-    machineNoPP: [''], // No direct mapping, keep empty
+    machine: [''], // No direct mapping, keep empty
+    bmr:[''],
+    mold:[''],
+    cavity: [], // No direct mapping, keep empty
+    cycleTime: [], // No direct mapping, keep empty
+    weight: [], // No direct mapping, keep empty
     variantPP: [''], // API: inventoryUOM
-    bmrPP: [''], // API: itemCode (Assuming same as itemCodePP)
     analyzedByPP: [''], // No direct mapping, keep empty
+    // itemWeight: [''], // No direct mapping, keep empty  
     inspectionByModalPP: [''], // No direct mapping, keep empty
     inspectionTimeModalPP: [''], // No direct mapping, keep empty
     itemCodeModalPO: [''], // No direct mapping, keep empty
@@ -318,8 +325,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     console.log('Selected Production Order:', data);
     this.planProductionOrderFormGroup.patchValue({
       // docNoPP: data.docNo, // ✅ API: docNo
-      itemCodePP: data.itemCode, // ✅ API: itemCode
-      itemDescriptionPP: data.itemDescription, // ✅ API: itemDescription
+      itemCode: data.itemCode, // ✅ API: itemCode
+      itemDescription: data.itemDescription, // ✅ API: itemDescription
       inspectionDateTimePP: new Date(data.docDate).toISOString(), // ✅ Convert to ISO
       // datePP: data.docDate.split('T')[0], // ✅ Only extract date part
       productionOrderPP: data.docNo, // ✅ Convert to string
@@ -329,6 +336,15 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       lotSizeUnitPP: data.qty ?? 0, // ✅ Same as qty
       receiveQtyPO: '', // No direct mapping
       inspectionDateTimePO: new Date().toISOString(), // ✅ Use current date
+      lotNo: data.lotNo ?? 'N/A',
+      shift: data.shift ?? 'N/A',
+      machine: data.machine ?? 'N/A',
+      bmr: data.bmr ?? 'N/A',
+      mold: data.mold ?? 'N/A',
+      cavity: data.cavity ?? 'N/A',
+      cycleTime: data.cycleTime ?? 'N/A',
+      weight: data.weight ?? 'N/A',
+      variant: data.variant ?? 'N/A',
     });
   }
   

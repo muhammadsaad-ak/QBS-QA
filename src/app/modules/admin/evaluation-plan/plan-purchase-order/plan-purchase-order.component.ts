@@ -186,7 +186,6 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
         console.log('SENDING PURCHASE ORDER PAYLOAD:', payload);
         this.isFormSaved = true; // UI trigger karega
-        return;  
         this._evaluationPurchaseOrderService.AddPurchaseOrder(payload).subscribe(
           (response) => {
             if (response.succeeded) {
@@ -417,7 +416,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       itemCode: data.itemCode ?? "",  
       itemDescription: data.itemDescription ?? "",  
       openQuantity: data.openQuantity ?? 0,  
-      // analyzedBy: data.analyzedBy,  
+      analyzedBy: data.analyzedBy,  
       status: data.status ?? "",  
       documentType: data.docType ?? "",  
       documentDate: data.docDate ? new Date(data.docDate).toISOString() : new Date().toISOString(),  
