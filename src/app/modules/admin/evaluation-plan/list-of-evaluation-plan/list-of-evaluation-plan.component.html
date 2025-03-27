@@ -27,14 +27,14 @@
                         <mat-option value="productionOrder">Production Order</mat-option>
                     </mat-select>
                 </mat-form-field>
-            
+
                 <!-- Search Field -->
                 <mat-form-field class="qbs-mat-dense qbs-mat-rounded w-full sm:w-1/3 md:w-1/4 sm:ml-2">
                     <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                     <input matInput [autocomplete]="'off'" placeholder="Search..." [formControl]="searchInputControl" />
                 </mat-form-field>
             </div>
-            
+
             <!-- Main Content -->
             <div class="-mt-px flex flex-auto border-t pt-4 sm:pt-2 overflow-hidden"
                 style="padding-top: 0px !important;">
@@ -43,13 +43,16 @@
                         <table mat-table [dataSource]="dataSource">
                             <!-- Serial Id COLUMN -->
                             <ng-container matColumnDef="serialId">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;  text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important;  text-align: center;">
                                     S.No </th>
-                                <td mat-cell *matCellDef="let index = index" style="text-align: center;"> {{index + 1}} </td>
+                                <td mat-cell *matCellDef="let index = index" style="text-align: center;"> {{index + 1}}
+                                </td>
                             </ng-container>
                             <!-- Doc. No COLUMN -->
                             <ng-container matColumnDef="docNo">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
                                     Document No
                                 </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
@@ -58,15 +61,17 @@
                             </ng-container>
                             <!-- Doc. Date COLUMN -->
                             <ng-container matColumnDef="docDate">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
                                     Doc. Date </th>
-                                    <td mat-cell *matCellDef="let element" style="text-align: center;">
-                                        {{ element.docDate ? (element.docDate | date:'d/M/y') : '-' }}
-                                    </td>
+                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                    {{ element.docDate ? (element.docDate | date:'d/M/y') : '-' }}
+                                </td>
                             </ng-container>
                             <!-- Line No COLUMN -->
                             <ng-container matColumnDef="lineNo">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
                                     Line No </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{ element.lineNum ?? '0' }}
@@ -74,14 +79,16 @@
                             </ng-container>
                             <!-- Item Code COLUMN -->
                             <ng-container matColumnDef="itemCode">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
                                     Item Code </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{element.itemCode ? element.itemCode : '-'}} </td>
                             </ng-container>
                             <!-- Item Description COLUMN -->
                             <ng-container matColumnDef="itemDescription">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
                                     Item Description </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{element.itemDescription ? element.itemDescription : '-' }} </td>
@@ -89,7 +96,8 @@
 
                             <!-- QTY COLUMN -->
                             <ng-container matColumnDef="qty">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
                                     Qty </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{ element.qty ? element.qty : '0' }}
@@ -97,86 +105,87 @@
                             </ng-container>
                             <!-- Open QTY COLUMN -->
                             <ng-container matColumnDef="openQty">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
                                     Open Qty </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{ element.openQty !== undefined ? element.openQty : '-' }}
                                 </td>
                             </ng-container>
-                          
+
                             <ng-container matColumnDef="id" class="hidden">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;" class="hidden">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;" class="hidden">
                                     id
                                 </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;" class="hidden">
                                     {{ element.id ? element.id : '-' }}
                                 </td>
                             </ng-container>
-                            
+
                             <!-- Status COLUMN -->
-                            <ng-container matColumnDef="status"> 
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;"> 
-                                    Status 
-                                </th> 
-                                <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10"> 
+                            <ng-container matColumnDef="status">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
+                                    Status
+                                </th>
+                                <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10">
                                     <span *ngIf="element.status === 'bost_Open'">Open</span>
                                     <span *ngIf="element.status === 'boposReleased'">Released</span>
                                     <span *ngIf="element.status !== 'bost_Open' && element.status !== 'boposReleased'">
                                         {{ element.status ? element.status : '-' }}
                                     </span>
-                                </td> 
+                                </td>
                             </ng-container>
                             <!-- QA/QC Status -->
                             <ng-container matColumnDef="inspectionStatus">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
-                                    Q-Status 
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; text-align: center;">
+                                    Q-Status
                                 </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;" 
-                                    class="px-10" [ngClass]="getStatusClass('In Progress')">
+                                <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10"
+                                    [ngClass]="getStatusClass('In Progress')">
                                     In Progress
                                 </td>
                             </ng-container>
-                                                     
+
                             <!-- Action COLUMN -->
                             <ng-container matColumnDef="action">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                  Action
+                                    Action
                                 </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
-                                  <button mat-icon-button [matMenuTriggerFor]="menu">
-                                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
-                                  </button>
-                                  <mat-menu #menu="matMenu">
-                                    <!-- Show "Perform QC" if we are on SAP Documents -->
-                                    <button mat-menu-item class="text-red-400" 
-                                            *ngIf="currentView === 'sapDocuments'" 
-                                            (click)="navigateToOrderForm(element)">
-                                      Perform QC
+                                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                                        <mat-icon class="icon-size-5"
+                                            [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
                                     </button>
-                              
-                                    <!-- Show "Edit QC" if we are on Evaluation Plan -->
-                                    <button mat-menu-item class="text-blue-400" 
-                                            *ngIf="currentView === 'evaluationPlan'" 
+                                    <mat-menu #menu="matMenu">
+                                        <!-- Show "Perform QC" if we are on SAP Documents -->
+                                        <button mat-menu-item class="text-red-400"
+                                            *ngIf="currentView === 'sapDocuments'"
                                             (click)="navigateToOrderForm(element)">
-                                      Edit QC
-                                    </button>
-                                  </mat-menu>
+                                            Perform QC
+                                        </button>
+
+                                        <!-- Show "Edit QC" if we are on Evaluation Plan -->
+                                        <button mat-menu-item class="text-blue-400"
+                                            *ngIf="currentView === 'evaluationPlan'"
+                                            (click)="navigateToOrderForm(element)">
+                                            Edit QC
+                                        </button>
+                                    </mat-menu>
                                 </td>
-                              </ng-container>
-                              
+                            </ng-container>
+
                             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                         </table>
                         <!-- <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
                             aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">
                         </mat-paginator> -->
-                        <mat-paginator 
-                        [length]="totalRecords"
-                        [pageSize]="pageSize"
-                        [pageSizeOptions]="[5, 10, 20, 50]" 
-                        showFirstLastButtons
-                        style="background-color: #e2e8f0 !important;"
-                        (page)="onPageChange($event)">
+                        <mat-paginator [length]="totalRecords" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20, 50]"
+                            showFirstLastButtons style="background-color: #e2e8f0 !important;"
+                            (page)="onPageChange($event)">
                         </mat-paginator>
                     </div>
                 </div>

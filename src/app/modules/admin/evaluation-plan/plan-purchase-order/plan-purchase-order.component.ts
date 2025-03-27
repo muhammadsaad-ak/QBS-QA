@@ -44,6 +44,7 @@ import { SapPlanPurchaseOrderService } from '../../../../core/other-core-service
 export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   selectedOrder: any;
   isFormSaved = false;
+  isEditForm: boolean = false;
   isDropdownOpen = false;
   isValidate = false;
   isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
@@ -54,7 +55,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   dataSourceQuantitativeInspection: MatTableDataSource<any>;
   dataSourceUoMIIC: MatTableDataSource<any>;
   dataSourceAddQuantitativeIIC: MatTableDataSource<any>;
-
+  purchaseQcSamples: any
   selectedRowIndexUoM: number = -1;
   selectedUoMCode: string = '';
 
@@ -109,7 +110,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     poCode: [], // string
     warehouse: [''], // string
     sapQuantity: [], // number
-    sampleQuantity: [], // number
+    sampleQuantity: [2], // number
     vendor: [''], // string
     remarks: ['remarks'], // string
     itemId: null, // ✅ Empty string instead of null
@@ -169,6 +170,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   get quantitativeInspectionResults(): FormArray {
     return this.planPurchaseOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
   }
+
+ 
 
   onSubmitPurchaseOrder(): void {
     this.isValidate = true;
@@ -250,15 +253,13 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   samplesPurchaseOrder = [];
   nextSampleId: number = 1;
 
-  getPurchaseByQcCode(itemCode: string, docNo: number, lineNo: number) {
-    this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNo).subscribe({
+  getPurchaseByQcCode(itemCode: string, docNo: number, lineNum: number) {
+    this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNum).subscribe({
       next: (response) => {
+       
         this.purchaseQcId = response.data;
-        this.planPurchaseOrderFormGroup.patchValue({
-          // inspectionBy: response.inspectionBy || '', 
-          inspectionDateTime: response.inspectionDateTime || new Date().toISOString()
-        });
-        this.cdr.detectChanges();
+      
+         this.addNewSampleForPurchaseOrder()
       },
       error: (err) => {
         console.error('QC SERVICE ERROR:', err);
@@ -358,14 +359,17 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   @ViewChild('dialogTemplateItems') dialogTemplateItems;
 
   ngOnInit() {
+   
     this.selectedOrder = history.state.selectedOrder;
 
     this.selectedOrder = history.state.selectedOrder; // Access the passed data
     this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
-
+    
     if (this.selectedOrder) {
       if (this.isEditMode) {
           this.populateEditForm(this.selectedOrder); // Call Edit QC function
+          this.ListAllPurchaseQCSamplesByQcId(this.selectedOrder.id)
+          console.log('HAHA',this.selectedOrder)
       } else {
           this.populateForm(this.selectedOrder); // Call Perform QC function
       }
@@ -427,7 +431,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       status: data.status ?? "",  
       documentType: data.docType ?? "",  
       documentDate: data.docDate ? new Date(data.docDate).toISOString() : new Date().toISOString(),  
-      lineNo: data.lineNo ?? 0,  
+      lineNo: data.lineNum ?? 0,  
       receiveQuantity: data.receiveQuantity ?? 0,  
       inspectionQuantity: data.inspectionQuantity ?? 0,  
       inspectionDateTime: data.inspectionDateTime ? new Date(data.inspectionDateTime).toISOString() : new Date().toISOString(),  
@@ -462,7 +466,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     }
 
     this.getCardByItemCode(this.selectedOrder.itemCode);
-    console.log(this.selectedOrder)
+    console.log(this.selectedOrder, 'this.selectedOrder')
     this.getPurchaseByQcCode(
       this.selectedOrder.itemCode,
       this.selectedOrder.docNo,
@@ -504,10 +508,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         this.cardCode = response.data;
         console.log(this.cardCode);
         if (this.cardCode) {
-          this.planPurchaseOrderFormGroup.patchValue({
-            itemCode: this.cardCode.itemId || '',
-            itemDescription: this.cardCode.itemDescription || ''
-          });
+          // this.planPurchaseOrderFormGroup.patchValue({
+          //   itemCode: this.cardCode.itemId || '',
+          //   itemDescription: this.cardCode.itemDescription || ''
+          // });
           this.populateQualitativeAndQuantitativeData(this.cardCode);
           this.cdr.detectChanges();
         }
@@ -518,6 +522,17 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
   }
 
+  ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
+    this._sapPlanPurchaseOrderService.ListAllPurchaseQCSamplesByQcId(purchaseQcId).subscribe({
+      next: (response) => {
+        this.purchaseQcSamples = response.data;
+        console.log(this.purchaseQcSamples, 'purchaseQcSamples');
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      }
+    })
+  }
 
 
 
