@@ -235,11 +235,20 @@ onEvaluationPlanTypeChange(orderType: string): void {
                 qty: order.plannedQuantity,
                 openQty: order.plannedQuantity - order.completedQuantity,
                 status: order.productionOrderStatus,
+                lotNo: order.lotNo,
                 warehouse: order.warehouse,
+                machine: order.machine,
+                bmr:order.bmr,
+                mold:order.mold,
+                cavity: order.cavity,
+                cycleTime: order.cycleTime,
+                weight: order.weight,
+                variant: order.variant,
               }));
 
             // ✅ MatTableDataSource ko update karo
             this.dataSource = new MatTableDataSource(this.sapDocProductionOrderData);
+            console.log('SAP Production Orders lol:', this.sapDocProductionOrderData);
 
             // ✅ Total records ko update karo, taake paginator sahi kaam kare
             this.totalRecords = response.data.totalRecords;

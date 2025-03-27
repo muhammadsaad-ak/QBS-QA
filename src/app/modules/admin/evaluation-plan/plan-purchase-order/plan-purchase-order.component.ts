@@ -176,24 +176,28 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   onSubmitPurchaseOrder(): void {
     this.isValidate = true;
     if (this.planPurchaseOrderFormGroup.valid) {
-      const formData = this.planPurchaseOrderFormGroup.value;
-      console.log('PAYLOAD BEFORE sampleQuantity:', formData);
-      const { id, documentType, inspectionByModalPO, inspectionQtyModalPO, inspectionTimeModalPO, intCode, itemCode, itemCodeModalPO, itemDescription, poCode,receiveQtyPO,  
-        ...payload } = formData; // EXCLUDING `data`
-      console.log('SENDING AFTER EXCLUDED VALUES:', payload); // 
 
-      const inspectionQuantity: number = Number(formData.inspectionQuantity);
-      const itemId: string = String(formData.itemId);
+      const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
+      const itemId: string = String(this.planPurchaseOrderFormGroup.value.itemId);
+
+      console.log('PAYLOAD BEFORE GET sampleQuantity API:', this.planPurchaseOrderFormGroup.valid);
 
       this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
 
+        const formData = this.planPurchaseOrderFormGroup.value;
+
+        console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
+
+        const { id, documentType, inspectionByModalPO, inspectionQtyModalPO, inspectionTimeModalPO, intCode, itemCode, itemCodeModalPO, itemDescription, poCode, receiveQtyPO,
+          ...payload } = formData;
+
         console.log('SENDING PURCHASE ORDER PAYLOAD:', payload);
+
         this.isFormSaved = true; // UI trigger karega
-   
-        // return;  
+        // return;
         this._evaluationPurchaseOrderService.AddPurchaseOrder(payload).subscribe(
           (response) => {
-            if (response.succeeded) {
+            if (response.isRequestSuccess) {
               console.log('API RUN SUCCESSFULLY.', payload);
               this._snackBar.open('Purchase Order added successfully!', 'Close', {
                 duration: 3000,
@@ -224,7 +228,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     return new Promise((resolve, reject) => {
       this._evaluationPurchaseOrderService.getSampleQuantityRange(inspectionQuantity, itemId).subscribe(
         (response) => {
-          if (response.succeeded) {
+          if (response.isRequestSuccess) {
+            this.planPurchaseOrderFormGroup.get('sampleQuantity')?.setValue(response.data);
             this._snackBar.open('Purchase Order added successfully!', 'Close', { duration: 3000, panelClass: ['snackbar-success'] });
           } else {
             this.isValidate = false;
@@ -239,7 +244,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       );
     });
   }
-  
+
 
   cancelForm() {
     this.planPurchaseOrderFormGroup.reset();
