@@ -264,7 +264,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
               openQuantity: order.openQuantity || 0,
               vendor: order.vendor || '-',
               sampleQuantity: order.sampleQuantity || 0,
-              lineNum: order.lineNum || '-', // Add line number
+              lineNum: order.lineNum || order.lineNo || 'NA', // Add line number
               qcLotNo: order.qcLotNo || '-', // Add QC Lot number
               receiveQuantity : order.receiveQuantity || 0,
               inspectionQuantity: order.inspectionQuantity || 0,
