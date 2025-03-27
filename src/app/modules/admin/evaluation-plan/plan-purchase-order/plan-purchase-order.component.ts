@@ -110,7 +110,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     poCode: [], // string
     warehouse: [''], // string
     sapQuantity: [], // number
-    sampleQuantity: [2], // number
+    sampleQuantity: [], // number
     vendor: [''], // string
     remarks: ['remarks'], // string
     itemId: null, // ✅ Empty string instead of null
@@ -253,13 +253,29 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   samplesPurchaseOrder = [];
   nextSampleId: number = 1;
 
-  getPurchaseByQcCode(itemCode: string, docNo: number, lineNum: number) {
+  getPurchaseByQcCodeX(itemCode: string, docNo: number, lineNum: number) {
     this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNum).subscribe({
       next: (response) => {
        
         this.purchaseQcId = response.data;
       
          this.addNewSampleForPurchaseOrder()
+      },
+      error: (err) => {
+        console.error('QC SERVICE ERROR:', err);
+      }
+    });
+  }
+
+    getPurchaseByQcCode(itemCode: string, docNo: number, lineNum: number) {
+    this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNum).subscribe({
+      next: (response) => {
+        this.purchaseQcId = response.data;
+        this.planPurchaseOrderFormGroup.patchValue({
+          // inspectionBy: response.inspectionBy || '', 
+          inspectionDateTime: response.inspectionDateTime || new Date().toISOString()
+        });
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('QC SERVICE ERROR:', err);
@@ -494,6 +510,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         inspectionByControl.clearValidators();
         inspectionByControl.updateValueAndValidity();
       }
+
+      
       this.closeDialog();
     });
   }
