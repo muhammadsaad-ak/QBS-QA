@@ -244,6 +244,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
                 cycleTime: order.cycleTime,
                 weight: order.weight,
                 variant: order.variant,
+                shift: order.shift,
               }));
 
             // ✅ MatTableDataSource ko update karo
@@ -294,8 +295,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
       if (response.data) {
         this.evalPlanProductionOrderData = response.data.map((order, index) => ({
           // serialId: index + 1,
-          docNo: order.documentNumber,
-          docDate: order.documentDate,
+          docNo: order.docNo,
+          docDate: order.docDate,
           itemCode: order.itemDetails?.itemCode || '-',
           itemDescription: order.itemDetails?.name || '-',
           qty: order.poQuantity || 0,
@@ -305,6 +306,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
   
         if (this.orderType === 'productionOrder') {
           this.dataSource = new MatTableDataSource(this.evalPlanProductionOrderData);
+          console.log('Evaluation Plan Production Orders:', this.evalPlanProductionOrderData);
         }
       } else {
         console.error('Failed to fetch Evaluation Plan Production Orders', response.message);

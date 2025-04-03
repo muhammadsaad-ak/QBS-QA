@@ -52,9 +52,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   quantitativeInspectionForm: FormGroup;
   isFormSaved = false; // Initialize to false
   isDropdownOpen = false;
-
-
-  
+  isValidate = false;
   
   // Plan Purchase DataSources for tables
   dataSourceQualitativeInspectionPP: MatTableDataSource<any>;
@@ -101,36 +99,34 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     private _evaluationProductionOrderService: EvaluationPlanProductionOrderService,
     private _snackBar: MatSnackBar,
   ) { }
-
-
- 
-
   planProductionOrderFormGroup = this._formBuilder.group({
+    id: [''], 
     intCode: [''], 
-    inspectionQuantity: [],
-    docNoPP: [''], // API: docNum
-    itemCode: [''], // API: itemCode
-    itemDescription: [''], // API: productName
-    inspectionDateTimePP: [new Date().toISOString()], // API: docDate (converted to ISO)
-    datePP: [new Date().toISOString().split('T')[0]], // API: docDate (only date part)
-    productionOrderPP: [''], // API: docEntry
-    locationPP: [''], // API: warehouse
-    lotNo: [''], // API: lotNo
-    shift: [''],
+    itemCode: [''], 
+    itemDescription: [''], 
+    inspectionDateTime: [new Date().toISOString(), Validators.required], 
+    docDate: [new Date().toISOString(), Validators.required], 
+    docNo: ['', Validators.required], 
+    warehouse: ['', Validators.required], 
+    sampleQuantity: [], 
+    openQuantity: [0, [Validators.required, Validators.min(0)]], 
+    plannedQuantity: [0, [Validators.required, Validators.min(0)]], 
+    qcLotNo: ['', Validators.required], 
+    shift: ['', Validators.required],
+    machineNo: [''],
     variant: [''], 
-    sampleQuantity: [], // API: plannedQuantity
-    openQtyPP: [0, Validators.required], // API: completedQuantity
-    lotSizeUnitPP: [0, Validators.required], // API: rejectedQuantity
-    shiftPP: ['', Validators.required], // No direct mapping, keep empty
-    machine: [''], // No direct mapping, keep empty
-    bmr:[''],
-    mold:[''],
-    cavity: [], // No direct mapping, keep empty
-    cycleTime: [], // No direct mapping, keep empty
-    weight: [], // No direct mapping, keep empty
-    variantPP: [''], // API: inventoryUOM
-    analyzedByPP: [''], // No direct mapping, keep empty
-    // itemWeight: [''], // No direct mapping, keep empty  
+    bmrNo: [''],
+    mouldNo: [''],
+    cavity: [''], 
+    cycleTime: [], 
+    itemWeight: [''], 
+    inspectionQuantity: [], 
+    analyzedBy: [''], 
+    // vendor: ['a'], 
+    // remarks: ['aa'], 
+    // isActive: [true], 
+    itemId: [''],
+    //
     inspectionByModalPP: [''], // No direct mapping, keep empty
     inspectionTimeModalPP: [''], // No direct mapping, keep empty
     itemCodeModalPO: [''], // No direct mapping, keep empty
@@ -138,10 +134,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     inspectionByModalPO: [''], // No direct mapping, keep empty
     inspectionTimeModalPO: [''], // No direct mapping, keep empty
     receiveQtyPO: [''], // No direct mapping, keep empty
-    inspectionDateTimePO: [new Date().toISOString()], // API: docDate (Converted to ISO)
+    // inspectionDateTimePO: [new Date().toISOString()], // API: docDate (Converted to ISO)
     // lineNum: [''], // No direct mapping, keep empty
-    remarks: ['remarks'], // No direct mapping, default value
-    itemId: null,
   });
 
 
@@ -150,40 +144,81 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
 
   // saveForm(): void {
-  //   this.isFormSaved = true;
-
   //   if (this.planProductionOrderFormGroup.valid) {
   //     console.log(this.planProductionOrderFormGroup.value);
-  //     this.isFormSaved = true;
-  //     // You can also add your save logic here, e.g., calling an API
+
+  //     const formData = this.planProductionOrderFormGroup.value;
+  //     console.log('PAYLOAD BEFORE sampleQuantity:', formData);
+
+  //     const inspectionQuantity: number = Number(formData.inspectionQuantity);
+  //     const itemId: string = String(formData.itemId);
+
+  //     this.getSampleQuantity(inspectionQuantity, itemId)
+  //       .then(() => {
+  //         const updatedFormData = this.planProductionOrderFormGroup.value;
+  //         console.log('PAYLOAD AFTER sampleQuantity:', updatedFormData);
+  //         console.log('Form Saved!');
+  //         this.isFormSaved = true;
+  //       })
+  //       .catch((error) => {
+  //         console.error('Error in getSampleQuantity:', error);
+  //       });
   //   } else {
   //     console.error('Form is not valid');
   //   }
+  // }
 
-  saveForm(): void {
+  onSubmitProductionOrder(): void {
+    this.isValidate = true;
     if (this.planProductionOrderFormGroup.valid) {
-      console.log(this.planProductionOrderFormGroup.value);
 
-      const formData = this.planProductionOrderFormGroup.value;
-      console.log('PAYLOAD BEFORE sampleQuantity:', formData);
+      const inspectionQuantity: number = Number(this.planProductionOrderFormGroup.value.inspectionQuantity);
+      const itemId: string = String(this.planProductionOrderFormGroup.value.itemId);
 
-      const inspectionQuantity: number = Number(formData.inspectionQuantity);
-      const itemId: string = String(formData.itemId);
+      console.log('PAYLOAD BEFORE GET sampleQuantity API:', this.planProductionOrderFormGroup.valid);
 
-      this.getSampleQuantity(inspectionQuantity, itemId)
-        .then(() => {
-          const updatedFormData = this.planProductionOrderFormGroup.value;
-          console.log('PAYLOAD AFTER sampleQuantity:', updatedFormData);
-          console.log('Form Saved!');
-          this.isFormSaved = true;
-        })
-        .catch((error) => {
-          console.error('Error in getSampleQuantity:', error);
-        });
+      this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
+
+        const formData = this.planProductionOrderFormGroup.value;
+
+        console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
+
+        const { id, intCode, itemCode, itemDescription, inspectionByModalPP, inspectionTimeModalPP, itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO,receiveQtyPO,
+          ...payload } = formData;
+
+        console.log('SENDING Production ORDER PAYLOAD:', payload);
+
+        this.isFormSaved = true; // UI trigger karega
+        // return;
+        this._evaluationProductionOrderService.AddProductionOrder(payload).subscribe(
+          (response) => {
+            if (response.isRequestSuccess) {
+              console.log('API RUN SUCCESSFULLY.', payload);
+              this._snackBar.open('Purchase Order added successfully!', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-success']
+              });
+            }
+          },
+          (error) => {
+            this._snackBar.open('Error adding purchase order.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        );
+      }).catch((error) => {
+        console.error('Error in getSampleQuantity:', error);
+      });
     } else {
-      console.error('Form is not valid');
+      this.isValidate = false;
+      this._snackBar.open('Please fill all mandatory fields.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
     }
   }
+
   // GET API CALL TO UPDATE sampleQuantity
   getSampleQuantity(inspectionQuantity: number, itemId: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -209,6 +244,27 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     });
   }
 
+  getSampleQuantityX(inspectionQuantity: number, itemId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this._evaluationProductionOrderService.getSampleQuantityRange(inspectionQuantity, itemId).subscribe(
+        (response) => {
+          if (response.isRequestSuccess) {
+            this.planProductionOrderFormGroup.get('sampleQuantity')?.setValue(response.data);
+            this._snackBar.open('Purchase Order added successfully!', 'Close', { duration: 3000, panelClass: ['snackbar-success'] });
+          } else {
+            this.isValidate = false;
+            this._snackBar.open('Please fill all mandatory fields.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
+          }
+          resolve(); // Make sure to resolve the promise
+        },
+        (error) => {
+          this._snackBar.open('Error adding purchase order.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
+          reject(error); // Reject the promise on error
+        }
+      );
+    });
+  }
+
   cancelForm() {
     // Reset the form or navigate away
     this.planProductionOrderFormGroup.reset();
@@ -218,20 +274,20 @@ export class PlanProductionOrderComponent implements AfterViewInit {
 
   
 
-  setInspectionDateTime() {
-    const now = new Date();
-    const formattedDateTime = now.toLocaleString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
+  // setInspectionDateTime() {
+  //   const now = new Date();
+  //   const formattedDateTime = now.toLocaleString('en-US', {
+  //     year: 'numeric',
+  //     month: '2-digit',
+  //     day: '2-digit',
+  //     hour: '2-digit',
+  //     minute: '2-digit',
+  //     second: '2-digit',
+  //     hour12: false
+  //   });
 
-    this.planProductionOrderFormGroup.get('inspectionDateTimePO')?.setValue(formattedDateTime);
-  }
+  //   this.planProductionOrderFormGroup.get('inspectionDateTime')?.setValue(formattedDateTime);
+  // }
 
   
 
@@ -311,7 +367,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     // Add static quantitative inspection data
     this.addQuantitativeData();
 
-    this.setInspectionDateTime(); // Fetch date-time on load
+    // this.setInspectionDateTime(); // Fetch date-time on load
 
     
     // Initialize data sources
@@ -324,29 +380,31 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   populateProductionOrderForm(data: any): void {
     console.log('Selected Production Order:', data);
     this.planProductionOrderFormGroup.patchValue({
-      // docNoPP: data.docNo, // ✅ API: docNo
-      itemCode: data.itemCode, // ✅ API: itemCode
-      itemDescription: data.itemDescription, // ✅ API: itemDescription
-      inspectionDateTimePP: new Date(data.docDate).toISOString(), // ✅ Convert to ISO
-      // datePP: data.docDate.split('T')[0], // ✅ Only extract date part
-      productionOrderPP: data.docNo, // ✅ Convert to string
-      locationPP: data.warehouse ?? '', // ✅ Handle missing warehouse field
-      // lotPP: data.qty ?? 0, // ✅ API: qty
-      openQtyPP: data.openQty ?? 0, // ✅ API: openQty
-      lotSizeUnitPP: data.qty ?? 0, // ✅ Same as qty
+      itemCode: data.itemCode ?? 'N/A',
+      itemDescription: data.itemDescription ?? 'N/A',
+      inspectionDateTime: new Date().toISOString(), // Add missing field
+      docDate: data.docDate,
+      docNo: data.docNo.toString(), // Convert to string
+      warehouse: data.warehouse,
+      // sampleQuantity: data.sampleQuantity, // ✅ Ensure default numeric value
+      openQuantity: data.openQty,
+      plannedQuantity: data.qty ?? 0, // ✅ Same as qty
       receiveQtyPO: '', // No direct mapping
-      inspectionDateTimePO: new Date().toISOString(), // ✅ Use current date
-      lotNo: data.lotNo ?? 'N/A',
+      // inspectionDateTimePO: new Date().toISOString(), // ✅ Use current date
+      qcLotNo: data.lotNo ?? 'N/A',
       shift: data.shift ?? 'N/A',
-      machine: data.machine ?? 'N/A',
-      bmr: data.bmr ?? 'N/A',
-      mold: data.mold ?? 'N/A',
-      cavity: data.cavity ?? 'N/A',
-      cycleTime: data.cycleTime ?? 'N/A',
-      weight: data.weight ?? 'N/A',
+      machineNo: data.machine ?? 'N/A',
+      bmrNo: data.bmr ?? 'N/A',
+      mouldNo: data.mold ?? 'N/A',
+      cavity: data.cavity !== undefined ? data.cavity.toString() : 'N/A', // ✅ Convert safely
+      cycleTime: data.cycleTime ?? 'N/A', // ✅ Convert safely
+      itemWeight: data.weight !== undefined ? data.weight.toString() : 'N/A', // ✅ Convert safely
       variant: data.variant ?? 'N/A',
+      // inspectionQuantity: 0, // Add missing field
+      analyzedBy: data.analyzedBy ?? '' // ✅ Ensure empty string if not provided
     });
-  }
+}
+
   
   
   ngAfterViewInit() {
