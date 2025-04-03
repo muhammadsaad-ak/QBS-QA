@@ -112,13 +112,13 @@
                         planPurchaseOrderFormGroup.get('inspectionQuantity')
                             ?.valid 
                             && !isFormSaved
-                            
+                            && !isEditMode
                     " (click)="onSubmitPurchaseOrder()">
                 Save
             </button>
             <div class="mt-4 flex flex-wrap gap-2">
-                <div *ngFor="let sample of purchaseQcSamples" class="sample-card"
-                    [style.background-color]="sample.cardColor">
+                <div *ngFor="let sample of purchaseQcSamples"  [class.selected]="sample.id === selectedSampleId"  class="sample-card"
+                    [style.background-color]="sample.cardColor" (click)="onEditSample(sample)">
                     <h3 style="font-weight: 500">Sample {{ sample.name }}</h3>
                     <div style="font-weight: 400">
                         Inspection Time: {{ sample.inspectionDateTime }}
@@ -129,7 +129,7 @@
                 </div>
 
                 <div class="sample-card add-sample-card"
-                    *ngIf="isEditMode && purchaseQcSamples?.length < sampleQuantity" (click)="onPurchaseOrderModal()">
+                    *ngIf="isEditMode && purchaseQcSamples?.length < sampleQuantity" (click)="onUpdatePurchaseOrderModal()">
                     <span>Add Sample</span>
                     <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
                 </div>
@@ -494,12 +494,19 @@
                     </mat-tab-group>
 
                     <div class="mt-auto flex justify-end">
-                        <button mat-flat-button color="primary" (click)="addNewSampleForPurchaseOrder()">
+                       
+                        <button mat-flat-button color="primary"  (click)="addNewSampleForPurchaseOrder()">
                             Save & Close
+                        </button>
+
+                        <button mat-flat-button color="primary"  (click)="updateSampleForPurchaseOrder()">
+                            Update & Close
                         </button>
                     </div>
                 </div>
             </ng-template>
+
+     
 
             <div class="button-container mt-4 flex justify-end gap-2" *ngIf="isFormSaved">
                 <button mat-flat-button color="primary">Save</button>

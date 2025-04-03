@@ -16,6 +16,7 @@ export class SapPlanPurchaseOrderService {
     private _cardByCode = new BehaviorSubject<any[]>([])
     private _getPurchaseByQcCode = new BehaviorSubject<any[]>([])
     private _getPurchaseQcId = new BehaviorSubject<any[]>([])
+    private _getPurchaseQcSampleId = new BehaviorSubject<any[]>([])
 
     // Observable to expose role data state
     // unitofmeasure$: Observable<any[]> = this._UnitOfMeasure.asObservable();
@@ -24,7 +25,8 @@ export class SapPlanPurchaseOrderService {
     cardbycode$: Observable<any[]> = this._cardByCode.asObservable();
     getPurchaseByQcCode: Observable<any[]> = this._getPurchaseByQcCode.asObservable()
     getPurchaseQcId: Observable<any[]> = this._getPurchaseQcId.asObservable()
-    
+    getPurchaseQcSampleId: Observable<any[]> = this._getPurchaseQcSampleId.asObservable()
+
     /**
      * Setter & getter for access token
      */
@@ -180,5 +182,48 @@ ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
             })
         )
     }
-    
+
+    UpdatePurchaseQcSample(data: any) {
+         const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+        });
+        return this._httpClient.put(
+            `${environment.appApiUrl}/CSAPI/IPurchaseQCSampleFeature/UpdatePurchaseQcSample`,
+            data,
+            { headers }
+        ).pipe(
+            tap(response => console.log('RESPONSE:', response)),
+            catchError(error => {
+                console.error('ERROR WHILE UPDATING SAMPLE CARD', error);
+                return throwError(() => error);
+            })
+        );
+    }
+
+    getPurchaseQcSampleById(purchaseQCSampleId: string) {
+          const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'X-API-KEY': 'super',
+            Accept: 'application/json'
+            });
+            
+             return this._httpClient.get(
+                `${environment.appApiUrl}/CSAPI/IPurchaseQCSampleFeature/GetPurchaseQcSampleById?purchaseQCSampleId=${purchaseQCSampleId}`,
+            { headers }
+        )
+        .pipe(
+            tap((response: any) => {
+                const getPurchaseQcSampleId = response?.data?.value ?? []                
+                this._getPurchaseQcSampleId.next(getPurchaseQcSampleId);
+            }),
+            catchError((error) => {
+                console.error('Error fetching item code', error);
+                return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`))
+            })
+        )
+    }
 }
+
+    
+
