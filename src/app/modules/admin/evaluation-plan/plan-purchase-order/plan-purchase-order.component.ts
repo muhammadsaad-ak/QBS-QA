@@ -18,6 +18,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/evaluation-plan-purchase-order.service';
 import { SapPlanPurchaseOrderService } from '../../../../core/other-core-services/module/sap-plan-purchase-order.service';
+import { MatDialogRef } from '@angular/material/dialog'; 
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -48,7 +49,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   isDropdownOpen = false;
   isValidate = false;
   isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
-  qcSampleID: string = '';
+  qcSampleID: string | null = null;   //  qcSampleID: string = '';
   cardCode: any;
   purchaseQcId: any
   selectedSampleId: any;
@@ -319,7 +320,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     }
 
     if (!this.purchaseQcId || !this.qcSampleID) {
-      console.error('QC ID IS MISSING, CANNOT PROCEED!');
+      console.error('QC ID OR SAMPLE ID IS MISSING, CANNOT PROCEED!', { purchaseQcId: this.purchaseQcId, qcSampleID: this.qcSampleID });
       return;
     }
    
@@ -401,7 +402,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
 
         // Refresh the samples list
-        this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
+        // this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
        const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
     
     if (isNewSample) {
@@ -489,6 +490,40 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
       next: (response) => {
         console.log('API Response:', response);
+
+        const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
+
+        if (existingSampleIndex !== -1) {
+          this.purchaseQcSamples[existingSampleIndex] = {
+            ...this.purchaseQcSamples[existingSampleIndex],
+            inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value
+          };
+          this.purchaseQcSamples = [...this.purchaseQcSamples];
+          this.selectedSampleId = this.qcSampleID;
+        } else {
+          console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
+        }
+
+        this.planPurchaseOrderFormGroup.patchValue({
+          inspectionDateTime: this.purchaseQcSamples[existingSampleIndex]?.inspectionDateTime,
+          inspectionBy: this.purchaseQcSamples[existingSampleIndex]?.inspectionBy
+        });
+
+        this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
+        const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
+
+        if (isNewSample) {
+          const newSample = {
+            id: this.nextSampleId,
+            inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+            cardColor: this.getRandomCardColor()
+          };
+
+          this.samplesPurchaseOrder.push(newSample);
+          this.nextSampleId++;
+        }
       
         this.closeDialog();
       },
@@ -613,13 +648,14 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this.cdr.detectChanges();
   }
 
-  onEditSample(sample: any): void {
+  xonEditSample(sample: any): void {
+    alert("this is the function");
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
       height: '75vh',
       data: this.cardCode
     });
-      this.getCardByItemCode(this.selectedOrder.itemCode);
+    this.getCardByItemCode(this.selectedOrder.itemCode);
     console.log(this.selectedOrder, 'this.selectedOrder')
     this.getPurchaseByQcCode(
       this.selectedOrder.itemCode,
@@ -627,21 +663,59 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       this.selectedOrder.lineNum
     )
 
-     
 
-  
+
+
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-       
+
         const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
         if (index !== -1) {
           this.samplesPurchaseOrder[index] = result;
         }
       }
       console.log('EDIT DIALOG CLOSED');
-});
-}
-
+    });
+  }
+  private dialogRef: MatDialogRef<any>;
+  onEditSample(sample: any): void {
+    console.log('Sample Data:', sample); 
+    alert('Sample ID: ' + (sample ? sample.id : 'undefined')); 
+  
+    if (!sample || !sample.id) {
+      console.error('Sample or sample.id is undefined!');
+      return; 
+    }
+    this.qcSampleID = sample.id;
+    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+      width: '70%',
+      height: '75vh',
+      data: {
+        qcSampleId: sample.id,
+        cardCode: this.cardCode,
+        inspectionDateTime: sample.inspectionDateTime,
+        inspectionBy: sample.inspectionBy
+      }
+    });
+  
+    this.getCardByItemCode(this.selectedOrder.itemCode);
+    console.log(this.selectedOrder, 'this.selectedOrder');
+    this.getPurchaseByQcCode(
+      this.selectedOrder.itemCode,
+      this.selectedOrder.docNo,
+      this.selectedOrder.lineNum
+    );
+  
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
+        if (index !== -1) {
+          this.samplesPurchaseOrder[index] = result;
+        }
+      }
+      console.log('EDIT DIALOG CLOSED');
+    });
+  }
   onPurchaseOrderModal(): void {
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
@@ -770,7 +844,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
     this._sapPlanPurchaseOrderService.ListAllPurchaseQCSamplesByQcId(purchaseQcId).subscribe({
       next: (response) => {
-        this.purchaseQcSamples = response.data;
+        this.purchaseQcSamples = response.data.filter(sample => sample.isActive === true); 
         console.log(this.purchaseQcSamples, 'purchaseQcSamples');
                       console.log(this.purchaseQcSamples, 'purchaseQcSamples');
 

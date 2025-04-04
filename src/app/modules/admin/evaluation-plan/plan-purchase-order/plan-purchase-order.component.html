@@ -120,6 +120,9 @@
                 <div *ngFor="let sample of purchaseQcSamples"  [class.selected]="sample.id === selectedSampleId"  class="sample-card"
                     [style.background-color]="sample.cardColor" (click)="onEditSample(sample)">
                     <h3 style="font-weight: 500">Sample {{ sample.name }}</h3>
+                          <div style="font-weight: 400">
+                        qcSampleId: {{ sample.id }} 
+                      </div>
                     <div style="font-weight: 400">
                         Inspection Time: {{ sample.inspectionDateTime }}
                     </div>
