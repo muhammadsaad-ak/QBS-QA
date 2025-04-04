@@ -617,11 +617,13 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
     onPageSizeChange(newSize: number): void {
+        if (this.isSearchActive) return;
         this.pageSize = newSize;
         this.pageNumber = 1;
         this.fetchListAllItemsSAP();
     }
     nextPage(): void {
+        if (this.isSearchActive) return;
         const maxPages = Math.ceil(this.totalRecords / this.pageSize);
         if (this.pageNumber < maxPages) {
             this.pageNumber++;
@@ -629,6 +631,7 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     previousPage(): void {
+        if (this.isSearchActive) return;
         if (this.pageNumber > 1) {
             this.pageNumber--;
             this.fetchListAllItemsSAP();
@@ -660,13 +663,16 @@ export class TestingStepperComponent implements AfterViewInit {
     @ViewChild('dialogTemplateItemCodeIIC') dialogTemplateItemCodeIIC;
 
     onItemCodeClickIIC() {
+        this.isSearchActive = false;
+        this.pageNumber = 1;
+        this.fetchListAllItemsSAP();
         const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIIC, {
             width: '75vw',
             height: '90vh',
             data: this.dataSourceItemCodeIIC,
         });
         dialogRef.afterClosed().subscribe((result) => {
-            // // console.log('DIALOG CLOSED');
+            console.log('DIALOG CLOSED');
         });
     }
 
@@ -722,9 +728,40 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
 
-    applyFilterItemCodeIIC(event: Event) {
-        const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSourceItemCodeIIC.filter = filterValue.trim().toLowerCase();
+    isSearchActive = false;
+    searchingItem = '';
+    fetchSearchedItemsSAP(searchingItem: string): void {
+        this._SAPItemsService.getSearchedSapItems(searchingItem).subscribe({
+            next: (response) => {
+                try {
+                    const parsedResponse = JSON.parse(response);
+                    if (parsedResponse && parsedResponse.data) {
+                        this.dataSourceItemCodeIIC = new MatTableDataSource(parsedResponse.data);
+                        this.isSearchActive = true;
+                    } else {
+                        this.dataSourceItemCodeIIC = new MatTableDataSource([]);
+                    }
+                } catch (error) {
+                    console.error('JSON PARSE ERROR:', error);
+                    this.dataSourceItemCodeIIC = new MatTableDataSource([]);
+                }
+            },
+            error: (err) => {
+                console.error('ERROR FETCHING SEARCH ITEMS:', err);
+            },
+        });
+    }
+    applyFilterItemCodeIIC(event: Event): void {
+        const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+        this.searchingItem = filterValue;
+        if (!filterValue || filterValue.length < 3) {
+            this.isSearchActive = false;
+            this.pageNumber = 1;
+            this.fetchListAllItemsSAP();
+            return;
+        } else {
+            this.fetchSearchedItemsSAP(filterValue);
+        }
     }
     // ITEM CODE - ITEM INSPECTION CARD NG TEMPLATE ENDS
 
@@ -3599,7 +3636,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         console.log('API run successfully.', sendingPayloadIS);
                         this._snackBar.open('Record Updated Successfully.', 'Close', {
                             duration: 1500,
-                            panelClass: ['snackbar-success'] 
+                            panelClass: ['snackbar-success']
                         });
                         setTimeout(() => {
                             this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
