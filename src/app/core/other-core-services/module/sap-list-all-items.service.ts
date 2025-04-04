@@ -36,7 +36,7 @@ export class SAPItemsService {
 
     // GET LIST ALL ITEMS API
     getListAllItemsSAP(pageSize: number, pageNumber: number): Observable<any> {
-        if (this.accessToken.length>0) {
+        if (this.accessToken.length > 0) {
             this.accessToken = '';
         }
         const headers = new HttpHeaders({
@@ -56,6 +56,18 @@ export class SAPItemsService {
                     return throwError(error);
                 })
             );
+    }
+
+    // GET SAP ITEMS AGAINST ITEM CODE OR AGAINST ITEM NAME
+    getSearchedSapItems(itemCode: string): Observable<any> {
+        const headers = new HttpHeaders({
+            Accept: 'text/plain',
+            'X-API-KEY': 'super',
+        });
+        return this._httpClient.get(
+            `${environment.SAPitemsApiUrl}/api/B1Items/GetItemByCode?itemCode=${itemCode}`,
+            { headers, responseType: 'text' }
+        );
     }
 
 
