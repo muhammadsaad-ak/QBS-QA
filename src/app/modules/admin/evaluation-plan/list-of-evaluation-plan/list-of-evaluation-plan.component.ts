@@ -295,13 +295,29 @@ onEvaluationPlanTypeChange(orderType: string): void {
       if (response.data) {
         this.evalPlanProductionOrderData = response.data.map((order, index) => ({
           // serialId: index + 1,
+          id: order.id,
           docNo: order.docNo,
           docDate: order.docDate,
           itemCode: order.itemDetails?.itemCode || '-',
           itemDescription: order.itemDetails?.name || '-',
-          qty: order.poQuantity || 0,
+          qty: order.plannedQuantity || 0,
           status: order.status || '-',
-          // Adding the full order object to allow access to other fields if needed
+          analyzedBy: order.analyzedBy || '-',
+          warehouse: order.warehouse,
+          sampleQuantity: order.sampleQuantity || 0,
+          openQuantity: order.openQuantity || 0,
+          qcLotNo: order.qcLotNo || '-',
+          shift: order.shift || '-',
+          machineNo: order.machineNo || '-', 
+          variant: order.variant || '-',
+          bmrNo: order.bmrNo || '-',
+          mouldNo: order.mouldNo || '-',
+          cavity: order.cavity || '-',
+          cycleTime: order.cycleTime || 0,
+          itemWeight: order.itemWeight || 0,
+          inspectionQuantity: order.inspectionQuantity || 0,
+
+
         }));
   
         if (this.orderType === 'productionOrder') {

@@ -20,6 +20,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 import { EvaluationPlanProductionOrderService } from 'app/core/other-core-services/module/evaluation-plan-production-order.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -53,6 +54,9 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   isFormSaved = false; // Initialize to false
   isDropdownOpen = false;
   isValidate = false;
+  isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
+  productionQcSamples: any[] = [];
+
   
   // Plan Purchase DataSources for tables
   dataSourceQualitativeInspectionPP: MatTableDataSource<any>;
@@ -97,6 +101,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
     private _evaluationProductionOrderService: EvaluationPlanProductionOrderService,
+    private _sapPlanProductionOrderService: SapPlanPurchaseOrderService,
+    
     private _snackBar: MatSnackBar,
   ) { }
   planProductionOrderFormGroup = this._formBuilder.group({
@@ -122,6 +128,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     itemWeight: [''], 
     inspectionQuantity: [], 
     analyzedBy: [''], 
+    status: [''],
+
     // vendor: ['a'], 
     // remarks: ['aa'], 
     // isActive: [true], 
@@ -244,26 +252,6 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     });
   }
 
-  getSampleQuantityX(inspectionQuantity: number, itemId: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this._evaluationProductionOrderService.getSampleQuantityRange(inspectionQuantity, itemId).subscribe(
-        (response) => {
-          if (response.isRequestSuccess) {
-            this.planProductionOrderFormGroup.get('sampleQuantity')?.setValue(response.data);
-            this._snackBar.open('Purchase Order added successfully!', 'Close', { duration: 3000, panelClass: ['snackbar-success'] });
-          } else {
-            this.isValidate = false;
-            this._snackBar.open('Please fill all mandatory fields.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
-          }
-          resolve(); // Make sure to resolve the promise
-        },
-        (error) => {
-          this._snackBar.open('Error adding purchase order.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
-          reject(error); // Reject the promise on error
-        }
-      );
-    });
-  }
 
   cancelForm() {
     // Reset the form or navigate away
@@ -340,13 +328,25 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   ngOnInit() {
 
     this.selectedOrder = history.state.selectedOrder; // Access the passed data
+    this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
+
     if (this.selectedOrder) {
       this.populateProductionOrderForm(this.selectedOrder); // Populate the form with the data
       this.getItemId(this.selectedOrder.itemCode);
     }
 
+    if (this.selectedOrder) {
+      if (this.isEditMode) {
+          this.populateEditProductionOrderForm(this.selectedOrder); // Call Edit QC function
+          this.ListAllProductionQCSamplesByQcId(this.selectedOrder.id)
+          console.log('HAHA',this.selectedOrder)
+      } else {
+          this.populateProductionOrderForm(this.selectedOrder); // Call Perform QC function
+      }
+      this.getItemId(this.selectedOrder.itemCode);
+  }
     this._evaluationProductionOrderService.getProductionQCCode().subscribe((productionQCCode) => { 
-      console.log('Purchase QC Code:', productionQCCode); // Debugging ke liye
+      console.log('Production QC Code:', productionQCCode); // Debugging ke liye
   
       const fullCode = `PQC-000${productionQCCode.data || ''}`; // Code format
       this.planProductionOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
@@ -386,9 +386,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       docDate: data.docDate,
       docNo: data.docNo.toString(), // Convert to string
       warehouse: data.warehouse,
-      // sampleQuantity: data.sampleQuantity, // ✅ Ensure default numeric value
       openQuantity: data.openQty,
-      plannedQuantity: data.qty ?? 0, // ✅ Same as qty
+      plannedQuantity: data.qty ?? '-', // ✅ Same as qty
       receiveQtyPO: '', // No direct mapping
       // inspectionDateTimePO: new Date().toISOString(), // ✅ Use current date
       qcLotNo: data.lotNo ?? 'N/A',
@@ -400,9 +399,32 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       cycleTime: data.cycleTime ?? 'N/A', // ✅ Convert safely
       itemWeight: data.weight !== undefined ? data.weight.toString() : 'N/A', // ✅ Convert safely
       variant: data.variant ?? 'N/A',
-      // inspectionQuantity: 0, // Add missing field
-      analyzedBy: data.analyzedBy ?? '' // ✅ Ensure empty string if not provided
+      analyzedBy: data.analyzedBy ?? '', // ✅ Ensure empty string if not provided
+      status: data.status ?? 'Ali', // ✅ Ensure default value
     });
+}
+
+populateEditProductionOrderForm(data: any): void {
+  console.log('Populating Edit QC Form:', data);
+  this.planProductionOrderFormGroup.patchValue({
+    intCode: data.intCode ?? "",  
+    itemCode: data.itemCode ?? "",  
+    itemDescription: data.itemDescription ?? "",  
+    openQuantity: data.openQuantity ?? 0,  
+    analyzedBy: data.analyzedBy,  
+    status: data.status ?? "",  
+    sampleQuantity: data.sampleQuantity ?? 0,
+    qcLotNo: data.qcLotNo ?? "",
+    shift: data.shift ?? "",
+    machineNo: data.machineNo ?? 'N/A',
+    variant: data.variant ?? 'N/A',
+    bmrNo: data.bmrNo ?? 'N/A',
+    mouldNo: data.mouldNo ?? 'N/A',
+    cavity: data.cavity,
+    cycleTime: data.cycleTime ?? 'N/A',
+    itemWeight: data.itemWeight ?? 'N/A',
+    inspectionQuantity: data.inspectionQuantity,
+  });
 }
 
   
@@ -459,6 +481,19 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       );
     });
   }
+
+  ListAllProductionQCSamplesByQcId(purchaseQcId: string) {
+    this._sapPlanProductionOrderService.ListAllProductionQCSamplesByQcId(purchaseQcId).subscribe({
+      next: (response) => {
+        this.productionQcSamples = response.data;
+        console.log(this.productionQcSamples, 'Production QC Samples');
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      }
+    })
+  }
+
   
   onItemCodeClickPP(): void {
     // console.log('Row Index:', rowIndex);
