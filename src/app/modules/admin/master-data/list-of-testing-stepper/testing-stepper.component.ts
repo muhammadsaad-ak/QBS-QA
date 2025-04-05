@@ -3791,4 +3791,47 @@ export class TestingStepperComponent implements AfterViewInit {
             });
         }
     }
+    onNextClickCharacteristics(): void {
+        const descriptionValue = this.fourthFormGroup.get('description')?.value;
+        const singleCriteriaValue = this.fourthFormGroup.get('singleCriteria')?.value;
+        const isDescriptionEmpty = !descriptionValue; // CHECKING IF IS null, undefined, OR empty
+        const isSingleCriteriaEmpty = !singleCriteriaValue; // CHECKING IF IS null, undefined, OR empty
+
+        if (isDescriptionEmpty && isSingleCriteriaEmpty) {
+            this.stepper.next(); // IF IS null, undefined, OR empty, MOVE TO NEXT
+        } else {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
+    onNextClickCards(): void {
+        const descriptionValue = this.fifthFormGroup.get('description')?.value;
+        const qualitativeCriteriaValue = this.fifthFormGroup.get('qualitativeTableCriteria')?.value as { parameter: string }[];
+        const quantitativeCriteriaValue = this.fifthFormGroup.get('quantitativeTableCriteria')?.value as { parameterX: string }[];
+
+        // CHECK IF EMPTY OR HAVE DATA
+        const isDescriptionEmpty = !descriptionValue || descriptionValue.trim() === ''; // Null, undefined, or empty string
+        const isQualitativeCriteriaEmpty = !qualitativeCriteriaValue ||
+            qualitativeCriteriaValue.every(row => !row.parameter || row.parameter.trim() === '');
+        const isQuantitativeCriteriaEmpty = !quantitativeCriteriaValue ||
+            quantitativeCriteriaValue.every(row => !row.parameterX || row.parameterX.trim() === '');
+
+        // CHECK IF ARRAYS OR DESCRIPTION HAVE NON-EMPTY DATA
+        const hasQualitativeCriteria = qualitativeCriteriaValue &&
+            qualitativeCriteriaValue.some(row => row.parameter && row.parameter.trim() !== '');
+        const hasQuantitativeCriteria = quantitativeCriteriaValue &&
+            quantitativeCriteriaValue.some(row => row.parameterX && row.parameterX.trim() !== '');
+        const hasDescription = descriptionValue && descriptionValue.trim() !== '';
+
+        if (isDescriptionEmpty && isQualitativeCriteriaEmpty && isQuantitativeCriteriaEmpty) {
+            this.stepper.next(); 
+        } else if (hasQualitativeCriteria || hasQuantitativeCriteria || hasDescription) {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
 }
