@@ -112,7 +112,7 @@
 
       <!-- Third Step -->
 
-      <!-- Fourth Step - Inspection Characterisitic STARTS -->
+      <!-- Inspection Characterisitic STARTS -->
       <mat-step [stepControl]="fourthFormGroup" label="Inspection Characterisitic">
         <form [formGroup]="fourthFormGroup">
           <h1 class="custom-heading">Inspection Characteristic</h1>
@@ -181,9 +181,17 @@
                 </span>
               </div>
               <div class="step-navigation">
-                <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
-                <button mat-button class="next-button" *ngIf="!isEditMode"
-                  (click)="onSubmitInspectionCharacteristics()">Next</button>
+                <div *ngIf="isLoading" class="loader">
+                  <mat-spinner diameter="33"></mat-spinner>
+                </div>
+                <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
+                  <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+                </button>
+                <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+                  (click)="onSubmitInspectionCharacteristics()">Save</button>
+                <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCharacteristics()">
+                  <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+                </button>
               </div>
             </div>
             <!-- IF isEditMode - UPDATE MODE -->
@@ -232,7 +240,7 @@
           </div>
         </form>
       </mat-step>
-      <!-- Fourth Step - Inspection Characterisitic ENDS -->
+      <!-- Inspection Characterisitic ENDS -->
 
       <!-- fifthFormGroup - Inspection Card STARTS -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
