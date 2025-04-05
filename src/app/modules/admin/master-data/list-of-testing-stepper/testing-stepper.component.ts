@@ -26,6 +26,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { switchMap } from 'rxjs/operators';
 
 
 
@@ -2449,43 +2450,76 @@ export class TestingStepperComponent implements AfterViewInit {
 
         singleCriteriaControl?.updateValueAndValidity();
     }
-    onSubmitInspectionCharacteristics(): void {
-        this.isValidate = true;
-        if (this.fourthFormGroup.valid) {
-            // console.log('UPDATED FORM VALUES:', this.fourthFormGroup.value);
-            const formValues = this.fourthFormGroup.value;
-            const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode
 
-            if (payload.type === 'quantitative') {
-                payload.singleCriteria = '';
-            }
-            console.log('SENDING PAYLOAD:', payload);
-            // return;
-            this._inspectionCharateristics
-                .AddInspectionCharacteristics(payload)
-                .subscribe(
-                    (response) => {
-                        if (response.isRequestSuccess) {
-                            console.log('API RUN SUCCESSFULLY.', payload);
-                        } else {
-                            console.error(
-                                'ERROR WHILE ADDING INSPECTION CHARACTERISITIC.',
-                                response.message
-                            );
-                        }
-                    },
-                    (error) => {
-                        console.error('API REQUEST FAILED:', error);
-                    }
-                );
-            this.stepper.next();
-        } else {
+    onSubmitInspectionCharacteristics(): void {
+        if (!this.fourthFormGroup.valid) {
             this._snackBar.open('Fill all the mandatory fields.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
             return;
         }
+
+        const formValues = this.fourthFormGroup.value;
+        const { intCode, qualitativeCriteriaObjects, ...payload } = formValues;
+        if (payload.type === 'quantitative') {
+            payload.singleCriteria = '';
+        }
+        console.log('SENDING INSPECTION CHARACTERISTICS PAYLOAD:', payload);
+
+        this.isLoading = true;
+        this._inspectionCharateristics.AddInspectionCharacteristics(payload)
+            .pipe(
+                switchMap(response => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        this._snackBar.open('Data saved successfully!', 'Close', {
+                            duration: 1550,
+                            panelClass: ['snackbar-success']
+                        });
+                        setTimeout(() => {
+                            this.fourthFormGroup.get('description')?.setValue('');
+                            this.fourthFormGroup.get('singleCriteria')?.setValue('');
+                        }, 1500);
+                        return this._inspectionCharateristics.getInspectionCharacteristicsCode();
+                    }
+                    throw new Error(response.message || 'Request failed');
+                })
+            )
+            .subscribe(
+                (intCodeICH) => {
+                    const fetchedNextintCodeICH = intCodeICH.data;
+                    if (fetchedNextintCodeICH) {
+                        const formattedNextintCodeICH = `ICH-000${fetchedNextintCodeICH}`;
+                        setTimeout(() => {
+                            this.fourthFormGroup.get('intCode')?.setValue(formattedNextintCodeICH);
+                            console.log('New Inspection Code:', this.fourthFormGroup.get('intCode')?.value);
+                            this.isLoading = false;
+                        }, 1500);
+                    } else {
+                        console.error('FAILED TO GET NEW INSPECTION CODE');
+                        this.isLoading = false;
+                    }
+                },
+                (error) => {
+                    console.error('API REQUEST FAILED:', error);
+                    let errorMessage = "This description is already being used and cannot be duplicated.";
+                    if (error.error) {
+                        if (error.error.exception?.description?.length) {
+                            errorMessage = error.error.exception.description[0];
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message;
+                        }
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-error']
+                    });
+                    setTimeout(() => {
+                        this.isLoading = false;
+                    }, 1500);
+                }
+            );
     }
 
     // onSubmit(): void {
