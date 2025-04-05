@@ -27,6 +27,7 @@ import { ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { switchMap } from 'rxjs/operators';
+import { of } from 'rxjs'; 
 
 
 
@@ -2622,85 +2623,126 @@ export class TestingStepperComponent implements AfterViewInit {
 
     // Submit Inspection Card
 
-    onSubmitInspectionCard() {
-        if (this.fifthFormGroup.valid) {
-            const formValue = this.fifthFormGroup.value;
-
-            // ✅ Validation: At least one qualitative and one quantitative characteristic required in form
-            const hasQualitative = formValue.qualitativeTableCriteria.length > 0;
-            const hasQuantitative = formValue.quantitativeTableCriteria.length > 0;
-
-            if (!hasQualitative || !hasQuantitative) {
-                this._snackBar.open('At least one qualitative and one quantitative characteristic is required.', 'Close', {
-                    duration: 3000,
-                    panelClass: ['snackbar-error']
-                });
-                return;
-            }
-
-            // Fetch all inspection characteristics first
-            this._inspectionCharateristics.getInspectionCharacteristics().subscribe((charResponse) => {
-                const mappedIds = charResponse.data.map((char: any) => ({
-                    description: char.description,
-                    id: char.id,
-                }));
-
-                // Find matching qualitative IDs
-                const qualitativeIds = formValue.qualitativeTableCriteria
-                    .map((item) => mappedIds.find((char) => char.description === item.parameter)?.id)
-                    .filter(Boolean);
-
-                // Find matching quantitative IDs
-                const quantitativeIds = formValue.quantitativeTableCriteria
-                    .map((item) => mappedIds.find((char) => char.description === item.parameterX)?.id)
-                    .filter(Boolean);
-
-                // ✅ Validation: Ensure mapped IDs are not empty
-                if (qualitativeIds.length === 0 || quantitativeIds.length === 0) {
-                    this._snackBar.open('At least one valid qualitative and one valid quantitative characteristic is required.', 'Close', {
-                        duration: 3000,
-                        panelClass: ['snackbar-error']
-                    });
-                    return;
-                }
-
-                // ✅ Final API payload
-                const apiPayload = {
-                    description: formValue.description,
-                    isActive: formValue.isActive,
-                    characteristicsIds: [...qualitativeIds, ...quantitativeIds],
-                };
-
-                console.log('Final API Payload:', apiPayload);
-
-                this._inspectionCard.AddInspectionCard(apiPayload).subscribe(
-                    (response) => {
-                        console.log('✅ API Response:', response);
-
-                        if (response?.isRequestSuccess) { // ✅ Correct condition
-                            console.log('🎉 API RUN SUCCESSFULLY:', apiPayload);
-                            this.stepper.next(); // ✅ Stepper ab aage badega
-                        } else {
-                            console.warn('⚠️ API Response Did Not Succeed:', response);
-                        }
-                    },
-                    (error) => {
-                        console.error('❌ API Error:', error);
-                        this._snackBar.open('Something went wrong. Please try again.', 'Close', {
-                            duration: 3000,
-                            panelClass: ['snackbar-error']
-                        });
-                    }
-                );
-            });
-        }
-        else {
+    onSubmitInspectionCard(): void {
+        if (!this.fifthFormGroup.valid) {
             this._snackBar.open('Fill the mandatory Description field.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
             return;
         }
+
+        const formValue = this.fifthFormGroup.value;
+
+        // Validation: At least one qualitative and one quantitative characteristic required
+        const hasQualitative = formValue.qualitativeTableCriteria.length > 0;
+        const hasQuantitative = formValue.quantitativeTableCriteria.length > 0;
+
+        if (!hasQualitative || !hasQuantitative) {
+            this._snackBar.open('At least one qualitative and one quantitative characteristic is required.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+
+        this.isLoading = true; 
+        this._inspectionCharateristics.getInspectionCharacteristics()
+            .pipe(
+                switchMap((charResponse) => {
+                    const mappedIds = charResponse.data.map((char: any) => ({
+                        description: char.description,
+                        id: char.id,
+                    }));
+
+                    // Find matching qualitative IDs
+                    const qualitativeIds = formValue.qualitativeTableCriteria
+                        .map((item) => mappedIds.find((char) => char.description === item.parameter)?.id)
+                        .filter(Boolean);
+
+                    // Find matching quantitative IDs
+                    const quantitativeIds = formValue.quantitativeTableCriteria
+                        .map((item) => mappedIds.find((char) => char.description === item.parameterX)?.id)
+                        .filter(Boolean);
+
+                    // Validation: Ensure mapped IDs are not empty
+                    if (qualitativeIds.length === 0 || quantitativeIds.length === 0) {
+                        this._snackBar.open('At least one valid qualitative and one valid quantitative characteristic is required.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        return of(null); // Return an Observable to stop the chain gracefully
+                    }
+
+                    // Final API payload
+                    const apiPayload = {
+                        description: formValue.description,
+                        isActive: formValue.isActive,
+                        characteristicsIds: [...qualitativeIds, ...quantitativeIds],
+                    };
+
+                    console.log('Final API Payload:', apiPayload);
+                    return this._inspectionCard.AddInspectionCard(apiPayload);
+                }),
+                switchMap((response) => {
+                    if (response === null) {
+                        // Validation failed earlier, stop here
+                        this.isLoading = false;
+                        return of(null);
+                    }
+                    if (response?.isRequestSuccess) {
+                        console.log('🎉 API RUN SUCCESSFULLY:', response);
+                        this._snackBar.open('Data saved successfully!', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-success']
+                        });
+                        this.fifthFormGroup.get('description')?.setValue('');
+                        this.qualitativeTableCriteria.clear();
+                        this.quantitativeTableCriteria.clear();
+                        this.initializeTableWithDefaultRow(); 
+                        this.initializeTableWithDefaultRowX(); 
+                        return this._inspectionCardsCode.getInspectionCardCode();
+                    }
+                    throw response; // Throw full response for error handling
+                })
+            )
+            .subscribe(
+                (inspectionCardCode) => {
+                    if (inspectionCardCode === null) {
+                        // Chain stopped due to validation
+                        return;
+                    }
+                    const y = inspectionCardCode.data;
+                    console.log('Fetched Code:', y); // Debugging
+                    if (y) {
+                        const fullCode = `IC-000${y}`;
+                        setTimeout(() => {
+                            this.fifthFormGroup.get('intCode')?.setValue(fullCode);
+                            console.log('New Inspection Card Code:', this.fifthFormGroup.get('intCode')?.value);
+                            this.isLoading = false; 
+                        }, 1500);
+                    } else {
+                        console.error('No code received from API');
+                        this.isLoading = false; 
+                    }
+                },
+                (error) => {
+                    console.error('❌ API REQUEST FAILED:', error);
+                    let errorMessage = "This description is already being used and cannot be duplicated.";
+                    if (error.exception?.description?.length) {
+                        errorMessage = error.exception.description[0]; 
+                    } else if (error.message) {
+                        errorMessage = error.message;
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-error']
+                    });
+                    setTimeout(() => {
+                        this.isLoading = false; 
+                    }, 1500);
+                }
+            );
     }
 
 
@@ -3743,6 +3785,49 @@ export class TestingStepperComponent implements AfterViewInit {
         if (isDescriptionEmpty && isUoMCodeEmpty) {
             this.stepper.next(); // IF IS null, undefined, OR empty, MOVE TO NEXT
         } else {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
+    onNextClickCharacteristics(): void {
+        const descriptionValue = this.fourthFormGroup.get('description')?.value;
+        const singleCriteriaValue = this.fourthFormGroup.get('singleCriteria')?.value;
+        const isDescriptionEmpty = !descriptionValue; // CHECKING IF IS null, undefined, OR empty
+        const isSingleCriteriaEmpty = !singleCriteriaValue; // CHECKING IF IS null, undefined, OR empty
+
+        if (isDescriptionEmpty && isSingleCriteriaEmpty) {
+            this.stepper.next(); // IF IS null, undefined, OR empty, MOVE TO NEXT
+        } else {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
+    onNextClickCards(): void {
+        const descriptionValue = this.fifthFormGroup.get('description')?.value;
+        const qualitativeCriteriaValue = this.fifthFormGroup.get('qualitativeTableCriteria')?.value as { parameter: string }[];
+        const quantitativeCriteriaValue = this.fifthFormGroup.get('quantitativeTableCriteria')?.value as { parameterX: string }[];
+
+        // CHECK IF EMPTY OR HAVE DATA
+        const isDescriptionEmpty = !descriptionValue || descriptionValue.trim() === ''; // Null, undefined, or empty string
+        const isQualitativeCriteriaEmpty = !qualitativeCriteriaValue ||
+            qualitativeCriteriaValue.every(row => !row.parameter || row.parameter.trim() === '');
+        const isQuantitativeCriteriaEmpty = !quantitativeCriteriaValue ||
+            quantitativeCriteriaValue.every(row => !row.parameterX || row.parameterX.trim() === '');
+
+        // CHECK IF ARRAYS OR DESCRIPTION HAVE NON-EMPTY DATA
+        const hasQualitativeCriteria = qualitativeCriteriaValue &&
+            qualitativeCriteriaValue.some(row => row.parameter && row.parameter.trim() !== '');
+        const hasQuantitativeCriteria = quantitativeCriteriaValue &&
+            quantitativeCriteriaValue.some(row => row.parameterX && row.parameterX.trim() !== '');
+        const hasDescription = descriptionValue && descriptionValue.trim() !== '';
+
+        if (isDescriptionEmpty && isQualitativeCriteriaEmpty && isQuantitativeCriteriaEmpty) {
+            this.stepper.next(); 
+        } else if (hasQualitativeCriteria || hasQuantitativeCriteria || hasDescription) {
             this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
