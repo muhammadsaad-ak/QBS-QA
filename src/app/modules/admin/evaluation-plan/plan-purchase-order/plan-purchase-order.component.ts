@@ -18,6 +18,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/evaluation-plan-purchase-order.service';
 import { SapPlanPurchaseOrderService } from '../../../../core/other-core-services/module/sap-plan-purchase-order.service';
+import { MatDialogRef } from '@angular/material/dialog'; 
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -48,9 +49,12 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   isDropdownOpen = false;
   isValidate = false;
   isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
-
+  qcSampleID: string | null = null;   //  qcSampleID: string = '';
   cardCode: any;
   purchaseQcId: any
+  selectedSampleId: any;
+  addMode: boolean = false;  // Indicate a new sample is being added
+  editMode: boolean = false;
   dataSourceQualitativeInspection: MatTableDataSource<any>;
   dataSourceQuantitativeInspection: MatTableDataSource<any>;
   dataSourceUoMIIC: MatTableDataSource<any>;
@@ -58,7 +62,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   purchaseQcSamples: any
   selectedRowIndexUoM: number = -1;
   selectedUoMCode: string = '';
-
+  purchaseQCSampleId: any
   displayedColumnsQualitative: string[] = ['inspectionCharacteristicName', 'inspectionCharacteristicSingleCriteria', 'isMandatory', 'qualitativeResultId', 'remarks'];
   displayedColumnsQuantitative: string[] = ['inspectionCharacteristicName', 'uoMCode', 'isMandatory', 'target', 'max', 'min', 'quantitativeResult', 'remarks'];
   displayedColumnsUoMIIC: string[] = ['code', 'description'];
@@ -283,6 +287,144 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
   }
 
+  // getPurchaseByQcSampleId(purchaseQCSampleId: string) {
+  //   this._sapPlanPurchaseOrderService.getPurchaseQcSampleById(purchaseQCSampleId).subscribe({
+  //     next: (response) => {
+  //       this.purchaseQCSampleId = response.data;
+  //       console.log(this.purchaseQCSampleId, 'this.purchaseQCSampleId');
+        
+  //       },
+  //       error: (err) => {
+  //         console.error('QC SERVICE ERROR:', err);
+  //         }
+  //   })
+  // }
+
+  handleSamplePurchaseOrder() {
+    if(this.isEditMode) {
+      this.updateSampleForPurchaseOrder()
+    } else {
+      this.addNewSampleForPurchaseOrder()
+    }
+  }
+
+  updateSampleForPurchaseOrder(): void {
+    if (!this.planPurchaseOrderFormGroup.valid) {
+      console.error("FORM IS INVALID");
+      console.log("FORM ERRORS:", this.planPurchaseOrderFormGroup.errors);
+      console.log("FORM VALUE:", this.planPurchaseOrderFormGroup.value);
+      console.log("INSPECTION BY ERRORS:", this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
+      console.log("INSPECTION DATETIME ERRORS:", this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.errors);
+      this.planPurchaseOrderFormGroup.markAllAsTouched();
+      return;
+    }
+
+    if (!this.purchaseQcId || !this.qcSampleID) {
+      console.error('QC ID OR SAMPLE ID IS MISSING, CANNOT PROCEED!', { purchaseQcId: this.purchaseQcId, qcSampleID: this.qcSampleID });
+      return;
+    }
+   
+    const formValue = this.planPurchaseOrderFormGroup.value;
+
+    // STEP 1: PREPARE QUALITATIVE INSPECTIONS
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+        (status: any) => status.qualitativeResultId === item.qualitativeResultId
+      );
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeInspectionMappingId: null,
+        qualitativeResultId: item?.qualitativeResultId || null,
+        isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+        quantitativeResult: 0,
+        isQuantitativeResultPassed: false,
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+
+    // STEP 2: PREPARE QUANTITATIVE INSPECTIONS
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
+      return {
+        qualitativeInspectionMappingId: null,
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+        qualitativeResultId: null,
+        isQualitativeResultPassed: false,
+        quantitativeResult: item?.result !== undefined && item?.result !== null ? parseFloat(item.result) : 0,
+        isQuantitativeResultPassed: item?.result !== undefined &&
+          !isNaN(resultValue) &&
+          resultValue >= (item.min ?? 0) &&
+          resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+
+    // STEP 3: COMBINE QUALITATIVE AND QUANTITATIVE INSPECTIONS
+    const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+
+    // STEP 4: CREATING THE FINAL PAYLOAD
+    const updatedSamplePayload = {
+      id: this.qcSampleID,
+      inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.purchaseQcId.id,
+      inspectionObjects: inspectionObjects
+    };
+
+    console.log('FINAL PAYLOAD:', updatedSamplePayload);
+
+    // STEP 5: CALLING THE UPDATE API
+    this._sapPlanPurchaseOrderService.UpdatePurchaseQcSample(updatedSamplePayload).subscribe({
+      next: (response) => {
+        console.log('API Response:', response);
+        
+         const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
+
+    if (existingSampleIndex !== -1) {
+      // Update only the specific sample details
+      this.purchaseQcSamples[existingSampleIndex] = {
+        ...this.purchaseQcSamples[existingSampleIndex],
+        inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+        inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value
+      };
+          this.purchaseQcSamples = [...this.purchaseQcSamples];
+
+                // Keep the selected card after update
+                this.selectedSampleId = this.qcSampleID;
+    } else {
+      console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
+    }
+
+    // Instead of reloading the full list, just update the form fields
+    this.planPurchaseOrderFormGroup.patchValue({
+      inspectionDateTime: this.purchaseQcSamples[existingSampleIndex]?.inspectionDateTime,
+      inspectionBy: this.purchaseQcSamples[existingSampleIndex]?.inspectionBy
+    });
+
+        // Refresh the samples list
+        // this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
+       const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
+    
+    if (isNewSample) {
+      const newSample = {
+        id: this.nextSampleId,
+        inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+        inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+        cardColor: this.getRandomCardColor()
+      };
+      
+      this.samplesPurchaseOrder.push(newSample);
+      this.nextSampleId++;
+    }
+        this.closeDialog();
+      },
+      error: (error) => {
+        console.error('API Error:', error);
+        // Handle error appropriately
+      }
+    });
+  }
+
   addNewSampleForPurchaseOrder(): void {
     if (!this.planPurchaseOrderFormGroup.valid) {
       console.error("FORM IS INVALID");
@@ -300,7 +442,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     }
 
     const formValue = this.planPurchaseOrderFormGroup.value;
-
+ 
     // STEP 1: PREPARE QUALITATIVE INSPECTIONS
     const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
       const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
@@ -342,11 +484,47 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       qcId: this.purchaseQcId.id,
       inspectionObjects: inspectionObjects
     };
+    
     console.log('FINAL PAYLOAD:', newSamplePayload);
     // STEP 5: CALLING THE POST API
     this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
       next: (response) => {
         console.log('API Response:', response);
+
+        const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
+
+        if (existingSampleIndex !== -1) {
+          this.purchaseQcSamples[existingSampleIndex] = {
+            ...this.purchaseQcSamples[existingSampleIndex],
+            inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value
+          };
+          this.purchaseQcSamples = [...this.purchaseQcSamples];
+          this.selectedSampleId = this.qcSampleID;
+        } else {
+          console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
+        }
+
+        this.planPurchaseOrderFormGroup.patchValue({
+          inspectionDateTime: this.purchaseQcSamples[existingSampleIndex]?.inspectionDateTime,
+          inspectionBy: this.purchaseQcSamples[existingSampleIndex]?.inspectionBy
+        });
+
+        this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
+        const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
+
+        if (isNewSample) {
+          const newSample = {
+            id: this.nextSampleId,
+            inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+            cardColor: this.getRandomCardColor()
+          };
+
+          this.samplesPurchaseOrder.push(newSample);
+          this.nextSampleId++;
+        }
+      
         this.closeDialog();
       },
       error: (error) => {
@@ -365,17 +543,19 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this.closeDialog();
   }
 
-
-
   getRandomCardColor(): string {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
     return colors[Math.floor(Math.random() * colors.length)];
   }
 
   @ViewChild('dialogTemplateItems') dialogTemplateItems;
+  @ViewChild('EditdialogTemplateItems') EditdialogTemplateItems;
+
 
   ngOnInit() {
    
+    
+
     this.selectedOrder = history.state.selectedOrder;
     this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
     
@@ -465,6 +645,74 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this.cdr.detectChanges();
   }
 
+  xonEditSample(sample: any): void {
+    alert("this is the function");
+    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+      width: '70%',
+      height: '75vh',
+      data: this.cardCode
+    });
+    this.getCardByItemCode(this.selectedOrder.itemCode);
+    console.log(this.selectedOrder, 'this.selectedOrder')
+    this.getPurchaseByQcCode(
+      this.selectedOrder.itemCode,
+      this.selectedOrder.docNo,
+      this.selectedOrder.lineNum
+    )
+
+
+
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+
+        const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
+        if (index !== -1) {
+          this.samplesPurchaseOrder[index] = result;
+        }
+      }
+      console.log('EDIT DIALOG CLOSED');
+    });
+  }
+  private dialogRef: MatDialogRef<any>;
+  onEditSample(sample: any): void {
+    console.log('Sample Data:', sample); 
+    alert('Sample ID: ' + (sample ? sample.id : 'undefined')); 
+  
+    if (!sample || !sample.id) {
+      console.error('Sample or sample.id is undefined!');
+      return; 
+    }
+    this.qcSampleID = sample.id;
+    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+      width: '70%',
+      height: '75vh',
+      data: {
+        qcSampleId: sample.id,
+        cardCode: this.cardCode,
+        inspectionDateTime: sample.inspectionDateTime,
+        inspectionBy: sample.inspectionBy
+      }
+    });
+  
+    this.getCardByItemCode(this.selectedOrder.itemCode);
+    console.log(this.selectedOrder, 'this.selectedOrder');
+    this.getPurchaseByQcCode(
+      this.selectedOrder.itemCode,
+      this.selectedOrder.docNo,
+      this.selectedOrder.lineNum
+    );
+  
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
+        if (index !== -1) {
+          this.samplesPurchaseOrder[index] = result;
+        }
+      }
+      console.log('EDIT DIALOG CLOSED');
+    });
+  }
   onPurchaseOrderModal(): void {
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
@@ -478,6 +726,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       inspectionByControl.updateValueAndValidity(); // Re-validate the control
     }
 
+    
+    
     this.getCardByItemCode(this.selectedOrder.itemCode);
     console.log(this.selectedOrder, 'this.selectedOrder')
     this.getPurchaseByQcCode(
@@ -513,6 +763,57 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
   }
 
+   onUpdatePurchaseOrderModal(): void {
+    const dialogRef = this.dialog.open(this.dialogTemplateItems, {
+      width: '70%',
+      height: '75vh',
+      data: this.cardCode,
+    });
+    // DYNAMICALLY ADD Validators.required TO inspectionBy
+    const inspectionByControl = this.planPurchaseOrderFormGroup.get('inspectionBy');
+    if (inspectionByControl) {
+      inspectionByControl.setValidators(Validators.required);
+      inspectionByControl.updateValueAndValidity(); // Re-validate the control
+    }
+
+    
+    
+    this.getCardByItemCode(this.selectedOrder.itemCode);
+    console.log(this.selectedOrder, 'this.selectedOrder')
+    this.getPurchaseByQcCode(
+      this.selectedOrder.itemCode,
+      this.selectedOrder.docNo,
+      this.selectedOrder.lineNum
+    )
+
+    // IMMEDIATELY LOG FORM STATE
+    console.log('Form Initial State (Immediate):', this.planPurchaseOrderFormGroup.value);
+    console.log('Form Valid (Immediate):', this.planPurchaseOrderFormGroup.valid);
+    console.log('Inspection By Errors (Immediate):', this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
+    // LOG AFTER 1 SECOND TO CHECK IF STATE CHANGES
+    setTimeout(() => {
+      console.log('Form Initial State (After 1s):', this.planPurchaseOrderFormGroup.value);
+      console.log('Form Valid (After 1s):', this.planPurchaseOrderFormGroup.valid);
+      console.log('Inspection By Errors (After 1s):', this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
+    }, 1000);
+    // if (!this.selectedOrder || !this.selectedOrder.itemCode || !this.selectedOrder.docNo || !this.selectedOrder.lineNo) {
+    //   console.error('Selected order data is incomplete:', this.selectedOrder);
+    //   return;
+    // }
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('DIALOG CLOSED');
+      if (inspectionByControl) {
+        inspectionByControl.clearValidators();
+        inspectionByControl.updateValueAndValidity();
+      }
+
+      
+      this.closeDialog();
+    });
+  }
+
+
   closeDialog(): void {
     this.dialog.closeAll();
   }
@@ -540,8 +841,16 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
     this._sapPlanPurchaseOrderService.ListAllPurchaseQCSamplesByQcId(purchaseQcId).subscribe({
       next: (response) => {
-        this.purchaseQcSamples = response.data;
+        this.purchaseQcSamples = response.data.filter(sample => sample.isActive === true); 
         console.log(this.purchaseQcSamples, 'purchaseQcSamples');
+                      console.log(this.purchaseQcSamples, 'purchaseQcSamples');
+
+       if (this.purchaseQcSamples.length > 0) {
+        this.qcSampleID = this.qcSampleID 
+          ? this.purchaseQcSamples.find(sample => sample.id === this.qcSampleID)?.id || this.purchaseQcSamples[this.purchaseQcSamples.length - 1].id
+          : this.purchaseQcSamples[this.purchaseQcSamples.length - 1].id;
+      }
+      
       },
       error: (err) => {
         console.error('SERVICE ERROR:', err);
