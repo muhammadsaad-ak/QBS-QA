@@ -1,4 +1,3 @@
-import { SelectionModel } from '@angular/cdk/collections';
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ViewChild, ViewEncapsulation, inject, } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
@@ -12,14 +11,12 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ActivatedRoute } from '@angular/router';
-import { qbsAnimations } from '@qbs/animations';
 import { ChangeDetectorRef } from '@angular/core';
-import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { MatSelectModule } from '@angular/material/select';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 import { EvaluationPlanProductionOrderService } from 'app/core/other-core-services/module/evaluation-plan-production-order.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SapPlanProductionOrderService } from 'app/core/other-core-services/module/sap-plan-production-order.service';
 import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
 
 @Component({
@@ -56,11 +53,13 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   isValidate = false;
   isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
   productionQcSamples: any[] = [];
+  cardCode: any;
+  purchaseQcId: any
 
   
   // Plan Purchase DataSources for tables
-  dataSourceQualitativeInspectionPP: MatTableDataSource<any>;
-  dataSourceQuantitativeInspectionPP: MatTableDataSource<any>;
+  dataSourceQualitativeInspection: MatTableDataSource<any>;
+  dataSourceQuantitativeInspection: MatTableDataSource<any>;
   dataSourceUoMIIC: MatTableDataSource<any>;
   dataSourceAddQuantitativeIIC: MatTableDataSource<any>;
   
@@ -71,8 +70,10 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   selectedUoMCode: string = '';
   
   // Plan Purchase Display columns
-  displayedColumnsQualitative: string[] = ['parameter', 'passCriteria', 'mandatory', 'result', 'remarks'];
-  displayedColumnsQuantitative: string[] = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin', 'result', 'remarks'];
+  // displayedColumnsQualitative: string[] = ['parameter', 'passCriteria', 'mandatory', 'result', 'remarks'];
+  // displayedColumnsQuantitative: string[] = ['parameterQty', 'uoMId', 'mandatoryQty', 'passCriteriaTarget', 'passCriteriaMax', 'passCriteriaMin', 'result', 'remarks'];
+  displayedColumnsQualitative: string[] = ['inspectionCharacteristicName', 'inspectionCharacteristicSingleCriteria', 'isMandatory', 'qualitativeResultId', 'remarks'];
+  displayedColumnsQuantitative: string[] = ['inspectionCharacteristicName', 'uoMCode', 'isMandatory', 'target', 'max', 'min', 'quantitativeResult', 'remarks'];
   displayedColumnsUoMIIC: string[] = ['code', 'description'];
   displayedColumnsAddQuantitativeIIC: string[] = ['inspectionCode', 'inspectionDescription'];
   
@@ -101,7 +102,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
     private _evaluationProductionOrderService: EvaluationPlanProductionOrderService,
-    private _sapPlanProductionOrderService: SapPlanPurchaseOrderService,
+    private _sapPlanProductionOrderService: SapPlanProductionOrderService,
+    
     
     private _snackBar: MatSnackBar,
   ) { }
@@ -130,6 +132,13 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     analyzedBy: [''], 
     status: [''],
 
+    qualitativeInspectionObjects: this.fb.array([]),
+    quantitativeInspectionResults: this.fb.array([]),
+    inspectionBy: [''],
+    qcId: [''],
+    result: [0],
+    inspectionObjects: this.fb.array([this.createInspectionObject()]),
+
     // vendor: ['a'], 
     // remarks: ['aa'], 
     // isActive: [true], 
@@ -145,6 +154,35 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     // inspectionDateTimePO: [new Date().toISOString()], // API: docDate (Converted to ISO)
     // lineNum: [''], // No direct mapping, keep empty
   });
+
+  createInspectionObject(): FormGroup {
+    return this.fb.group({
+      qualitativeInspectionMappingId: [''],
+      quantitativeInspectionMappingId: [''],
+      qualitativeResultId: [''],
+      isQualitativeResultPassed: [true],
+      // quantitativeResult: [0],
+      isQuantitativeResultPassed: [true],
+      remarks: ['']
+    });
+  }
+
+  get inspectionObjects(): FormArray {
+    return this.planProductionOrderFormGroup.get('inspectionObjects') as FormArray;
+  }
+
+  getQualitativeResultPassStatusResults(index: number): FormArray {
+    return this.planProductionOrderFormGroup
+      .get('qualitativeInspectionObjects')?.get(`${index}.qualitativeResultPassStatusResults`) as FormArray;
+  }
+
+  addInspectionObject() {
+    this.inspectionObjects.push(this.createInspectionObject());
+  }
+
+  removeInspectionObject(index: number) {
+    this.inspectionObjects.removeAt(index);
+  }
 
 
   get sampleQuantity(): number {
@@ -283,11 +321,11 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   
   // Get form array controls
   get qualitativeInspectionObjects(): FormArray {
-    return this.qualitativeInspectionForm.get('qualitativeObjects') as FormArray;
+    return this.planProductionOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
   }
   
   get quantitativeInspectionObjects(): FormArray {
-    return this.quantitativeInspectionForm.get('quantitativeObjects') as FormArray;
+    return this.planProductionOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
   }
   
 
@@ -298,14 +336,31 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     
   ];
 
-  nextSampleId: number = 3; // Since you already have samples 1-4
+  nextSampleId: number = 1; // Since you already have samples 1-4
+
+  getProductionByQcCode(itemCode: string, docNo: number, lineNum: number) {
+    this._sapPlanProductionOrderService.GetProductionQCId(itemCode, docNo, lineNum).subscribe({
+      next: (response) => {
+        this.purchaseQcId = response.data;
+        this.planProductionOrderFormGroup.patchValue({
+          // inspectionBy: response.inspectionBy || '', 
+          inspectionDateTime: response.inspectionDateTime || new Date().toISOString()
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('QC SERVICE ERROR:', err);
+      }
+    });
+  }
+
 
 
   addNewSampleForProductionOrder(): void {
     const newSample = {
       id: this.nextSampleId,
-      inspectionTime: this.planProductionOrderFormGroup.get('inspectionTimeModalPP').value,
-      inspectionBy: this.planProductionOrderFormGroup.get('inspectionByModalPP').value,
+      inspectionTime: this.planProductionOrderFormGroup.get('inspectionDateTime').value,
+      inspectionBy: this.planProductionOrderFormGroup.get('inspectionBy').value,
       cardColor: this.getRandomCardColor()
     };
   
@@ -343,8 +398,9 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       } else {
           this.populateProductionOrderForm(this.selectedOrder); // Call Perform QC function
       }
-      this.getItemId(this.selectedOrder.itemCode);
+      // this.getItemId(this.selectedOrder.itemCode);
   }
+
     this._evaluationProductionOrderService.getProductionQCCode().subscribe((productionQCCode) => { 
       console.log('Production QC Code:', productionQCCode); // Debugging ke liye
   
@@ -353,26 +409,26 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   });
 
     // Initialize form groups
-    this.qualitativeInspectionForm = this.fb.group({
-      qualitativeObjects: this.fb.array([])
-    });
+    // this.qualitativeInspectionForm = this.fb.group({
+    //   qualitativeObjects: this.fb.array([])
+    // });
     
-    this.quantitativeInspectionForm = this.fb.group({
-      quantitativeObjects: this.fb.array([])
-    });
+    // this.quantitativeInspectionForm = this.fb.group({
+    //   quantitativeObjects: this.fb.array([])
+    // });
     
     // Add static qualitative inspection data
-    this.addQualitativeData();
+    // this.addQualitativeData();
     
     // Add static quantitative inspection data
-    this.addQuantitativeData();
+    // this.addQuantitativeData();
 
     // this.setInspectionDateTime(); // Fetch date-time on load
 
     
     // Initialize data sources
-    this.dataSourceQualitativeInspectionPP = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
-    this.dataSourceQuantitativeInspectionPP = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+    this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
+    this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
     this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
@@ -434,53 +490,53 @@ populateEditProductionOrderForm(data: any): void {
   }
   
   // Add static qualitative data
-  addQualitativeData() {
-    const qualitativeData = [
-      { parameter: 'Visual Inspection Color', passCriteria: 'No visible defects', mandatory: true, result: '', remarks: '' },
-      { parameter: 'Color Check', passCriteria: 'Matches standard color', mandatory: true, result: '', remarks: '' },
-      { parameter: 'Odor Test', passCriteria: 'No unusual odor', mandatory: false, result: '', remarks: '' },
-      { parameter: 'Package Integrity', passCriteria: 'No damage to packaging', mandatory: true, result: '', remarks: '' },
-      { parameter: 'Label Verification', passCriteria: 'All labels present and correct', mandatory: true, result: '', remarks: '' }
-    ];
+  // addQualitativeData() {
+  //   const qualitativeData = [
+  //     { parameter: 'Visual Inspection Color', passCriteria: 'No visible defects', mandatory: true, result: '', remarks: '' },
+  //     { parameter: 'Color Check', passCriteria: 'Matches standard color', mandatory: true, result: '', remarks: '' },
+  //     { parameter: 'Odor Test', passCriteria: 'No unusual odor', mandatory: false, result: '', remarks: '' },
+  //     { parameter: 'Package Integrity', passCriteria: 'No damage to packaging', mandatory: true, result: '', remarks: '' },
+  //     { parameter: 'Label Verification', passCriteria: 'All labels present and correct', mandatory: true, result: '', remarks: '' }
+  //   ];
     
-    qualitativeData.forEach(item => {
-      this.qualitativeInspectionObjects.push(
-        this.fb.group({
-          parameter: [item.parameter],
-          passCriteria: [item.passCriteria],
-          mandatory: [item.mandatory],
-          result: [item.result],
-          remarks: [item.remarks]
-        })
-      );
-    });
-  }
+  //   qualitativeData.forEach(item => {
+  //     this.qualitativeInspectionObjects.push(
+  //       this.fb.group({
+  //         parameter: [item.parameter],
+  //         passCriteria: [item.passCriteria],
+  //         mandatory: [item.mandatory],
+  //         result: [item.result],
+  //         remarks: [item.remarks]
+  //       })
+  //     );
+  //   });
+  // }
   
-  // Add static quantitative data
-  addQuantitativeData() {
-    const quantitativeData = [
-      { parameterQty: 'Weight', uoMId: 'KG', mandatoryQty: true, passCriteriaTarget: '10.0', passCriteriaMax: '10.5', passCriteriaMin: '9.5', result: '', remarks: '' },
-      { parameterQty: 'Length', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '20.0', passCriteriaMax: '20.2', passCriteriaMin: '19.8', result: '', remarks: '' },
-      { parameterQty: 'Width', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '15.0', passCriteriaMax: '15.2', passCriteriaMin: '14.8', result: '', remarks: '' },
-      { parameterQty: 'Height', uoMId: 'CM', mandatoryQty: false, passCriteriaTarget: '5.0', passCriteriaMax: '5.2', passCriteriaMin: '4.8', result: '', remarks: '' },
-      { parameterQty: 'Volume', uoMId: 'ML', mandatoryQty: false, passCriteriaTarget: '500.0', passCriteriaMax: '510.0', passCriteriaMin: '490.0', result: '', remarks: '' }
-    ];
+  // // Add static quantitative data
+  // addQuantitativeData() {
+  //   const quantitativeData = [
+  //     { parameterQty: 'Weight', uoMId: 'KG', mandatoryQty: true, passCriteriaTarget: '10.0', passCriteriaMax: '10.5', passCriteriaMin: '9.5', result: '', remarks: '' },
+  //     { parameterQty: 'Length', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '20.0', passCriteriaMax: '20.2', passCriteriaMin: '19.8', result: '', remarks: '' },
+  //     { parameterQty: 'Width', uoMId: 'CM', mandatoryQty: true, passCriteriaTarget: '15.0', passCriteriaMax: '15.2', passCriteriaMin: '14.8', result: '', remarks: '' },
+  //     { parameterQty: 'Height', uoMId: 'CM', mandatoryQty: false, passCriteriaTarget: '5.0', passCriteriaMax: '5.2', passCriteriaMin: '4.8', result: '', remarks: '' },
+  //     { parameterQty: 'Volume', uoMId: 'ML', mandatoryQty: false, passCriteriaTarget: '500.0', passCriteriaMax: '510.0', passCriteriaMin: '490.0', result: '', remarks: '' }
+  //   ];
     
-    quantitativeData.forEach(item => {
-      this.quantitativeInspectionObjects.push(
-        this.fb.group({
-          parameterQty: [item.parameterQty],
-          uoMId: [item.uoMId],
-          mandatoryQty: [item.mandatoryQty],
-          passCriteriaTarget: [item.passCriteriaTarget],
-          passCriteriaMax: [item.passCriteriaMax],
-          passCriteriaMin: [item.passCriteriaMin],
-          result: [item.result],
-          remarks: [item.remarks]
-        })
-      );
-    });
-  }
+    // quantitativeData.forEach(item => {
+    //   this.quantitativeInspectionObjects.push(
+    //     this.fb.group({
+    //       parameterQty: [item.parameterQty],
+    //       uoMId: [item.uoMId],
+    //       mandatoryQty: [item.mandatoryQty],
+    //       passCriteriaTarget: [item.passCriteriaTarget],
+    //       passCriteriaMax: [item.passCriteriaMax],
+    //       passCriteriaMin: [item.passCriteriaMin],
+    //       result: [item.result],
+    //       remarks: [item.remarks]
+    //     })
+    //   );
+    // });
+  
 
   ListAllProductionQCSamplesByQcId(purchaseQcId: string) {
     this._sapPlanProductionOrderService.ListAllProductionQCSamplesByQcId(purchaseQcId).subscribe({
@@ -494,6 +550,57 @@ populateEditProductionOrderForm(data: any): void {
     })
   }
 
+  populateQualitativeAndQuantitativeData(data: any) {
+    const qualitativeArray = this.planProductionOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
+    const quantitativeArray = this.planProductionOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
+
+    qualitativeArray.clear();
+    quantitativeArray.clear();
+
+    if (data.qualitativeInspectionObjects && data.qualitativeInspectionObjects.length > 0) {
+      data.qualitativeInspectionObjects.forEach((item: any) => {
+        qualitativeArray.push(
+          this.fb.group({
+            inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
+            inspectionCharacteristicSingleCriteria: [item.inspectionCharacteristicSingleCriteria || ''],
+            inspectionCharacterisicMappingId: [item.inspectionCharacterisicMappingId],
+            isMandatory: [item.isMandatory ?? false],
+            remarks: [item.remarks || ''],
+            qualitativeResultId: [item.qualitativeResultId || ''],
+            qualitativeResultPassStatusResults: this.fb.array(
+              item.qualitativeResultPassStatusResults?.map((status: any) =>
+                this.fb.group({
+                  resultDescription: [status.resultDescription || false],
+                  qualitativeResultId: [status.qualitativeResultId],
+                  isPassed: [status.isPassed]
+                })
+              ) || []
+            )
+          })
+        );
+      });
+    }
+
+    if (data.quantitativeInspectionResults && data.quantitativeInspectionResults.length > 0) {
+      data.quantitativeInspectionResults.forEach((item: any) => {
+
+        quantitativeArray.push(
+          this.fb.group({
+            inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
+            inspectionCharacterisicMappingId: [item.inspectionCharacterisicMappingId],
+            uoMCode: [item.uoMCode || ''],
+            isMandatory: [item.isMandatory ?? false],
+            target: [item.target || ''],
+            max: [item.max || ''],
+            min: [item.min || ''],
+            result: [item.result || ''],
+            remarks: [item.remarks || '']
+          })
+        );
+      });
+    }
+  }
+
   
   onItemCodeClickPP(): void {
     // console.log('Row Index:', rowIndex);
@@ -502,11 +609,22 @@ populateEditProductionOrderForm(data: any): void {
     const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
       width: '70%',
       height: '75vh',
-      data: this.dataSourceItems,
+      data: this.cardCode,
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('DIALOG CLOSED');
-    });
+    // DYNAMICALLY ADD Validators.required TO inspectionBy
+    const inspectionByControl = this.planProductionOrderFormGroup.get('inspectionBy');
+    if (inspectionByControl) {
+      inspectionByControl.setValidators(Validators.required);
+      inspectionByControl.updateValueAndValidity(); // Re-validate the control
+    }
+
+    this.getCardByItemCode(this.selectedOrder.itemCode);
+    console.log(this.selectedOrder, 'this.selectedOrder')
+    this.getProductionByQcCode(
+      this.selectedOrder.itemCode,
+      this.selectedOrder.docNo,
+      this.selectedOrder.lineNum
+    )
   }
   
   // Close dialog
@@ -561,7 +679,7 @@ populateEditProductionOrderForm(data: any): void {
           remarks: ['']
         })
       );
-      this.dataSourceQuantitativeInspectionPP = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+      this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
     }
     this.closeDialog();
   }
@@ -601,6 +719,26 @@ populateEditProductionOrderForm(data: any): void {
       error: (err) => {
         console.error('SERVICE ERROR:', err);
       },
+    });
+  }
+
+  getCardByItemCode(itemCode: string) {
+    this._sapPlanProductionOrderService.getItemCode(itemCode).subscribe({
+      next: (response) => {
+        this.cardCode = response.data;
+        console.log(this.cardCode);
+        if (this.cardCode) {
+          // this.planPurchaseOrderFormGroup.patchValue({
+          //   itemCode: this.cardCode.itemId || '',
+          //   itemDescription: this.cardCode.itemDescription || ''
+          // });
+          this.populateQualitativeAndQuantitativeData(this.cardCode);
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      }
     });
   }
 }
