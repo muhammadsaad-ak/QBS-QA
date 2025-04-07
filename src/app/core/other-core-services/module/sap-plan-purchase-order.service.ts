@@ -10,21 +10,16 @@ export class SapPlanPurchaseOrderService {
     private _httpClient = inject(HttpClient);
 
     // BehaviorSubject to hold role data state
-    // private _UnitOfMeasure = new BehaviorSubject<any[]>([]);
     private _purchaseOrders = new BehaviorSubject<any[]>([]);
-    private _productionOrders = new BehaviorSubject<any[]>([]);
     private _cardByCode = new BehaviorSubject<any[]>([])
     private _getPurchaseByQcCode = new BehaviorSubject<any[]>([])
     private _getPurchaseQcId = new BehaviorSubject<any[]>([])
-    private _getProductionQcId = new BehaviorSubject<any[]>([])
+
     // Observable to expose role data state
-    // unitofmeasure$: Observable<any[]> = this._UnitOfMeasure.asObservable();
     sappurchaseorder$: Observable<any[]> = this._purchaseOrders.asObservable();
-    sapproductionorder$: Observable<any[]> = this._productionOrders.asObservable();
     cardbycode$: Observable<any[]> = this._cardByCode.asObservable();
     getPurchaseByQcCode: Observable<any[]> = this._getPurchaseByQcCode.asObservable()
     getPurchaseQcId: Observable<any[]> = this._getPurchaseQcId.asObservable()
-    getProductionQcId: Observable<any[]> = this._getProductionQcId.asObservable()
     
     /**
      * Setter & getter for access token
@@ -62,31 +57,6 @@ export class SapPlanPurchaseOrderService {
                                 `Error fetching Purchase Orders: ${error.message}`
                             )
                     );
-                })
-            );
-    }
-
-    getProductionOrders(pageNumber: number, pageSize: number): Observable<any> {
-        const headers = new HttpHeaders({
-            Authorization: `Bearer ${this.accessToken}`,
-            'X-API-KEY': 'super',
-            Accept: 'application/json'
-        });
-    
-        return this._httpClient
-            .get(
-                `${environment.appApiUrlSAP}/B1ProductionOrders/ListAllProductionOrders?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-                { headers }
-            )
-            .pipe(
-                tap((response: any) => {
-                    const productionOrders = response?.data?.values ?? [];
-                    this._productionOrders.next(productionOrders);
-                    console.log('Fetched Production Orders:', productionOrders);
-                }),
-                catchError((error) => {
-                    console.error('Error fetching Production Orders', error);
-                    return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`));
                 })
             );
     }
@@ -157,9 +127,7 @@ export class SapPlanPurchaseOrderService {
 
     }
 
-
-   
-ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
+    ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
            const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
             'X-API-KEY': 'super',
@@ -182,28 +150,6 @@ ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
         )
     }
 
-    ListAllProductionQCSamplesByQcId(productionQcId: string) {
-        const headers = new HttpHeaders({
-         Authorization: `Bearer ${this.accessToken}`,
-         'X-API-KEY': 'super',
-         Accept: 'application/json'
-         });
-         
-          return this._httpClient.get(
-             `${environment.appApiUrl}/CSAPI/IProductionQCSampleFeature/ListAllProductionQCSamplesByQcId?productionQcId=${productionQcId}`,
-         { headers }
-     )
-     .pipe(
-         tap((response: any) => {
-             const getProductionQcId = response?.data?.value ?? []                
-             this._getProductionQcId.next(getProductionQcId);
-         }),
-         catchError((error) => {
-             console.error('Error fetching item code', error);
-             return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`))
-         })
-     )
- }
  
 }
     
