@@ -112,7 +112,7 @@
 
       <!-- Third Step -->
 
-      <!-- Fourth Step - Inspection Characterisitic STARTS -->
+      <!-- Inspection Characterisitic STARTS -->
       <mat-step [stepControl]="fourthFormGroup" label="Inspection Characterisitic">
         <form [formGroup]="fourthFormGroup">
           <h1 class="custom-heading">Inspection Characteristic</h1>
@@ -181,9 +181,17 @@
                 </span>
               </div>
               <div class="step-navigation">
-                <button mat-button class="back-button" matStepperPrevious *ngIf="!isEditMode">Back</button>
-                <button mat-button class="next-button" *ngIf="!isEditMode"
-                  (click)="onSubmitInspectionCharacteristics()">Next</button>
+                <div *ngIf="isLoading" class="loader">
+                  <mat-spinner diameter="33"></mat-spinner>
+                </div>
+                <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
+                  <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+                </button>
+                <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+                  (click)="onSubmitInspectionCharacteristics()">Save</button>
+                <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCharacteristics()">
+                  <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+                </button>
               </div>
             </div>
             <!-- IF isEditMode - UPDATE MODE -->
@@ -232,15 +240,12 @@
           </div>
         </form>
       </mat-step>
-      <!-- Fourth Step - Inspection Characterisitic ENDS -->
+      <!-- Inspection Characterisitic ENDS -->
 
-      <!-- fifthFormGroup - Inspection Card STARTS -->
+      <!-- Inspection Card STARTS -->
       <mat-step [stepControl]="fifthFormGroup" label="Inspection Card ">
         <form [formGroup]="fifthFormGroup">
-          <!-- (ngSubmit)="onSubmit()" -->
-          <!-- Custom Styled Heading -->
           <h1 class="custom-heading">Inspection Card</h1>
-
           <!-- Responsive Flexbox Container -->
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
@@ -465,13 +470,22 @@
             <!-- mat-tab ENDS -->
           </div>
           <div class="step-navigation">
-            <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode" (click)="onSubmitInspectionCard()">Next</button>
+            <div *ngIf="isLoading" class="loader">
+              <mat-spinner diameter="33"></mat-spinner>
+            </div>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" matStepperPrevious>
+              <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+            </button>
+            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+              (click)="onSubmitInspectionCard()">Save</button>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCards()">
+              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+            </button>
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateInspectionCard()">Update</button>
           </div>
         </form>
       </mat-step>
-      <!-- fifthFormGroup - Inspection Card ENDS -->
+      <!-- Inspection Card ENDS -->
 
       <!-- itemsInspectionCardsForm  - Item Inspection Card STARTS -->
       <mat-step [stepControl]="itemsInspectionCardsForm" label="Item Inspection Card">

@@ -557,8 +557,6 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     
 
     this.selectedOrder = history.state.selectedOrder;
-
-    this.selectedOrder = history.state.selectedOrder; // Access the passed data
     this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
     
     if (this.selectedOrder) {
@@ -617,7 +615,6 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
   populateEditForm(data: any): void {
     console.log('Populating Edit QC Form:', data);
-  
     this.planPurchaseOrderFormGroup.patchValue({
       intCode: data.intCode ?? "",  
       itemCode: data.itemCode ?? "",  
