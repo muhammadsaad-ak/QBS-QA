@@ -16,6 +16,7 @@ export class SapPlanPurchaseOrderService {
     private _cardByCode = new BehaviorSubject<any[]>([])
     private _getPurchaseByQcCode = new BehaviorSubject<any[]>([])
     private _getPurchaseQcId = new BehaviorSubject<any[]>([])
+    private _getProductionQcId = new BehaviorSubject<any[]>([])    
     private _getPurchaseQcSampleId = new BehaviorSubject<any[]>([])
 
     // Observable to expose role data state
@@ -25,6 +26,7 @@ export class SapPlanPurchaseOrderService {
     cardbycode$: Observable<any[]> = this._cardByCode.asObservable();
     getPurchaseByQcCode: Observable<any[]> = this._getPurchaseByQcCode.asObservable()
     getPurchaseQcId: Observable<any[]> = this._getPurchaseQcId.asObservable()
+    getProductionQcId: Observable<any[]> = this._getProductionQcId.asObservable()
     getPurchaseQcSampleId: Observable<any[]> = this._getPurchaseQcSampleId.asObservable()
 
     /**
@@ -182,6 +184,33 @@ ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
             })
         )
     }
+
+    ListAllProductionQCSamplesByQcId(productionQcId: string) {
+        const headers = new HttpHeaders({
+         Authorization: `Bearer ${this.accessToken}`,
+         'X-API-KEY': 'super',
+         Accept: 'application/json'
+         });
+         
+          return this._httpClient.get(
+             `${environment.appApiUrl}/CSAPI/IProductionQCSampleFeature/ListAllProductionQCSamplesByQcId?productionQcId=${productionQcId}`,
+         { headers }
+     )
+     .pipe(
+         tap((response: any) => {
+             const getProductionQcId = response?.data?.value ?? []                
+             this._getProductionQcId.next(getProductionQcId);
+         }),
+         catchError((error) => {
+             console.error('Error fetching item code', error);
+             return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`))
+         })
+     )
+ }
+ 
+    
+
+        
 
     UpdatePurchaseQcSample(data: any) {
          const headers = new HttpHeaders({
