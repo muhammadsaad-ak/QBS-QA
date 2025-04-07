@@ -154,7 +154,7 @@ export class InspectionCardService {
                 catchError((error) => {
                     console.error('Error Adding Inspection Cards', error);
                     return throwError(
-                        () => new Error('Error Adding Inspection Cards')
+                        () => new Error('This description is already being used and cannot be duplicated')
                     );
                 })
             );
