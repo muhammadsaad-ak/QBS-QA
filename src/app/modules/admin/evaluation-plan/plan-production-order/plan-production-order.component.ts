@@ -44,7 +44,7 @@ import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module
 export class PlanProductionOrderComponent implements AfterViewInit {
   i: number;
   
-  // Plan Purchase Form groups
+  // Plan Prodcution Form groups
   selectedOrder: any;
   qualitativeInspectionForm: FormGroup;
   quantitativeInspectionForm: FormGroup;
@@ -54,10 +54,15 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
   productionQcSamples: any[] = [];
   cardCode: any;
-  purchaseQcId: any
+  productionQcId: any
+  qcSampleID: string | null = null;   //  qcSampleID: string = '';
+  selectedSampleId: any;
+  productionQCSampleId: any
+  
+
 
   
-  // Plan Purchase DataSources for tables
+  // Plan Production DataSources for tables
   dataSourceQualitativeInspection: MatTableDataSource<any>;
   dataSourceQuantitativeInspection: MatTableDataSource<any>;
   dataSourceUoMIIC: MatTableDataSource<any>;
@@ -131,6 +136,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     inspectionQuantity: [], 
     analyzedBy: [''], 
     status: [''],
+    remarks:  [''],
 
     qualitativeInspectionObjects: this.fb.array([]),
     quantitativeInspectionResults: this.fb.array([]),
@@ -240,14 +246,14 @@ export class PlanProductionOrderComponent implements AfterViewInit {
           (response) => {
             if (response.isRequestSuccess) {
               console.log('API RUN SUCCESSFULLY.', payload);
-              this._snackBar.open('Purchase Order added successfully!', 'Close', {
+              this._snackBar.open('Production Order added successfully!', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-success']
               });
             }
           },
           (error) => {
-            this._snackBar.open('Error adding purchase order.', 'Close', {
+            this._snackBar.open('Error adding Production order.', 'Close', {
               duration: 3000,
               panelClass: ['snackbar-error']
             });
@@ -341,7 +347,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   getProductionByQcCode(itemCode: string, docNo: number, lineNum: number) {
     this._sapPlanProductionOrderService.GetProductionQCId(itemCode, docNo, lineNum).subscribe({
       next: (response) => {
-        this.purchaseQcId = response.data;
+        this.productionQcId = response.data;
         this.planProductionOrderFormGroup.patchValue({
           // inspectionBy: response.inspectionBy || '', 
           inspectionDateTime: response.inspectionDateTime || new Date().toISOString()
@@ -357,17 +363,86 @@ export class PlanProductionOrderComponent implements AfterViewInit {
 
 
   addNewSampleForProductionOrder(): void {
-    const newSample = {
-      id: this.nextSampleId,
-      inspectionTime: this.planProductionOrderFormGroup.get('inspectionDateTime').value,
-      inspectionBy: this.planProductionOrderFormGroup.get('inspectionBy').value,
-      cardColor: this.getRandomCardColor()
+    if (!this.planProductionOrderFormGroup.valid) {
+      console.error("FORM IS INVALID");
+      this.planProductionOrderFormGroup.markAllAsTouched();
+      return;
+    }
+  
+    if (!this.productionQcId) {
+      console.error('QC ID IS MISSING, CANNOT PROCEED!');
+      return;
+    }
+  
+    const formValue = this.planProductionOrderFormGroup.value;
+  
+    // QUALITATIVE
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+        (status: any) => status.qualitativeResultId === item.qualitativeResultId
+      );
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeInspectionMappingId: null,
+        qualitativeResultId: item?.qualitativeResultId || null,
+        isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+        quantitativeResult: 0,
+        isQuantitativeResultPassed: false,
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+  
+    // QUANTITATIVE
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
+      return {
+        qualitativeInspectionMappingId: null,
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+        qualitativeResultId: null,
+        isQualitativeResultPassed: false,
+        quantitativeResult: resultValue,
+        isQuantitativeResultPassed: !isNaN(resultValue) && resultValue >= (item.min ?? 0) && resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+  
+    // FINAL PAYLOAD
+    const newSamplePayload = {
+      name: `sample-${this.nextSampleId}`,
+      inspectionDateTime: new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.productionQcId.id,
+      inspectionObjects: [...qualitativeInspections, ...quantitativeInspections]
     };
   
-    this.samplesProductionOrder.push(newSample);
-    this.nextSampleId++;
-    this.closeDialog();
+    console.log('FINAL PAYLOAD:', newSamplePayload);
+  
+    // API CALL
+    this._sapPlanProductionOrderService.addProductionQcSample(newSamplePayload).subscribe({
+      next: (response) => {
+        console.log('API Response:', response);
+  
+        const newSample = {
+          id: this.nextSampleId,
+          inspectionTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
+          inspectionBy: this.planProductionOrderFormGroup.get('inspectionBy')?.value,
+          cardColor: this.getRandomCardColor()
+        };
+  
+        this.samplesProductionOrder.push(newSample);
+        this.nextSampleId++;
+  
+        // Refresh all samples list
+        this.ListAllProductionQCSamplesByQcId(this.productionQcId.id);
+  
+        this.closeDialog();
+      },
+      error: (error) => {
+        console.error('API Error:', error);
+      }
+    });
   }
+  
 
   getRandomCardColor(): string {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
@@ -538,17 +613,37 @@ populateEditProductionOrderForm(data: any): void {
     // });
   
 
-  ListAllProductionQCSamplesByQcId(purchaseQcId: string) {
-    this._sapPlanProductionOrderService.ListAllProductionQCSamplesByQcId(purchaseQcId).subscribe({
+  // ListAllProductionQCSamplesByQcId(productionQcId: string) {
+  //   this._sapPlanProductionOrderService.ListAllProductionQCSamplesByQcId(productionQcId).subscribe({
+  //     next: (response) => {
+  //       this.productionQcSamples = response.data;
+  //       console.log(this.productionQcSamples, 'Production QC Samples');
+  //     },
+  //     error: (err) => {
+  //       console.error('SERVICE ERROR:', err);
+  //     }
+  //   })
+  // }
+
+  ListAllProductionQCSamplesByQcId(productionQcId: string) {
+    this._sapPlanProductionOrderService.ListAllProductionQCSamplesByQcId(productionQcId).subscribe({
       next: (response) => {
-        this.productionQcSamples = response.data;
-        console.log(this.productionQcSamples, 'Production QC Samples');
+        this.productionQcSamples = response.data.filter(sample => sample.isActive === true); 
+        console.log(this.productionQcSamples, 'productionQcSamples');
+
+       if (this.productionQcSamples.length > 0) {
+        this.qcSampleID = this.qcSampleID 
+          ? this.productionQcSamples.find(sample => sample.id === this.qcSampleID)?.id || this.productionQcSamples[this.productionQcSamples.length - 1].id
+          : this.productionQcSamples[this.productionQcSamples.length - 1].id;
+      }
+      
       },
       error: (err) => {
         console.error('SERVICE ERROR:', err);
       }
     })
   }
+
 
   populateQualitativeAndQuantitativeData(data: any) {
     const qualitativeArray = this.planProductionOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
