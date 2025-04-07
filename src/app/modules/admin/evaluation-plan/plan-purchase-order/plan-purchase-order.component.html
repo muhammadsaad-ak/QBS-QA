@@ -83,22 +83,22 @@
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>QC Lot No:</mat-label>
-                    <input matInput placeholder="Enter" formControlName="qcLotNo" required />
+                    <input matInput formControlName="qcLotNo" required [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" />
                 </mat-form-field>
 
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px">
                     <mat-label>Receive Qty</mat-label>
-                    <input matInput formControlName="receiveQuantity" placeholder="Enter Code" required />
+                    <input matInput formControlName="receiveQuantity" required [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" />
                 </mat-form-field>
 
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px">
                     <mat-label>Inspection Qty:</mat-label>
-                    <input matInput placeholder="Enter" formControlName="inspectionQuantity" required />
+                    <input matInput formControlName="inspectionQuantity" required [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" />
                 </mat-form-field>
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Analyzed By:</mat-label>
-                    <input matInput placeholder="Enter " formControlName="analyzedBy" required>
+                    <input matInput formControlName="analyzedBy" required [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" />
                 </mat-form-field>
 
                 <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
@@ -119,10 +119,10 @@
             <div class="mt-4 flex flex-wrap gap-2">
                 <div *ngFor="let sample of purchaseQcSamples"  [class.selected]="sample.id === selectedSampleId"  class="sample-card"
                     [style.background-color]="sample.cardColor" (click)="onEditSample(sample)">
-                    <h3 style="font-weight: 500">Sample {{ sample.name }}</h3>
-                          <div style="font-weight: 400">
-                        qcSampleId: {{ sample.id }} 
-                      </div>
+                    <h3 style="font-weight: 500">{{ sample.name }}</h3>
+                        <div style="font-weight: 400">
+                            qcSampleId: {{ sample.id }}
+                        </div>
                     <div style="font-weight: 400">
                         Inspection Time: {{ sample.inspectionDateTime }}
                     </div>
