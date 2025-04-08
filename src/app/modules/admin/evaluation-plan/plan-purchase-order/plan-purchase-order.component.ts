@@ -363,6 +363,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     // STEP 3: COMBINE QUALITATIVE AND QUANTITATIVE INSPECTIONS
     const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
 
+    const isSamplePassed = inspectionObjects.some((inspection: any) => inspection.isQuantitativeResultPassed === true);
     // STEP 4: CREATING THE FINAL PAYLOAD
     const updatedSamplePayload = {
       id: this.qcSampleID,
@@ -370,6 +371,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
       inspectionBy: formValue.inspectionBy || "",
       qcId: this.purchaseQcId.id,
+      isSamplePassed: isSamplePassed,
       inspectionObjects: inspectionObjects
     };
 
@@ -478,12 +480,14 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     }) || [];
     // STEP 3: COMBINE QUALITATIVE AND QUANTITATIVE INSPECTIONS INTO inspectionObjects
     const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+    const isSamplePassed = inspectionObjects.some((inspection: any) => inspection.isQuantitativeResultPassed === true);
     // STEP 4: CREATING THE FINAL PAYLOAD
     const newSamplePayload = {
       name: `sample-${this.nextSampleId}`,
       inspectionDateTime: new Date().toISOString(),
       inspectionBy: formValue.inspectionBy || "",
       qcId: this.purchaseQcId.id,
+      isSamplePassed: isSamplePassed,
       inspectionObjects: inspectionObjects
     };
     
