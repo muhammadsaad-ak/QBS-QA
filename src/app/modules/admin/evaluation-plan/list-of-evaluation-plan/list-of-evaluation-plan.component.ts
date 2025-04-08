@@ -23,6 +23,7 @@ import { debounceTime } from 'rxjs';
 import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
 import { ListOfEvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/list-of-evaluation-plan-purchase-order.service';
 import { PageEvent } from '@angular/material/paginator';
+import { SapPlanProductionOrderService } from 'app/core/other-core-services/module/sap-plan-production-order.service';
 
 @Component({
   selector: 'app-list-of-evaluation-plan',
@@ -128,6 +129,7 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _activatedRoute: ActivatedRoute,
     private router: Router,
     private _purchaseOrderService:SapPlanPurchaseOrderService,
+    private _productionOrderService:SapPlanProductionOrderService,
     private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService,
     private _productionQCService: ListOfEvaluationPlanPurchaseOrderService
   ) {
@@ -224,7 +226,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
   }
 //Fetching Production Orders API
   fetchSapDocProductionOrders(): void {
-    this._purchaseOrderService.getProductionOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
+    this._productionOrderService.getProductionOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
         if (response.succeeded) {
             this.sapDocProductionOrderData = response.data.values.map((order, index) => ({
                 serialId: index + 1 + (this.currentPage - 1) * this.pageSize,
@@ -469,6 +471,10 @@ onEvaluationPlanTypeChange(orderType: string): void {
         });
       }
     }
+  }
+
+  navigateToEvaluationPlanQAForm(element: any) {
+    this.router.navigate(['/evaluation-plan/plan-evaluation-qa'])
   }
   
 
