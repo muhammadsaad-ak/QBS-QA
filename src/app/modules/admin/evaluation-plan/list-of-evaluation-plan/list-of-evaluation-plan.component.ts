@@ -470,6 +470,10 @@ onEvaluationPlanTypeChange(orderType: string): void {
       }
     }
   }
+
+  navigateToEvaluationPlanQAForm(element: any) {
+    this.router.navigate(['/evaluation-plan/plan-evaluation-qa'])
+  }
   
 
   getStatusClass(status: string): string {
