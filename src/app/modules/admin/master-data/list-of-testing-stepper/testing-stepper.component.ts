@@ -1525,7 +1525,9 @@ export class TestingStepperComponent implements AfterViewInit {
         if (this.itemsInspectionCardsForm.valid) {
             const formValues = this.itemsInspectionCardsForm.value;
             console.log('✅ IIC FORM VALUES:', formValues);
-
+            const itemCodeForQA = formValues.itemCode;
+            console.log('Item Code for QA:', itemCodeForQA);
+            // return;
             // Handle null values for itemU_QACard
             formValues.itemU_QACard = formValues.itemU_QACard || null;
 
@@ -1597,7 +1599,42 @@ export class TestingStepperComponent implements AfterViewInit {
                 .subscribe((response) => {
                     if (response.isRequestSuccess) {
                         console.log('✅ API RUN SUCCESSFULLY.', payload);
-                        this.stepper.next();
+                        // this.stepper.next();
+                        this._snackBar.open('Inspection Card created successfully!', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-success']
+                        });
+
+                        // CALLING SAP API TO ENABLE ITEM FOR QA
+                        this._SAPItemsService.enableItemForQA(itemCodeForQA)
+                            .subscribe({
+                                next: (sapResponse) => {
+                                    if (sapResponse.succeeded) {
+                                        console.log('✅ EnableItemForQA API RUN SUCCESSFULLY:', sapResponse);
+                                        // this.stepper.next();
+                                    } else {
+                                        console.warn('⚠️ SAP API FAILED:', sapResponse.message);
+                                        console.warn('⚠️ Response Message: Conversion failed when converting the nvarchar value  to data type int.');
+                                        // this._snackBar.open(
+                                        //     `FAILED TO ENABLE ITEM IN SAP FOR QA`,
+                                        //     'Close',
+                                        //     { duration: 500, panelClass: ['snackbar-error'] }
+                                        // );
+                                    }
+                                },
+                                error: (sapError) => {
+                                    console.error('❌ SAP API ERROR:', sapError);
+                                    // this._snackBar.open(
+                                    //     'Error enabling item for QA. Please try again.',
+                                    //     'Close',
+                                    //     { duration: 500, panelClass: ['snackbar-error'] }
+                                    // );
+                                }
+                            });
+                        setTimeout(() => {
+                            this.stepper.next();
+                        }, 1550);
+
                     }
                     else {
                         console.warn('⚠️ API RESPONSE DID NOT SUCCEED:', response);
@@ -3826,7 +3863,7 @@ export class TestingStepperComponent implements AfterViewInit {
         const hasDescription = descriptionValue && descriptionValue.trim() !== '';
 
         if (isDescriptionEmpty && isQualitativeCriteriaEmpty && isQuantitativeCriteriaEmpty) {
-            this.stepper.next(); 
+            this.stepper.next();
         } else if (hasQualitativeCriteria || hasQuantitativeCriteria || hasDescription) {
             this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
                 duration: 3000,

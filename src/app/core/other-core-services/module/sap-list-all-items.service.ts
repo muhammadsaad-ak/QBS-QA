@@ -70,5 +70,28 @@ export class SAPItemsService {
         );
     }
 
-
+    // POST API TO ENABLE ITEM IN SAP FOR QA
+    enableItemForQA(itemCode: string): Observable<any> {
+        const headers = new HttpHeaders({
+            'Accept': 'application/json', // Changed to match response content-type
+            'X-API-KEY': 'super'
+        });
+        return this._httpClient.post(
+            `${environment.SAPitemsApiUrl}/api/B1Items/EnableItemForQA?itemCode=${itemCode}`,
+            '',
+            { headers }
+        ).pipe(
+            tap((response: any) => {
+                if (response.succeeded) {
+                    console.log('ITEM ENABLED FOR QA SUCCESSFULLY:', response);
+                } else {
+                    console.warn('ITEM ENABLING FAILED:', response.message);
+                }
+            }),
+            catchError((error) => {
+                console.error('HTTP ERROR WHILE ENABLING ITEM FOR QA', error);
+                return throwError(() => error);
+            })
+        );
+    }
 }
