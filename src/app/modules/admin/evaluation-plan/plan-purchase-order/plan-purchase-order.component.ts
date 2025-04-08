@@ -130,7 +130,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     inspectionBy: [''],
     qcId: [''],
     result: [0],
-    inspectionObjects: this.fb.array([this.createInspectionObject()])
+    inspectionObjects: this.fb.array([this.createInspectionObject()]),
+    sampleName: [''],
   });
 
   createInspectionObject(): FormGroup {
@@ -365,6 +366,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     // STEP 4: CREATING THE FINAL PAYLOAD
     const updatedSamplePayload = {
       id: this.qcSampleID,
+      name: formValue.sampleName,
       inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
       inspectionBy: formValue.inspectionBy || "",
       qcId: this.purchaseQcId.id,
@@ -372,7 +374,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     };
 
     console.log('FINAL PAYLOAD:', updatedSamplePayload);
-
+    // return;
     // STEP 5: CALLING THE UPDATE API
     this._sapPlanPurchaseOrderService.UpdatePurchaseQcSample(updatedSamplePayload).subscribe({
       next: (response) => {
@@ -532,15 +534,15 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         // alert('FAILED TO SAVE SAMPLE.');
       }
     });
-    // const newSample = {
-    //   id: this.nextSampleId,
-    //   inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
-    //   inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-    //   cardColor: this.getRandomCardColor()
-    // };
-    // this.samplesPurchaseOrder.push(newSample);
-    // this.nextSampleId++;
-    // this.closeDialog();
+    const newSample = {
+      id: this.nextSampleId,
+      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+      cardColor: this.getRandomCardColor()
+    };
+    this.samplesPurchaseOrder.push(newSample);
+    this.nextSampleId++;
+    this.closeDialog();
   }
 
   getRandomCardColor(): string {
@@ -677,19 +679,27 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   private dialogRef: MatDialogRef<any>;
   onEditSample(sample: any): void {
     console.log('Sample Data:', sample); 
-    alert('Sample ID: ' + (sample ? sample.id : 'undefined')); 
+    // alert('Sample ID: ' + (sample ? sample.id : 'undefined'));
+    // alert('Sample : ' + (sample ? sample.name : 'undefined'));
+    // alert('inspectionBy : ' + (sample ? sample.inspectionBy : 'undefined')); 
   
     if (!sample || !sample.id) {
       console.error('Sample or sample.id is undefined!');
       return; 
     }
     this.qcSampleID = sample.id;
+    
+    this.planPurchaseOrderFormGroup.patchValue({
+      sampleName: sample.name || '',
+    });
+
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
       height: '75vh',
       data: {
         qcSampleId: sample.id,
         cardCode: this.cardCode,
+        sampleName: sample.name,
         inspectionDateTime: sample.inspectionDateTime,
         inspectionBy: sample.inspectionBy
       }
@@ -713,6 +723,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       console.log('EDIT DIALOG CLOSED');
     });
   }
+ 
   onPurchaseOrderModal(): void {
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
