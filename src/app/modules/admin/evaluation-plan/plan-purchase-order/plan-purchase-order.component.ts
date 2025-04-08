@@ -412,7 +412,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         id: this.nextSampleId,
         inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
         inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-        cardColor: this.getRandomCardColor()
+        cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  // cardColor: this.getRandomCardColor()
       };
       
       this.samplesPurchaseOrder.push(newSample);
@@ -520,7 +520,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
             id: this.nextSampleId,
             inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
             inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-            cardColor: this.getRandomCardColor()
+            cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  //  cardColor: this.getRandomCardColor()
           };
 
           this.samplesPurchaseOrder.push(newSample);
@@ -538,7 +538,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       id: this.nextSampleId,
       inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
       inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-      cardColor: this.getRandomCardColor()
+      cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  //  cardColor: this.getRandomCardColor()
     };
     this.samplesPurchaseOrder.push(newSample);
     this.nextSampleId++;
