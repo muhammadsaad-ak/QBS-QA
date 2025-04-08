@@ -679,9 +679,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   private dialogRef: MatDialogRef<any>;
   onEditSample(sample: any): void {
     console.log('Sample Data:', sample); 
-    alert('Sample ID: ' + (sample ? sample.id : 'undefined'));
-    alert('Sample : ' + (sample ? sample.name : 'undefined'));
-    alert('inspectionBy : ' + (sample ? sample.inspectionBy : 'undefined')); 
+    // alert('Sample ID: ' + (sample ? sample.id : 'undefined'));
+    // alert('Sample : ' + (sample ? sample.name : 'undefined'));
+    // alert('inspectionBy : ' + (sample ? sample.inspectionBy : 'undefined')); 
   
     if (!sample || !sample.id) {
       console.error('Sample or sample.id is undefined!');
