@@ -374,8 +374,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     };
 
     console.log('FINAL PAYLOAD:', updatedSamplePayload);
-    console.log("return");
-    return;
+    // return;
     // STEP 5: CALLING THE UPDATE API
     this._sapPlanPurchaseOrderService.UpdatePurchaseQcSample(updatedSamplePayload).subscribe({
       next: (response) => {
