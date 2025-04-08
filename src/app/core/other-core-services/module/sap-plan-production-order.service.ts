@@ -172,4 +172,24 @@ getProductionQcSampleById(productionQCSampleId: string) {
     })
 )
 }
+
+
+UpdateProductionQcSample(data: any) {
+  const headers = new HttpHeaders({
+     Authorization: `Bearer ${this.accessToken}`,
+     'Content-Type': 'application/json',
+ });
+ return this._httpClient.put(
+     `${environment.appApiUrl}/CSAPI/IProductionQCSampleFeature/UpdateProductionQcSample`,
+     data,
+     { headers }
+ ).pipe(
+     tap(response => console.log('RESPONSE:', response)),
+     catchError(error => {
+         console.error('ERROR WHILE UPDATING SAMPLE CARD', error);
+         return throwError(() => error);
+     })
+ );
+}
+
 }
