@@ -87,6 +87,8 @@ export const appRoutes: Route[] = [
                     { path: 'list-of-item-cavity', loadChildren: () => import('app/modules/admin/master-data/list-of-item-cavity/list-of-item-cavity.routes') },
                     { path: 'plan-purchase-order', loadChildren: () => import('app/modules/admin/evaluation-plan/plan-purchase-order/plan-purchase-order.routes') },
                     { path: 'plan-production-order', loadChildren: () => import('app/modules/admin/evaluation-plan/plan-production-order/plan-production-order.routes') },
+                    { path: 'plan-evaluation-qa', loadChildren: () => import('app/modules/admin/evaluation-plan/evaluation-plan-qa/evaluation-plan-qa.routes') },
+
 
 
                 ]

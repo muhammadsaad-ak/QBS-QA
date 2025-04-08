@@ -167,6 +167,11 @@
                                             Perform QC
                                         </button>
 
+                                        <button mat-menu-item class="text-red-400" *ngIf="currentView === 'sapDocuments'"
+                                            (click)="navigateToEvaluationPlanQAForm(element)">
+                                            Perform QA
+                                        </button>
+
                                         <!-- Show "Edit QC" if we are on Evaluation Plan -->
                                         <button mat-menu-item class="text-blue-400"
                                             *ngIf="currentView === 'evaluationPlan'"
