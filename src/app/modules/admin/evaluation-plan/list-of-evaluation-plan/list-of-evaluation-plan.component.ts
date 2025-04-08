@@ -477,7 +477,6 @@ onEvaluationPlanTypeChange(orderType: string): void {
     this.router.navigate(['/evaluation-plan/plan-evaluation-qa'])
   }
   
-
   getStatusClass(status: string): string {
     switch (status) {
       case 'Open':
