@@ -44,7 +44,7 @@ import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module
 export class PlanProductionOrderComponent implements AfterViewInit {
   i: number;
   
-  // Plan Purchase Form groups
+  // Plan Prodcution Form groups
   selectedOrder: any;
   qualitativeInspectionForm: FormGroup;
   quantitativeInspectionForm: FormGroup;
@@ -54,10 +54,15 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
   productionQcSamples: any[] = [];
   cardCode: any;
-  purchaseQcId: any
+  productionQcId: any
+  qcSampleID: string | null = null;   //  qcSampleID: string = '';
+  selectedSampleId: any;
+  productionQCSampleId: any
+  
+
 
   
-  // Plan Purchase DataSources for tables
+  // Plan Production DataSources for tables
   dataSourceQualitativeInspection: MatTableDataSource<any>;
   dataSourceQuantitativeInspection: MatTableDataSource<any>;
   dataSourceUoMIIC: MatTableDataSource<any>;
@@ -131,6 +136,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     inspectionQuantity: [], 
     analyzedBy: [''], 
     status: [''],
+    remarks:  [''],
 
     qualitativeInspectionObjects: this.fb.array([]),
     quantitativeInspectionResults: this.fb.array([]),
@@ -240,14 +246,14 @@ export class PlanProductionOrderComponent implements AfterViewInit {
           (response) => {
             if (response.isRequestSuccess) {
               console.log('API RUN SUCCESSFULLY.', payload);
-              this._snackBar.open('Purchase Order added successfully!', 'Close', {
+              this._snackBar.open('Production Order added successfully!', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-success']
               });
             }
           },
           (error) => {
-            this._snackBar.open('Error adding purchase order.', 'Close', {
+            this._snackBar.open('Error adding Production order.', 'Close', {
               duration: 3000,
               panelClass: ['snackbar-error']
             });
@@ -341,7 +347,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   getProductionByQcCode(itemCode: string, docNo: number, lineNum: number) {
     this._sapPlanProductionOrderService.GetProductionQCId(itemCode, docNo, lineNum).subscribe({
       next: (response) => {
-        this.purchaseQcId = response.data;
+        this.productionQcId = response.data;
         this.planProductionOrderFormGroup.patchValue({
           // inspectionBy: response.inspectionBy || '', 
           inspectionDateTime: response.inspectionDateTime || new Date().toISOString()
@@ -353,21 +359,216 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       }
     });
   }
+  handleSamplePurchaseOrder() {
+    if(this.isEditMode) {
+      this.updateSampleForProductionOrder()
+    } else {
+      this.addNewSampleForProductionOrder()
+    }
+  }
 
+  updateSampleForProductionOrder(): void {
+    if (!this.planProductionOrderFormGroup.valid) {
+      console.error("FORM IS INVALID");
+      console.log("FORM ERRORS:", this.planProductionOrderFormGroup.errors);
+      console.log("FORM VALUE:", this.planProductionOrderFormGroup.value);
+      console.log("INSPECTION BY ERRORS:", this.planProductionOrderFormGroup.get('inspectionBy')?.errors);
+      console.log("INSPECTION DATETIME ERRORS:", this.planProductionOrderFormGroup.get('inspectionDateTime')?.errors);
+      this.planProductionOrderFormGroup.markAllAsTouched();
+      return;
+    }
+
+    if (!this.productionQcId || !this.qcSampleID) {
+      console.error('QC ID OR SAMPLE ID IS MISSING, CANNOT PROCEED!', { purchaseQcId: this.productionQcId, qcSampleID: this.qcSampleID });
+      return;
+    }
+   
+    const formValue = this.planProductionOrderFormGroup.value;
+
+    // STEP 1: PREPARE QUALITATIVE INSPECTIONS
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+        (status: any) => status.qualitativeResultId === item.qualitativeResultId
+      );
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeInspectionMappingId: null,
+        qualitativeResultId: item?.qualitativeResultId || null,
+        isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+        quantitativeResult: 0,
+        isQuantitativeResultPassed: false,
+        remarks: item?.remarks || "",
+        id: item?.id || null
+      };
+    }) || [];
+
+    // STEP 2: PREPARE QUANTITATIVE INSPECTIONS
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
+      return {
+        qualitativeInspectionMappingId: null,
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+        qualitativeResultId: null,
+        isQualitativeResultPassed: false,
+        quantitativeResult: item?.result !== undefined && item?.result !== null ? parseFloat(item.result) : 0,
+        isQuantitativeResultPassed: item?.result !== undefined &&
+          !isNaN(resultValue) &&
+          resultValue >= (item.min ?? 0) &&
+          resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || "",
+        id: item?.id || null
+
+      };
+    }) || [];
+
+    // STEP 3: COMBINE QUALITATIVE AND QUANTITATIVE INSPECTIONS
+    const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+
+    // STEP 4: CREATING THE FINAL PAYLOAD
+    const updatedSamplePayload = {
+      id: this.qcSampleID,
+      inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.productionQcId.id,
+      inspectionObjects: inspectionObjects
+    };
+
+    console.log('FINAL PAYLOAD:', updatedSamplePayload);
+
+    // STEP 5: CALLING THE UPDATE API
+    this._sapPlanProductionOrderService.UpdateProductionQcSample(updatedSamplePayload).subscribe({
+      next: (response) => {
+        console.log('API Response:', response);
+        
+         const existingSampleIndex = this.productionQcSamples.findIndex(sample => sample.id === this.qcSampleID);
+
+    if (existingSampleIndex !== -1) {
+      // Update only the specific sample details
+      this.productionQcSamples[existingSampleIndex] = {
+        ...this.productionQcSamples[existingSampleIndex],
+        inspectionDateTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
+        inspectionBy: this.planProductionOrderFormGroup.get('inspectionBy')?.value
+      };
+          this.productionQcSamples = [...this.productionQcSamples];
+
+                // Keep the selected card after update
+                this.selectedSampleId = this.qcSampleID;
+    } else {
+      console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
+    }
+
+    // Instead of reloading the full list, just update the form fields
+    this.planProductionOrderFormGroup.patchValue({
+      inspectionDateTime: this.productionQcSamples[existingSampleIndex]?.inspectionDateTime,
+      inspectionBy: this.productionQcSamples[existingSampleIndex]?.inspectionBy
+    });
+
+        // Refresh the samples list
+        // this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
+       const isNewSample = !this.productionQcSamples.some(sample => sample.id === this.qcSampleID);
+    
+    if (isNewSample) {
+      const newSample = {
+        id: this.nextSampleId,
+        inspectionTime: this.planProductionOrderFormGroup.get('inspectionDateTime').value,
+        inspectionBy: this.planProductionOrderFormGroup.get('inspectionBy').value,
+        cardColor: this.getRandomCardColor()
+      };
+      
+      this.samplesProductionOrder.push(newSample);
+      this.nextSampleId++;
+    }
+        this.closeDialog();
+      },
+      error: (error) => {
+        console.error('API Error:', error);
+        // Handle error appropriately
+      }
+    });
+  }
 
 
   addNewSampleForProductionOrder(): void {
-    const newSample = {
-      id: this.nextSampleId,
-      inspectionTime: this.planProductionOrderFormGroup.get('inspectionDateTime').value,
-      inspectionBy: this.planProductionOrderFormGroup.get('inspectionBy').value,
-      cardColor: this.getRandomCardColor()
+    if (!this.planProductionOrderFormGroup.valid) {
+      console.error("FORM IS INVALID");
+      this.planProductionOrderFormGroup.markAllAsTouched();
+      return;
+    }
+  
+    if (!this.productionQcId) {
+      console.error('QC ID IS MISSING, CANNOT PROCEED!');
+      return;
+    }
+  
+    const formValue = this.planProductionOrderFormGroup.value;
+  
+    // QUALITATIVE
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+        (status: any) => status.qualitativeResultId === item.qualitativeResultId
+      );
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeInspectionMappingId: null,
+        qualitativeResultId: item?.qualitativeResultId || null,
+        isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+        quantitativeResult: 0,
+        isQuantitativeResultPassed: false,
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+  
+    // QUANTITATIVE
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
+      return {
+        qualitativeInspectionMappingId: null,
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+        qualitativeResultId: null,
+        isQualitativeResultPassed: false,
+        quantitativeResult: resultValue,
+        isQuantitativeResultPassed: !isNaN(resultValue) && resultValue >= (item.min ?? 0) && resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+  
+    // FINAL PAYLOAD
+    const newSamplePayload = {
+      name: `sample-${this.nextSampleId}`,
+      inspectionDateTime: new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.productionQcId.id,
+      inspectionObjects: [...qualitativeInspections, ...quantitativeInspections]
     };
   
-    this.samplesProductionOrder.push(newSample);
-    this.nextSampleId++;
-    this.closeDialog();
+    console.log('FINAL PAYLOAD:', newSamplePayload);
+  
+    // API CALL
+    this._sapPlanProductionOrderService.addProductionQcSample(newSamplePayload).subscribe({
+      next: (response) => {
+        console.log('API Response:', response);
+  
+        const newSample = {
+          id: this.nextSampleId,
+          inspectionTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
+          inspectionBy: this.planProductionOrderFormGroup.get('inspectionBy')?.value,
+          cardColor: this.getRandomCardColor()
+        };
+  
+        this.samplesProductionOrder.push(newSample);
+        this.nextSampleId++;
+  
+        // Refresh all samples list
+        this.ListAllProductionQCSamplesByQcId(this.productionQcId.id);
+  
+        this.closeDialog();
+      },
+      error: (error) => {
+        console.error('API Error:', error);
+      }
+    });
   }
+  
 
   getRandomCardColor(): string {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
@@ -538,17 +739,37 @@ populateEditProductionOrderForm(data: any): void {
     // });
   
 
-  ListAllProductionQCSamplesByQcId(purchaseQcId: string) {
-    this._sapPlanProductionOrderService.ListAllProductionQCSamplesByQcId(purchaseQcId).subscribe({
+  // ListAllProductionQCSamplesByQcId(productionQcId: string) {
+  //   this._sapPlanProductionOrderService.ListAllProductionQCSamplesByQcId(productionQcId).subscribe({
+  //     next: (response) => {
+  //       this.productionQcSamples = response.data;
+  //       console.log(this.productionQcSamples, 'Production QC Samples');
+  //     },
+  //     error: (err) => {
+  //       console.error('SERVICE ERROR:', err);
+  //     }
+  //   })
+  // }
+
+  ListAllProductionQCSamplesByQcId(productionQcId: string) {
+    this._sapPlanProductionOrderService.ListAllProductionQCSamplesByQcId(productionQcId).subscribe({
       next: (response) => {
-        this.productionQcSamples = response.data;
-        console.log(this.productionQcSamples, 'Production QC Samples');
+        this.productionQcSamples = response.data.filter(sample => sample.isActive === true); 
+        console.log(this.productionQcSamples, 'productionQcSamples');
+
+       if (this.productionQcSamples.length > 0) {
+        this.qcSampleID = this.qcSampleID 
+          ? this.productionQcSamples.find(sample => sample.id === this.qcSampleID)?.id || this.productionQcSamples[this.productionQcSamples.length - 1].id
+          : this.productionQcSamples[this.productionQcSamples.length - 1].id;
+      }
+      
       },
       error: (err) => {
         console.error('SERVICE ERROR:', err);
       }
     })
   }
+
 
   populateQualitativeAndQuantitativeData(data: any) {
     const qualitativeArray = this.planProductionOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
@@ -600,7 +821,44 @@ populateEditProductionOrderForm(data: any): void {
       });
     }
   }
-
+  onEditSample(sample: any): void {
+    console.log('Sample Data:', sample); 
+    alert('Sample ID: ' + (sample ? sample.id : 'undefined')); 
+  
+    if (!sample || !sample.id) {
+      console.error('Sample or sample.id is undefined!');
+      return; 
+    }
+    this.qcSampleID = sample.id;
+    const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
+      width: '70%',
+      height: '75vh',
+      data: {
+        qcSampleId: sample.id,
+        cardCode: this.cardCode,
+        inspectionDateTime: sample.inspectionDateTime,
+        inspectionBy: sample.inspectionBy
+      }
+    });
+  
+    this.getCardByItemCode(this.selectedOrder.itemCode);
+    console.log(this.selectedOrder, 'this.selectedOrder');
+    this.getProductionByQcCode(
+      this.selectedOrder.itemCode,
+      this.selectedOrder.docNo,
+      this.selectedOrder.lineNum
+    );
+  
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const index = this.samplesProductionOrder.findIndex(s => s.id === sample.id);
+        if (index !== -1) {
+          this.samplesProductionOrder[index] = result;
+        }
+      }
+      console.log('EDIT DIALOG CLOSED');
+    });
+  }
   
   onItemCodeClickPP(): void {
     // console.log('Row Index:', rowIndex);
@@ -627,6 +885,57 @@ populateEditProductionOrderForm(data: any): void {
     )
   }
   
+
+  onUpdateProductionOrderModal(): void {
+    const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
+      width: '70%',
+      height: '75vh',
+      data: this.cardCode,
+    });
+    // DYNAMICALLY ADD Validators.required TO inspectionBy
+    const inspectionByControl = this.planProductionOrderFormGroup.get('inspectionBy');
+    if (inspectionByControl) {
+      inspectionByControl.setValidators(Validators.required);
+      inspectionByControl.updateValueAndValidity(); // Re-validate the control
+    }
+
+    
+    
+    this.getCardByItemCode(this.selectedOrder.itemCode);
+    console.log(this.selectedOrder, 'this.selectedOrder')
+    this.getProductionByQcCode(
+      this.selectedOrder.itemCode,
+      this.selectedOrder.docNo,
+      this.selectedOrder.lineNum
+    )
+
+    // IMMEDIATELY LOG FORM STATE
+    console.log('Form Initial State (Immediate):', this.planProductionOrderFormGroup.value);
+    console.log('Form Valid (Immediate):', this.planProductionOrderFormGroup.valid);
+    console.log('Inspection By Errors (Immediate):', this.planProductionOrderFormGroup.get('inspectionBy')?.errors);
+    // LOG AFTER 1 SECOND TO CHECK IF STATE CHANGES
+    setTimeout(() => {
+      console.log('Form Initial State (After 1s):', this.planProductionOrderFormGroup.value);
+      console.log('Form Valid (After 1s):', this.planProductionOrderFormGroup.valid);
+      console.log('Inspection By Errors (After 1s):', this.planProductionOrderFormGroup.get('inspectionBy')?.errors);
+    }, 1000);
+    // if (!this.selectedOrder || !this.selectedOrder.itemCode || !this.selectedOrder.docNo || !this.selectedOrder.lineNo) {
+    //   console.error('Selected order data is incomplete:', this.selectedOrder);
+    //   return;
+    // }
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('DIALOG CLOSED');
+      if (inspectionByControl) {
+        inspectionByControl.clearValidators();
+        inspectionByControl.updateValueAndValidity();
+      }
+
+      
+      this.closeDialog();
+    });
+  }
+
   // Close dialog
   closeDialog(): void {
     this.dialog.closeAll();

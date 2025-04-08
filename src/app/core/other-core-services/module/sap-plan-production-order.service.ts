@@ -14,6 +14,7 @@ export class SapPlanProductionOrderService {
   private _getProductionQcId = new BehaviorSubject<any[]>([])
   private _cardByCode = new BehaviorSubject<any[]>([])
   private _getProductionByQcCode = new BehaviorSubject<any[]>([])
+  private _getProductionQcSampleId = new BehaviorSubject<any[]>([])
 
 
 
@@ -23,6 +24,8 @@ export class SapPlanProductionOrderService {
   getProductionQcId: Observable<any[]> = this._getProductionQcId.asObservable()
   cardbycode$: Observable<any[]> = this._cardByCode.asObservable();
   getProductionByQcCode: Observable<any[]> = this._getProductionByQcCode.asObservable()
+  getProductionQcSampleId: Observable<any[]> = this._getProductionQcSampleId.asObservable()
+
 
 
 
@@ -128,4 +131,65 @@ ListAllProductionQCSamplesByQcId(productionQcId: string) {
    })
 )
 }
+
+addProductionQcSample(data: any): Observable<any> {
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${this.accessToken}`,
+    'Content-Type': 'application/json',
+  });
+
+   return this._httpClient.post(
+      `${environment.appApiUrl}/CSAPI/IProductionQCSampleFeature/AddProductionQCSample`,
+      data,
+      { headers }
+  ).pipe(
+      tap(response => console.log('RESPONSE:', response)),
+      catchError(error => {
+          console.error('Error adding qualitative result', error);
+          return throwError(() => new Error('Error adding qualitative result'));
+      })
+  );
+}
+
+getProductionQcSampleById(productionQCSampleId: string) {
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${this.accessToken}`,
+    Accept: 'application/json'
+    });
+    
+     return this._httpClient.get(
+        `${environment.appApiUrl}/CSAPI/IProductionQCSampleFeature/GetProductionQcSampleById?productionQCSampleId=${productionQCSampleId}`,
+    { headers }
+)
+.pipe(
+    tap((response: any) => {
+        const getProductionQcSampleId = response?.data?.value ?? []                
+        this._getProductionQcSampleId.next(getProductionQcSampleId);
+    }),
+    catchError((error) => {
+        console.error('Error fetching item code', error);
+        return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`))
+    })
+)
+}
+
+
+UpdateProductionQcSample(data: any) {
+  const headers = new HttpHeaders({
+     Authorization: `Bearer ${this.accessToken}`,
+     'Content-Type': 'application/json',
+ });
+ return this._httpClient.put(
+     `${environment.appApiUrl}/CSAPI/IProductionQCSampleFeature/UpdateProductionQcSample`,
+     data,
+     { headers }
+ ).pipe(
+     tap(response => console.log('RESPONSE:', response)),
+     catchError(error => {
+         console.error('ERROR WHILE UPDATING SAMPLE CARD', error);
+         return throwError(() => error);
+     })
+ );
+}
+
 }

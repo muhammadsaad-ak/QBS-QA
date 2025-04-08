@@ -532,15 +532,15 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         // alert('FAILED TO SAVE SAMPLE.');
       }
     });
-    const newSample = {
-      id: this.nextSampleId,
-      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
-      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-      cardColor: this.getRandomCardColor()
-    };
-    this.samplesPurchaseOrder.push(newSample);
-    this.nextSampleId++;
-    this.closeDialog();
+    // const newSample = {
+    //   id: this.nextSampleId,
+    //   inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+    //   inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+    //   cardColor: this.getRandomCardColor()
+    // };
+    // this.samplesPurchaseOrder.push(newSample);
+    // this.nextSampleId++;
+    // this.closeDialog();
   }
 
   getRandomCardColor(): string {

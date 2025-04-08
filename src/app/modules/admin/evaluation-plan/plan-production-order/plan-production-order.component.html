@@ -139,38 +139,65 @@
               </mat-form-field>
             </div>
 
-            
-            <button mat-flat-button color="primary"
-            *ngIf="planProductionOrderFormGroup.get('analyzedBy').valid && !isFormSaved"
-            (click)="onSubmitProductionOrder()">
-            Save
-            </button>
+              <!-- Save Button -->
+              <button mat-flat-button color="primary" 
+              *ngIf="
+                planProductionOrderFormGroup.get('analyzedBy')?.valid && 
+                !isFormSaved && 
+                !isEditMode
+              " 
+              (click)="onSubmitProductionOrder()">
+              Save
+              </button>
 
-        <hr class="custom-divider" *ngIf="isFormSaved">           
+              <!-- Editable Sample Cards Section -->
+              <div class="mt-4 flex flex-wrap gap-2" *ngIf="!isFormSaved">
+              <div *ngFor="let sample of productionQcSamples" 
+                  [class.selected]="sample.id === selectedSampleId"  
+                  class="sample-card"
+                  [style.background-color]="sample.cardColor" 
+                  (click)="onEditSample(sample)">
+                  
+                <h3 style="font-weight: 500">Sample {{ sample.name }}</h3>
+                <div style="font-weight: 400">qcSampleId: {{ sample.id }}</div>
+                <div style="font-weight: 400">Inspection Time: {{ sample.inspectionDateTime }}</div>
+                <div style="font-weight: 400">Inspection By: {{ sample.inspectionBy }}</div>
+              </div>
 
-            <div class="flex flex-wrap gap-2 mt-4"  *ngIf="isFormSaved">
-                <div *ngFor="let sample of samplesProductionOrder" class="sample-card" 
-                     [style.background-color]="sample.cardColor">
-                  <h3 style="font-weight: 500;">Sample {{sample.id}}</h3>
-                  <div style="font-weight: 400;">Inspection Time: {{sample.inspectionTime}}</div>
-                  <div style="font-weight: 400;">Inspection By: {{sample.inspectionBy}}</div>
-                </div>
-            
-                <div class="sample-card add-sample-card" 
-                    *ngIf="samplesProductionOrder.length < sampleQuantity"
-                    (click)="onItemCodeClickPP()">
-                  <span>Add Sample</span>
-                  <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
-                </div>
-            </div>
+              <div class="sample-card add-sample-card"
+                  *ngIf="isEditMode && productionQcSamples?.length < sampleQuantity" 
+                  (click)="onUpdateProductionOrderModal()">
+                <span>Add Sample</span>
+                <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
+              </div>
+              </div>
+
+              <!-- Divider -->
+              <hr class="custom-divider" *ngIf="isFormSaved">           
+
+              <!-- Saved Sample Cards Section -->
+              <div class="flex flex-wrap gap-2 mt-4" *ngIf="isFormSaved">
+              <div *ngFor="let sample of samplesProductionOrder" class="sample-card" 
+                  [style.background-color]="sample.cardColor">
+                <h3 style="font-weight: 500;">Sample {{sample.id}}</h3>
+                <div style="font-weight: 400;">Inspection Time: {{sample.inspectionTime}}</div>
+                <div style="font-weight: 400;">Inspection By: {{sample.inspectionBy}}</div>
+              </div>
+
+              <div class="sample-card add-sample-card" 
+                  *ngIf="samplesProductionOrder.length < sampleQuantity"
+                  (click)="onItemCodeClickPP()">
+                <span>Add Sample</span>
+                <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
+              </div>
+              </div>
 
             <mat-form-field *ngIf="isFormSaved && samplesProductionOrder.length === sampleQuantity"
-            class="w-[330px] mt-2">
-            <mat-label>Remarks</mat-label>
-            <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
-        </mat-form-field>
+              class="w-[330px] mt-2">
+              <mat-label>Remarks</mat-label>
+              <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
+            </mat-form-field>
             
-
              <ng-template #dialogTemplateItemsPP let-data="data">
                 <div class="dialog-container flex h-full flex-col">
                     <div class="flex items-center justify-between border-b p-4 text-primary">
@@ -410,6 +437,10 @@
                         <button mat-flat-button color="primary" (click)="addNewSampleForProductionOrder()">
                             Save & Close
                         </button>
+
+                        <button mat-flat-button color="primary"  (click)="updateSampleForProductionOrder()">
+                          Update & Close
+                      </button>
                     </div>
                 </div>
             </ng-template>
