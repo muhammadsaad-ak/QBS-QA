@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
 
 @Component({
   selector: 'app-evaluation-plan-qa',
@@ -65,7 +66,7 @@ export class EvaluationPlanQaComponent implements OnInit {
   dataSourceQuantitativeInspection: any[] = [];
   selectedCavityName: string = '';
   
-  constructor(private _formBuilder: FormBuilder, private _dialog: MatDialog) {
+  constructor(private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,private _formBuilder: FormBuilder, private _dialog: MatDialog) {
     
   }
 
@@ -82,7 +83,43 @@ export class EvaluationPlanQaComponent implements OnInit {
     console.log(`${cav.cName} is now ${cav.enabled ? 'Enabled' : 'Disabled'}`);
   }
 
+  evaluationplanQAFormGroup = this._formBuilder.group({
+    qcode: [""],
+    docNo: [''], 
+    itemCode: [""], 
+    itemDescription: [''], 
+    inspectionDateTime: [new Date().toISOString()],
+    prodOrder: [''],
+    LotNo: [''], 
+    poDate: [new Date().toISOString()], 
+    lotSize: [''],
+    warehouse: [''], 
+    varient: [''], 
+    cycleTime: [''],
+    itemWeg: [''],
+    shift: [''],
+    machNo: [''],
+    bmrNo: [''],
+    mouldNo: [''],
+    cavity: [''],
+    analyzedBy: [''],
+    InspectionBy: [''],
+    remarks: [''],
+    min: [''],
+    max: [''],
+    target: [''],
+    parameters: ['test'],
+    qualitativeInspectionObjects: this._formBuilder.array([]),
+    quantitativeInspectionResults: this._formBuilder.array([]),
+  });
+
+
   ngOnInit(): void {
+    this._evaluationPlanQaOrderService.getProductionQCCode().subscribe((productionQCCode) => {   
+      const fullCode = `PQA-000${productionQCCode.data || ''}`;
+      this.evaluationplanQAFormGroup.get('qcode')?.setValue(fullCode); 
+    });
+
     const staticData = [
       {
         parameters: 'Color Check',
@@ -168,35 +205,8 @@ export class EvaluationPlanQaComponent implements OnInit {
     return this.evaluationplanQAFormGroup.get('quantitativeInspectionResults') as FormArray;
   }
   
-    evaluationplanQAFormGroup = this._formBuilder.group({
-    qcode: [""],
-    docNo: [''], 
-    itemCode: [""], 
-    itemDescription: [''], 
-    inspectionDateTime: [new Date().toISOString()],
-    prodOrder: [''],
-    LotNo: [''], 
-    poDate: [new Date().toISOString()], 
-    lotSize: [''],
-    warehouse: [''], 
-    varient: [''], 
-    cycleTime: [''],
-    itemWeg: [''],
-    shift: [''],
-    machNo: [''],
-    bmrNo: [''],
-    mouldNo: [''],
-    cavity: [''],
-    analyzedBy: [''],
-    InspectionBy: [''],
-    remarks: [''],
-    min: [''],
-    max: [''],
-    target: [''],
-    parameters: ['test'],
-    qualitativeInspectionObjects: this._formBuilder.array([]),
-    quantitativeInspectionResults: this._formBuilder.array([]),
-  });
+    
+
 
     onEvaluationPlanQaModal(cav: any): void {
 
@@ -253,5 +263,6 @@ export class EvaluationPlanQaComponent implements OnInit {
     }
   }
 
+  
 
 }
