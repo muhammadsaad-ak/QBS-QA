@@ -17,7 +17,6 @@ import { InspectionCardService } from 'app/core/other-core-services/module/inspe
 import { EvaluationPlanProductionOrderService } from 'app/core/other-core-services/module/evaluation-plan-production-order.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SapPlanProductionOrderService } from 'app/core/other-core-services/module/sap-plan-production-order.service';
-import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module/sap-plan-purchase-order.service';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -177,9 +176,17 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     return this.planProductionOrderFormGroup.get('inspectionObjects') as FormArray;
   }
 
-  getQualitativeResultPassStatusResults(index: number): FormArray {
-    return this.planProductionOrderFormGroup
-      .get('qualitativeInspectionObjects')?.get(`${index}.qualitativeResultPassStatusResults`) as FormArray;
+  // getQualitativeResultPassStatusResults(index: number): FormArray {
+  //   return this.planProductionOrderFormGroup
+  //     .get('qualitativeInspectionObjects')?.get(`${index}.qualitativeResultPassStatusResults`) as FormArray;
+  // }
+
+  getQualitativeResultPassStatusResults(index: number): any[] {
+    const formArray = this.qualitativeInspectionObjects;
+    const formGroup = formArray.at(index) as FormGroup;
+    const resultControl = formGroup.get('qualitativeResultPassStatusResults');
+  
+    return resultControl?.value || [];
   }
 
   addInspectionObject() {
@@ -330,7 +337,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     return this.planProductionOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
   }
   
-  get quantitativeInspectionObjects(): FormArray {
+  get quantitativeInspectionResults(): FormArray {
     return this.planProductionOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
   }
   
@@ -359,7 +366,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       }
     });
   }
-  handleSamplePurchaseOrder() {
+  handleSampleProductionOrder() {
     if(this.isEditMode) {
       this.updateSampleForProductionOrder()
     } else {
@@ -379,7 +386,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     }
 
     if (!this.productionQcId || !this.qcSampleID) {
-      console.error('QC ID OR SAMPLE ID IS MISSING, CANNOT PROCEED!', { purchaseQcId: this.productionQcId, qcSampleID: this.qcSampleID });
+      console.error('QC ID OR SAMPLE ID IS MISSING, CANNOT PROCEED!', { productionQcId: this.productionQcId, qcSampleID: this.qcSampleID });
       return;
     }
    
@@ -454,7 +461,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
                 // Keep the selected card after update
                 this.selectedSampleId = this.qcSampleID;
     } else {
-      console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
+      console.error(`Sample with ID ${this.qcSampleID} not found in productionQcSamples`);
     }
 
     // Instead of reloading the full list, just update the form fields
@@ -527,7 +534,9 @@ export class PlanProductionOrderComponent implements AfterViewInit {
         qualitativeResultId: null,
         isQualitativeResultPassed: false,
         quantitativeResult: resultValue,
-        isQuantitativeResultPassed: !isNaN(resultValue) && resultValue >= (item.min ?? 0) && resultValue <= (item.max ?? 0),
+        isQuantitativeResultPassed: !isNaN(resultValue) &&
+          resultValue >= (item.min ?? 0) &&
+          resultValue <= (item.max ?? 0),
         remarks: item?.remarks || ""
       };
     }) || [];
@@ -548,6 +557,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       next: (response) => {
         console.log('API Response:', response);
   
+        // ✅ Add new sample card ONLY once here
         const newSample = {
           id: this.nextSampleId,
           inspectionTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
@@ -558,7 +568,11 @@ export class PlanProductionOrderComponent implements AfterViewInit {
         this.samplesProductionOrder.push(newSample);
         this.nextSampleId++;
   
-        // Refresh all samples list
+        // ✅ Clear form arrays after successful submission
+        this.qualitativeInspectionObjects.clear();
+        this.quantitativeInspectionResults.clear();
+  
+        // ✅ Refresh all samples list
         this.ListAllProductionQCSamplesByQcId(this.productionQcId.id);
   
         this.closeDialog();
@@ -568,7 +582,6 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       }
     });
   }
-  
 
   getRandomCardColor(): string {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
@@ -629,7 +642,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     
     // Initialize data sources
     this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
-    this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+    this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionResults.controls);
     this.dataSourceUoMIIC = new MatTableDataSource(this.uomData);
     this.dataSourceAddQuantitativeIIC = new MatTableDataSource(this.quantitativeCharacteristics);
   }
@@ -956,7 +969,7 @@ populateEditProductionOrderForm(data: any): void {
   addSelectedRowUoMIIC(index: number): void {
     const selectedUoM = this.uomData.find(item => item.isSelected);
     if (selectedUoM && index >= 0) {
-      this.quantitativeInspectionObjects.at(index).get('uoMId').setValue(selectedUoM.uoMCode);
+      this.quantitativeInspectionResults.at(index).get('uoMId').setValue(selectedUoM.uoMCode);
     }
     this.closeDialog();
   }
@@ -976,7 +989,7 @@ populateEditProductionOrderForm(data: any): void {
   addSelectedRowQuantitativeIIC(): void {
     const selectedChar = this.quantitativeCharacteristics.find(item => item.isSelected);
     if (selectedChar) {
-      this.quantitativeInspectionObjects.push(
+      this.quantitativeInspectionResults.push(
         this.fb.group({
           parameterQty: [selectedChar.description],
           uoMId: [''],
@@ -988,7 +1001,7 @@ populateEditProductionOrderForm(data: any): void {
           remarks: ['']
         })
       );
-      this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionObjects.controls);
+      this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionResults.controls);
     }
     this.closeDialog();
   }
