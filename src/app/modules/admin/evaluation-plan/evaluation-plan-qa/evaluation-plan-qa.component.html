@@ -1,6 +1,6 @@
 <div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
     <div class="mt-4 h-auto overflow-y-auto p-5">
-        <form [formGroup]="planPurchaseOrderFormGroup">
+        <form [formGroup]="evaluationplanQAFormGroup">
             <h1 class="custom-heading">Evaluation Plan (QA)</h1>
             <div style="
                             display: flex;
@@ -121,13 +121,16 @@
             </button>
 
             <div class="flex flex-wrap gap-2 mt-4">
-                <div (click)="onEvaluationPlanQaModal()" *ngFor="let cav of cavity" class="sample-card"
-                    style="background-color: #caead6;">
+                <div *ngFor="let cav of cavity" (click)="onEvaluationPlanQaModal(cav)" class="sample-card" [ngStyle]="{
+                  backgroundColor: cav.enabled ? '#caead6' : '#f2f2f2',
+                  cursor: cav.enabled ? 'pointer' : 'not-allowed'
+                }">
                     <div style="display: flex; flex-direction: row; justify-content: space-between">
                         <h3 style="font-weight: 500;">
                             {{cav.cName}}
                         </h3>
-                        <p><mat-slide-toggle (click)="$event.stopPropagation()"></mat-slide-toggle></p>
+                        <p><mat-slide-toggle (change)="toggleCavity(cav)" [checked]="cav.enabled"
+                                (click)="$event.stopPropagation()"></mat-slide-toggle></p>
                     </div>
                     <div style="font-weight: 400;">Inspection Time: {{cav.InspectionTime}}</div>
                     <div style="font-weight: 400;">Inspection By: {{cav.InspectionBy}}</div>
@@ -142,7 +145,7 @@
                 <div class="dialog-container flex h-full flex-col">
                     <div class="flex items-center justify-between border-b p-4 text-primary">
                         <h2 class="text-lg font-semibold">
-                            Cavity Samples
+                            {{ selectedCavityName }}
                         </h2>
                         <span (click)="closeDialog()" class="header-close-x">
                             <mat-icon class="text-primary">close</mat-icon>
@@ -176,13 +179,13 @@
 
                     </div>
                     <div class="mt-4 flex flex-wrap gap-2">
-                        <div class="sample-card" style="background-color: #caead6;">
-                            <h3 style="font-weight: 500">Sample 1</h3>
+                        <div *ngFor="let sample of samples" class="sample-card" style="background-color: #caead6;">
+                            <h3 style="font-weight: 500">{{ sample.title }}</h3>
                             <div style="font-weight: 400">
-                                Inspection Time: 5:00 PM
+                                Inspection Time: {{ sample.inspectionTime }}
                             </div>
                             <div style="font-weight: 400">
-                                Inspection By: Mr. Asad
+                                Inspection By: {{ sample.inspectionBy }}
                             </div>
                         </div>
 
@@ -277,25 +280,6 @@
                                                                     let i = index
                                                                 " class="w-1/6 text-sm" [formGroupName]="i">
                                                             <mat-checkbox formControlName="Mandatory"></mat-checkbox>
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="qualitativeResultId">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Result
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="text-sm">
-                                                            <mat-select formControlName="qualitativeResultId">
-                                                                <ng-container>
-                                                                    <mat-option>
-                                                                        asad
-                                                                    </mat-option>
-                                                                </ng-container>
-                                                            </mat-select>
                                                         </td>
                                                     </ng-container>
 
@@ -421,21 +405,6 @@
                                                         </td>
                                                     </ng-container>
 
-                                                    <ng-container matColumnDef="results">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Result
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm"
-                                                            [formGroupName]="i">
-                                                            <input matInput formControlName="results"
-                                                                placeholder="Enter result value" />
-                                                        </td>
-                                                    </ng-container>
-
                                                     <ng-container matColumnDef="remarks">
                                                         <th mat-header-cell *matHeaderCellDef
                                                             class="whitespace-nowrap text-sm">
@@ -467,7 +436,7 @@
                         </mat-tab>
                     </mat-tab-group>
                     <div class="mt-auto flex justify-end">
-                        <button mat-flat-button color="primary" (click)="addNewSampleForPurchaseOrder()">
+                        <button mat-flat-button color="primary" (click)="saveAndCloseQa()">
                             Save & Close
                         </button>
                     </div>

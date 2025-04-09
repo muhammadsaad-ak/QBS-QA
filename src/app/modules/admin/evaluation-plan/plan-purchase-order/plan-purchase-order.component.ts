@@ -366,6 +366,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     // STEP 3: COMBINE QUALITATIVE AND QUANTITATIVE INSPECTIONS
     const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
 
+    const isSamplePassed = inspectionObjects.some((inspection: any) => inspection.isQuantitativeResultPassed === true);
     // STEP 4: CREATING THE FINAL PAYLOAD
     const updatedSamplePayload = {
       id: this.qcSampleID,
@@ -373,6 +374,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
       inspectionBy: formValue.inspectionBy || "",
       qcId: this.purchaseQcId.id,
+      isSamplePassed: isSamplePassed,
       inspectionObjects: inspectionObjects
     };
 
@@ -415,7 +417,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         id: this.nextSampleId,
         inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
         inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-        cardColor: this.getRandomCardColor()
+        cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  // cardColor: this.getRandomCardColor()
       };
       
       this.samplesPurchaseOrder.push(newSample);
@@ -484,13 +486,14 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   
     // STEP 3: COMBINE BOTH TYPES
     const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
-  
-    // STEP 4: FINAL PAYLOAD
+    const isSamplePassed = inspectionObjects.some((inspection: any) => inspection.isQuantitativeResultPassed === true);
+    // STEP 4: CREATING THE FINAL PAYLOAD
     const newSamplePayload = {
       name: `sample-${this.nextSampleId}`,
       inspectionDateTime: new Date().toISOString(),
       inspectionBy: formValue.inspectionBy || "",
       qcId: this.purchaseQcId.id,
+      isSamplePassed: isSamplePassed,
       inspectionObjects: inspectionObjects
     };
   
@@ -526,9 +529,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         if (isNewSample) {
           const newSample = {
             id: this.nextSampleId,
-            inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
-            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value,
-            cardColor: this.getRandomCardColor()
+            inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+            cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  //  cardColor: this.getRandomCardColor()
           };
           this.samplesPurchaseOrder.push(newSample);
           this.nextSampleId++;
@@ -549,9 +552,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     // STEP 7: Setup new form state if needed
     const newSample = {
       id: this.nextSampleId,
-      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
-      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value,
-      cardColor: this.getRandomCardColor()
+      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+      cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  //  cardColor: this.getRandomCardColor()
     };
     this.samplesPurchaseOrder.push(newSample);
     this.nextSampleId++;

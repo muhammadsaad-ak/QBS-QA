@@ -41,7 +41,6 @@ export class EvaluationPlanQaComponent implements OnInit {
     'parameters',
     'passCriteria',
     'Mandatory',
-    'qualitativeResultId',
     'remarks',
   ];
   displayedColumnsQuantitative: string[] = [
@@ -51,13 +50,21 @@ export class EvaluationPlanQaComponent implements OnInit {
     'Target', 
     'Max', 
     'Min', 
-    'results', 
     'remarks'
+  ];
+
+  samples = [
+    {
+      title: 'Sample 1',
+      inspectionTime: '5:00 PM',
+      inspectionBy: 'Mr. Asad'
+    }
   ];
   
   dataSourceQualitativeInspection: any[] = [];
   dataSourceQuantitativeInspection: any[] = [];
-
+  selectedCavityName: string = '';
+  
   constructor(private _formBuilder: FormBuilder, private _dialog: MatDialog) {
     
   }
@@ -69,6 +76,11 @@ export class EvaluationPlanQaComponent implements OnInit {
     {cName: 'cavity 4', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran'},
     {cName: 'cavity 5', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran'},
   ]
+
+  toggleCavity(cav: any) {
+    cav.enabled = !cav.enabled;
+    console.log(`${cav.cName} is now ${cav.enabled ? 'Enabled' : 'Disabled'}`);
+  }
 
   ngOnInit(): void {
     const staticData = [
@@ -90,7 +102,7 @@ export class EvaluationPlanQaComponent implements OnInit {
 
     this.dataSourceQualitativeInspection = staticData;
 
-    const formArray = this.planPurchaseOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
+    const formArray = this.evaluationplanQAFormGroup.get('qualitativeInspectionObjects') as FormArray;
 
     staticData.forEach((item) => {
       formArray.push(
@@ -129,7 +141,7 @@ export class EvaluationPlanQaComponent implements OnInit {
 
     this.dataSourceQuantitativeInspection = staticsData;
 
-    const formsArray = this.planPurchaseOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
+    const formsArray = this.evaluationplanQAFormGroup.get('quantitativeInspectionResults') as FormArray;
 
     staticsData.forEach((item) => {
       formsArray.push(
@@ -147,22 +159,24 @@ export class EvaluationPlanQaComponent implements OnInit {
     });
   }
 
+
   get rows() {
-    return this.planPurchaseOrderFormGroup.get('qualitativeInspectionObjects') as FormArray;
+    return this.evaluationplanQAFormGroup.get('qualitativeInspectionObjects') as FormArray;
   }
 
    get rowes() {
-    return this.planPurchaseOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
+    return this.evaluationplanQAFormGroup.get('quantitativeInspectionResults') as FormArray;
   }
   
-    planPurchaseOrderFormGroup = this._formBuilder.group({
+    evaluationplanQAFormGroup = this._formBuilder.group({
     qcode: [""],
+    docNo: [''], 
     itemCode: [""], 
     itemDescription: [''], 
-    inspectionDateTime: [''],
+    inspectionDateTime: [new Date().toISOString()],
     prodOrder: [''],
     LotNo: [''], 
-    poDate: [''], 
+    poDate: [new Date().toISOString()], 
     lotSize: [''],
     warehouse: [''], 
     varient: [''], 
@@ -184,8 +198,15 @@ export class EvaluationPlanQaComponent implements OnInit {
     quantitativeInspectionResults: this._formBuilder.array([]),
   });
 
-    onEvaluationPlanQaModal(): void {
-     const dialogRef = this._dialog.open(this.dialogTemplateItems, {
+    onEvaluationPlanQaModal(cav: any): void {
+
+    if (!cav.enabled) return;
+
+     this.selectedCavityName = cav.cName;
+
+    console.log('Opening modal for:', this.selectedCavityName);
+
+    const dialogRef = this._dialog.open(this.dialogTemplateItems, {
         width: '70%',
         height: '75vh',
       })
@@ -209,6 +230,18 @@ export class EvaluationPlanQaComponent implements OnInit {
       this.qaDialogRef = null;
     });
   }
+
+  saveAndCloseQa() {
+  const inspectionBy = this.evaluationplanQAFormGroup.get('InspectionBy')?.value || 'N/A';
+  const newSample = {
+    title: `Sample ${this.samples.length + 1}`,
+    inspectionTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    inspectionBy: inspectionBy
+  };
+
+  this.samples.push(newSample);
+  this.closeQaManually(); 
+}
 
   closeDialog(): void {
         this._dialog.closeAll();
