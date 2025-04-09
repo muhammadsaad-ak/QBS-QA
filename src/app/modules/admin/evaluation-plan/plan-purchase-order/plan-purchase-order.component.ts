@@ -151,10 +151,13 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     return this.planPurchaseOrderFormGroup.get('inspectionObjects') as FormArray;
   }
 
-  getQualitativeResultPassStatusResults(index: number): FormArray {
-    return this.planPurchaseOrderFormGroup
-      .get('qualitativeInspectionObjects')?.get(`${index}.qualitativeResultPassStatusResults`) as FormArray;
-  }
+ getQualitativeResultPassStatusResults(index: number): any[] {
+  const formArray = this.qualitativeInspectionObjects;
+  const formGroup = formArray.at(index) as FormGroup;
+  const resultControl = formGroup.get('qualitativeResultPassStatusResults');
+
+  return resultControl?.value || [];
+}
 
   addInspectionObject() {
     this.inspectionObjects.push(this.createInspectionObject());
@@ -432,19 +435,20 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       console.error("FORM IS INVALID");
       console.log("FORM ERRORS:", this.planPurchaseOrderFormGroup.errors);
       console.log("FORM VALUE:", this.planPurchaseOrderFormGroup.value);
-      console.log("INSPECTION BY ERRORS:", this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
-      console.log("INSPECTION DATETIME ERRORS:", this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.errors);
       this.planPurchaseOrderFormGroup.markAllAsTouched();
       return;
     }
-
+  
     if (!this.purchaseQcId) {
       console.error('QC ID IS MISSING, CANNOT PROCEED!');
       return;
     }
-
+  
     const formValue = this.planPurchaseOrderFormGroup.value;
- 
+  
+    // Log form values for debugging
+    console.log("Qualitative Inspection Objects:", this.qualitativeInspectionObjects.value);
+  
     // STEP 1: PREPARE QUALITATIVE INSPECTIONS
     const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
       const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
@@ -460,6 +464,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         remarks: item?.remarks || ""
       };
     }) || [];
+  
     // STEP 2: PREPARE QUANTITATIVE INSPECTIONS
     const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
       const resultValue = item?.result ? parseFloat(item.result) : 0;
@@ -476,9 +481,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         remarks: item?.remarks || ""
       };
     }) || [];
-    // STEP 3: COMBINE QUALITATIVE AND QUANTITATIVE INSPECTIONS INTO inspectionObjects
+  
+    // STEP 3: COMBINE BOTH TYPES
     const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
-    // STEP 4: CREATING THE FINAL PAYLOAD
+  
+    // STEP 4: FINAL PAYLOAD
     const newSamplePayload = {
       name: `sample-${this.nextSampleId}`,
       inspectionDateTime: new Date().toISOString(),
@@ -486,15 +493,16 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       qcId: this.purchaseQcId.id,
       inspectionObjects: inspectionObjects
     };
-    
+  
     console.log('FINAL PAYLOAD:', newSamplePayload);
-    // STEP 5: CALLING THE POST API
+  
+    // STEP 5: API CALL
     this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
       next: (response) => {
         console.log('API Response:', response);
-
+  
         const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
-
+  
         if (existingSampleIndex !== -1) {
           this.purchaseQcSamples[existingSampleIndex] = {
             ...this.purchaseQcSamples[existingSampleIndex],
@@ -506,44 +514,51 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         } else {
           console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
         }
-
+  
         this.planPurchaseOrderFormGroup.patchValue({
           inspectionDateTime: this.purchaseQcSamples[existingSampleIndex]?.inspectionDateTime,
           inspectionBy: this.purchaseQcSamples[existingSampleIndex]?.inspectionBy
         });
-
+  
         this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
+  
         const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
-
         if (isNewSample) {
           const newSample = {
             id: this.nextSampleId,
-            inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
-            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+            inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value,
             cardColor: this.getRandomCardColor()
           };
-
           this.samplesPurchaseOrder.push(newSample);
           this.nextSampleId++;
         }
-      
+  
         this.closeDialog();
       },
       error: (error) => {
         console.error('API Error:', error);
-        // alert('FAILED TO SAVE SAMPLE.');
       }
     });
+  
+    // ✅ STEP 6: Reset form for next sample
+    // this.planPurchaseOrderFormGroup.reset();
+    this.qualitativeInspectionObjects.clear();
+    this.quantitativeInspectionResults.clear();
+  
+    // STEP 7: Setup new form state if needed
     const newSample = {
       id: this.nextSampleId,
-      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
-      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value,
       cardColor: this.getRandomCardColor()
     };
     this.samplesPurchaseOrder.push(newSample);
     this.nextSampleId++;
+  
     this.closeDialog();
   }
+  
 
   getRandomCardColor(): string {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
