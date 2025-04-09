@@ -67,20 +67,20 @@ export class EvaluationPlanQaComponent implements OnInit {
   selectedCavityName: string = '';
   
   constructor(private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,private _formBuilder: FormBuilder, private _dialog: MatDialog) {
-    
+   
   }
 
-  cavity = [
-    {cName: 'cavity 1', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran'},
-    {cName: 'cavity 2', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran'},
-    {cName: 'cavity 3', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran'},
-    {cName: 'cavity 4', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran'},
-    {cName: 'cavity 5', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran'},
-  ]
+   cavity = [
+    { cName: 'cavity 1', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran', enabled: false },
+    { cName: 'cavity 2', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran', enabled: false },
+    { cName: 'cavity 3', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran', enabled: false },
+    { cName: 'cavity 4', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran', enabled: false },
+    { cName: 'cavity 5', InspectionTime: '10:30 AM', InspectionBy: 'Mr.Kamran', enabled: false },
+  ];
 
-  toggleCavity(cav: any) {
-    cav.enabled = !cav.enabled;
-    console.log(`${cav.cName} is now ${cav.enabled ? 'Enabled' : 'Disabled'}`);
+ toggleCavity(index: number): void {
+    const cavity = this.cavitiesArray.at(index);
+    cavity.get('enabled')?.setValue(!cavity.value.enabled);  // Toggle the enabled status
   }
 
   evaluationplanQAFormGroup = this._formBuilder.group({
@@ -101,7 +101,7 @@ export class EvaluationPlanQaComponent implements OnInit {
     machNo: [''],
     bmrNo: [''],
     mouldNo: [''],
-    cavity: [''],
+    cavity: [3],
     analyzedBy: [''],
     InspectionBy: [''],
     remarks: [''],
@@ -109,6 +109,7 @@ export class EvaluationPlanQaComponent implements OnInit {
     max: [''],
     target: [''],
     parameters: ['test'],
+    cavities: this._formBuilder.array([]),
     qualitativeInspectionObjects: this._formBuilder.array([]),
     quantitativeInspectionResults: this._formBuilder.array([]),
   });
@@ -119,6 +120,8 @@ export class EvaluationPlanQaComponent implements OnInit {
       const fullCode = `PQA-000${productionQCCode.data || ''}`;
       this.evaluationplanQAFormGroup.get('qcode')?.setValue(fullCode); 
     });
+
+      
 
     const staticData = [
       {
@@ -201,18 +204,43 @@ export class EvaluationPlanQaComponent implements OnInit {
     return this.evaluationplanQAFormGroup.get('qualitativeInspectionObjects') as FormArray;
   }
 
-   get rowes() {
+  get rowes() {
     return this.evaluationplanQAFormGroup.get('quantitativeInspectionResults') as FormArray;
   }
   
-    
+  get cavitiesArray(): FormArray {
+  return this.evaluationplanQAFormGroup.get('cavities') as FormArray;
+}
+
+generateCavities(): void {
+    this.cavitiesArray.clear();
+
+    const numberOfCavities = this.evaluationplanQAFormGroup.get('cavity')?.value;
+
+    for (let i = 0; i < numberOfCavities; i++) {
+      this.cavitiesArray.push(
+        this._formBuilder.group({
+          cName: `Cavity ${i + 1}`,  
+          InspectionTime: '10:30 AM',      
+          InspectionBy: 'Mr.Kamran',         
+          enabled: false             
+        })
+      );
+    }
+  }
+
+    onEvaluationPlanQaModal(cav: any, index: any): void {
+
+   if (!cav.enabled) return;
+
+    const cavityNumber = `Cavity ${index + 1}`;
+
+     console.log('Modal Open:', cav);
+  console.log('Opening modal for:', cavityNumber);
 
 
-    onEvaluationPlanQaModal(cav: any): void {
+     this.selectedCavityName = cavityNumber;
 
-    if (!cav.enabled) return;
-
-     this.selectedCavityName = cav.cName;
 
     console.log('Opening modal for:', this.selectedCavityName);
 
