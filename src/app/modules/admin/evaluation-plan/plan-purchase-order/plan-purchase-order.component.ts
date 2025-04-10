@@ -717,6 +717,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       console.error('Sample or sample.id is undefined!');
       return; 
     }
+
+      // 🧼 Clear previous state before patching the new one
+  this.qualitativeInspectionObjects.clear();
+  this.quantitativeInspectionResults.clear();
+  
     this.qcSampleID = sample.id;
     
     this.planPurchaseOrderFormGroup.patchValue({
