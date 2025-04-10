@@ -327,7 +327,7 @@ export class TestingStepperComponent implements AfterViewInit {
     });
     fifthFormGroup = this._formBuilder.group({
         id: [''],
-        intCode: ['', Validators.required],
+        intCode: [''],
         description: ['', Validators.required],
         isActive: [true],
         // type: ['', Validators.required],
