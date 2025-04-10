@@ -146,7 +146,7 @@ export class TestingStepperComponent implements AfterViewInit {
         itemCode: ['', Validators.required],
         itemId: ['', Validators.required],
         itemDescription: ['', Validators.required],
-        flexibility: [true],
+        flexibility: [false],
         isActive: [true],
         // samplingRangeObjects: this._formBuilder.array([]),
         samplingRangeObjects: this._formBuilder.array([], [Validators.required]),
