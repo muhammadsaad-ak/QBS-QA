@@ -125,6 +125,8 @@ export class EvaluationPlanQaComponent implements OnInit {
         qcLotNo: [''], 
         docDate: [new Date().toISOString()], 
         // lotSize: [''],
+        openQuantity: [], 
+        plannedQuantity: [],
         warehouse: [''],
         variant: [''],
         cycleTime: [''],
@@ -453,7 +455,8 @@ export class EvaluationPlanQaComponent implements OnInit {
             docDate: data.docDate,
             docNo: data.docNo.toString(), // Convert to string
             warehouse: data.warehouse,
-
+            openQuantity: data.openQty,
+            plannedQuantity: data.qty ?? '-', // ✅ Same as qty
             qcLotNo: data.lotNo ?? 'N/A',
             shift: data.shift ?? 'N/A',
             machineNo: data.machine ?? 'N/A',

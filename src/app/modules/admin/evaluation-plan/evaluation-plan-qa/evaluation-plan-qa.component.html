@@ -57,11 +57,17 @@
                         readonly style=" cursor: not-allowed;" />
                 </mat-form-field>
 
-                <!-- <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-                    <mat-label>Lot Size (units)</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="lotSize" required
-                        readonly style=" cursor: not-allowed;">
-                </mat-form-field> -->
+                <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                    <mat-label>Open Qty:</mat-label>
+                    <input class="view-mode-bg-grey" matInput formControlName="openQuantity" readonly
+                      style=" cursor: not-allowed;">
+                  </mat-form-field>
+
+                  <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
+                    <mat-label>Quantity</mat-label>
+                    <input class="view-mode-bg-grey" matInput formControlName="plannedQuantity" readonly
+                      style=" cursor: not-allowed;">
+                  </mat-form-field>
 
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
@@ -93,13 +99,13 @@
                         readonly style=" cursor: not-allowed;">
                 </mat-form-field>
 
-                <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px">
+                <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
                     <mat-label>BMR No</mat-label>
                     <input class="view-mode-bg-grey" readonly style=" cursor: not-allowed;" matInput
                         formControlName="bmrNo" placeholder="Enter Code" required />
                 </mat-form-field>
 
-                <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+                <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px">
                     <mat-label>Mould No</mat-label>
                     <input class="view-mode-bg-grey" readonly style=" cursor: not-allowed;" matInput placeholder="Enter"
                         formControlName="mouldNo" required />
@@ -117,9 +123,11 @@
                 </mat-form-field>
             </div>
 
-            <button mat-flat-button color="primary" (click)="generateCavities()">
-                Generate
-            </button>
+            <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                <button mat-flat-button color="primary" (click)="generateCavities()">
+                  Generate
+                </button>
+              </div>
 
             <div formArrayName="cavities" class="flex flex-wrap gap-2 mt-4">
                 <div *ngFor="let cavControl of cavitiesArray.controls; let i = index" [formGroupName]="i"
