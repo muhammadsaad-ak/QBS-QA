@@ -13,3 +13,7 @@
 .text-red {
     color: #f44336 !important; /* Red */
 }
+
+.icon-border-color .mat-mdc-form-field-flex {
+    border: 1px solid transparent !important;
+}

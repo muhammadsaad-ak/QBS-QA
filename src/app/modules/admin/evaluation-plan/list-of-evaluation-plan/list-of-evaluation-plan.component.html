@@ -21,7 +21,7 @@
             <!-- Actions - Search & Add button -->
             <div class="mt-4 flex flex-col sm:flex-row sm:items-center w-full px-4">
                 <!-- Order Type Dropdown -->
-                <mat-form-field class="qbs-mat-dense qbs-mat-rounded w-full sm:w-1/3 md:w-1/4">
+                <mat-form-field class="icon-border-color qbs-mat-dense qbs-mat-rounded w-full sm:w-1/3 md:w-1/4">
                     <mat-select placeholder="Select" [formControl]="orderTypeControl">
                         <mat-option value="purchaseOrder">Purchase Order</mat-option>
                         <mat-option value="productionOrder">Production Order</mat-option>
@@ -29,7 +29,8 @@
                 </mat-form-field>
 
                 <!-- Search Field -->
-                <mat-form-field class="qbs-mat-dense qbs-mat-rounded w-full sm:w-1/3 md:w-1/4 sm:ml-2">
+                <mat-form-field
+                    class="icon-border-color qbs-mat-dense qbs-mat-rounded w-full sm:w-1/3 md:w-1/4 sm:ml-2">
                     <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                     <input matInput [autocomplete]="'off'" placeholder="Search..." [formControl]="searchInputControl" />
                 </mat-form-field>
@@ -167,7 +168,8 @@
                                             Perform QC
                                         </button>
 
-                                        <button mat-menu-item class="text-red-400" *ngIf="currentView === 'sapDocuments'"
+                                        <button mat-menu-item class="text-red-400"
+                                            *ngIf="currentView === 'sapDocuments'"
                                             (click)="navigateToEvaluationPlanQAForm(element)">
                                             Perform QA
                                         </button>
