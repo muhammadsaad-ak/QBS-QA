@@ -13,7 +13,7 @@
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Code</mat-label>
-              <input class="view-mode-bg-grey" matInput formControlName="data" placeholder="Enter Code" required
+              <input class="view-mode-bg-grey" matInput formControlName="data" placeholder="Enter Code"
                 readonly style=" cursor: not-allowed;">
             </mat-form-field>
 
@@ -120,7 +120,7 @@
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px; ">
               <mat-label>Inspection Code</mat-label>
-              <input class="view-mode-bg-grey" matInput formControlName="intCode" required readonly
+              <input class="view-mode-bg-grey" matInput formControlName="intCode" readonly
                 style=" cursor: not-allowed;">
             </mat-form-field>
             <!-- Description -->
@@ -250,7 +250,7 @@
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Card Code</mat-label>
-              <input class="view-mode-bg-grey" matInput placeholder="Enter Card Code" formControlName="intCode" required
+              <input class="view-mode-bg-grey" matInput placeholder="Enter Card Code" formControlName="intCode"
                 readonly style=" cursor: not-allowed;">
             </mat-form-field>
 
@@ -502,14 +502,14 @@
               <mat-label>Item Code</mat-label>
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                 (click)="onItemCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
-              <input matInput formControlName="itemCode" required readonly
+              <input matInput formControlName="itemCode" readonly
                 [value]="selectedItemCodeIIC ? selectedItemCodeIIC : ''">
               <mat-error>Required.</mat-error>
             </mat-form-field>
             <!-- ITEM DESCRIPTION -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Item Description</mat-label>
-              <input matInput formControlName="itemDescription" required readonly
+              <input matInput formControlName="itemDescription" readonly
                 [value]="selectedItemDescriptionICC ? selectedItemDescriptionICC : ''">
               <mat-error>Required.</mat-error>
             </mat-form-field>
@@ -518,14 +518,14 @@
               <mat-label>Card Code</mat-label>
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                 (click)="onCardCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
-              <input matInput formControlName="intCode" required readonly
+              <input matInput formControlName="intCode" readonly
                 [value]="selectedCardCode ? selectedCardCode : ''">
               <mat-error>Required.</mat-error>
             </mat-form-field>
             <!-- CARD DESCRIPTION -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Card Description</mat-label>
-              <input matInput formControlName="cardDescription" required readonly
+              <input matInput formControlName="cardDescription" readonly
                 [value]="selectedCardDescription ? selectedCardDescription : ''">
               <mat-error>Required.</mat-error>
             </mat-form-field>
