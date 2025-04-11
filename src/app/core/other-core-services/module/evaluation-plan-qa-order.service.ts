@@ -11,8 +11,13 @@ export class EvaluationPlanQaOrderService {
 
   constructor(private _httpClient: HttpClient) { }
 
-    private _qcPurchaseCode = new BehaviorSubject<any[]>([]);
-    qcPurchaseCode$: Observable<any[]> = this._qcPurchaseCode.asObservable();
+    private _qaProductionCode = new BehaviorSubject<any[]>([]);
+    private _listEvaluationPlanProductionOrdersQA = new BehaviorSubject<any[]>([]);
+
+
+    qaProductionCode$: Observable<any[]> = this._qaProductionCode.asObservable();
+    listEvaluationPlanProductionOrdersQA$: Observable<any[]> = this._listEvaluationPlanProductionOrdersQA.asObservable();
+
 
   set accessToken(token: string) {
     localStorage.setItem('accessToken', token);
@@ -22,24 +27,43 @@ export class EvaluationPlanQaOrderService {
     return localStorage.getItem('accessToken') ?? '';
   }
 
-    getProductionQCCode(): Observable<any> {
+    getProductionQACode(): Observable<any> {
       const headers = new HttpHeaders({
           Authorization: `Bearer ${this.accessToken}`,
           Accept: 'text/plain',
       });
   
       return this._httpClient
-          .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=production_qc`, { headers })
+          .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=production_qa`, { headers })
           .pipe(
-              tap((productionQCCode) => {
-                  const productionQCResultsCode = (productionQCCode as any) ?? [];
-                  this._qcPurchaseCode.next(productionQCResultsCode);
-                  console.log('Fetched code for Production QC:', productionQCResultsCode);
+              tap((productionQACode) => {
+                  const productionQAResultsCode = (productionQACode as any) ?? [];
+                  this._qaProductionCode.next(productionQAResultsCode);
+                  console.log('Fetched code for Production QA:', productionQAResultsCode);
               }),
               catchError((error) => {
-                  console.error('Error fetching Production QC Code:', error);
-                  return throwError(() => new Error('Error fetching Prodcution QC Code'));
+                  console.error('Error fetching Production QA Code:', error);
+                  return throwError(() => new Error('Error fetching Prodcution QA Code'));
               })
           );
   }
+
+  getEvaluationPlanProductionOrdersQA(): Observable<any> {
+    const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        Accept: 'application/json',
+    });
+
+    return this._httpClient.get(`${environment.appApiUrl}/CSAPI/IProductionQAFeature/ListAllProductionQAsWithItem`, { headers })
+        .pipe(
+            tap((response: any) => {
+                console.log('API Response:', response);
+                this._listEvaluationPlanProductionOrdersQA.next(response);
+            }),
+            catchError((error) => {
+                console.error('Error fetching Evaluation Plan Production Orders', error);
+                return throwError(() => new Error('Error fetching Evaluation Plan Production Orders'));
+            })
+        );
+}
 }
