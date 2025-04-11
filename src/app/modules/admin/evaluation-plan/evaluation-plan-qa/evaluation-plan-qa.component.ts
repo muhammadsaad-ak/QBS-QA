@@ -1,11 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {
-    FormArray,
-    FormBuilder,
-    FormsModule,
-    ReactiveFormsModule,
-} from '@angular/forms';
+import {FormArray,FormBuilder,FormsModule,ReactiveFormsModule,} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
@@ -75,6 +71,8 @@ export class EvaluationPlanQaComponent implements OnInit {
 
     constructor(
         private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,
+        private _evaluationProductionOrderService: EvaluationPlanQaOrderService,
+        private _snackBar: MatSnackBar,
         private _formBuilder: FormBuilder,
         private _dialog: MatDialog
     ) {}
@@ -83,31 +81,31 @@ export class EvaluationPlanQaComponent implements OnInit {
         {
             cName: 'cavity 1',
             InspectionTime: '10:30 AM',
-            InspectionBy: 'Mr.Kamran',
+            inspectionBy: 'Mr.Kamran',
             enabled: false,
         },
         {
             cName: 'cavity 2',
             InspectionTime: '10:30 AM',
-            InspectionBy: 'Mr.Kamran',
+            inspectionBy: 'Mr.Kamran',
             enabled: false,
         },
         {
             cName: 'cavity 3',
             InspectionTime: '10:30 AM',
-            InspectionBy: 'Mr.Kamran',
+            inspectionBy: 'Mr.Kamran',
             enabled: false,
         },
         {
             cName: 'cavity 4',
             InspectionTime: '10:30 AM',
-            InspectionBy: 'Mr.Kamran',
+            inspectionBy: 'Mr.Kamran',
             enabled: false,
         },
         {
             cName: 'cavity 5',
             InspectionTime: '10:30 AM',
-            InspectionBy: 'Mr.Kamran',
+            inspectionBy: 'Mr.Kamran',
             enabled: false,
         },
     ];
@@ -126,7 +124,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         // prodOrder: [''],
         qcLotNo: [''], 
         docDate: [new Date().toISOString()], 
-        lotSize: [''],
+        // lotSize: [''],
         warehouse: [''],
         variant: [''],
         cycleTime: [''],
@@ -135,9 +133,9 @@ export class EvaluationPlanQaComponent implements OnInit {
         machineNo: [''],
         bmrNo: [''],
         mouldNo: [''],
-        cavity: [3],
+        cavity: [],
         analyzedBy: [''],
-        InspectionBy: [''],
+        inspectionBy: [''],
         remarks: [''],
         min: [''],
         max: [''],
@@ -273,33 +271,114 @@ export class EvaluationPlanQaComponent implements OnInit {
         return this.evaluationplanQAFormGroup.get('cavities') as FormArray;
     }
 
-    generateCavities(): void {
+    generateCavitiesX(): void {
       if (this.evaluationplanQAFormGroup.invalid) {
         this.evaluationplanQAFormGroup.markAllAsTouched();
         return;
       }
     
-      // Optional: Save form data if needed via API
-      const formData = this.evaluationplanQAFormGroup.value;
-      console.log('Form saved data:', formData);
-      // this.apiService.saveEvaluationPlan(formData).subscribe(...)
+      const payload = this.evaluationplanQAFormGroup.value;
+      console.log('Payload:', payload);
+      return;
     
-      // Clear previous cavities
-      this.cavitiesArray.clear();
+      this._evaluationProductionOrderService.addProductionQA(payload).subscribe(
+        (response) => {
+          if (response.isRequestSuccess) {
+            console.log('API RUN SUCCESSFULLY.', payload);
+            this._snackBar.open('Production QA added successfully!', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            });
     
-      const numberOfCavities = +formData.cavity; // ensure it's a number
+            // Only generate cavities on successful API response
+            this.cavitiesArray.clear();
     
-      for (let i = 0; i < numberOfCavities; i++) {
-        this.cavitiesArray.push(
-          this._formBuilder.group({
-            cName: `Cavity ${i + 1}`,
-            InspectionTime: '10:30 AM',
-            InspectionBy: 'Mr.Kamran',
-            enabled: false,
-          })
-        );
-      }
+            const numberOfCavities = +payload.cavity;
+    
+            for (let i = 0; i < numberOfCavities; i++) {
+              this.cavitiesArray.push(
+                this._formBuilder.group({
+                  cName: `Cavity ${i + 1}`,
+                  InspectionTime: '10:30 AM',
+                  InspectionBy: 'Mr.Kamran',
+                  enabled: false,
+                })
+              );
+            }
+          } else {
+            this._snackBar.open('Failed to add Production QA!', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        },
+        (error) => {
+          this._snackBar.open('Something went wrong. Please try again.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+          console.error('Error during AddProductionQA:', error);
+        }
+      );
     }
+
+    generateCavities(): void {
+      const formData = this.evaluationplanQAFormGroup.value;
+    
+      // 🧹 Exclude extra form fields
+      const {
+        intCode,
+        itemCode,
+        itemDescription,
+        max,
+        min,
+        qualitativeInspectionObjects,
+        quantitativeInspectionResults,
+        target,
+        inspectionBy,
+        remarks,
+        cavities,
+        ...payload
+      } = formData;
+    
+      console.log('SENDING Production QA PAYLOAD:', payload);
+    
+      // ✅ Call API to save the form first
+      this._evaluationProductionOrderService.addProductionQA(payload).subscribe(
+        (response) => {
+          if (response?.isRequestSuccess) {
+            this._snackBar.open('Production QA added successfully!', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            });
+    
+            // 🛠 Generate cavities after saving
+            this.cavitiesArray.clear();
+            const numberOfCavities = this.evaluationplanQAFormGroup.get('cavity')?.value;
+    
+            for (let i = 0; i < numberOfCavities; i++) {
+              this.cavitiesArray.push(
+                this._formBuilder.group({
+                  cName: `Cavity ${i + 1}`,
+                  InspectionTime: '10:30 AM',
+                  InspectionBy: 'Mr.Kamran',
+                  enabled: false,
+                })
+              );
+            }
+          }
+        },
+        (error) => {
+          console.error('Error adding Production QA:', error);
+          this._snackBar.open('Error saving Production QA.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      );
+    }
+    
+    
     
 
     onEvaluationPlanQaModal(cav: any, index: any): void {
@@ -380,7 +459,7 @@ export class EvaluationPlanQaComponent implements OnInit {
             machineNo: data.machine ?? 'N/A',
             bmrNo: data.bmr ?? 'N/A',
             mouldNo: data.mold ?? 'N/A',
-            // cavity: data.cavity !== undefined ? data.cavity.toString() : 'N/A', // ✅ Convert safely
+            cavity: data.cavity !== undefined ? data.cavity.toString() : 'N/A', // ✅ Convert safely
             cycleTime: data.cycleTime ?? 'N/A', // ✅ Convert safely
             itemWeight: data.weight !== undefined ? data.weight.toString() : 'N/A', // ✅ Convert safely
             variant: data.variant ?? 'N/A',

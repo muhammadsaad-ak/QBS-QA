@@ -66,4 +66,23 @@ export class EvaluationPlanQaOrderService {
             })
         );
 }
+
+addProductionQA(data: any): Observable<any> {
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${this.accessToken}`,
+    'Content-Type': 'application/json',
+  });
+
+   return this._httpClient.post(
+      `${environment.appApiUrl}/CSAPI/IProductionQAFeature/AddProductionQA`,
+      data,
+      { headers }
+  ).pipe(
+      tap(response => console.log('RESPONSE:', response)),
+      catchError(error => {
+          console.error('Error adding prod result', error);
+          return throwError(() => new Error('Error adding qualitative result'));
+      })
+  );
+}
 }
