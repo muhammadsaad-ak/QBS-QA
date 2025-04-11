@@ -366,17 +366,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     // STEP 3: COMBINE QUALITATIVE AND QUANTITATIVE INSPECTIONS
     const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
 
-    // const isSamplePassed = inspectionObjects.some((inspection: any) => inspection.isQuantitativeResultPassed === true);
-    const hasPassingQualitative = inspectionObjects
-      .filter((inspection: any) => inspection.qualitativeResultId !== null)
-      .every((inspection: any) => inspection.isQualitativeResultPassed === true);
-    const hasPassingQuantitative = inspectionObjects
-      .filter((inspection: any) => inspection.quantitativeInspectionMappingId !== null)
-      .every((inspection: any) => inspection.isQuantitativeResultPassed === true);
-    const isSamplePassed = hasPassingQualitative && hasPassingQuantitative;
-    console.log("hasPassingQualitative:", hasPassingQualitative);
-    console.log("hasPassingQuantitative:", hasPassingQuantitative);
-    console.log("isSamplePassed:", isSamplePassed);
+    const isSamplePassed = inspectionObjects.some((inspection: any) => inspection.isQuantitativeResultPassed === true);
     // STEP 4: CREATING THE FINAL PAYLOAD
     const updatedSamplePayload = {
       id: this.qcSampleID,
@@ -402,8 +392,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       this.purchaseQcSamples[existingSampleIndex] = {
         ...this.purchaseQcSamples[existingSampleIndex],
         inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
-        inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value,
-        isSamplePassed: isSamplePassed
+        inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value
       };
           this.purchaseQcSamples = [...this.purchaseQcSamples];
 
@@ -428,9 +417,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         id: this.nextSampleId,
         inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
         inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-        cardColor: isSamplePassed ? 'lightgreen' : 'lightcoral'  // cardColor: this.getRandomCardColor()
+        cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  // cardColor: this.getRandomCardColor()
       };
-      console.log("Sample Card Color:", newSample.cardColor);
+      
       this.samplesPurchaseOrder.push(newSample);
       this.nextSampleId++;
     }
