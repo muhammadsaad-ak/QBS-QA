@@ -13,8 +13,8 @@
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Code</mat-label>
-              <input class="view-mode-bg-grey" matInput formControlName="data" placeholder="Enter Code"
-                readonly style=" cursor: not-allowed;">
+              <input class="view-mode-bg-grey" matInput formControlName="data" placeholder="Enter Code" readonly
+                style=" cursor: not-allowed;">
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
@@ -43,7 +43,7 @@
               <mat-spinner diameter="33"></mat-spinner>
             </div>
             <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-            (click)="onSubmitQualitativeResult()">Save</button>
+              (click)="onSubmitQualitativeResult()">Save</button>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickQR()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
@@ -101,7 +101,8 @@
             <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
               <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" (click)="onSubmitUnitOfMeasure()">Save</button>
+            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+              (click)="onSubmitUnitOfMeasure()">Save</button>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickUOM()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
@@ -250,8 +251,8 @@
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Card Code</mat-label>
-              <input class="view-mode-bg-grey" matInput placeholder="Enter Card Code" formControlName="intCode"
-                readonly style=" cursor: not-allowed;">
+              <input class="view-mode-bg-grey" matInput placeholder="Enter Card Code" formControlName="intCode" readonly
+                style=" cursor: not-allowed;">
             </mat-form-field>
 
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
@@ -518,8 +519,7 @@
               <mat-label>Card Code</mat-label>
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                 (click)="onCardCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
-              <input matInput formControlName="intCode" readonly
-                [value]="selectedCardCode ? selectedCardCode : ''">
+              <input matInput formControlName="intCode" readonly [value]="selectedCardCode ? selectedCardCode : ''">
               <mat-error>Required.</mat-error>
             </mat-form-field>
             <!-- CARD DESCRIPTION -->
