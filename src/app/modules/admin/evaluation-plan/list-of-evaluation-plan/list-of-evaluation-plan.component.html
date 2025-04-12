@@ -25,6 +25,7 @@
                     <mat-select placeholder="Select" [formControl]="orderTypeControl">
                         <mat-option value="purchaseOrder">Purchase Order</mat-option>
                         <mat-option value="productionOrder">Production Order</mat-option>
+                        <mat-option *ngIf="currentView === 'evaluationPlan'" value="productionOrderQA">Production Order QA</mat-option>
                     </mat-select>
                 </mat-form-field>
 

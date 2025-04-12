@@ -13,10 +13,12 @@ export class EvaluationPlanQaOrderService {
 
     private _qaProductionCode = new BehaviorSubject<any[]>([]);
     private _listEvaluationPlanProductionOrdersQA = new BehaviorSubject<any[]>([]);
+    
 
 
     qaProductionCode$: Observable<any[]> = this._qaProductionCode.asObservable();
     listEvaluationPlanProductionOrdersQA$: Observable<any[]> = this._listEvaluationPlanProductionOrdersQA.asObservable();
+    
 
 
   set accessToken(token: string) {
@@ -61,8 +63,8 @@ export class EvaluationPlanQaOrderService {
                 this._listEvaluationPlanProductionOrdersQA.next(response);
             }),
             catchError((error) => {
-                console.error('Error fetching Evaluation Plan Production Orders', error);
-                return throwError(() => new Error('Error fetching Evaluation Plan Production Orders'));
+                console.error('Error fetching Evaluation Plan Production QA Orders', error);
+                return throwError(() => new Error('Error fetching Evaluation Plan Production QA Orders'));
             })
         );
 }

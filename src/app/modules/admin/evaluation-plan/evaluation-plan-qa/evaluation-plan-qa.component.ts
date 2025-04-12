@@ -117,7 +117,7 @@ export class EvaluationPlanQaComponent implements OnInit {
 
     evaluationplanQAFormGroup = this._formBuilder.group({
         intCode: [''],
-        docNo: [''],
+        docNum: [''],
         itemCode: [''],
         itemDescription: [''],
         inspectionDateTime: [new Date().toISOString()],
@@ -453,7 +453,7 @@ export class EvaluationPlanQaComponent implements OnInit {
             itemDescription: data.itemDescription ?? 'N/A',
             inspectionDateTime: new Date().toISOString(), // Add missing field
             docDate: data.docDate,
-            docNo: data.docNo.toString(), // Convert to string
+            docNum: data.docNo.toString(), // Convert to string
             warehouse: data.warehouse,
             openQuantity: data.openQty,
             plannedQuantity: data.qty ?? '-', // ✅ Same as qty

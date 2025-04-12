@@ -99,21 +99,30 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
 
   // Static data for Evaluation Plan - Production Orders
   evalPlanProductionOrderData = [
-    {
-      docNo: 'PRO-001',
-      docDate: '2025-02-12',
-      itemCode: 'PROD-101',
-      productName: 'Metal Frame Assembly',
-      qty: 25,
-      status: 'Fail'
-    },
+    // {
+    //   docNo: 'PRO-001',
+    //   docDate: '2025-02-12',
+    //   itemCode: 'PROD-101',
+    //   productName: 'Metal Frame Assembly',
+    //   qty: 25,
+    //   status: 'Fail'
+    // },
     
+  ];
+
+  evalPlanProductionOrderQAData = [
+    // {
+    //   docNo: 'PRO-001',
+    //   docDate: '2025-02-12',
+    //   itemCode: 'PROD-101',
+    //   productName: ' Frame Assembly',
+    //   qty: 35,
+    //   status: 'Fail'
+    // },
   ];
 
   // Static data for SAP Documents - Purchase Orders
   sapDocPurchaseOrderData = [
-    
-
   ];
 
   // Static data for SAP Documents - Production Orders
@@ -133,14 +142,15 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _productionOrderService:SapPlanProductionOrderService,
     private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService,
     private _productionQCService: ListOfEvaluationPlanPurchaseOrderService,
+    private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,
     private _productionQAService: EvaluationPlanQaOrderService
   ) {
     this.dataSource = new MatTableDataSource([]);
    }
 
    totalRecords = 0;  // Total items in API
-pageSize = 10;      // Default page size
-currentPage = 1;    // Current page number
+  pageSize = 10;      // Default page size
+  currentPage = 1;    // Current page number
 // dataSource = new MatTableDataSource([]);
 
    
@@ -193,6 +203,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
     this.fetchEvaluationPlanPurchaseOrders();
   } else if (orderType === 'productionOrder') {
     this.fetchEvaluationPlanProductionOrders();
+  } else if (orderType === 'productionOrderQA') {
+    this.fetchEvaluationPlanProductionOrdersQA();
   }
 }
 
@@ -226,7 +238,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
       }
     });
   }
-//Fetching Production Orders API
+  //Fetching Production Orders API
   fetchSapDocProductionOrders(): void {
     this._productionOrderService.getProductionOrders(this.currentPage, this.pageSize).subscribe((response: any) => {
         if (response.succeeded) {
@@ -320,13 +332,49 @@ onEvaluationPlanTypeChange(orderType: string): void {
           cycleTime: order.cycleTime || 0,
           itemWeight: order.itemWeight || 0,
           inspectionQuantity: order.inspectionQuantity || 0,
-
-
         }));
   
         if (this.orderType === 'productionOrder') {
           this.dataSource = new MatTableDataSource(this.evalPlanProductionOrderData);
           console.log('Evaluation Plan Production Orders:', this.evalPlanProductionOrderData);
+        }
+      } else {
+        console.error('Failed to fetch Evaluation Plan Production Orders', response.message);
+      }
+    });
+  }
+
+  fetchEvaluationPlanProductionOrdersQA(): void {
+    this._productionQAService.getEvaluationPlanProductionOrdersQA().subscribe((response: any) => {
+      if (response.data) {
+        this.evalPlanProductionOrderQAData = response.data.map((order, index) => ({
+          // serialId: index + 1,
+          id: order.id,
+          docNo: order.docNum,
+          docDate: order.docDate,
+          itemCode: order.itemDetails?.itemCode || '-',
+          itemDescription: order.itemDetails?.name || '-',
+          qty: order.plannedQuantity || 0,
+          status: order.status || '-',
+          analyzedBy: order.analyzedBy || '-',
+          warehouse: order.warehouse,
+          sampleQuantity: order.sampleQuantity || 0,
+          openQuantity: order.openQuantity || 0,
+          qcLotNo: order.qcLotNo || '-',
+          shift: order.shift || '-',
+          machineNo: order.machineNo || '-', 
+          variant: order.variant || '-',
+          bmrNo: order.bmrNo || '-',
+          mouldNo: order.mouldNo || '-',
+          cavity: order.cavity || '-',
+          cycleTime: order.cycleTime || 0,
+          itemWeight: order.itemWeight || 0,
+          inspectionQuantity: order.inspectionQuantity || 0,
+        }));
+  
+        if (this.orderType === 'productionOrderQA') {
+          this.dataSource = new MatTableDataSource(this.evalPlanProductionOrderQAData);
+          console.log('Evaluation Plan Production Orders:', this.evalPlanProductionOrderQAData);
         }
       } else {
         console.error('Failed to fetch Evaluation Plan Production Orders', response.message);
@@ -359,6 +407,9 @@ onEvaluationPlanTypeChange(orderType: string): void {
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
         this.dataSource.data = this.evalPlanProductionOrderData;
+      } else if (orderType === 'productionOrderQA') {
+        this.displayedColumns = ['serialId' , 'docNo' , 'docDate' , 'itemCode' , 'itemDescription' , 'qty' , 'status' , 'action'];
+        this.dataSource.data = this.evalPlanProductionOrderQAData;
       }
     } else if (this.currentView === 'sapDocuments') {
       this.pageTitle = 'List of SAP Documents';
@@ -388,6 +439,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
         this.fetchEvaluationPlanPurchaseOrders();
       } else if (this.orderType === 'productionOrder') {
         this.fetchEvaluationPlanProductionOrders();
+      } else if (this.orderType === 'productionOrderQA') {
+        this.fetchEvaluationPlanProductionOrdersQA();
       }
     }
     
