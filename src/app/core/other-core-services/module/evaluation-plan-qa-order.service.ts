@@ -13,11 +13,17 @@ export class EvaluationPlanQaOrderService {
 
     private _qaProductionCode = new BehaviorSubject<any[]>([]);
     private _listEvaluationPlanProductionOrdersQA = new BehaviorSubject<any[]>([]);
+      private _itemIdIIC = new BehaviorSubject<any[]>([]);
+    
+
     
 
 
     qaProductionCode$: Observable<any[]> = this._qaProductionCode.asObservable();
     listEvaluationPlanProductionOrdersQA$: Observable<any[]> = this._listEvaluationPlanProductionOrdersQA.asObservable();
+    itemIdSAP$: Observable<any[]> = this._itemIdIIC.asObservable();
+
+
     
 
 
@@ -50,7 +56,7 @@ export class EvaluationPlanQaOrderService {
           );
   }
 
-  getEvaluationPlanProductionOrdersQA(): Observable<any> {
+    getEvaluationPlanProductionOrdersQA(): Observable<any> {
     const headers = new HttpHeaders({
         Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/json',
@@ -67,9 +73,9 @@ export class EvaluationPlanQaOrderService {
                 return throwError(() => new Error('Error fetching Evaluation Plan Production QA Orders'));
             })
         );
-}
+  }
 
-addProductionQA(data: any): Observable<any> {
+    addProductionQA(data: any): Observable<any> {
   const headers = new HttpHeaders({
     Authorization: `Bearer ${this.accessToken}`,
     'Content-Type': 'application/json',
@@ -86,5 +92,28 @@ addProductionQA(data: any): Observable<any> {
           return throwError(() => new Error('Error adding qualitative result'));
       })
   );
-}
+  }
+
+    // GET ITEM ID API
+    GetItemIdByCode(itemCode: string): Observable<any> {
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
+      });
+  
+      return this._httpClient
+        .get(`${environment.appApiUrl}/CSAPI/IItemCardFeature/GetItemByCode?itemCode=${itemCode}`, { headers })
+        .pipe(
+          tap((itemId) => {
+            // console.log('API RESPONSE:', itemId);
+            const fetchedItemId = (itemId as any).data ?? [];
+            this._itemIdIIC.next(fetchedItemId);
+            // console.log('FETCHED RESPONSE', fetchedItemId);
+          }),
+          catchError((error) => {
+            console.error('ERROR WHILE FETCHING ITEM ID', error);
+            return throwError(error);
+          })
+        );
+    }
 }
