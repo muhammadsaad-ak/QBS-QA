@@ -516,27 +516,20 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       next: (response) => {
         console.log('API Response:', response);
 
-        this._snackBar.open('Sample added successfully!', 'Close', {
+        const addedSampleStatus = isSamplePassed ? 'Passed' : 'Failed'; 
+        this._snackBar.open(`Sample added successfully with status ${addedSampleStatus}`, 'Close', {
           duration: 3000,
           panelClass: ['snackbar-success']
         });
 
-        // NEW API CALL: Fetch isSamplePassedList
+        // API CALL TO Fetch isSamplePassedList
         this._evaluationPurchaseOrderService.getIsSamplePassedListByQcId(this.purchaseQcId.id).subscribe({
           next: (isSamplePassedList: boolean[]) => {
-            console.log('getIsSamplePassedListByQcId Response:', isSamplePassedList);
-
-         
-            // const samplesStatus = isSamplePassedList.every(status => status === true);
-            // console.log('samplesStatus:', samplesStatus);
-            // if (samplesStatus) {
-            //   this.planPurchaseOrderFormGroup.get('samplesStatus')?.setValue(samplesStatus);
-            // }
-            // Calculate samplesStatus
+            console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+            
             this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
             console.log('samplesStatus:', this.samplesStatus);
-
-            // Update form control
+            
             this.planPurchaseOrderFormGroup.patchValue({
               samplesStatus: this.samplesStatus
             });
