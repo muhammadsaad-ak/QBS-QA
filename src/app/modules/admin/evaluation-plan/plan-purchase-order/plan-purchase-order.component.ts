@@ -43,6 +43,7 @@ import { MatDialogRef } from '@angular/material/dialog';
   styleUrls: ['./plan-purchase-order.component.scss']
 })
 export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
+  samplesStatus: boolean | null = null;
   selectedOrder: any;
   isFormSaved = false;
   isEditForm: boolean = false;
@@ -132,6 +133,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     result: [0],
     inspectionObjects: this.fb.array([this.createInspectionObject()]),
     sampleName: [''],
+    isFlexible: [false],
+    samplesStatus: [false],
   });
 
   createInspectionObject(): FormGroup {
@@ -432,148 +435,175 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
   }
 
-    addNewSampleForPurchaseOrder(): void {
-      if (!this.planPurchaseOrderFormGroup.valid) {
-        console.error("FORM IS INVALID");
-        console.log("FORM ERRORS:", this.planPurchaseOrderFormGroup.errors);
-        console.log("FORM VALUE:", this.planPurchaseOrderFormGroup.value);
-        this.planPurchaseOrderFormGroup.markAllAsTouched();
-        return;
-      }
-    
-      if (!this.purchaseQcId) {
-        console.error('QC ID IS MISSING, CANNOT PROCEED!');
-        return;
-      }
-    
-      const formValue = this.planPurchaseOrderFormGroup.value;
-    
-      // Log form values for debugging
-      console.log("Qualitative Inspection Objects:", this.qualitativeInspectionObjects.value);
-    
-      // STEP 1: PREPARE QUALITATIVE INSPECTIONS
-      const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
-        const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
-          (status: any) => status.qualitativeResultId === item.qualitativeResultId
-        );
-        return {
-          qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
-          quantitativeInspectionMappingId: null,
-          qualitativeResultId: item?.qualitativeResultId || null,
-          isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
-          quantitativeResult: 0,
-          isQuantitativeResultPassed: false,
-          remarks: item?.remarks || ""
-        };
-      }) || [];
-    
-      // STEP 2: PREPARE QUANTITATIVE INSPECTIONS
-      const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
-        const resultValue = item?.result ? parseFloat(item.result) : 0;
-        return {
-          qualitativeInspectionMappingId: null,
-          quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
-          qualitativeResultId: null,
-          isQualitativeResultPassed: false,
-          quantitativeResult: item?.result !== undefined && item?.result !== null ? parseFloat(item.result) : 0,
-          isQuantitativeResultPassed: item?.result !== undefined &&
-            !isNaN(resultValue) &&
-            resultValue >= (item.min ?? 0) &&
-            resultValue <= (item.max ?? 0),
-          remarks: item?.remarks || ""
-        };
-      }) || [];
-    
-      // STEP 3: COMBINE BOTH TYPES
-      const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
-      const hasPassingQualitative = inspectionObjects
-        .filter((inspection: any) => inspection.qualitativeResultId !== null)
-        .every((inspection: any) => inspection.isQualitativeResultPassed === true);
-      const hasPassingQuantitative = inspectionObjects
-        .filter((inspection: any) => inspection.quantitativeInspectionMappingId !== null)
-        .every((inspection: any) => inspection.isQuantitativeResultPassed === true);
-      const isSamplePassed = hasPassingQualitative && hasPassingQuantitative;
-      console.log("hasPassingQualitative:", hasPassingQualitative);
-      console.log("hasPassingQuantitative:", hasPassingQuantitative);
-      console.log("isSamplePassed:", isSamplePassed);
-      // STEP 4: CREATING THE FINAL PAYLOAD
-      const newSamplePayload = {
-        name: `sample-${this.nextSampleId}`,
-        inspectionDateTime: new Date().toISOString(),
-        inspectionBy: formValue.inspectionBy || "",
-        qcId: this.purchaseQcId.id,
-        isSamplePassed: isSamplePassed,
-        inspectionObjects: inspectionObjects
-      };
-    
-      console.log('FINAL PAYLOAD:', newSamplePayload);
-    // return;
-      // STEP 5: API CALL
-      this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
-        next: (response) => {
-          console.log('API Response:', response);
-    
-          const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
-    
-          if (existingSampleIndex !== -1) {
-            this.purchaseQcSamples[existingSampleIndex] = {
-              ...this.purchaseQcSamples[existingSampleIndex],
-              inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
-              inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value
-            };
-            this.purchaseQcSamples = [...this.purchaseQcSamples];
-            this.selectedSampleId = this.qcSampleID;
-          } else {
-            console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
-          }
-    
-          this.planPurchaseOrderFormGroup.patchValue({
-            inspectionDateTime: this.purchaseQcSamples[existingSampleIndex]?.inspectionDateTime,
-            inspectionBy: this.purchaseQcSamples[existingSampleIndex]?.inspectionBy
-          });
-    
-          this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
-    
-          const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
-          if (isNewSample) {
-            const newSample = {
-              id: this.nextSampleId,
-              inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
-              inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-              // cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  //  cardColor: this.getRandomCardColor()
-              cardColor: isSamplePassed ? 'lightgreen' : 'lightcoral'
-            };
-            this.samplesPurchaseOrder.push(newSample);
-            this.nextSampleId++;
-          }
-    
-          this.closeDialog();
-        },
-        error: (error) => {
-          console.error('API Error:', error);
-        }
-      });
-    
-      // ✅ STEP 6: Reset form for next sample
-      // this.planPurchaseOrderFormGroup.reset();
-      this.qualitativeInspectionObjects.clear();
-      this.quantitativeInspectionResults.clear();
-    
-      // STEP 7: Setup new form state if needed
-      const newSample = {
-        id: this.nextSampleId,
-        inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
-        inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-        // cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  //  cardColor: this.getRandomCardColor()
-        cardColor: isSamplePassed ? 'lightgreen' : 'lightcoral'
-      };
-      console.log("Sample Card Color:", newSample.cardColor);
-      this.samplesPurchaseOrder.push(newSample);
-      this.nextSampleId++;
-    
-      this.closeDialog();
+  addNewSampleForPurchaseOrder(): void {
+    if (!this.planPurchaseOrderFormGroup.valid) {
+      console.error("FORM IS INVALID");
+      console.log("FORM ERRORS:", this.planPurchaseOrderFormGroup.errors);
+      console.log("FORM VALUE:", this.planPurchaseOrderFormGroup.value);
+      this.planPurchaseOrderFormGroup.markAllAsTouched();
+      return;
     }
-  
+
+    if (!this.purchaseQcId) {
+      console.error('QC ID IS MISSING, CANNOT PROCEED!');
+      return;
+    }
+
+    const formValue = this.planPurchaseOrderFormGroup.value;
+
+    // Log form values for debugging
+    console.log("Qualitative Inspection Objects:", this.qualitativeInspectionObjects.value);
+
+    // STEP 1: PREPARE QUALITATIVE INSPECTIONS
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+        (status: any) => status.qualitativeResultId === item.qualitativeResultId
+      );
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeInspectionMappingId: null,
+        qualitativeResultId: item?.qualitativeResultId || null,
+        isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+        quantitativeResult: 0,
+        isQuantitativeResultPassed: false,
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+
+    // STEP 2: PREPARE QUANTITATIVE INSPECTIONS
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
+      return {
+        qualitativeInspectionMappingId: null,
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+        qualitativeResultId: null,
+        isQualitativeResultPassed: false,
+        quantitativeResult: item?.result !== undefined && item?.result !== null ? parseFloat(item.result) : 0,
+        isQuantitativeResultPassed: item?.result !== undefined &&
+          !isNaN(resultValue) &&
+          resultValue >= (item.min ?? 0) &&
+          resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+
+    // STEP 3: COMBINE BOTH TYPES
+    const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+    const hasPassingQualitative = inspectionObjects
+      .filter((inspection: any) => inspection.qualitativeResultId !== null)
+      .every((inspection: any) => inspection.isQualitativeResultPassed === true);
+    const hasPassingQuantitative = inspectionObjects
+      .filter((inspection: any) => inspection.quantitativeInspectionMappingId !== null)
+      .every((inspection: any) => inspection.isQuantitativeResultPassed === true);
+    const isSamplePassed = hasPassingQualitative && hasPassingQuantitative;
+    console.log("hasPassingQualitative:", hasPassingQualitative);
+    console.log("hasPassingQuantitative:", hasPassingQuantitative);
+    console.log("isSamplePassed:", isSamplePassed);
+    // STEP 4: CREATING THE FINAL PAYLOAD
+    const newSamplePayload = {
+      name: `sample-${this.nextSampleId}`,
+      inspectionDateTime: new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.purchaseQcId.id,
+      isSamplePassed: isSamplePassed,
+      inspectionObjects: inspectionObjects
+    };
+
+    console.log('FINAL PAYLOAD:', newSamplePayload);
+    // return;
+    // STEP 5: API CALL
+    this._sapPlanPurchaseOrderService.addPurchaseQcSample(newSamplePayload).subscribe({
+      next: (response) => {
+        console.log('API Response:', response);
+
+        const addedSampleStatus = isSamplePassed ? 'Passed' : 'Failed'; 
+        this._snackBar.open(`Sample added successfully with status ${addedSampleStatus}`, 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-success']
+        });
+
+        // API CALL TO Fetch isSamplePassedList
+        this._evaluationPurchaseOrderService.getIsSamplePassedListByQcId(this.purchaseQcId.id).subscribe({
+          next: (isSamplePassedList: boolean[]) => {
+            console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+            
+            this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
+            console.log('samplesStatus:', this.samplesStatus);
+            
+            this.planPurchaseOrderFormGroup.patchValue({
+              samplesStatus: this.samplesStatus
+            });
+          },
+          error: (error) => {
+            console.error('getIsSamplePassedListByQcId API Error:', error);
+            this._snackBar.open('Failed to fetch sample passed list.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+
+        const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
+
+        if (existingSampleIndex !== -1) {
+          this.purchaseQcSamples[existingSampleIndex] = {
+            ...this.purchaseQcSamples[existingSampleIndex],
+            inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value
+          };
+          this.purchaseQcSamples = [...this.purchaseQcSamples];
+          this.selectedSampleId = this.qcSampleID;
+        } else {
+          console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
+        }
+
+        this.planPurchaseOrderFormGroup.patchValue({
+          inspectionDateTime: this.purchaseQcSamples[existingSampleIndex]?.inspectionDateTime,
+          inspectionBy: this.purchaseQcSamples[existingSampleIndex]?.inspectionBy
+        });
+
+        this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
+
+        const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
+        if (isNewSample) {
+          const newSample = {
+            id: this.nextSampleId,
+            inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+            // cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  //  cardColor: this.getRandomCardColor()
+            cardColor: isSamplePassed ? 'lightgreen' : 'lightcoral'
+          };
+          this.samplesPurchaseOrder.push(newSample);
+          this.nextSampleId++;
+        }
+
+        this.closeDialog();
+      },
+      error: (error) => {
+        console.error('API Error:', error);
+      }
+    });
+
+    // ✅ STEP 6: Reset form for next sample
+    // this.planPurchaseOrderFormGroup.reset();
+    this.qualitativeInspectionObjects.clear();
+    this.quantitativeInspectionResults.clear();
+
+    // STEP 7: Setup new form state if needed
+    const newSample = {
+      id: this.nextSampleId,
+      inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+      inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+      // cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  //  cardColor: this.getRandomCardColor()
+      cardColor: isSamplePassed ? 'lightgreen' : 'lightcoral'
+    };
+    console.log("Sample Card Color:", newSample.cardColor);
+    this.samplesPurchaseOrder.push(newSample);
+    this.nextSampleId++;
+
+    this.closeDialog();
+  }
+
 
   getRandomCardColor(): string {
     const colors = ['#e8f5e9', '#ffebee', '#f5f5f5'];
@@ -999,6 +1029,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   }
 
   toggleDropdown() {
+    alert('POST TO SAP CLICKED!')
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
@@ -1012,6 +1043,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         if (response && response.data && response.data.length > 0) {
           const itemId = response.data[0].id;
           this.planPurchaseOrderFormGroup.get('itemId')?.setValue(itemId);
+          this.getItemFlexibility(itemId);
         }
       },
       error: (err) => {
@@ -1019,4 +1051,21 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       }
     });
   }
+  getItemFlexibility(ItemId: any): void {
+    this._evaluationPurchaseOrderService.getFlexibilityByItemId(ItemId).subscribe({
+      next: (isFlexible: boolean) => {
+        console.log('FLEXIBILITY:', isFlexible);
+        // Ab yahan se use karo jaise chahiye:
+        if (isFlexible) {
+          this.planPurchaseOrderFormGroup.get('isFlexible')?.setValue(isFlexible);
+        } else {
+          // Not flexible
+        }
+      },
+      error: (err) => {
+        console.error('SERVICE ERROR:', err);
+      }
+    });
+  }
+
 }
