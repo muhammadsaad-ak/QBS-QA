@@ -494,7 +494,21 @@
 
 
 
-            <div class="button-container mt-4 flex justify-end gap-2" *ngIf="isFormSaved">
+            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: nowrap; align-items: flex-start;">
+                <mat-form-field style="flex: 1 1 50%; min-width: 100px;">
+                    <mat-label>isFlexible</mat-label>
+                    <input class="view-mode-bg-grey" matInput formControlName="isFlexible">
+                </mat-form-field>
+                <mat-form-field style="flex: 1 1 50%; min-width: 100px;">
+                    <mat-label>samplesStatus</mat-label>
+                    <input class="view-mode-bg-grey" matInput formControlName="samplesStatus">
+                </mat-form-field>
+            </div>
+
+            <div class="button-container mt-4 flex justify-end gap-2" *ngIf="planPurchaseOrderFormGroup.get('isFlexible')?.value === false ? 
+                        (samplesPurchaseOrder.length === sampleQuantity && samplesStatus === true) : 
+                        (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length > 0) || 
+                        (!isEditMode && samplesPurchaseOrder.length > 0)))">
                 <button mat-flat-button color="primary">Save</button>
                 <button mat-flat-button color="warn" (click)="cancelForm()">
                     Cancel
