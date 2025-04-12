@@ -35,6 +35,7 @@ import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/modul
 export class EvaluationPlanQaComponent implements OnInit {
     selectedOrder: any;
     isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
+    productionQAId: any; // Variable to hold the production QA ID
 
     @ViewChild('dialogTemplateItems') dialogTemplateItems;
     @ViewChild('dialogQaTemplateItems') dialogQaTemplateItems;
@@ -71,6 +72,7 @@ export class EvaluationPlanQaComponent implements OnInit {
 
     constructor(
         private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,
+        private _evaluationPlanQAOrderService:  EvaluationPlanQaOrderService,
         private _evaluationProductionOrderService: EvaluationPlanQaOrderService,
         private _snackBar: MatSnackBar,
         private _formBuilder: FormBuilder,
@@ -134,9 +136,11 @@ export class EvaluationPlanQaComponent implements OnInit {
         shift: [''],
         machineNo: [''],
         bmrNo: [''],
+        status: [''],
         mouldNo: [''],
         cavity: [],
         analyzedBy: [''],
+        itemId: [''],
         inspectionBy: [''],
         remarks: [''],
         min: [''],
@@ -156,7 +160,7 @@ export class EvaluationPlanQaComponent implements OnInit {
             this.populateProductionOrderFormQA(this.selectedOrder); // Populate the form with the data
             console.log('HAHA Production Order Form 1', this.selectedOrder);
 
-            // this.getItemId(this.selectedOrder.itemCode);
+            this.getItemId(this.selectedOrder.itemCode);
         }
 
         if (this.selectedOrder) {
@@ -273,57 +277,6 @@ export class EvaluationPlanQaComponent implements OnInit {
         return this.evaluationplanQAFormGroup.get('cavities') as FormArray;
     }
 
-    generateCavitiesX(): void {
-      if (this.evaluationplanQAFormGroup.invalid) {
-        this.evaluationplanQAFormGroup.markAllAsTouched();
-        return;
-      }
-    
-      const payload = this.evaluationplanQAFormGroup.value;
-      console.log('Payload:', payload);
-      return;
-    
-      this._evaluationProductionOrderService.addProductionQA(payload).subscribe(
-        (response) => {
-          if (response.isRequestSuccess) {
-            console.log('API RUN SUCCESSFULLY.', payload);
-            this._snackBar.open('Production QA added successfully!', 'Close', {
-              duration: 3000,
-              panelClass: ['snackbar-success']
-            });
-    
-            // Only generate cavities on successful API response
-            this.cavitiesArray.clear();
-    
-            const numberOfCavities = +payload.cavity;
-    
-            for (let i = 0; i < numberOfCavities; i++) {
-              this.cavitiesArray.push(
-                this._formBuilder.group({
-                  cName: `Cavity ${i + 1}`,
-                  InspectionTime: '10:30 AM',
-                  InspectionBy: 'Mr.Kamran',
-                  enabled: false,
-                })
-              );
-            }
-          } else {
-            this._snackBar.open('Failed to add Production QA!', 'Close', {
-              duration: 3000,
-              panelClass: ['snackbar-error']
-            });
-          }
-        },
-        (error) => {
-          this._snackBar.open('Something went wrong. Please try again.', 'Close', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-          console.error('Error during AddProductionQA:', error);
-        }
-      );
-    }
-
     generateCavities(): void {
       const formData = this.evaluationplanQAFormGroup.value;
     
@@ -340,6 +293,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         inspectionBy,
         remarks,
         cavities,
+        itemId,
         ...payload
       } = formData;
     
@@ -467,7 +421,7 @@ export class EvaluationPlanQaComponent implements OnInit {
             itemWeight: data.weight !== undefined ? data.weight.toString() : 'N/A', // ✅ Convert safely
             variant: data.variant ?? 'N/A',
             // analyzedBy: data.analyzedBy ?? '', // ✅ Ensure empty string if not provided
-            // status: data.status ?? 'Ali', // ✅ Ensure default value
+            status: data.status ?? 'Ali', // ✅ Ensure default value
         });
     }
 
@@ -492,5 +446,18 @@ export class EvaluationPlanQaComponent implements OnInit {
             // itemWeight: data.itemWeight ?? 'N/A',
             // inspectionQuantity: data.inspectionQuantity,
         });
+    }
+    getItemId(itemCode: any): void {
+      this._evaluationPlanQAOrderService.GetItemIdByCode(itemCode).subscribe({
+        next: (response) => {
+          if (response && response.data && response.data.length > 0) {
+            const itemId = response.data[0].id;
+            this.evaluationplanQAFormGroup.get('itemId')?.setValue(itemId);
+          }
+        },
+        error: (err) => {
+          console.error('SERVICE ERROR:', err);
+        }
+      });
     }
 }
