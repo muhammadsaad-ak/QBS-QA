@@ -145,7 +145,7 @@ addProductionQcSample(data: any): Observable<any> {
   ).pipe(
       tap(response => console.log('RESPONSE:', response)),
       catchError(error => {
-          console.error('Error adding qualitative result', error);
+          console.error('Error adding prod result', error);
           return throwError(() => new Error('Error adding qualitative result'));
       })
   );

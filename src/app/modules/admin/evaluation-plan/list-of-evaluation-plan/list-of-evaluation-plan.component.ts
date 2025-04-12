@@ -24,6 +24,7 @@ import { SapPlanPurchaseOrderService } from 'app/core/other-core-services/module
 import { ListOfEvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/list-of-evaluation-plan-purchase-order.service';
 import { PageEvent } from '@angular/material/paginator';
 import { SapPlanProductionOrderService } from 'app/core/other-core-services/module/sap-plan-production-order.service';
+import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
 
 @Component({
   selector: 'app-list-of-evaluation-plan',
@@ -131,7 +132,8 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _purchaseOrderService:SapPlanPurchaseOrderService,
     private _productionOrderService:SapPlanProductionOrderService,
     private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService,
-    private _productionQCService: ListOfEvaluationPlanPurchaseOrderService
+    private _productionQCService: ListOfEvaluationPlanPurchaseOrderService,
+    private _productionQAService: EvaluationPlanQaOrderService
   ) {
     this.dataSource = new MatTableDataSource([]);
    }
@@ -474,7 +476,13 @@ onEvaluationPlanTypeChange(orderType: string): void {
   }
 
   navigateToEvaluationPlanQAForm(element: any) {
-    this.router.navigate(['/evaluation-plan/plan-evaluation-qa'])
+    console.log('SENDING DATA of Production Order QA:', element);
+    this.router.navigate(['/evaluation-plan/plan-evaluation-qa'],{
+      state: { selectedOrder: element, from: 'sapDocuments' } // Pass the selected row data and origin info
+    }
+
+    );
+    // Pass the selected row data and origin info
   }
   
   getStatusClass(status: string): string {
