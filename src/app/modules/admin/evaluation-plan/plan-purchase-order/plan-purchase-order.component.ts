@@ -781,12 +781,14 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       }
       this.getItemId(this.selectedOrder.itemCode);
   }
-  this._evaluationPurchaseOrderService.getPurchaseQCCode().subscribe((purchaseQCCode) => { 
-    console.log('Purchase QC Code:', purchaseQCCode); // Debugging ke liye
+    if (!this.isEditMode) {
+      this._evaluationPurchaseOrderService.getPurchaseQCCode().subscribe((purchaseQCCode) => {
+        console.log('Purchase QC Code:', purchaseQCCode); // Debugging ke liye
 
-    const fullCode = `PQC-000${purchaseQCCode.data || ''}`; // Code format
-    this.planPurchaseOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
-});
+        const fullCode = `PQC-000${purchaseQCCode.data || ''}`; // Code format
+        this.planPurchaseOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+      });
+    }
 
 
 
@@ -827,8 +829,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
   populateEditForm(data: any): void {
     console.log('Populating Edit QC Form:', data);
+    // FORMATTING intCode
+    const rowIntCode = data.intCode ?? '';
+    const formattedIntCode = `PQC-${rowIntCode.toString().padStart(7, '0')}`;
     this.planPurchaseOrderFormGroup.patchValue({
-      intCode: data.intCode ?? "",  
+      intCode: formattedIntCode ?? "",  // intCode: data.intCode ?? "",  
       itemCode: data.itemCode ?? "",  
       itemDescription: data.itemDescription ?? "",  
       openQuantity: data.openQuantity ?? 0,  
