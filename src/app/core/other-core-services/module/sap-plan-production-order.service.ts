@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from 'environments/environment';
-import { BehaviorSubject, Observable, catchError, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, tap, throwError } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -192,4 +192,39 @@ UpdateProductionQcSample(data: any) {
  );
 }
 
+  // GET isSamplePassed API - @IAK
+  getIsSamplePassedListByProdQcId(qcId: string): Observable<boolean[]> {
+    if (!qcId) {
+      console.error('QC ID IS MISSING, CANNOT PROCEED FUTTHER!:');
+      return throwError(() => new Error('QC ID IS MISSING, CANNOT PROCEED FURTHER'));
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+    
+    console.log('QC ID ~ qcId:', qcId);
+
+    return this._httpClient
+        .get(`${environment.appApiUrl}/CSAPI/IProductionQCSampleFeature/ListAllProductionQCSamplesByQcId?productionQcId=${qcId}`, { headers })
+      .pipe(
+        tap((response: any) => {
+          // console.log('SERVER RESPONSE ~ response:', response);
+        }),
+        map((response: any) => {
+          const data = response?.data ?? [];
+          const isSamplePassedList = data.map((item: any) => item.isSamplePassed);
+          console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+          return isSamplePassedList;
+        }),
+        catchError((error) => {
+          console.error('API CALLING FAILED:', error);
+          console.error('ERROR STATUS:', error.status);
+          console.error('ERROR MESSAGE:', error.error?.message);
+          return throwError(() => new Error('FAILED TO FETCH isSamplePassedList!'));
+        })
+      );
+  }
 }

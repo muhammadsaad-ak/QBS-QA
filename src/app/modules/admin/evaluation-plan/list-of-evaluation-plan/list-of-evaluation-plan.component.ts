@@ -313,6 +313,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
         this.evalPlanProductionOrderData = response.data.map((order, index) => ({
           // serialId: index + 1,
           id: order.id,
+          intCode: order.intCode,
           docNo: order.docNo,
           docDate: order.docDate,
           itemCode: order.itemDetails?.itemCode || '-',
