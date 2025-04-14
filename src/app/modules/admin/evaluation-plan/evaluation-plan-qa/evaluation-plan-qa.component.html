@@ -149,8 +149,8 @@
                         </p>
                     </div>
             
-                    <div style="font-weight: 400;">Inspection Time: {{ cavControl.value.InspectionTime }}</div>
-                    <div style="font-weight: 400;">Inspection By: {{ cavControl.value.InspectionBy }}</div>
+                    <div style="font-weight: 400;">Inspection Time: {{ cavControl.value.inspectionTime }}</div>
+                    <div style="font-weight: 400;">Inspection By: {{ cavControl.value.inspectionBy }}</div>
                 </div>
             </div>
 
@@ -235,7 +235,7 @@
 
                         <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
                             <mat-label>Inspection By</mat-label>
-                            <input matInput formControlName="InspectionBy" placeholder="Enter Code" required />
+                            <input matInput formControlName="inspectionBy" placeholder="Enter Code" required />
                         </mat-form-field>
 
                         <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
@@ -252,211 +252,183 @@
 
 
                     </div>
-                    <mat-tab-group class="sm:px-2" mat-stretch-tabs="true" [animationDuration]="1500">
-                        <mat-tab label="Qualitative Inspection">
-                            <ng-template matTabContent>
-                                <div class="pt-0 lg:ml-9 lg:mr-13">
-                                    <div class="w-full" formArrayName="qualitativeInspectionObjects">
-                                        <section class="m-0 w-full overflow-auto p-0 px-0 py-0">
-                                            <table mat-table [dataSource]="dataSourceQualitativeInspection"
-                                                class="w-full">
-                                                <ng-container>
-                                                    <ng-container matColumnDef="parameters">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Parameters
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm"
-                                                            [formGroupName]="i">
-                                                            <input matInput formControlName="parameters" readonly />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="passCriteria">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Pass Criteria
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm"
-                                                            [formGroupName]="i">
-                                                            <input matInput formControlName="passCriteria" readonly />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="Mandatory">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Mandatory
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 text-sm" [formGroupName]="i">
-                                                            <mat-checkbox formControlName="Mandatory"></mat-checkbox>
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="remarks">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Remarks
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm">
-                                                            <input matInput formControlName="remarks"
-                                                                placeholder="Enter Remarks" />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <tr mat-header-row *matHeaderRowDef="
-                                                                displayedColumnsQualitative
-                                                            "></tr>
-                                                    <tr mat-row *matRowDef="
-                                                                let row;
-                                                                columns: displayedColumnsQualitative
-                                                            "></tr>
-                                                </ng-container>
-                                            </table>
-                                        </section>
-                                    </div>
-                                </div>
-                            </ng-template>
-                        </mat-tab>
-
-                        <mat-tab label="Quantitative Inspection">
-                            <ng-template matTabContent>
-                                <div class="pt-0 lg:ml-9 lg:mr-13">
-                                    <div class="w-full" formArrayName="quantitativeInspectionResults">
-                                        <section class="m-0 w-full overflow-auto p-0 px-0 py-0">
-                                            <table mat-table [dataSource]="
-                                                        dataSourceQuantitativeInspection
-                                                    " class="w-full">
-                                                <ng-container>
-                                                    <ng-container matColumnDef="parameters">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Parameters
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm"
-                                                            [formGroupName]="i">
-                                                            <input matInput formControlName="parameters" readonly />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="UOM">
-                                                        <th mat-header-cell *matHeaderCellDef class="text-sm">
-                                                            UOM
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 text-sm" [formGroupName]="i">
-                                                            <input matInput formControlName="UOM" readonly />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="Mandatory">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Mandatory
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 text-sm" [formGroupName]="i">
-                                                            <mat-checkbox formControlName="Mandatory"></mat-checkbox>
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="Target">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Target
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm"
-                                                            [formGroupName]="i">
-                                                            <input matInput formControlName="Target"
-                                                                placeholder="Enter Target value" />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="Max">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Max
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm"
-                                                            [formGroupName]="i">
-                                                            <input matInput formControlName="Max"
-                                                                placeholder="Enter Max value" />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="Min">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Min
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm"
-                                                            [formGroupName]="i">
-                                                            <input matInput formControlName="Min"
-                                                                placeholder="Enter Min value" />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <ng-container matColumnDef="remarks">
-                                                        <th mat-header-cell *matHeaderCellDef
-                                                            class="whitespace-nowrap text-sm">
-                                                            Remarks
-                                                        </th>
-                                                        <td mat-cell *matCellDef="
-                                                                    let element;
-                                                                    let i = index
-                                                                " class="w-1/6 whitespace-nowrap text-sm"
-                                                            [formGroupName]="i">
-                                                            <input matInput formControlName="remarks"
-                                                                placeholder="Enter Remarks" />
-                                                        </td>
-                                                    </ng-container>
-
-                                                    <tr mat-header-row *matHeaderRowDef="
-                                                                displayedColumnsQuantitative
-                                                            "></tr>
-                                                    <tr mat-row *matRowDef="
-                                                                let row;
-                                                                columns: displayedColumnsQuantitative
-                                                            "></tr>
-                                                </ng-container>
-                                            </table>
-                                        </section>
-                                    </div>
-                                </div>
-                            </ng-template>
-                        </mat-tab>
-                    </mat-tab-group>
+                    <mat-tab-group class="sm:px-2" mat-stretch-tabs="true" [animationDuration]="1500"
+                    [preserveContent]="preserveTabContent">
+                    <!-- Qualitative Inspection Tab -->
+                    <mat-tab label="Qualitative Inspection">
+                      <ng-template matTabContent>
+                        <div class="pt-0 lg:ml-9 lg:mr-13"
+                          *ngIf="evaluationplanQAFormGroup.get('qualitativeInspectionObjects')?.value.length > 0">
+                          <div class="w-full">
+                            <section class="m-0 w-full overflow-auto p-0 px-0 py-0">
+                              <table mat-table [dataSource]="dataSourceQualitativeInspection" class="w-full">
+                                <ng-container formArrayName="qualitativeInspectionObjects">
+        
+                                  <!-- Parameter Column -->
+                                  <ng-container matColumnDef="inspectionCharacteristicName">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Parameters</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="inspectionCharacteristicName" readonly />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Pass Criteria Column -->
+                                  <ng-container matColumnDef="inspectionCharacteristicSingleCriteria">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Pass Criteria</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="inspectionCharacteristicSingleCriteria" readonly />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Mandatory Checkbox -->
+                                  <ng-container matColumnDef="isMandatory">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Mandatory</th>
+                                    <td mat-cell *matCellDef="let element; let i = index" class="w-1/6 text-sm"
+                                      [formGroupName]="i">
+                                      <mat-checkbox formControlName="isMandatory"></mat-checkbox>
+                                    </td>
+                                  </ng-container>
+    
+        
+                                  <ng-container matColumnDef="qualitativeResultId">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">
+                                      Result
+                                    </th>
+                                    <td mat-cell *matCellDef="let element; let i = index" [formGroupName]="i" class="text-sm">
+                                      <mat-select formControlName="qualitativeResultId" placeholder="Select Result">
+                                        <ng-container *ngIf="(
+                                          evaluationplanQAFormGroup.get('qualitativeInspectionObjects')?.get(i.toString())
+                                            ?.get('qualitativeResultPassStatusResults')?.value
+                                        ) as resultOptions">
+                                          <mat-option *ngFor="let status of resultOptions" [value]="status.qualitativeResultId">
+                                            {{ status.resultDescription }}
+                                          </mat-option>
+                                        </ng-container>
+                                      </mat-select>
+                                    </td>
+                                  </ng-container>
+                                  
+        
+                                  <!-- Remarks Input -->
+                                  <ng-container matColumnDef="remarks">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Remarks</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="remarks" placeholder="Enter Remarks" />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Table Rows -->
+                                  <tr mat-header-row *matHeaderRowDef="displayedColumnsQualitative"></tr>
+                                  <tr mat-row *matRowDef="let row; columns: displayedColumnsQualitative"></tr>
+        
+                                </ng-container>
+                              </table>
+                            </section>
+                          </div>
+                        </div>
+                      </ng-template>
+                    </mat-tab>
+        
+                    <!-- Quantitative Inspection Tab -->
+                    <mat-tab label="Quantitative Inspection">
+                      <ng-template matTabContent>
+                        <div class="pt-0 lg:ml-9 lg:mr-13"
+                          *ngIf="evaluationplanQAFormGroup.get('quantitativeInspectionResults')?.value.length > 0">
+                          <div class="w-full">
+                            <section class="m-0 w-full overflow-auto p-0 px-0 py-0">
+                              <table mat-table [dataSource]="dataSourceQuantitativeInspection" class="w-full">
+                                <ng-container formArrayName="quantitativeInspectionResults">
+        
+                                  <!-- Parameter Column -->
+                                  <ng-container matColumnDef="inspectionCharacteristicName">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Parameters</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="inspectionCharacteristicName" readonly />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- UOM Column -->
+                                  <ng-container matColumnDef="uoMCode">
+                                    <th mat-header-cell *matHeaderCellDef class="text-sm">UOM</th>
+                                    <td mat-cell *matCellDef="let element; let i = index" class="w-1/6 text-sm"
+                                      [formGroupName]="i">
+                                      <input matInput formControlName="uoMCode" readonly />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Mandatory Checkbox -->
+                                  <ng-container matColumnDef="isMandatory">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Mandatory</th>
+                                    <td mat-cell *matCellDef="let element; let i = index" class="w-1/6 text-sm"
+                                      [formGroupName]="i">
+                                      <mat-checkbox formControlName="isMandatory"></mat-checkbox>
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Target Input -->
+                                  <ng-container matColumnDef="target">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Target</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="target" placeholder="Enter Target value" />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Max Input -->
+                                  <ng-container matColumnDef="max">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Max</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="max" placeholder="Enter Max value" />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- min Input -->
+                                  <ng-container matColumnDef="min">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">min</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="min" placeholder="Enter min value" />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Result Input -->
+                                  <ng-container matColumnDef="quantitativeResult">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Result</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="result" placeholder="Enter result value" />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Remarks Input -->
+                                  <ng-container matColumnDef="remarks">
+                                    <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap text-sm">Remarks</th>
+                                    <td mat-cell *matCellDef="let element; let i = index"
+                                      class="w-1/6 whitespace-nowrap text-sm" [formGroupName]="i">
+                                      <input matInput formControlName="remarks" placeholder="Enter Remarks" />
+                                    </td>
+                                  </ng-container>
+        
+                                  <!-- Table Rows -->
+                                  <tr mat-header-row *matHeaderRowDef="displayedColumnsQuantitative"></tr>
+                                  <tr mat-row *matRowDef="let row; columns: displayedColumnsQuantitative"></tr>
+        
+                                </ng-container>
+                              </table>
+                            </section>
+                          </div>
+                        </div>
+                      </ng-template>
+                    </mat-tab>
+                  </mat-tab-group>
                     <div class="mt-auto flex justify-end">
                         <button mat-flat-button color="primary" (click)="saveAndCloseQa()">
-                            Save & Close
+                            Save & Close x
                         </button>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {FormArray,FormBuilder,FormsModule,ReactiveFormsModule,} from '@angular/forms';
+import {FormArray,FormBuilder,FormGroup,FormsModule,ReactiveFormsModule, Validators,} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,9 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
+import {MatSelectModule} from '@angular/material/select';
 
 @Component({
     selector: 'app-evaluation-plan-qa',
@@ -28,6 +29,7 @@ import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/modul
         MatTabsModule,
         MatTableModule,
         MatCheckboxModule,
+        MatSelectModule
     ],
     templateUrl: './evaluation-plan-qa.component.html',
     styleUrl: './evaluation-plan-qa.component.scss',
@@ -36,6 +38,11 @@ export class EvaluationPlanQaComponent implements OnInit {
     selectedOrder: any;
     isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
     productionQAId: any; // Variable to hold the production QA ID
+    cardCode: any;
+
+    dataSourceQualitativeInspection: MatTableDataSource<any>;
+    dataSourceQuantitativeInspection: MatTableDataSource<any>;
+
 
     @ViewChild('dialogTemplateItems') dialogTemplateItems;
     @ViewChild('dialogQaTemplateItems') dialogQaTemplateItems;
@@ -43,31 +50,33 @@ export class EvaluationPlanQaComponent implements OnInit {
     qaDialogRef: any;
 
     displayedColumnsQualitative: string[] = [
-        'parameters',
-        'passCriteria',
-        'Mandatory',
+        'inspectionCharacteristicName',
+        'inspectionCharacteristicSingleCriteria',
+        'isMandatory',
+        'qualitativeResultId',
         'remarks',
     ];
     displayedColumnsQuantitative: string[] = [
-        'parameters',
-        'UOM',
-        'Mandatory',
-        'Target',
-        'Max',
-        'Min',
+        'inspectionCharacteristicName',
+        'uoMCode',
+        'isMandatory',
+        'target',
+        'max',
+        'min',
+        'quantitativeResult',
         'remarks',
     ];
 
     samples = [
-        {
-            title: 'Sample 1',
-            inspectionTime: '5:00 PM',
-            inspectionBy: 'Mr. Asad',
-        },
+        // {
+        //     title: 'Sample 1',
+        //     inspectionTime: '5:00 PM',
+        //     inspectionBy: 'Mr. Asad',
+        // },
     ];
 
-    dataSourceQualitativeInspection: any[] = [];
-    dataSourceQuantitativeInspection: any[] = [];
+    // dataSourceQualitativeInspection: any[] = [];
+    // dataSourceQuantitativeInspection: any[] = [];
     selectedCavityName: string = '';
 
     constructor(
@@ -76,6 +85,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         private _evaluationProductionOrderService: EvaluationPlanQaOrderService,
         private _snackBar: MatSnackBar,
         private _formBuilder: FormBuilder,
+        private fb: FormBuilder,
         private _dialog: MatDialog
     ) {}
 
@@ -146,11 +156,31 @@ export class EvaluationPlanQaComponent implements OnInit {
         min: [''],
         max: [''],
         target: [''],
-        parameters: ['test'],
-        cavities: this._formBuilder.array([]),
-        qualitativeInspectionObjects: this._formBuilder.array([]),
-        quantitativeInspectionResults: this._formBuilder.array([]),
+        inspectionCharacteristicName: ['test'],
+        cavities: this.fb.array([]),
+        qualitativeInspectionObjects: this.fb.array([]),
+        quantitativeInspectionResults: this.fb.array([]),
+        qaId: [''],
+        result: [0],
+        inspectionObjects: this.fb.array([this.createInspectionObject()]),
+
     });
+
+    createInspectionObject(): FormGroup {
+        return this.fb.group({
+          qualitativeInspectionMappingId: [''],
+          quantitativeInspectionMappingId: [''],
+          qualitativeResultId: [''],
+          isQualitativeResultPassed: [true],
+          // quantitativeResult: [0],
+          isQuantitativeResultPassed: [true],
+          remarks: ['']
+        });
+      }
+
+      get inspectionObjects(): FormArray {
+        return this.evaluationplanQAFormGroup.get('inspectionObjects') as FormArray;
+      }
 
     ngOnInit(): void {
         this.selectedOrder = history.state.selectedOrder; // Access the passed data
@@ -180,98 +210,93 @@ export class EvaluationPlanQaComponent implements OnInit {
                     .get('intCode')
                     ?.setValue(fullCode);
             });
+            
+        this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
+        this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionResults.controls);
+        // const staticData = [
+        //     {
+        //         inspectionCharacteristicName: 'Color Check',
+        //         inspectionCharacteristicSingleCriteria: 'Should be Blue',
+        //         isMandatory: true,
+        //         qualitativeResultId: 'Passed',
+        //         remarks: 'Looks good',
+        //     }
+           
+        // ];
 
-        const staticData = [
-            {
-                parameters: 'Color Check',
-                passCriteria: 'Should be Blue',
-                Mandatory: true,
-                qualitativeResultId: 'Passed',
-                remarks: 'Looks good',
-            },
-            {
-                parameters: 'Weight Check',
-                passCriteria: 'Less than 5kg',
-                Mandatory: false,
-                qualitativeResultId: 'Failed',
-                remarks: 'Overweight',
-            },
-        ];
+        // this.dataSourceQualitativeInspection = staticData;
 
-        this.dataSourceQualitativeInspection = staticData;
+        // const formArray = this.evaluationplanQAFormGroup.get(
+        //     'qualitativeInspectionObjects'
+        // ) as FormArray;
 
-        const formArray = this.evaluationplanQAFormGroup.get(
-            'qualitativeInspectionObjects'
-        ) as FormArray;
+        // staticData.forEach((item) => {
+        //     formArray.push(
+        //         this.fb.group({
+        //             inspectionCharacteristicName: [item.inspectionCharacteristicName],
+        //             inspectionCharacteristicSingleCriteria: [item.inspectionCharacteristicSingleCriteria],
+        //             isMandatory: [item.isMandatory],
+        //             qualitativeResultId: [item.qualitativeResultId],
+        //             remarks: [item.remarks],
+                    
+        //         })
+        //     );
+        // });
 
-        staticData.forEach((item) => {
-            formArray.push(
-                this._formBuilder.group({
-                    parameters: [item.parameters],
-                    passCriteria: [item.passCriteria],
-                    Mandatory: [item.Mandatory],
-                    qualitativeResultId: [item.qualitativeResultId],
-                    remarks: [item.remarks],
-                })
-            );
-        });
+        // const staticsData = [
+        //     {
+        //         inspectionCharacteristicName: 'Color Check',
+        //         uoMCode: 'Should be Blue',
+        //         isMandatory: true,
+        //         target: 12,
+        //         max: 3,
+        //         min: 5,
+        //         quantitativeResult: 'Looks Cool',
+        //         remarks: 'Looks good',
+        //     },
+        //     {
+        //         inspectionCharacteristicName: 'Weight Check',
+        //         uoMCode: 'Less than 5kg',
+        //         isMandatory: false,
+        //         target: 12,
+        //         max: 3,
+        //         min: 5,
+        //         quantitativeResult: 'Looks Cool',
+        //         remarks: 'Looks good',
+        //     },
+        // ];
 
-        const staticsData = [
-            {
-                parameters: 'Color Check',
-                UOM: 'Should be Blue',
-                Mandatory: true,
-                Target: 12,
-                Max: 3,
-                Min: 5,
-                results: 'Looks good',
-                remarks: 'Looks good',
-            },
-            {
-                parameters: 'Weight Check',
-                UOM: 'Less than 5kg',
-                Mandatory: false,
-                Target: 12,
-                Max: 3,
-                Min: 5,
-                results: 'Looks good',
-                remarks: 'Looks good',
-            },
-        ];
+        // this.dataSourceQuantitativeInspection = staticsData;
 
-        this.dataSourceQuantitativeInspection = staticsData;
+        // const formsArray = this.evaluationplanQAFormGroup.get(
+        //     'quantitativeInspectionResults'
+        // ) as FormArray;
 
-        const formsArray = this.evaluationplanQAFormGroup.get(
-            'quantitativeInspectionResults'
-        ) as FormArray;
-
-        staticsData.forEach((item) => {
-            formsArray.push(
-                this._formBuilder.group({
-                    parameters: [item.parameters],
-                    UOM: [item.UOM],
-                    Mandatory: [item.Mandatory],
-                    Target: [item.Target],
-                    Max: [item.Max],
-                    Min: [item.Min],
-                    results: [item.results],
-                    remarks: [item.remarks],
-                })
-            );
-        });
+        // staticsData.forEach((item) => {
+        //     formsArray.push(
+        //         this.fb.group({
+        //             inspectionCharacteristicName: [item.inspectionCharacteristicName],
+        //             uoMCode: [item.uoMCode],
+        //             isMandatory: [item.isMandatory],
+        //             target: [item.target],
+        //             max: [item.max],
+        //             min: [item.min],
+        //             quantitativeResult: [item.quantitativeResult],
+        //             remarks: [item.remarks],
+        //         })
+        //     );
+        // });
     }
 
-    get rows() {
-        return this.evaluationplanQAFormGroup.get(
-            'qualitativeInspectionObjects'
-        ) as FormArray;
-    }
-
-    get rowes() {
-        return this.evaluationplanQAFormGroup.get(
-            'quantitativeInspectionResults'
-        ) as FormArray;
-    }
+   // Get form array controls
+   get qualitativeInspectionObjects(): FormArray {
+    return this.evaluationplanQAFormGroup.get('qualitativeInspectionObjects') as FormArray;
+  }
+  
+  get quantitativeInspectionResults(): FormArray {
+    return this.evaluationplanQAFormGroup.get('quantitativeInspectionResults') as FormArray;
+  }
+  
 
     get cavitiesArray(): FormArray {
         return this.evaluationplanQAFormGroup.get('cavities') as FormArray;
@@ -317,7 +342,7 @@ export class EvaluationPlanQaComponent implements OnInit {
                 this._formBuilder.group({
                   cName: `Cavity ${i + 1}`,
                   InspectionTime: '10:30 AM',
-                  InspectionBy: 'Mr.Kamran',
+                  inspectionBy: 'Mr.Kamran',
                   enabled: false,
                 })
               );
@@ -361,7 +386,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
     }
 
-    onCavitySampleQaModal(): void {
+    onCavitySampleQaModalX(): void {
         this.qaDialogRef = this._dialog.open(this.dialogQaTemplateItems, {
             width: '70%',
             height: '75vh',
@@ -374,9 +399,49 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
     }
 
+    onCavitySampleQaModal(): void {
+        // console.log('Row Index:', rowIndex);
+        // this.selectedControlAccountRowIndex = rowIndex;
+        // console.log(this.selectedControlAccountRowIndex);
+        const dialogRef = this._dialog.open(this.dialogQaTemplateItems, {
+          width: '70%',
+          height: '75vh',
+          data: this.cardCode,
+        });
+        // DYNAMICALLY ADD Validators.required TO inspectionBy
+        const inspectionByControl = this.evaluationplanQAFormGroup.get('inspectionBy');
+        if (inspectionByControl) {
+          inspectionByControl.setValidators(Validators.required);
+          inspectionByControl.updateValueAndValidity(); // Re-validate the control
+        }
+    
+        this.getCardByItemCode(this.selectedOrder.itemCode);
+        console.log(this.selectedOrder, 'this.selectedOrder')
+        this.getProductionByQACode(
+          this.selectedOrder.itemCode,
+          this.selectedOrder.docNum,
+        )
+      }
+
+      getProductionByQACode(itemCode: string, docNum: number) {
+        this._evaluationPlanQAOrderService.GetProductionQAId(itemCode, docNum).subscribe({
+          next: (response) => {
+            this.productionQAId = response.data;
+            this.evaluationplanQAFormGroup.patchValue({
+              // inspectionBy: response.inspectionBy || '', 
+              inspectionDateTime: response.inspectionDateTime || new Date().toISOString()
+            });
+          },
+          error: (err) => {
+            console.error('QC SERVICE ERROR:', err);
+          }
+        });
+      }
+
+
     saveAndCloseQa() {
         const inspectionBy =
-            this.evaluationplanQAFormGroup.get('InspectionBy')?.value || 'N/A';
+            this.evaluationplanQAFormGroup.get('inspectionBy')?.value || 'N/A';
         const newSample = {
             title: `Sample ${this.samples.length + 1}`,
             inspectionTime: new Date().toLocaleTimeString([], {
@@ -447,6 +512,74 @@ export class EvaluationPlanQaComponent implements OnInit {
             // inspectionQuantity: data.inspectionQuantity,
         });
     }
+
+    populateQualitativeAndQuantitativeData(data: any) {
+        const qualitativeArray = this.evaluationplanQAFormGroup.get('qualitativeInspectionObjects') as FormArray;
+        const quantitativeArray = this.evaluationplanQAFormGroup.get('quantitativeInspectionResults') as FormArray;
+    
+        qualitativeArray.clear();
+        quantitativeArray.clear();
+    
+        if (data.qualitativeInspectionObjects && data.qualitativeInspectionObjects.length > 0) {
+          data.qualitativeInspectionObjects.forEach((item: any) => {
+            qualitativeArray.push(
+              this.fb.group({
+                inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
+                inspectionCharacteristicSingleCriteria: [item.inspectionCharacteristicSingleCriteria || ''],
+                inspectionCharacterisicMappingId: [item.inspectionCharacterisicMappingId],
+                isMandatory: [item.isMandatory ?? false],
+                remarks: [item.remarks || ''],
+                qualitativeResultId: [item.qualitativeResultId || ''],
+                qualitativeResultPassStatusResults: this.fb.array(
+                  item.qualitativeResultPassStatusResults?.map((status: any) =>
+                    this.fb.group({
+                      resultDescription: [status.resultDescription || false],
+                      qualitativeResultId: [status.qualitativeResultId],
+                      isPassed: [status.isPassed]
+                    })
+                  ) || []
+                )
+              })
+            );
+          });
+        }
+    
+        if (data.quantitativeInspectionResults && data.quantitativeInspectionResults.length > 0) {
+          data.quantitativeInspectionResults.forEach((item: any) => {
+    
+            quantitativeArray.push(
+              this.fb.group({
+                inspectionCharacteristicName: [item.inspectionCharacteristicName || ''],
+                inspectionCharacterisicMappingId: [item.inspectionCharacterisicMappingId],
+                uoMCode: [item.uoMCode || ''],
+                isMandatory: [item.isMandatory ?? false],
+                target: [item.target || ''],
+                max: [item.max || ''],
+                min: [item.min || ''],
+                result: [item.result || ''],
+                remarks: [item.remarks || '']
+              })
+            );
+          });
+        }
+      }
+
+      getQualitativeResultPassStatusResults(index: number): any[] {
+        const formArray = this.qualitativeInspectionObjects;
+        const formGroup = formArray.at(index) as FormGroup;
+        const resultControl = formGroup.get('qualitativeResultPassStatusResults');
+      
+        return resultControl?.value || [];
+      }
+
+      addInspectionObject() {
+        this.inspectionObjects.push(this.createInspectionObject());
+      }
+    
+      removeInspectionObject(index: number) {
+        this.inspectionObjects.removeAt(index);
+      }
+      
     getItemId(itemCode: any): void {
       this._evaluationPlanQAOrderService.GetItemIdByCode(itemCode).subscribe({
         next: (response) => {
@@ -460,4 +593,26 @@ export class EvaluationPlanQaComponent implements OnInit {
         }
       });
     }
+
+    getCardByItemCode(itemCode: string) {
+        this._evaluationPlanQAOrderService.getItemCode(itemCode).subscribe({
+          next: (response) => {
+            this.cardCode = response.data;
+            console.log(this.cardCode);
+            if (this.cardCode) {
+              // this.planPurchaseOrderFormGroup.patchValue({
+              //   itemCode: this.cardCode.itemId || '',
+              //   itemDescription: this.cardCode.itemDescription || ''
+              // });
+              this.populateQualitativeAndQuantitativeData(this.cardCode);
+            }
+          },
+          error: (err) => {
+            console.error('SERVICE ERROR:', err);
+          }
+        });
+      }
+      
+
+    
 }
