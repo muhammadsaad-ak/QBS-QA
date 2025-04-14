@@ -318,6 +318,135 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   updateSampleForPurchaseOrder(): void {
     if (!this.planPurchaseOrderFormGroup.valid) {
       console.error("FORM IS INVALID");
+      this.planPurchaseOrderFormGroup.markAllAsTouched();
+      return;
+    }
+
+    if (!this.purchaseQcId || !this.qcSampleID) {
+      console.error('QC ID OR SAMPLE ID IS MISSING, CANNOT PROCEED!', { purchaseQcId: this.purchaseQcId, qcSampleID: this.qcSampleID });
+      return;
+    }
+
+    const formValue = this.planPurchaseOrderFormGroup.value;
+
+    // STEP 1: PREPARE QUALITATIVE INSPECTIONS
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+        (status: any) => status.qualitativeResultId === item.qualitativeResultId
+      );
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeInspectionMappingId: null,
+        qualitativeResultId: item?.qualitativeResultId || null,
+        isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+        quantitativeResult: 0,
+        isQuantitativeResultPassed: false,
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+
+    // STEP 2: PREPARE QUANTITATIVE INSPECTIONS
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
+      return {
+        qualitativeInspectionMappingId: null,
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+        qualitativeResultId: null,
+        isQualitativeResultPassed: false,
+        quantitativeResult: resultValue,
+        isQuantitativeResultPassed: item?.result !== undefined &&
+          !isNaN(resultValue) &&
+          resultValue >= (item.min ?? 0) &&
+          resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || ""
+      };
+    }) || [];
+
+    // STEP 3: COMBINE INSPECTIONS
+    const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+
+    // const hasPassingQualitative = inspectionObjects
+    //   .filter((inspection: any) => inspection.qualitativeResultId !== null)
+    //   .some((inspection: any) => inspection.isQualitativeResultPassed === true);
+    // const hasPassingQuantitative = inspectionObjects
+    //   .filter((inspection: any) => inspection.quantitativeInspectionMappingId !== null)
+    //   .some((inspection: any) => inspection.isQuantitativeResultPassed === true);
+
+    const hasPassingQualitative = inspectionObjects
+      .filter((inspection: any) => inspection.qualitativeResultId !== null)
+      .every((inspection: any) => inspection.isQualitativeResultPassed === true);
+    const hasPassingQuantitative = inspectionObjects
+      .filter((inspection: any) => inspection.quantitativeInspectionMappingId !== null)
+      .every((inspection: any) => inspection.isQuantitativeResultPassed === true);
+
+    const isSamplePassed = hasPassingQualitative && hasPassingQuantitative;
+
+    // STEP 4: CREATE FINAL PAYLOAD
+    const updatedSamplePayload = {
+      id: this.qcSampleID,
+      name: formValue.sampleName,
+      inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.purchaseQcId.id,
+      isSamplePassed: isSamplePassed,
+      inspectionObjects: inspectionObjects
+    };
+
+    // STEP 5: API CALL
+    this._sapPlanPurchaseOrderService.UpdatePurchaseQcSample(updatedSamplePayload).subscribe({
+      next: (response) => {
+        console.log('API Response:', response);
+
+        const addedSampleStatus = isSamplePassed ? 'Passed' : 'Failed';
+        this._snackBar.open(`Sample updated successfully with status ${addedSampleStatus}`, 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-success']
+        });
+
+        // API CALL TO FETCH isSamplePassed - @IAK
+        this._evaluationPurchaseOrderService.getIsSamplePassedListByQcId(this.purchaseQcId.id).subscribe({
+          next: (isSamplePassedList: boolean[]) => {
+            console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+
+            this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
+            console.log('samplesStatus:', this.samplesStatus);
+
+            this.planPurchaseOrderFormGroup.patchValue({
+              samplesStatus: this.samplesStatus
+            });
+          },
+          error: (error) => {
+            console.error('getIsSamplePassedListByQcId API Error:', error);
+            this._snackBar.open('Failed to fetch sample passed list.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+
+        // Update existing sample in local array
+        const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
+        if (existingSampleIndex !== -1) {
+          this.purchaseQcSamples[existingSampleIndex] = {
+            ...this.purchaseQcSamples[existingSampleIndex],
+            inspectionDateTime: formValue.inspectionDateTime,
+            inspectionBy: formValue.inspectionBy
+          };
+          this.purchaseQcSamples = [...this.purchaseQcSamples];
+          this.selectedSampleId = this.qcSampleID;
+        }
+
+        this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
+        this.closeDialog();
+      },
+      error: (error) => {
+        console.error('API Error:', error);
+      }
+    });
+  }
+  XupdateSampleForPurchaseOrder(): void {
+    if (!this.planPurchaseOrderFormGroup.valid) {
+      console.error("FORM IS INVALID");
       console.log("FORM ERRORS:", this.planPurchaseOrderFormGroup.errors);
       console.log("FORM VALUE:", this.planPurchaseOrderFormGroup.value);
       console.log("INSPECTION BY ERRORS:", this.planPurchaseOrderFormGroup.get('inspectionBy')?.errors);
@@ -522,13 +651,13 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
           panelClass: ['snackbar-success']
         });
 
-        // API CALL TO Fetch isSamplePassedList
+        // API CALL TO FETCH isSamplePassed - @IAK
         this._evaluationPurchaseOrderService.getIsSamplePassedListByQcId(this.purchaseQcId.id).subscribe({
           next: (isSamplePassedList: boolean[]) => {
             console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
             
             this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
-            console.log('samplesStatus:', this.samplesStatus);
+            console.log('SAMPLES STATUS ~ this.samplesStatus:', this.samplesStatus);
             
             this.planPurchaseOrderFormGroup.patchValue({
               samplesStatus: this.samplesStatus
@@ -536,7 +665,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
           },
           error: (error) => {
             console.error('getIsSamplePassedListByQcId API Error:', error);
-            this._snackBar.open('Failed to fetch sample passed list.', 'Close', {
+            this._snackBar.open('Failed to fetch samples against this Purchase Order.', 'Close', {
               duration: 3000,
               panelClass: ['snackbar-error']
             });
@@ -623,9 +752,30 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     
     if (this.selectedOrder) {
       if (this.isEditMode) {
-          this.populateEditForm(this.selectedOrder); // Call Edit QC function
-          this.ListAllPurchaseQCSamplesByQcId(this.selectedOrder.id)
-          console.log('HAHA',this.selectedOrder)
+        this.populateEditForm(this.selectedOrder); // Call Edit QC function
+        this.ListAllPurchaseQCSamplesByQcId(this.selectedOrder.id)
+        // API CALL TO FETCH isSamplePassed - @IAK
+        this._evaluationPurchaseOrderService.getIsSamplePassedListByQcId(this.selectedOrder.id).subscribe({
+          next: (isSamplePassedList: boolean[]) => {
+            console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+
+            // this.samplesStatus = isSamplePassedList.some(status => status === true);
+            this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
+            console.log('SAMPLES STATUS ~ this.samplesStatus:', this.samplesStatus);
+
+            this.planPurchaseOrderFormGroup.patchValue({
+              samplesStatus: this.samplesStatus
+            });
+          },
+          error: (error) => {
+            console.error('getIsSamplePassedListByQcId API Error:', error);
+            this._snackBar.open('No sample has been created for this Purchase Order yet', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+        console.log('HAHA', this.selectedOrder)
       } else {
           this.populateForm(this.selectedOrder); // Call Perform QC function
       }
