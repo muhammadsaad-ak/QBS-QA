@@ -332,6 +332,7 @@
 
 /* "fill" appearance */
 .mat-mdc-form-field.mat-form-field-appearance-fill {
+    
     /* Disabled */
     &.mat-form-field-disabled {
         opacity: 0.7 !important;
@@ -637,6 +638,7 @@
     &.qbs-mat-rounded {
         .mat-mdc-text-field-wrapper {
             border-radius: 24px;
+            border: 2px solid #a1a1a1 !important;
         }
 
         /* Emphasized affix */
