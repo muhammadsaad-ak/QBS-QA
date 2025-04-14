@@ -8,7 +8,7 @@
     <!-- Search & Add button -->
     <div class="mt-4 flex flex-col sm:flex-row sm:justify-between px-4">
         <!-- Search Input Field -->
-        <mat-form-field class="qbs-mat-dense qbs-mat-rounded min-w-64 sm:w-2/3 md:w-1/2">
+        <mat-form-field class="icon-border-color qbs-mat-dense qbs-mat-rounded min-w-64 sm:w-2/3 md:w-1/2">
             <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
             <input matInput [autocomplete]="'off'" [placeholder]="'Search'" [formControl]="searchInputControl" #input />
         </mat-form-field>
@@ -87,23 +87,23 @@
                 </td>
             </ng-container> -->
 
-  <!-- Action COLUMN -->
-<ng-container matColumnDef="action">
-    <th mat-header-cell *matHeaderCellDef class="bg-gray-200 single-line">
-        Action
-    </th>
-    <td mat-cell *matCellDef="let element" class="single-line">
-        <button mat-icon-button [matMenuTriggerFor]="menu">
-            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
-        </button>
-        <mat-menu #menu="matMenu">
-            <button mat-menu-item class="mat-icon-primary" (click)="actionEditItemData(element)">
-                <span class="view-text">View</span>
-                <mat-icon svgIcon="heroicons_outline:eye" class="mat-icon-primary"></mat-icon>
-            </button>
-        </mat-menu>
-    </td>
-</ng-container>
+            <!-- Action COLUMN -->
+            <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-200 single-line">
+                    Action
+                </th>
+                <td mat-cell *matCellDef="let element" class="single-line">
+                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                        <button mat-menu-item class="mat-icon-primary" (click)="actionEditItemData(element)">
+                            <span class="view-text">View</span>
+                            <mat-icon svgIcon="heroicons_outline:eye" class="mat-icon-primary"></mat-icon>
+                        </button>
+                    </mat-menu>
+                </td>
+            </ng-container>
 
 
 
