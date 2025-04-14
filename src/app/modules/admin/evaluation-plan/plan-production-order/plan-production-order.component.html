@@ -142,8 +142,9 @@
       <!-- Editable Sample Cards Section -->
       <div class="mt-4 flex flex-wrap gap-2" *ngIf="!isFormSaved">
         <div *ngFor="let sample of productionQcSamples" [class.selected]="sample.id === selectedSampleId"
-          class="sample-card" [style.background-color]="sample.cardColor" (click)="onEditSample(sample)">
-
+          class="sample-card" 
+          [ngStyle]="{'background-color': sample.isSamplePassed ? 'lightgreen' : 'lightcoral'}" 
+          (click)="onEditSample(sample)">
           <h3 style="font-weight: 500">Sample {{ sample.name }}</h3>
           <div style="font-weight: 400">qcSampleId: {{ sample.id }}</div>
           <div style="font-weight: 400">Inspection Time: {{ sample.inspectionDateTime }}</div>
@@ -176,9 +177,12 @@
         </div>
       </div>
 
-      <mat-form-field *ngIf="isFormSaved && samplesProductionOrder.length === sampleQuantity" class="w-[330px] mt-2">
+      <mat-form-field class="w-[330px] mt-2" *ngIf="planProductionOrderFormGroup.get('isFlexible')?.value === false ? 
+                    (samplesProductionOrder.length === sampleQuantity && samplesStatus === true) : 
+                    (samplesStatus === true && ((isEditMode && productionQcSamples?.length > 0) || 
+                    (!isEditMode && samplesProductionOrder.length > 0)))">
         <mat-label>Remarks</mat-label>
-        <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
+        <textarea matInput formControlName="prodOrderRemarks" placeholder="Enter your remarks"></textarea>
       </mat-form-field>
 
       <ng-template #dialogTemplateItemsPP let-data="data">
@@ -449,29 +453,33 @@
         </div>
       </ng-template>
 
-
-      <div class="button-container flex justify-end gap-2 mt-4" *ngIf="isFormSaved">
-        <button mat-flat-button color="primary">
-          Save
-        </button>
-
-        <button mat-flat-button color="warn" (click)="cancelForm()">
-          Cancel
-        </button>
-
-        <!-- Button with cut design & dropdown -->
-        <!-- <div class="custom-button-container">
-                    <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button">
-                        Post to SAP
-                    </button>
-
-                    <div *ngIf="isDropdownOpen" class="dropdown-menu">
-                        <button mat-menu-item (click)="action1()">Good Receipt PO (GRN)</button>
-                    </div>
-                </div> -->
-
+      <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: nowrap; align-items: flex-start;" class="hidden">
+        <mat-form-field style="flex: 1 1 50%; min-width: 100px;">
+          <mat-label>isFlexible</mat-label>
+          <input class="view-mode-bg-grey" matInput formControlName="isFlexible">
+        </mat-form-field>
+        <mat-form-field style="flex: 1 1 50%; min-width: 100px;">
+          <mat-label>samplesStatus</mat-label>
+          <input class="view-mode-bg-grey" matInput formControlName="samplesStatus">
+        </mat-form-field>
       </div>
 
+      <div class="button-container mt-4 flex justify-end gap-2" *ngIf="planProductionOrderFormGroup.get('isFlexible')?.value === false ? 
+        (samplesProductionOrder.length === sampleQuantity && samplesStatus === true) : 
+        (samplesStatus === true && ((isEditMode && productionQcSamples?.length > 0) || 
+        (!isEditMode && samplesProductionOrder.length > 0)))">
+        <button mat-flat-button color="primary" (click)="saveProdOrderRemarks()">Save Remarks</button>
+        <div class="custom-button-container">
+          <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button">
+            Post to SAP
+          </button>
+          <div *ngIf="isDropdownOpen" class="dropdown-menu">
+            <button mat-menu-item (click)="action1()">
+              Good Receipt PO (GRN)
+            </button>
+          </div>
+        </div>
+      </div>
     </form>
   </div>
 </div>
