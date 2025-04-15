@@ -68,6 +68,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   displayedColumnsQuantitative: string[] = ['inspectionCharacteristicName', 'uoMCode', 'isMandatory', 'target', 'max', 'min', 'quantitativeResult', 'remarks'];
   displayedColumnsUoMIIC: string[] = ['code', 'description'];
   displayedColumnsAddQuantitativeIIC: string[] = ['inspectionCode', 'inspectionDescription'];
+  currentMode: 'add' | 'edit' = 'add';
 
   uomData = [
     { id: 1, uoMCode: 'KG', description: 'Kilogram', isSelected: false },
@@ -893,6 +894,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   }
   private dialogRef: MatDialogRef<any>;
   onEditSample(sample: any): void {
+    this.currentMode = 'edit';
     console.log('Sample Data:', sample); 
     // alert('Sample ID: ' + (sample ? sample.id : 'undefined'));
     // alert('Sample : ' + (sample ? sample.name : 'undefined'));
@@ -945,6 +947,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   }
  
   onPurchaseOrderModal(): void {
+    this.currentMode = 'add';
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
       height: '75vh',

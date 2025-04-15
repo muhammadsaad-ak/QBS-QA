@@ -137,8 +137,8 @@
                 </div>
 
                 <div class="sample-card add-sample-card"
-                    *ngIf="isEditMode && purchaseQcSamples?.length < sampleQuantity"
-                    (click)="onPurchaseOrderModal()">   <!-- onUpdatePurchaseOrderModal() -->
+                    *ngIf="isEditMode && purchaseQcSamples?.length < sampleQuantity" (click)="onPurchaseOrderModal()">
+                    <!-- onUpdatePurchaseOrderModal() -->
                     <span>Add Sample</span>
                     <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
                 </div>
@@ -481,11 +481,13 @@
 
                     <div class="mt-auto flex justify-end">
 
-                        <button mat-flat-button color="primary" (click)="addNewSampleForPurchaseOrder()">
+                        <button *ngIf="currentMode === 'add'" mat-flat-button color="primary"
+                            (click)="addNewSampleForPurchaseOrder()">
                             Save & Close
                         </button>
 
-                        <button mat-flat-button color="primary" (click)="updateSampleForPurchaseOrder()">
+                        <button *ngIf="currentMode === 'edit'" mat-flat-button color="primary"
+                            (click)="updateSampleForPurchaseOrder()">
                             Update & Close
                         </button>
                     </div>
@@ -494,7 +496,8 @@
 
 
 
-            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: nowrap; align-items: flex-start;" class="hidden">
+            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: nowrap; align-items: flex-start;"
+                class="hidden">
                 <mat-form-field style="flex: 1 1 50%; min-width: 100px;">
                     <mat-label>isFlexible</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="isFlexible">
