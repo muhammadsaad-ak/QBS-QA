@@ -25,7 +25,8 @@
                     <mat-select placeholder="Select" [formControl]="orderTypeControl">
                         <mat-option value="purchaseOrder">Purchase Order</mat-option>
                         <mat-option value="productionOrder">Production Order</mat-option>
-                        <mat-option *ngIf="currentView === 'evaluationPlan'" value="productionOrderQA">Production Order QA</mat-option>
+                        <mat-option *ngIf="currentView === 'evaluationPlan'" value="productionOrderQA">Production Order
+                            QA</mat-option>
                     </mat-select>
                 </mat-form-field>
 
@@ -42,7 +43,7 @@
                 style="padding-top: 0px !important;">
                 <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
                     <div class="mat-elevation-z8">
-                        <table mat-table [dataSource]="dataSource">
+                        <table mat-table [dataSource]="dataSource" class="table-border-color">
                             <!-- Serial Id COLUMN -->
                             <ng-container matColumnDef="serialId">
                                 <th mat-header-cell *matHeaderCellDef
@@ -191,9 +192,9 @@
                         <!-- <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
                             aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">
                         </mat-paginator> -->
-                        <mat-paginator [length]="totalRecords" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20, 50]"
-                            showFirstLastButtons style="background-color: #e2e8f0 !important;"
-                            (page)="onPageChange($event)">
+                        <mat-paginator class="border-pagination" [length]="totalRecords" [pageSize]="pageSize"
+                            [pageSizeOptions]="[5, 10, 20, 50]" showFirstLastButtons
+                            style="background-color: #e2e8f0 !important;" (page)="onPageChange($event)">
                         </mat-paginator>
                     </div>
                 </div>
