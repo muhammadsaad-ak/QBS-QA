@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from 'environments/environment';
-import { BehaviorSubject, Observable, catchError, of, switchMap, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -123,5 +123,27 @@ export class EvaluationPlanProductionOrderService {
         return throwError(() => new Error('Error adding production order'));
       })
     );
+  }
+  
+  // GET flexibility API - @IAK
+  getFlexibilityByItemId(itemId: string): Observable<boolean> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json',
+    });
+
+    return this._httpClient
+      .get(`${environment.appApiUrl}/CSAPI/IItemSampleFeature/GetItemSampleByItemId?itemId=${itemId}`, { headers })
+      .pipe(
+        map((response: any) => {
+          const isFlexible = response?.data?.flexibility ?? false;
+          console.log('getItemFlexibility → isFlexible', isFlexible);
+          return isFlexible;
+        }),
+        catchError((error) => {
+          console.error('ERROR WHILE FETCHING FLEXIBILITY:', error);
+          return of(false);
+        })
+      );
   }
 }

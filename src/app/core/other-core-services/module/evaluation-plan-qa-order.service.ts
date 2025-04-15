@@ -13,15 +13,18 @@ export class EvaluationPlanQaOrderService {
 
     private _qaProductionCode = new BehaviorSubject<any[]>([]);
     private _listEvaluationPlanProductionOrdersQA = new BehaviorSubject<any[]>([]);
-      private _itemIdIIC = new BehaviorSubject<any[]>([]);
-    
-
-    
+    private _itemIdIIC = new BehaviorSubject<any[]>([]);
+    private _cardByCode = new BehaviorSubject<any[]>([])
+    private _getProductionByQACode = new BehaviorSubject<any[]>([])
 
 
     qaProductionCode$: Observable<any[]> = this._qaProductionCode.asObservable();
     listEvaluationPlanProductionOrdersQA$: Observable<any[]> = this._listEvaluationPlanProductionOrdersQA.asObservable();
     itemIdSAP$: Observable<any[]> = this._itemIdIIC.asObservable();
+    cardbycode$: Observable<any[]> = this._cardByCode.asObservable();
+    getProductionByQACode: Observable<any[]> = this._getProductionByQACode.asObservable()
+
+
 
 
     
@@ -115,5 +118,49 @@ export class EvaluationPlanQaOrderService {
             return throwError(error);
           })
         );
+    }
+
+    getItemCode(itemCode: string): Observable<any> {
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
+      });
+    
+      return this._httpClient.get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/GetCardByCodeWithBothCharacteristics?itemCode=${itemCode}`,
+          { headers }
+      )
+      .pipe(
+          tap((response: any) => {
+              const cardByCode = response?.data?.value ?? []
+              this._cardByCode.next(cardByCode);
+          }),
+          catchError((error) => {
+              console.error('Error fetching item code', error);
+              return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`))
+          })
+      )
+    }
+
+    GetProductionQAId(itemCode: string, docNum: number): Observable<any> {
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
+          });
+          
+           return this._httpClient.get(
+              `${environment.appApiUrl}/CSAPI/IProductionQAFeature/GetProductionQAId?itemCode=${itemCode}&docNumber=${docNum}`,
+          { headers }
+      )
+      .pipe(
+          tap((response: any) => {
+              const getProductionByQACode = response?.data?.value ?? []                
+              this._getProductionByQACode.next(getProductionByQACode);
+          }),
+          catchError((error) => {
+              console.error('Error fetching item code', error);
+              return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`))
+          })
+      )
+    
     }
 }
