@@ -158,6 +158,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     receiveQtyPO: [''], // No direct mapping, keep empty
     // inspectionDateTimePO: [new Date().toISOString()], // API: docDate (Converted to ISO)
     // lineNum: [''], // No direct mapping, keep empty
+    sampleName: [''],
     isFlexible: [false],
     samplesStatus: [false],
   });
@@ -377,6 +378,150 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
 
   updateSampleForProductionOrder(): void {
+    if (!this.planProductionOrderFormGroup.valid) {
+      console.error("FORM IS INVALID");
+      console.log("FORM ERRORS:", this.planProductionOrderFormGroup.errors);
+      console.log("FORM VALUE:", this.planProductionOrderFormGroup.value);
+      console.log("INSPECTION BY ERRORS:", this.planProductionOrderFormGroup.get('inspectionBy')?.errors);
+      console.log("INSPECTION DATETIME ERRORS:", this.planProductionOrderFormGroup.get('inspectionDateTime')?.errors);
+      this.planProductionOrderFormGroup.markAllAsTouched();
+      return;
+    }
+
+    if (!this.productionQcId || !this.qcSampleID) {
+      console.error('QC ID OR SAMPLE ID IS MISSING, CANNOT PROCEED!', { productionQcId: this.productionQcId, qcSampleID: this.qcSampleID });
+      return;
+    }
+
+    const formValue = this.planProductionOrderFormGroup.value;
+
+    // STEP 1: PREPARE QUALITATIVE INSPECTIONS
+    const qualitativeInspections = formValue.qualitativeInspectionObjects?.map((item: any) => {
+      const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+        (status: any) => status.qualitativeResultId === item.qualitativeResultId
+      );
+      return {
+        qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+        quantitativeInspectionMappingId: null,
+        qualitativeResultId: item?.qualitativeResultId || null,
+        isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+        quantitativeResult: 0,
+        isQuantitativeResultPassed: false,
+        remarks: item?.remarks || "",
+        // id: item?.id || null
+      };
+    }) || [];
+
+    // STEP 2: PREPARE QUANTITATIVE INSPECTIONS
+    const quantitativeInspections = formValue.quantitativeInspectionResults?.map((item: any) => {
+      const resultValue = item?.result ? parseFloat(item.result) : 0;
+      return {
+        qualitativeInspectionMappingId: null,
+        quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+        qualitativeResultId: null,
+        isQualitativeResultPassed: false,
+        // quantitativeResult: item?.result !== undefined && item?.result !== null ? parseFloat(item.result) : 0,
+        quantitativeResult: resultValue,
+        isQuantitativeResultPassed: item?.result !== undefined &&
+          !isNaN(resultValue) &&
+          resultValue >= (item.min ?? 0) &&
+          resultValue <= (item.max ?? 0),
+        remarks: item?.remarks || "",
+        // id: item?.id || null
+
+      };
+    }) || [];
+
+    // STEP 3: COMBINE QUALITATIVE AND QUANTITATIVE INSPECTIONS
+    const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+
+    // const hasPassingQualitative = inspectionObjects
+    //   .filter((inspection: any) => inspection.qualitativeResultId !== null)
+    //   .some((inspection: any) => inspection.isQualitativeResultPassed === true);
+    // const hasPassingQuantitative = inspectionObjects
+    //   .filter((inspection: any) => inspection.quantitativeInspectionMappingId !== null)
+    //   .some((inspection: any) => inspection.isQuantitativeResultPassed === true);
+
+    const hasPassingQualitative = inspectionObjects
+      .filter((inspection: any) => inspection.qualitativeResultId !== null)
+      .every((inspection: any) => inspection.isQualitativeResultPassed === true);
+    const hasPassingQuantitative = inspectionObjects
+      .filter((inspection: any) => inspection.quantitativeInspectionMappingId !== null)
+      .every((inspection: any) => inspection.isQuantitativeResultPassed === true);
+
+    const isSamplePassed = hasPassingQualitative && hasPassingQuantitative;
+
+    // STEP 4: CREATING THE FINAL PAYLOAD
+    const updatedSamplePayload = {
+      id: this.qcSampleID,
+      name: formValue.sampleName,
+      inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
+      inspectionBy: formValue.inspectionBy || "",
+      qcId: this.productionQcId.id,
+      isSamplePassed: isSamplePassed,
+      inspectionObjects: inspectionObjects
+    };
+
+    console.log('FINAL PAYLOAD:', updatedSamplePayload);
+
+    // STEP 5: CALLING THE UPDATE API
+    this._sapPlanProductionOrderService.UpdateProductionQcSample(updatedSamplePayload).subscribe({
+      next: (response) => {
+        console.log('API Response:', response);
+
+        const addedSampleStatus = isSamplePassed ? 'Passed' : 'Failed';
+        this._snackBar.open(`Sample updated successfully with status ${addedSampleStatus}`, 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-success']
+        });
+
+        // API CALL TO FETCH isSamplePassed - @IAK
+        this._sapPlanProductionOrderService.getIsSamplePassedListByProdQcId(this.productionQcId.id).subscribe({
+          next: (isSamplePassedList: boolean[]) => {
+            console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+
+            this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
+            console.log('samplesStatus:', this.samplesStatus);
+
+            this.planProductionOrderFormGroup.patchValue({
+              samplesStatus: this.samplesStatus
+            });
+          },
+          error: (error) => {
+            console.error('getIsSamplePassedListByQcId API Error:', error);
+            this._snackBar.open('Failed to fetch sample passed list.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+
+        // Update existing sample in local array        
+        const existingSampleIndex = this.productionQcSamples.findIndex(sample => sample.id === this.qcSampleID);
+        if (existingSampleIndex !== -1) {
+          this.productionQcSamples[existingSampleIndex] = {
+            ...this.productionQcSamples[existingSampleIndex],
+            inspectionDateTime: formValue.inspectionDateTime,
+            inspectionBy: formValue.inspectionBy
+          };
+          this.productionQcSamples = [...this.productionQcSamples];
+          this.selectedSampleId = this.qcSampleID;
+        }
+
+        // this.planProductionOrderFormGroup.patchValue({
+        //   inspectionDateTime: this.productionQcSamples[existingSampleIndex]?.inspectionDateTime,
+        //   inspectionBy: this.productionQcSamples[existingSampleIndex]?.inspectionBy
+        // });
+
+        this.ListAllProductionQCSamplesByQcId(this.productionQcId.id);
+        this.closeDialog();
+      },
+      error: (error) => {
+        console.error('API Error:', error);
+      }
+    });
+  }
+  XupdateSampleForProductionOrder(): void {
     if (!this.planProductionOrderFormGroup.valid) {
       console.error("FORM IS INVALID");
       console.log("FORM ERRORS:", this.planProductionOrderFormGroup.errors);
@@ -921,19 +1066,30 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
   onEditSample(sample: any): void {
     console.log('Sample Data:', sample); 
-    alert('Sample ID: ' + (sample ? sample.id : 'undefined')); 
+    // alert('Sample ID: ' + (sample ? sample.id : 'undefined')); 
   
     if (!sample || !sample.id) {
       console.error('Sample or sample.id is undefined!');
       return; 
     }
+
+    // 🧼 Clear previous state before patching the new one
+    this.qualitativeInspectionObjects.clear();
+    this.quantitativeInspectionResults.clear();
+
     this.qcSampleID = sample.id;
+
+    this.planProductionOrderFormGroup.patchValue({
+      sampleName: sample.name || '',
+    });
+
     const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
-      width: '70%',
-      height: '75vh',
+      width: '70vw',
+      height: '79vh',
       data: {
         qcSampleId: sample.id,
         cardCode: this.cardCode,
+        sampleName: sample.name,
         inspectionDateTime: sample.inspectionDateTime,
         inspectionBy: sample.inspectionBy
       }
@@ -963,8 +1119,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     // this.selectedControlAccountRowIndex = rowIndex;
     // console.log(this.selectedControlAccountRowIndex);
     const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
-      width: '70%',
-      height: '75vh',
+      width: '70vw',
+      height: '79vh',
       data: this.cardCode,
     });
     // DYNAMICALLY ADD Validators.required TO inspectionBy
@@ -986,8 +1142,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
 
   onUpdateProductionOrderModal(): void {
     const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
-      width: '70%',
-      height: '75vh',
+      width: '70vw',
+      height: '79vh',
       data: this.cardCode,
     });
     // DYNAMICALLY ADD Validators.required TO inspectionBy
@@ -1164,7 +1320,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     });
   }
   saveProdOrderRemarks() {
-    alert('clicked');
+    // alert('clicked');
     alert(this.planProductionOrderFormGroup.get('prodOrderRemarks')?.value);
     console.log(this.planProductionOrderFormGroup.get('prodOrderRemarks')?.value);
   }
