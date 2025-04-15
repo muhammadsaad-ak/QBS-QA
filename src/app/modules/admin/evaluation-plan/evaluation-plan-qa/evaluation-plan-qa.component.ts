@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import {FormArray,FormBuilder,FormGroup,FormsModule,ReactiveFormsModule, Validators,} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -48,6 +48,8 @@ export class EvaluationPlanQaComponent implements OnInit {
     @ViewChild('dialogQaTemplateItems') dialogQaTemplateItems;
 
     qaDialogRef: any;
+    dialogRefs: MatDialogRef<any>[] = [];
+    selectedRowIndex: number | null = null;
 
     displayedColumnsQualitative: string[] = [
         'inspectionCharacteristicName',
@@ -380,34 +382,21 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe((result) => {
-            console.log(result);
-
             this.closeDialog();
         });
     }
 
-    onCavitySampleQaModalX(): void {
-        this.qaDialogRef = this._dialog.open(this.dialogQaTemplateItems, {
-            width: '70%',
-            height: '75vh',
-        });
-
-        this.qaDialogRef.afterClosed().subscribe((result) => {
-            console.log('QA Dialog Closed:', result);
-            this.closeQaManually();
-            this.qaDialogRef = null;
-        });
-    }
-
-    onCavitySampleQaModal(): void {
-        // console.log('Row Index:', rowIndex);
-        // this.selectedControlAccountRowIndex = rowIndex;
-        // console.log(this.selectedControlAccountRowIndex);
+      onCavitySampleQaModal(rowIndex: number): void {
+        this.selectedRowIndex = rowIndex;
+        
         const dialogRef = this._dialog.open(this.dialogQaTemplateItems, {
           width: '70%',
           height: '75vh',
           data: this.cardCode,
         });
+
+        this.dialogRefs[rowIndex] = dialogRef; 
+        
         // DYNAMICALLY ADD Validators.required TO inspectionBy
         const inspectionByControl = this.evaluationplanQAFormGroup.get('inspectionBy');
         if (inspectionByControl) {
@@ -417,10 +406,6 @@ export class EvaluationPlanQaComponent implements OnInit {
     
         this.getCardByItemCode(this.selectedOrder.itemCode);
         console.log(this.selectedOrder, 'this.selectedOrder')
-        this.getProductionByQACode(
-          this.selectedOrder.itemCode,
-          this.selectedOrder.docNum,
-        )
       }
 
       getProductionByQACode(itemCode: string, docNum: number) {
@@ -452,17 +437,24 @@ export class EvaluationPlanQaComponent implements OnInit {
         };
 
         this.samples.push(newSample);
-        this.closeQaManually();
+        this.closeQaManually()
     }
+    
 
     closeDialog(): void {
         this._dialog.closeAll();
     }
 
+
     closeQaManually(): void {
-        if (this.qaDialogRef) {
-            this.qaDialogRef.close();
+      if (this.selectedRowIndex !== null) {
+        const dialogRef = this.dialogRefs[this.selectedRowIndex];        
+        if (dialogRef) {
+          dialogRef.close();
+          delete this.dialogRefs[this.selectedRowIndex];
         }
+        this.selectedRowIndex = null;
+      }
     }
 
     populateProductionOrderFormQA(data: any): void {
@@ -611,7 +603,7 @@ export class EvaluationPlanQaComponent implements OnInit {
             console.error('SERVICE ERROR:', err);
           }
         });
-      }
+    }
       
 
     
