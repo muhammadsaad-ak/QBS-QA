@@ -142,8 +142,7 @@
       <!-- Editable Sample Cards Section -->
       <div class="mt-4 flex flex-wrap gap-2" *ngIf="!isFormSaved">
         <div *ngFor="let sample of productionQcSamples" [class.selected]="sample.id === selectedSampleId"
-          class="sample-card" 
-          [ngStyle]="{'background-color': sample.isSamplePassed ? 'lightgreen' : 'lightcoral'}" 
+          class="sample-card" [ngStyle]="{'background-color': sample.isSamplePassed ? 'lightgreen' : 'lightcoral'}"
           (click)="onEditSample(sample)">
           <h3 style="font-weight: 500">Sample {{ sample.name }}</h3>
           <div style="font-weight: 400">qcSampleId: {{ sample.id }}</div>
@@ -442,18 +441,21 @@
 
 
           <div class="mt-auto flex justify-end">
-            <button mat-flat-button color="primary" (click)="addNewSampleForProductionOrder()">
+            <button *ngIf="currentMode === 'add'" mat-flat-button color="primary"
+              (click)="addNewSampleForProductionOrder()">
               Save & Close
             </button>
 
-            <button mat-flat-button color="primary" (click)="updateSampleForProductionOrder()">
+            <button *ngIf="currentMode === 'edit'" mat-flat-button color="primary"
+              (click)="updateSampleForProductionOrder()">
               Update & Close
             </button>
           </div>
         </div>
       </ng-template>
 
-      <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: nowrap; align-items: flex-start;" class="hidden">
+      <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: nowrap; align-items: flex-start;"
+        class="hidden">
         <mat-form-field style="flex: 1 1 50%; min-width: 100px;">
           <mat-label>isFlexible</mat-label>
           <input class="view-mode-bg-grey" matInput formControlName="isFlexible">
