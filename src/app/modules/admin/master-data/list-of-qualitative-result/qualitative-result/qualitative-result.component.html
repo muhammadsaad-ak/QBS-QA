@@ -35,7 +35,7 @@
                 style="padding-top: 0px !important;">
                 <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
                     <div class=""> <!-- mat-elevation-z8  -->
-                        <table mat-table [dataSource]="dataSourcsQualitativeResults">
+                        <table class="table-border-color" mat-table [dataSource]="dataSourcsQualitativeResults">
                             <!-- Serial No COLUMN -->
                             <ng-container matColumnDef="serialNo">
                                 <th mat-header-cell *matHeaderCellDef
@@ -87,7 +87,7 @@
                             <tr mat-header-row *matHeaderRowDef="displayedColumnsQualitativeResults"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumnsQualitativeResults;"></tr>
                         </table>
-                        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+                        <mat-paginator class="border-pagination" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
                             aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">
                         </mat-paginator>
                     </div>

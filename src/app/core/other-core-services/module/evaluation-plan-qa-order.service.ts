@@ -141,10 +141,10 @@ export class EvaluationPlanQaOrderService {
       )
     }
 
-    GetProductionQAId(itemCode: string, docNum: number): Observable<any> {
+    GetProductionQAId(itemCode: string, docNum: string): Observable<any> {
       const headers = new HttpHeaders({
-        Authorization: `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.accessToken}`,
+          Accept: 'application/json'
           });
           
            return this._httpClient.get(
@@ -161,6 +161,48 @@ export class EvaluationPlanQaOrderService {
               return throwError(() => new Error(`Error fetching Production Orders: ${error.message}`))
           })
       )
-    
+
+  }
+
+  addProductionCavityQA(data: any): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json',
+    });
+  
+     return this._httpClient.post(
+        `${environment.appApiUrl}/CSAPI/IProductionQACavityFeature/AddProductionQACavity`,
+        data,
+        { headers }
+    ).pipe(
+        tap(response => console.log('RESPONSE:', response)),
+        catchError(error => {
+            console.error('Error adding AddProductionQACavity', error);
+            return throwError(() => new Error('Error adding AddProductionQACavity'));
+        })
+    );
     }
+
+    getAllCavitiesByQaId(qaId: string): Observable<any> {
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        Accept: 'application/json',
+      });
+    
+      return this._httpClient.get
+      (`${environment.appApiUrl}/CSAPI/IProductionQACavityFeature/ListAllProductionQACavityByQaId`, {
+        headers,
+        params: { qaId },
+      }).pipe(
+        tap((response: any) => {
+          console.log(`🧾 All cavities for QA ID ${qaId}:`, response);
+        }),
+        catchError((error) => {
+          console.error(`❌ Error fetching cavities for QA ID ${qaId}`, error);
+          return throwError(() => new Error('Error fetching cavity list by QA ID'));
+        })
+      );
+    }
+
+  
 }
