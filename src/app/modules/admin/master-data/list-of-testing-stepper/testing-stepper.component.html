@@ -1,6 +1,7 @@
-<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
-  <div class="p-3 mt-4 h-auto overflow-y-auto padding-right: 8px;">
-    <mat-stepper [linear]="isLinear" #stepper class="custom-stepper mt-4" displayDefaultIndicatorType="false">
+<div class="bg-card flex flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0">
+  <div class="p-3 mt-4">
+    <mat-stepper style="height: 100%; min-height: 500px" [linear]="isLinear" #stepper class="custom-stepper mt-4"
+      displayDefaultIndicatorType="false">
 
       <!-- First Step -->
       <mat-step [stepControl]="firstFormGroup" label="Qualitative Result">
@@ -42,11 +43,13 @@
             <div *ngIf="isLoading" class="loader">
               <mat-spinner diameter="33"></mat-spinner>
             </div>
-            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-              (click)="onSubmitQualitativeResult()">Save</button>
-            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickQR()">
-              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
-            </button>
+            <div class="bottom-right-buttons">
+              <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+                (click)="onSubmitQualitativeResult()">Save</button>
+              <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickQR()">
+                <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+              </button>
+            </div>
             <button mat-button class="next-button" *ngIf="isEditMode"
               (click)="onUpdateQualitativeResult()">Update</button>
           </div>
@@ -98,14 +101,16 @@
             <div *ngIf="isLoading" class="loader">
               <mat-spinner diameter="33"></mat-spinner>
             </div>
-            <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
-              <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
-            </button>
-            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-              (click)="onSubmitUnitOfMeasure()">Save</button>
-            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickUOM()">
-              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
-            </button>
+            <div class="bottom-right-buttons">
+              <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
+                <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+              </button>
+              <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+                (click)="onSubmitUnitOfMeasure()">Save</button>
+              <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickUOM()">
+                <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+              </button>
+            </div>
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update</button>
           </div>
         </form>
@@ -185,14 +190,16 @@
                 <div *ngIf="isLoading" class="loader">
                   <mat-spinner diameter="33"></mat-spinner>
                 </div>
-                <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
-                  <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
-                </button>
-                <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-                  (click)="onSubmitInspectionCharacteristics()">Save</button>
-                <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCharacteristics()">
-                  <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
-                </button>
+                <div class="bottom-right-buttons-step-characterstics">
+                  <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
+                    <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+                  </button>
+                  <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+                    (click)="onSubmitInspectionCharacteristics()">Save</button>
+                  <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCharacteristics()">
+                    <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+                  </button>
+                </div>
               </div>
             </div>
             <!-- IF isEditMode - UPDATE MODE -->
@@ -474,14 +481,16 @@
             <div *ngIf="isLoading" class="loader">
               <mat-spinner diameter="33"></mat-spinner>
             </div>
-            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" matStepperPrevious>
-              <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
-            </button>
-            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-              (click)="onSubmitInspectionCard()">Save</button>
-            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCards()">
-              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
-            </button>
+            <div class="bottom-right-buttons-step-card">
+              <button mat-button class="bg-primary-700" *ngIf="!isEditMode" matStepperPrevious>
+                <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+              </button>
+              <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+                (click)="onSubmitInspectionCard()">Save</button>
+              <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCards()">
+                <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+              </button>
+            </div>
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateInspectionCard()">Update</button>
           </div>
         </form>
@@ -1242,9 +1251,11 @@
           </mat-tab-group>
 
           <div class="step-navigation">
-            <button mat-button *ngIf="!isEditMode" class="back-button" matStepperPrevious>Back</button>
-            <button mat-button *ngIf="!isEditMode" class="next-button"
-              (click)="submitItemsInspectionCardsForm()">Next</button> <!-- matStepperNext -->
+            <div class="bottom-right-buttons-step">
+              <button mat-button *ngIf="!isEditMode" class="back-button" matStepperPrevious>Back</button>
+              <button mat-button *ngIf="!isEditMode" class="next-button"
+                (click)="submitItemsInspectionCardsForm()">Next</button> <!-- matStepperNext -->
+            </div>
             <button mat-button class="next-button" *ngIf="isEditMode"
               (click)="onUpdateItemInspectionCard()">Update</button>
           </div>
@@ -1521,9 +1532,11 @@
             {{ validatingSamplingRange }}
           </div>
           <div class="step-navigation">
-            <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
-            <button mat-button class="next-button" *ngIf="!isEditMode"
-              (click)="onSubmitItemSamplingForm()">Next</button>
+            <div class="bottom-right-buttons-step-sample">
+              <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
+              <button mat-button class="next-button" *ngIf="!isEditMode"
+                (click)="onSubmitItemSamplingForm()">Next</button>
+            </div>
             <!-- matStepperNext -->
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateIS()">Update</button>
           </div>
