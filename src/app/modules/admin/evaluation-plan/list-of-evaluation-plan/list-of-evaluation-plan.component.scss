@@ -17,3 +17,17 @@
 .icon-border-color .mat-mdc-form-field-flex {
     border: 1px solid transparent !important;
 }
+
+.table-border-color th {
+    border-top: 1px solid #a1a1a1 !important;
+    border-bottom: 1px solid #a1a1a1 !important;
+}
+
+.table-border-color td {
+    border-top: 1px solid #a1a1a1 !important;
+    border-bottom: 1px solid #a1a1a1 !important;
+}
+
+.border-pagination {
+    border-bottom: 1px solid #a1a1a1 !important;
+}

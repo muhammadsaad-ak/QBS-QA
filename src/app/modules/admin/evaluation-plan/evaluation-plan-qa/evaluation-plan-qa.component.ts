@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import {FormArray,FormBuilder,FormGroup,FormsModule,ReactiveFormsModule, Validators,} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -48,6 +48,8 @@ export class EvaluationPlanQaComponent implements OnInit {
     @ViewChild('dialogQaTemplateItems') dialogQaTemplateItems;
 
     qaDialogRef: any;
+    dialogRefs: MatDialogRef<any>[] = [];
+    selectedRowIndex: number | null = null;
 
     displayedColumnsQualitative: string[] = [
         'inspectionCharacteristicName',
@@ -494,13 +496,11 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe((result) => {
-            console.log(result);
-
             this.closeDialog();
         });
     }
 
-    onCavitySampleQaModal(): void {
+    onCavitySampleQaModal(rowIndex: any): void {
         // console.log('Row Index:', rowIndex);
         // this.selectedControlAccountRowIndex = rowIndex;
         // console.log(this.selectedControlAccountRowIndex);
@@ -509,6 +509,9 @@ export class EvaluationPlanQaComponent implements OnInit {
           height: '75vh',
           data: this.cardCode,
         });
+
+        this.dialogRefs[rowIndex] = dialogRef; 
+        
         // DYNAMICALLY ADD Validators.required TO inspectionBy
         const inspectionByControl = this.evaluationplanQAFormGroup.get('inspectionBy');
         if (inspectionByControl) {
@@ -577,17 +580,24 @@ export class EvaluationPlanQaComponent implements OnInit {
         };
 
         this.samples.push(newSample);
-        this.closeQaManually();
+        this.closeQaManually()
     }
+    
 
     closeDialog(): void {
         this._dialog.closeAll();
     }
 
+
     closeQaManually(): void {
-        if (this.qaDialogRef) {
-            this.qaDialogRef.close();
+      if (this.selectedRowIndex !== null) {
+        const dialogRef = this.dialogRefs[this.selectedRowIndex];        
+        if (dialogRef) {
+          dialogRef.close();
+          delete this.dialogRefs[this.selectedRowIndex];
         }
+        this.selectedRowIndex = null;
+      }
     }
 
     populateProductionOrderFormQA(data: any): void {
@@ -736,7 +746,7 @@ export class EvaluationPlanQaComponent implements OnInit {
             console.error('SERVICE ERROR:', err);
           }
         });
-      }
+    }
       
 
     

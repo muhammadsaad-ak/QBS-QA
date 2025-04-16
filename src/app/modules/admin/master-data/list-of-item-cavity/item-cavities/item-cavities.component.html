@@ -24,7 +24,7 @@
     <!-- Header ENDS -->
     <!-- Main Content -->
     <section class="item-cavity-section">
-        <table mat-table [dataSource]="dataSourceItemsCavity" class="min-w-full">
+        <table mat-table [dataSource]="dataSourceItemsCavity" class="min-w-full table-border-color">
             <!-- serialNo - Serial No COLUMN -->
             <ng-container matColumnDef="serialNo">
                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
@@ -120,7 +120,7 @@
     </section>
 
     <mat-paginator *ngIf="dataSourceItemsCavity.data.length > 0" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
-        aria-label="Select page of periodic elements" class="bg-gray-200">
+        aria-label="Select page of periodic elements" class="bg-gray-200 border-pagination">
     </mat-paginator>
 
 </div>
