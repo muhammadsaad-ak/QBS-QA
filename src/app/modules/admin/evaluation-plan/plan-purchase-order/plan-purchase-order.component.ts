@@ -285,7 +285,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         this.purchaseQcId = response.data;
         this.planPurchaseOrderFormGroup.patchValue({
           // inspectionBy: response.inspectionBy || '', 
-          inspectionDateTime: response.inspectionDateTime || new Date().toISOString()
+          inspectionDateTime: response.inspectionDateTime || new Date().toISOString(),
+          id: response?.data?.id || '', // Safely patch QCId, fallback to empty if null
         });
         this.cdr.detectChanges();
       },
@@ -300,7 +301,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   //     next: (response) => {
   //       this.purchaseQCSampleId = response.data;
   //       console.log(this.purchaseQCSampleId, 'this.purchaseQCSampleId');
-        
+
   //       },
   //       error: (err) => {
   //         console.error('QC SERVICE ERROR:', err);
@@ -309,7 +310,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   // }
 
   handleSamplePurchaseOrder() {
-    if(this.isEditMode) {
+    if (this.isEditMode) {
       this.updateSampleForPurchaseOrder()
     } else {
       this.addNewSampleForPurchaseOrder()
@@ -415,6 +416,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
             this.planPurchaseOrderFormGroup.patchValue({
               samplesStatus: this.samplesStatus
             });
+            this.cdr.detectChanges();
+            this.ListAllPurchaseQCSamplesByQcId(this.selectedOrder.id)
           },
           error: (error) => {
             console.error('getIsSamplePassedListByQcId API Error:', error);
@@ -663,6 +666,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
             this.planPurchaseOrderFormGroup.patchValue({
               samplesStatus: this.samplesStatus
             });
+            this.cdr.detectChanges();
           },
           error: (error) => {
             console.error('getIsSamplePassedListByQcId API Error:', error);
@@ -767,6 +771,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
             this.planPurchaseOrderFormGroup.patchValue({
               samplesStatus: this.samplesStatus
             });
+            this.cdr.detectChanges();
           },
           error: (error) => {
             console.error('getIsSamplePassedListByQcId API Error:', error);
@@ -854,7 +859,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       sampleQuantity: data.sampleQuantity ?? 0,  
       vendor: data.vendor ?? "",  
       remarks: data.remarks ?? "",  
-      itemId: data.itemDetails?.id ?? ""
+      itemId: data.itemDetails?.id ?? "",
+      id: data.id
     });
   }
   
@@ -895,7 +901,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   private dialogRef: MatDialogRef<any>;
   onEditSample(sample: any): void {
     this.currentMode = 'edit';
-    console.log('Sample Data:', sample); 
+    console.log('Sample Data:', sample);
     // alert('Sample ID: ' + (sample ? sample.id : 'undefined'));
     // alert('Sample : ' + (sample ? sample.name : 'undefined'));
     // alert('inspectionBy : ' + (sample ? sample.inspectionBy : 'undefined')); 
@@ -1225,5 +1231,43 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       }
     });
   }
-
-}
+  // CLOSE OPEN QC FORCEFULLY - @IAK
+   closeOpenQC() {
+    const OpenPOqcId = this.planPurchaseOrderFormGroup.get('id')?.value
+    if (!OpenPOqcId) {
+      console.error('NO VALID PURCHASE QC ID FOUND AGAINST THIS PO');
+      this._snackBar.open('FAILED TO CLOSE. QC ID MISSING.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      return;
+    }
+    const updateQCpayload = {
+      isPerformed: true,
+      isPostedToSap: false,
+      isClosed: true,
+      overallStatus: this.planPurchaseOrderFormGroup.get('samplesStatus')?.value,
+      id: OpenPOqcId, 
+      inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || "Closed due to unknown reasons",
+      isActive: true
+    };
+    console.log("HELLO MOTO ", updateQCpayload);
+    // API CALL TO CLOSE QC
+    // this._sapPlanPurchaseOrderService.updateToCloseQC(updateQCpayload).subscribe({
+    //   next: (response) => {
+    //     this._snackBar.open('QC CLOSSED SUCCESSFULLY', 'Close', {
+    //       duration: 3000,
+    //       panelClass: ['snackbar-success']
+    //     });
+    //   },
+    //   error: (error) => {
+    //     console.error('ERROR WHILE CLOSING QC.', error);
+    //     this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
+    //       duration: 3000,
+    //       panelClass: ['snackbar-error']
+    //     });
+    //   }
+    // });
+  }
+  }
