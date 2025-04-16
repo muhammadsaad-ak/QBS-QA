@@ -108,8 +108,11 @@
                     <mat-label>Item ID:</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="itemId">
                 </mat-form-field>
-
-            </div>
+                <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
+                    <mat-label>QC ID:</mat-label>
+                    <input class="view-mode-bg-grey" matInput formControlName="id">
+                </mat-form-field>
+                </div>
 
             <button mat-flat-button color="primary" *ngIf="
                         planPurchaseOrderFormGroup.get('inspectionQuantity')
@@ -165,10 +168,12 @@
                 </div>
             </div>
 
-            <mat-form-field *ngIf="
-                    isFormSaved &&
-                    samplesPurchaseOrder.length === sampleQuantity
-                " class="mt-2 w-[330px]">
+            <!-- *ngIf="isFormSaved && samplesPurchaseOrder.length === sampleQuantity" -->
+            <mat-form-field class="mt-2 w-[330px]" *ngIf="planPurchaseOrderFormGroup.get('isFlexible')?.value === false ? 
+                        (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length === sampleQuantity) || 
+                        (!isEditMode && samplesPurchaseOrder.length === sampleQuantity))) : 
+                        (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length > 0) || 
+                        (!isEditMode && samplesPurchaseOrder.length > 0)))">
                 <mat-label>Remarks</mat-label>
                 <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
             </mat-form-field>
@@ -496,8 +501,7 @@
 
 
 
-            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: nowrap; align-items: flex-start;"
-                class="hidden">
+            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: nowrap; align-items: flex-start;" class="hidden">
                 <mat-form-field style="flex: 1 1 50%; min-width: 100px;">
                     <mat-label>isFlexible</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="isFlexible">
@@ -508,14 +512,8 @@
                 </mat-form-field>
             </div>
 
-            <div class="button-container mt-4 flex justify-end gap-2" *ngIf="planPurchaseOrderFormGroup.get('isFlexible')?.value === false ? 
-                        (samplesPurchaseOrder.length === sampleQuantity && samplesStatus === true) : 
-                        (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length > 0) || 
-                        (!isEditMode && samplesPurchaseOrder.length > 0)))">
-                <button mat-flat-button color="primary">Save</button>
-                <button mat-flat-button color="warn" (click)="cancelForm()">
-                    Cancel
-                </button>
+            <div class="button-container mt-4 flex justify-end gap-2">
+                <button mat-flat-button color="warn" (click)="closeOpenQC()">Close QC</button>
                 <div class="custom-button-container">
                     <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button">
                         Post to SAP
