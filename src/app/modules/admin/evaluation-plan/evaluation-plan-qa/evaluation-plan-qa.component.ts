@@ -91,37 +91,37 @@ export class EvaluationPlanQaComponent implements OnInit {
         private _dialog: MatDialog
     ) {}
 
-    cavity = [
-        {
-            cName: 'cavity 1',
-            InspectionTime: '10:30 AM',
-            inspectionBy: 'Mr.Kamran',
-            enabled: false,
-        },
-        {
-            cName: 'cavity 2',
-            InspectionTime: '10:30 AM',
-            inspectionBy: 'Mr.Kamran',
-            enabled: false,
-        },
-        {
-            cName: 'cavity 3',
-            InspectionTime: '10:30 AM',
-            inspectionBy: 'Mr.Kamran',
-            enabled: false,
-        },
-        {
-            cName: 'cavity 4',
-            InspectionTime: '10:30 AM',
-            inspectionBy: 'Mr.Kamran',
-            enabled: false,
-        },
-        {
-            cName: 'cavity 5',
-            InspectionTime: '10:30 AM',
-            inspectionBy: 'Mr.Kamran',
-            enabled: false,
-        },
+    cavityNo = [
+        // {
+        //     cName: 'cavity 1',
+        //     InspectionTime: '10:30 AM',
+        //     inspectionBy: 'Mr.Kamran',
+        //     enabled: false,
+        // },
+        // {
+        //     cName: 'cavity 2',
+        //     InspectionTime: '10:30 AM',
+        //     inspectionBy: 'Mr.Kamran',
+        //     enabled: false,
+        // },
+        // {
+        //     cName: 'cavity 3',
+        //     InspectionTime: '10:30 AM',
+        //     inspectionBy: 'Mr.Kamran',
+        //     enabled: false,
+        // },
+        // {
+        //     cName: 'cavity 4',
+        //     InspectionTime: '10:30 AM',
+        //     inspectionBy: 'Mr.Kamran',
+        //     enabled: false,
+        // },
+        // {
+        //     cName: 'cavity 5',
+        //     InspectionTime: '10:30 AM',
+        //     inspectionBy: 'Mr.Kamran',
+        //     enabled: false,
+        // },
     ];
 
     toggleCavity(index: number): void {
@@ -150,7 +150,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         bmrNo: [''],
         status: [''],
         mouldNo: [''],
-        cavity: [],
+        cavityNo: [],
         analyzedBy: [''],
         itemId: [''],
         inspectionBy: [''],
@@ -304,65 +304,179 @@ export class EvaluationPlanQaComponent implements OnInit {
         return this.evaluationplanQAFormGroup.get('cavities') as FormArray;
     }
 
-    generateCavities(): void {
-      const formData = this.evaluationplanQAFormGroup.value;
-    
-      // 🧹 Exclude extra form fields
-      const {
-        intCode,
-        itemCode,
-        itemDescription,
-        max,
-        min,
-        qualitativeInspectionObjects,
-        quantitativeInspectionResults,
-        target,
-        inspectionBy,
-        remarks,
-        cavities,
-        itemId,
-        ...payload
-      } = formData;
-    
-      console.log('SENDING Production QA PAYLOAD:', payload);
-    
-      // ✅ Call API to save the form first
-      this._evaluationProductionOrderService.addProductionQA(payload).subscribe(
-        (response) => {
-          if (response?.isRequestSuccess) {
-            this._snackBar.open('Production QA added successfully!', 'Close', {
-              duration: 3000,
-              panelClass: ['snackbar-success']
-            });
-    
-            // 🛠 Generate cavities after saving
-            this.cavitiesArray.clear();
-            const numberOfCavities = this.evaluationplanQAFormGroup.get('cavity')?.value;
-    
-            for (let i = 0; i < numberOfCavities; i++) {
-              this.cavitiesArray.push(
-                this._formBuilder.group({
-                  cName: `Cavity ${i + 1}`,
-                  InspectionTime: '10:30 AM',
-                  inspectionBy: 'Mr.Kamran',
-                  enabled: false,
-                })
-              );
+    generateCavitiesX(): void {
+        const formData = this.evaluationplanQAFormGroup.value;
+      
+        const {
+          intCode,
+          itemCode,
+          itemDescription,
+          max,
+          min,
+          qualitativeInspectionObjects,
+          quantitativeInspectionResults,
+          target,
+          inspectionBy,
+          remarks,
+          cavities,
+          ...payload
+        } = formData;
+      
+        console.log('SENDING Production QA PAYLOAD:', payload);
+
+        this._evaluationProductionOrderService.addProductionQA(payload).subscribe(
+          (response) => {
+            if (response?.isRequestSuccess) {
+                const  itemCodeForQAid =   this.evaluationplanQAFormGroup.get('itemCode')?.value;
+                const  docNumForQAid =   this.evaluationplanQAFormGroup.get('docNum')?.value;
+                if (itemCodeForQAid && docNumForQAid) {
+                    this.getProductionByQACode(itemCodeForQAid, docNumForQAid);
+                  } else {
+                    console.warn('API CALLED FAILED. FAIL TO FETCH PO QA ID', {
+                    });
+                  }
+
+              this._snackBar.open('Production QA added successfully!', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-success']
+              });
+   
+      
+              // 🛠 Generate cavities after saving
+              this.cavitiesArray.clear();
+              const numberOfCavities = this.evaluationplanQAFormGroup.get('cavityNo')?.value;
+      
+              for (let i = 0; i < numberOfCavities; i++) {
+                this.cavitiesArray.push(
+                  this._formBuilder.group({
+                    cName: `Cavity ${i + 1}`,
+                    InspectionTime: '10:30 AM',
+                    inspectionBy: 'Mr.Kamran',
+                    enabled: false,
+                  })
+                );
+              }
             }
+          },
+          (error) => {
+            console.error('Error adding Production QA:', error);
+            this._snackBar.open('Error saving Production QA.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
           }
-        },
-        (error) => {
-          console.error('Error adding Production QA:', error);
-          this._snackBar.open('Error saving Production QA.', 'Close', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
+        );
+      }
+
+      generateCavities(): void {
+        const formData = this.evaluationplanQAFormGroup.value;
+      
+        const {
+          intCode,
+          itemCode,
+          itemDescription,
+          max,
+          min,
+          qualitativeInspectionObjects,
+          quantitativeInspectionResults,
+          target,
+          inspectionBy,
+          remarks,
+          cavities,
+          inspectionObjects,
+          ...payload
+        } = formData;
+      
+        console.log('SENDING Production QA PAYLOAD:', payload);
+      
+        if (payload.openQuantity) {
+          payload.openQuantity = parseFloat(parseFloat(payload.openQuantity).toFixed(2));
         }
-      );
-    }
-    
-    
-    
+      
+        this._evaluationProductionOrderService.addProductionQA(payload).subscribe({
+          next: (response) => {
+            if (response?.isRequestSuccess) {
+              const itemCode = this.evaluationplanQAFormGroup.get('itemCode')?.value;
+              const docNum = this.evaluationplanQAFormGroup.get('docNum')?.value;
+      
+              if (itemCode && docNum) {
+                this._evaluationPlanQAOrderService.GetProductionQAId(itemCode, docNum).subscribe({
+                  next: (qaResponse) => {
+                    const qaId = qaResponse?.data?.id;
+                    const cavityNum = qaResponse?.data?.cavityNo;
+                    const mouldNo = qaResponse?.data?.mouldNo;
+      
+                    if (qaId && cavityNum) {
+                      this._snackBar.open('Production QA added successfully!', 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-success']
+                      });
+      
+                      // ✅ New: Create all cavities in backend (single call)
+                      const cavityBulkPayload = {
+                        qaId,
+                        mouldNo,
+                        cavityNum,
+                        isToggledOn: false,
+                        name: 'Cavity - '                      };
+      
+                      this._evaluationProductionOrderService.addProductionCavityQA(cavityBulkPayload).subscribe({
+                        next: (res) => {
+                          console.log('✅ Cavities created:', res);
+      
+                          // ✅ Fetch created cavities and populate UI
+                          this._evaluationProductionOrderService.getAllCavitiesByQaId(qaId).subscribe({
+                            next: (cavityListRes) => {
+                              const cavitiesFromBackend = cavityListRes?.data || [];
+      
+                              this.cavitiesArray.clear();
+      
+                              cavitiesFromBackend.forEach((cav) => {
+                                this.cavitiesArray.push(
+                                  this._formBuilder.group({
+                                    name: cav.name,
+                                    isToggledOn: cav.isToggledOn,
+                                    enabled: cav.isToggledOn,
+                                    generatedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) // ⏰ Add this
+
+                                  })
+                                );
+                              });
+                            },
+                            error: (err) => {
+                              console.error('❌ Error fetching cavities:', err);
+                            }
+                          });
+                        },
+                        error: (err) => {
+                          console.error('❌ Failed to create cavities:', err);
+                        }
+                      });
+                    }
+                  },
+                  error: (err) => {
+                    console.error('❌ Failed to fetch QA ID:', err);
+                  }
+                });
+              } else {
+                console.warn('⚠️ itemCode or docNum is missing.');
+              }
+            }
+          },
+          error: (error) => {
+            console.error('❌ Error adding Production QA:', error);
+            this._snackBar.open('Error saving Production QA.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+      }
+      
+
+      
+      
+      
 
     onEvaluationPlanQaModal(cav: any, index: any): void {
         if (!cav.enabled) return;
@@ -386,9 +500,10 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
     }
 
-      onCavitySampleQaModal(rowIndex: number): void {
-        this.selectedRowIndex = rowIndex;
-        
+    onCavitySampleQaModal(rowIndex: any): void {
+        // console.log('Row Index:', rowIndex);
+        // this.selectedControlAccountRowIndex = rowIndex;
+        // console.log(this.selectedControlAccountRowIndex);
         const dialogRef = this._dialog.open(this.dialogQaTemplateItems, {
           width: '70%',
           height: '75vh',
@@ -406,9 +521,37 @@ export class EvaluationPlanQaComponent implements OnInit {
     
         this.getCardByItemCode(this.selectedOrder.itemCode);
         console.log(this.selectedOrder, 'this.selectedOrder')
+        this.getProductionByQACode(
+          this.selectedOrder.itemCode,
+          this.selectedOrder.docNo,
+        )
       }
 
-      getProductionByQACode(itemCode: string, docNum: number) {
+      getProductionByQACode(itemCode: string, docNum: string) {
+        this._evaluationPlanQAOrderService.GetProductionQAId(itemCode, docNum).subscribe({
+          next: (response) => {
+            const id = response?.data?.id;
+      
+            if (id) {
+              this.productionQAId = id; // Store or use the ID
+              console.log('Fetched QA ID:', id);
+      
+              // Optionally patch form or trigger next API using this ID
+              this.evaluationplanQAFormGroup.patchValue({
+                inspectionDateTime: response?.data?.inspectionDateTime || new Date().toISOString()
+              });
+      
+              // Example: this.loadQuantitativeInspection(id);
+            } else {
+              console.warn('No ID found in response data.');
+            }
+          },
+          error: (err) => {
+            console.error('QC SERVICE ERROR:', err);
+          }
+        });
+      }
+      XgetProductionByQACode(itemCode: string, docNum: string) {
         this._evaluationPlanQAOrderService.GetProductionQAId(itemCode, docNum).subscribe({
           next: (response) => {
             this.productionQAId = response.data;
@@ -473,7 +616,7 @@ export class EvaluationPlanQaComponent implements OnInit {
             machineNo: data.machine ?? 'N/A',
             bmrNo: data.bmr ?? 'N/A',
             mouldNo: data.mold ?? 'N/A',
-            cavity: data.cavity !== undefined ? data.cavity.toString() : 'N/A', // ✅ Convert safely
+            cavityNo: data.cavity ?? 'N/A', // ✅ Convert safely
             cycleTime: data.cycleTime ?? 'N/A', // ✅ Convert safely
             itemWeight: data.weight !== undefined ? data.weight.toString() : 'N/A', // ✅ Convert safely
             variant: data.variant ?? 'N/A',

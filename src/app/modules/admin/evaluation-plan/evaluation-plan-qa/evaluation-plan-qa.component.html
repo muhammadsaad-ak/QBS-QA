@@ -111,11 +111,11 @@
             formControlName="mouldNo" required />
         </mat-form-field>
 
-        <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
-          <mat-label>Cavity</mat-label>
-          <input class="view-mode-bg-grey" readonly style=" cursor: not-allowed;" class="view-mode-bg-grey" matInput
-            formControlName="cavity">
-        </mat-form-field>
+                <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
+                    <mat-label>Cavity</mat-label>
+                    <input class="view-mode-bg-grey" readonly style=" cursor: not-allowed;" class="view-mode-bg-grey"
+                        matInput formControlName="cavityNo">
+                </mat-form-field>
 
         <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
           <mat-label>Analyzed By:</mat-label>
@@ -134,25 +134,30 @@
         </button>
       </div>
 
-      <div formArrayName="cavities" class="flex flex-wrap gap-2 mt-4">
-        <div *ngFor="let cavControl of cavitiesArray.controls; let i = index" [formGroupName]="i"
-          (click)="onEvaluationPlanQaModal(cavControl.value, i)" class="sample-card" [ngStyle]="{
-                  backgroundColor: cavControl.value.enabled ? '#caead6' : '#f2f2f2',
-                  cursor: cavControl.value.enabled ? 'pointer' : 'not-allowed'
-                }">
-
-          <div style="display: flex; flex-direction: row; justify-content: space-between">
-            <h3 style="font-weight: 500;">{{ cavControl.value.cName }}</h3>
-            <p>
-              <mat-slide-toggle (change)="toggleCavity(i)" [checked]="cavControl.value.enabled"
-                (click)="$event.stopPropagation()"></mat-slide-toggle>
-            </p>
-          </div>
-
-          <div style="font-weight: 400;">Inspection Time: {{ cavControl.value.inspectionTime }}</div>
-          <div style="font-weight: 400;">Inspection By: {{ cavControl.value.inspectionBy }}</div>
-        </div>
-      </div>
+              <div formArrayName="cavities" class="flex flex-wrap gap-2 mt-4">
+                <div *ngFor="let cavControl of cavitiesArray.controls; let i = index" 
+                     [formGroupName]="i"
+                     (click)="onEvaluationPlanQaModal(cavControl.value, i)"
+                     class="sample-card"
+                     [ngStyle]="{
+                        backgroundColor: cavControl.value.enabled ? '#caead6' : '#f2f2f2',
+                        cursor: cavControl.value.enabled ? 'pointer' : 'not-allowed'
+                     }">
+                     
+                  <div style="display: flex; justify-content: space-between;">
+                    <div>
+                    <h3>Cavity - {{ i + 1 }}</h3>
+                    <p style="font-size: 12px; margin: 0;">Generated Time: {{ cavControl.value.generatedTime }}</p>
+                  </div>
+                    <!-- <h3>{{ cavControl.value.name }}</h3> -->
+                    <mat-slide-toggle [checked]="cavControl.value.isToggledOn"
+                                      (click)="$event.stopPropagation()"
+                                      (change)="toggleCavity(i)">
+                    </mat-slide-toggle>
+                  </div>
+              
+                </div>
+              </div>
 
 
 
@@ -183,17 +188,17 @@
                 required readonly />
             </mat-form-field>
 
-            <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
-              <mat-label>Mould No</mat-label>
-              <input class="view-mode-bg-grey" matInput formControlName="mouldNo" placeholder="Enter Code" required
-                readonly />
-            </mat-form-field>
+                        <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+                            <mat-label>Mould No XX</mat-label>
+                            <input class="view-mode-bg-grey" matInput formControlName="mouldNo" placeholder="Enter Code"
+                                required readonly />
+                        </mat-form-field>
 
-            <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
-              <mat-label>Cavity</mat-label>
-              <input class="view-mode-bg-grey" matInput formControlName="cavity" placeholder="Enter Code" required
-                readonly />
-            </mat-form-field>
+                        <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+                            <mat-label>Cavity</mat-label>
+                            <input class="view-mode-bg-grey" matInput formControlName="cavityNo" placeholder="Enter Code"
+                                required readonly />
+                        </mat-form-field>
 
 
           </div>
@@ -244,11 +249,11 @@
                 readonly />
             </mat-form-field>
 
-            <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
-              <mat-label>Cavity</mat-label>
-              <input class="view-mode-bg-grey" matInput formControlName="cavity" placeholder="Enter Code" required
-                readonly />
-            </mat-form-field>
+                        <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+                            <mat-label>Cavity</mat-label>
+                            <input class="view-mode-bg-grey" matInput formControlName="cavityNo" placeholder="Enter Code"
+                                required readonly />
+                        </mat-form-field>
 
 
           </div>
