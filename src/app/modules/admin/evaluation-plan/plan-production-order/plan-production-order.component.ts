@@ -57,7 +57,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   qcSampleID: string | null = null;   //  qcSampleID: string = '';
   selectedSampleId: any;
   productionQCSampleId: any
-  
+  currentMode: 'add' | 'edit' = 'add';
 
 
   
@@ -1065,6 +1065,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     }
   }
   onEditSample(sample: any): void {
+     this.currentMode = 'edit';
     console.log('Sample Data:', sample); 
     // alert('Sample ID: ' + (sample ? sample.id : 'undefined')); 
   
@@ -1115,6 +1116,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
   
   onItemCodeClickPP(): void {
+     this.currentMode = 'add';
     // console.log('Row Index:', rowIndex);
     // this.selectedControlAccountRowIndex = rowIndex;
     // console.log(this.selectedControlAccountRowIndex);
@@ -1141,6 +1143,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   
 
   onUpdateProductionOrderModal(): void {
+    this.currentMode = 'add';
     const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
       width: '70vw',
       height: '79vh',
