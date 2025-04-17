@@ -18,7 +18,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/evaluation-plan-purchase-order.service';
 import { SapPlanPurchaseOrderService } from '../../../../core/other-core-services/module/sap-plan-purchase-order.service';
-import { MatDialogRef } from '@angular/material/dialog'; 
+import { MatDialogRef } from '@angular/material/dialog';
+import { QbsConfirmationService } from '@qbs/services/confirmation';
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -95,7 +96,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService,
     private _sapPlanPurchaseOrderService: SapPlanPurchaseOrderService,
     private router: Router,
-    private _activeRoute: ActivatedRoute
+    private _activeRoute: ActivatedRoute,
+    private _qbsConfirmationService: QbsConfirmationService,
   ) { }
 
   planPurchaseOrderFormGroup = this._formBuilder.group({
@@ -136,6 +138,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     sampleName: [''],
     isFlexible: [false],
     samplesStatus: [false],
+    isPerformed: [true],
+    isPostedToSap: [false],
+    isClosed: [false],
+    overallStatus: [false],
   });
 
   createInspectionObject(): FormGroup {
@@ -191,13 +197,28 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
       const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
       const itemId: string = String(this.planPurchaseOrderFormGroup.value.itemId);
+      const sapQuantity: number = Number(this.planPurchaseOrderFormGroup.value.sapQuantity);
+      if (inspectionQuantity > sapQuantity) {
+        const errorMessage = `Inspection Qty can't be greater than PO Quantity (${sapQuantity})`;
+        this._snackBar.open(errorMessage, 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+        this.isValidate = false;
+        this.isFormSaved = false;
+        return;
+      }
 
       console.log('PAYLOAD BEFORE GET sampleQuantity API:', this.planPurchaseOrderFormGroup.valid);
 
       this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
 
         const formData = this.planPurchaseOrderFormGroup.value;
-
+        if (formData) {
+          formData.qcLotNo = String(formData.qcLotNo);
+          formData.receiveQuantity = String(formData.receiveQuantity);
+          formData.inspectionQuantity = String(formData.inspectionQuantity);
+        }
         console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
 
         const { id, documentType, inspectionByModalPO, inspectionQtyModalPO, inspectionTimeModalPO, intCode, itemCode, itemCodeModalPO, itemDescription, poCode, receiveQtyPO,
@@ -240,12 +261,22 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     return new Promise((resolve, reject) => {
       this._evaluationPurchaseOrderService.getSampleQuantityRange(inspectionQuantity, itemId).subscribe(
         (response) => {
-          if (response.isRequestSuccess) {
+          if (response.isRequestSuccess && response.data !== 0) {
             this.planPurchaseOrderFormGroup.get('sampleQuantity')?.setValue(response.data);
-            this._snackBar.open('Purchase Order added successfully!', 'Close', { duration: 3000, panelClass: ['snackbar-success'] });
+            this._snackBar.open('Sample Qty fetched successfully!', 'Close', { duration: 3000, panelClass: ['snackbar-success'] });
+          } else if (response.isRequestSuccess && response.data === 0) {
+            this.isValidate = false;
+            this.isFormSaved = false;
+            this._snackBar.open('Failed to get Sample Qty. Please enter a valid inspection Qty.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+            return;
           } else {
             this.isValidate = false;
-            this._snackBar.open('Please fill all mandatory fields.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
+            this.isFormSaved = false;
+            this._snackBar.open('Failed to fetched Sample Qty.', 'Close', { duration: 3000, panelClass: ['snackbar-error'] });
+            return;
           }
           resolve(); // Make sure to resolve the promise
         },
@@ -1232,42 +1263,100 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
   }
   // CLOSE OPEN QC FORCEFULLY - @IAK
-   closeOpenQC() {
-    const OpenPOqcId = this.planPurchaseOrderFormGroup.get('id')?.value
+  closeOpenQC() {
+    const OpenPOqcId = this.planPurchaseOrderFormGroup.get('id')?.value;
     if (!OpenPOqcId) {
       console.error('NO VALID PURCHASE QC ID FOUND AGAINST THIS PO');
       this._snackBar.open('FAILED TO CLOSE. QC ID MISSING.', 'Close', {
         duration: 3000,
-        panelClass: ['snackbar-error']
+        panelClass: ['snackbar-error'],
       });
       return;
     }
-    const updateQCpayload = {
+    const payloadToCloseOpenQC = {
       isPerformed: true,
       isPostedToSap: false,
       isClosed: true,
       overallStatus: this.planPurchaseOrderFormGroup.get('samplesStatus')?.value,
-      id: OpenPOqcId, 
+      id: OpenPOqcId,
       inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
-      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || "Closed due to unknown reasons",
-      isActive: true
+      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || 'Closed due to unknown reasons',
+      isActive: true,
     };
-    console.log("HELLO MOTO ", updateQCpayload);
-    // API CALL TO CLOSE QC
-    // this._sapPlanPurchaseOrderService.updateToCloseQC(updateQCpayload).subscribe({
-    //   next: (response) => {
-    //     this._snackBar.open('QC CLOSSED SUCCESSFULLY', 'Close', {
-    //       duration: 3000,
-    //       panelClass: ['snackbar-success']
-    //     });
-    //   },
-    //   error: (error) => {
-    //     console.error('ERROR WHILE CLOSING QC.', error);
-    //     this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
-    //       duration: 3000,
-    //       panelClass: ['snackbar-error']
-    //     });
-    //   }
-    // });
+    console.log('PAYLOAD', payloadToCloseOpenQC);
+    // FUNCTION TO HANDLE API CALL
+    const callCloseQCApi = () => {
+      this._evaluationPurchaseOrderService.updateToCloseOpenQC(payloadToCloseOpenQC).subscribe({
+        next: (response) => {
+          this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-success'],
+          });
+          this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+        },
+        error: (error) => {
+          console.error('ERROR WHILE CLOSING QC.', error);
+          this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error'],
+          });
+        },
+      });
+    };
+    if (payloadToCloseOpenQC.overallStatus === true) {
+      const confirmation = this._qbsConfirmationService.open({
+        title: 'Close QC',
+        message: 'Are you sure you want to close this QC instead of posting to SAP?',
+        actions: {
+          confirm: {
+            label: 'Yes, Close.',
+          },
+          cancel: {
+            label: 'No',
+          },
+        },
+      });
+      // subscribe afterClosed ACTION
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          callCloseQCApi();
+        }
+      });
+    } else if (payloadToCloseOpenQC.overallStatus === false) {
+      const confirmation = this._qbsConfirmationService.open({
+        title: 'Close QC',
+        message: 'Are you sure you want to close this QC?',
+        actions: {
+          confirm: {
+            label: 'Yes',
+          },
+          cancel: {
+            label: 'No',
+          },
+        },
+      });
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          callCloseQCApi();
+        }
+      });
+    }
+  }
+  // VALIDATE INSPECTION QTY WITH SAP QTY - @IAK
+  isInspectionQuantityInvalid: boolean = false;
+  onInspectionQuantityBlur(): void {
+    const sapQuantity: number = Number(this.planPurchaseOrderFormGroup.value.sapQuantity);
+    const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
+    if (inspectionQuantity > sapQuantity) {
+      this.isInspectionQuantityInvalid = true;
+      const errorMessage = `Inspection Qty can't be greater than PO Quantity ${sapQuantity}.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      // this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: sapQuantity });
+    } else {
+      this.isInspectionQuantityInvalid = false;
+    }
   }
   }

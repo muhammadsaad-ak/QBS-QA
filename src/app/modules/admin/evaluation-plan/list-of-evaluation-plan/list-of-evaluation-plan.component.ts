@@ -298,6 +298,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
               analyzedBy: order.analyzedBy || '-',
               qty: order.poQuantity || 0,
               status: order.status || '-',
+              isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
           }));
 
           this.dataSource = new MatTableDataSource(this.evalPlanPurchaseOrderData);

@@ -182,4 +182,23 @@ export class EvaluationPlanPurchaseOrderService {
         })
       );
   }
+  // PUT API TO CLOSE OPEN QC FORCEFULLY - @IAK
+  updateToCloseOpenQC(data: any): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json',
+    });
+    console.log("SENDING PAYLOAD", data);
+    return this._httpClient.put(
+      `${environment.appApiUrl}/CSAPI/IPurchaseQCFeature/UpdatePurchaseQC`,
+      data,
+      { headers }
+    ).pipe(
+      tap(response => console.log('PUT RESPONSE:', response)),
+      catchError(error => {
+        console.error('ERROR WHILE CLOSING OPEN QC', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }
