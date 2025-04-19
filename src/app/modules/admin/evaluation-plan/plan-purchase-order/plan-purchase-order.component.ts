@@ -201,9 +201,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
       const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
       const itemId: string = String(this.planPurchaseOrderFormGroup.value.itemId);
-      const sapQuantity: number = Number(this.planPurchaseOrderFormGroup.value.sapQuantity);
-      if (inspectionQuantity > sapQuantity) {
-        const errorMessage = `Inspection Qty can't be greater than PO Quantity (${sapQuantity})`;
+      const openQuantity: number = Number(this.planPurchaseOrderFormGroup.value.openQuantity);
+      if (inspectionQuantity > openQuantity) {
+        const errorMessage = `Inspection Qty can't be greater than Open Quantity (${openQuantity})`;
         this._snackBar.open(errorMessage, 'Close', {
           duration: 3000,
           panelClass: ['snackbar-error']
@@ -1349,11 +1349,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   // VALIDATE INSPECTION QTY WITH SAP QTY - @IAK
   isInspectionQuantityInvalid: boolean = false;
   onInspectionQuantityBlur(): void {
-    const sapQuantity: number = Number(this.planPurchaseOrderFormGroup.value.sapQuantity);
+    const openQuantity: number = Number(this.planPurchaseOrderFormGroup.value.openQuantity);
     const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
-    if (inspectionQuantity > sapQuantity) {
+    if (inspectionQuantity > openQuantity) {
       this.isInspectionQuantityInvalid = true;
-      const errorMessage = `Inspection Qty can't be greater than PO Quantity ${sapQuantity}.`;
+      const errorMessage = `Inspection Qty can't be greater than Open Quantity ${openQuantity}.`;
       this._snackBar.open(errorMessage, 'Close', {
         duration: 3000,
         panelClass: ['snackbar-error']
