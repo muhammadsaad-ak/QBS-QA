@@ -93,7 +93,7 @@
           "defaultConfiguration": "development",
           "options": {
             "host": "0.0.0.0",
-            "allowedHosts": ["qa-addon.qbscocloud.net"]
+            "allowedHosts": ["qa-addon.qbscocloud.net", "qualityserver"]
           }
         },
         "extract-i18n": {
