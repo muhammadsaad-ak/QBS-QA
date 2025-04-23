@@ -39,6 +39,15 @@ export class EvaluationPlanQaComponent implements OnInit {
     isEditMode: boolean = false; // Default false, will be true if in Edit QC mode
     productionQAId: any; // Variable to hold the production QA ID
     cardCode: any;
+    samplesStatus: boolean | null = null;
+    selectedCavity: any;
+    selectedCavityIdForQaModal: string | null = null;
+    selectedCavityId: string | null = null; // class level variable to use in payload
+    samplesByCavity: { [cavityId: string]: any[] } = {};
+
+
+    
+
 
     dataSourceQualitativeInspection: MatTableDataSource<any>;
     dataSourceQuantitativeInspection: MatTableDataSource<any>;
@@ -165,6 +174,10 @@ export class EvaluationPlanQaComponent implements OnInit {
         qaId: [''],
         result: [0],
         inspectionObjects: this.fb.array([this.createInspectionObject()]),
+        sampleName: [''],
+        isFlexible: [false],
+        samplesStatus: [false],
+        cavityId: [''],
 
     });
 
@@ -434,6 +447,7 @@ export class EvaluationPlanQaComponent implements OnInit {
                               cavitiesFromBackend.forEach((cav) => {
                                 this.cavitiesArray.push(
                                   this._formBuilder.group({
+                                    id: cav.id,
                                     name: cav.name,
                                     isToggledOn: cav.isToggledOn,
                                     enabled: cav.isToggledOn,
@@ -478,8 +492,10 @@ export class EvaluationPlanQaComponent implements OnInit {
       
       
 
-    onEvaluationPlanQaModal(cav: any, index: any): void {
+    onEvaluationPlanQaModalX(cav: any, index: any): void {
         if (!cav.enabled) return;
+        alert('CAVITY ID' + cav.id);
+        console.log('Cavity:', cav);
 
         const cavityNumber = `Cavity ${index + 1}`;
 
@@ -487,6 +503,8 @@ export class EvaluationPlanQaComponent implements OnInit {
         console.log('Opening modal for:', cavityNumber);
 
         this.selectedCavityName = cavityNumber;
+        this.selectedCavity = cav; // ✅ store the cavity object here
+
 
         console.log('Opening modal for:', this.selectedCavityName);
 
@@ -500,10 +518,48 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
     }
 
+    onEvaluationPlanQaModal(cav: any, index: any): void {
+        if (!cav.enabled) return;
+      
+        alert('CAVITY ID: ' + cav.id);
+        console.log('Cavity:', cav);
+      
+        const cavityNumber = `Cavity ${index + 1}`;
+        this.selectedCavityName = cavityNumber;
+        this.selectedCavity = cav;
+      
+        // ✅ Call API to get full cavity details
+        this._evaluationPlanQaOrderService.GetProductionQACavityById(cav.id).subscribe({
+          next: (res) => {
+            const data = res?.data;
+            if (data?.id) {
+              this.selectedCavityId = data.id;
+              console.log('Cavity Data Loaded:', data);
+              alert(`Loaded Cavity ID: ${this.selectedCavityId}`);
+            }
+          },
+          error: (err) => {
+            console.error('Error fetching cavity data', err);
+          }
+        });
+      
+        // ✅ Open modal
+        const dialogRef = this._dialog.open(this.dialogTemplateItems, {
+          width: '70%',
+          height: '75vh',
+        });
+      
+        dialogRef.afterClosed().subscribe((result) => {
+          this.closeDialog();
+        });
+      }
+
     onCavitySampleQaModal(rowIndex: any): void {
         // console.log('Row Index:', rowIndex);
         // this.selectedControlAccountRowIndex = rowIndex;
         // console.log(this.selectedControlAccountRowIndex);
+        this.selectedRowIndex = rowIndex;
+
         const dialogRef = this._dialog.open(this.dialogQaTemplateItems, {
           width: '70%',
           height: '75vh',
@@ -539,6 +595,8 @@ export class EvaluationPlanQaComponent implements OnInit {
               // Optionally patch form or trigger next API using this ID
               this.evaluationplanQAFormGroup.patchValue({
                 inspectionDateTime: response?.data?.inspectionDateTime || new Date().toISOString()
+                // cavityId: 'f84cb7e5-486c-4513-89ad-547aaea2cbee' // ✅ hardcoded cavity ID
+
               });
       
               // Example: this.loadQuantitativeInspection(id);
@@ -567,21 +625,128 @@ export class EvaluationPlanQaComponent implements OnInit {
       }
 
 
-    saveAndCloseQa() {
-        const inspectionBy =
-            this.evaluationplanQAFormGroup.get('inspectionBy')?.value || 'N/A';
-        const newSample = {
-            title: `Sample ${this.samples.length + 1}`,
-            inspectionTime: new Date().toLocaleTimeString([], {
+      saveAndCloseQa(): void {
+        if (!this.productionQAId) {
+          console.error('Production QA ID IS MISSING, CANNOT PROCEED!');
+          return;
+        }
+      
+        const inspectionBy = this.evaluationplanQAFormGroup.get('inspectionBy')?.value || 'N/A';
+      
+        const qualitativeInspections = this.qualitativeInspectionObjects.value.map((item: any) => {
+          const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+            (status: any) => status.qualitativeResultId === item.qualitativeResultId
+          );
+          return {
+            qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+            quantitativeInspectionMappingId: null,
+            qualitativeResultId: item?.qualitativeResultId || null,
+            isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+            quantitativeResult: 0,
+            isQuantitativeResultPassed: false,
+            remarks: item?.remarks || ""
+          };
+        }) || [];
+      
+        const quantitativeInspections = this.quantitativeInspectionResults.value.map((item: any) => {
+          const resultValue = item?.result ? parseFloat(item.result) : 0;
+          return {
+            qualitativeInspectionMappingId: null,
+            quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+            qualitativeResultId: null,
+            isQualitativeResultPassed: false,
+            quantitativeResult: resultValue,
+            isQuantitativeResultPassed: !isNaN(resultValue) &&
+              resultValue >= (item.min ?? 0) &&
+              resultValue <= (item.max ?? 0),
+            remarks: item?.remarks || ""
+          };
+        }) || [];
+      
+        const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+      
+        const hasPassingQualitative = inspectionObjects
+          .filter((i: any) => i.qualitativeResultId !== null)
+          .every((i: any) => i.isQualitativeResultPassed === true);
+      
+        const hasPassingQuantitative = inspectionObjects
+          .filter((i: any) => i.quantitativeInspectionMappingId !== null)
+          .every((i: any) => i.isQuantitativeResultPassed === true);
+      
+        const isSamplePassed = hasPassingQualitative && hasPassingQuantitative;
+      
+        const payload = {
+          name: `Sample-${this.samples.length + 1}`,
+          inspectionDateTime: new Date().toISOString(),
+          inspectionBy,
+        //   cavityId: this.productionQAId.id, // ✅ corrected key
+            cavityId: this.selectedCavityId, // ✅ this will now be dynamic
+            isSamplePassed,
+          inspectionObjects
+        };
+      console.log('SENDING Production QA Sample PAYLOAD lolll:', payload);
+        this._evaluationPlanQAOrderService.addProductionQACavitySample(payload).subscribe({
+          next: (response) => {
+            this._snackBar.open(
+              `Sample added successfully with status ${isSamplePassed ? 'Passed' : 'Failed'}`,
+              'Close',
+              { duration: 3000, panelClass: ['snackbar-success'] }
+            );
+            console.log('SENDING Production QA Sample PAYLOAD HAHAH:', payload);
+
+      
+            const newSample = {
+              title: payload.name,
+              inspectionTime: new Date(payload.inspectionDateTime).toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
-            }),
-            inspectionBy: inspectionBy,
-        };
-
-        this.samples.push(newSample);
-        this.closeQaManually()
-    }
+              }),
+              inspectionBy: payload.inspectionBy,
+              cavityId: payload.cavityId, // ✅ ADD THIS LINE
+              cardColor: isSamplePassed ? 'lightgreen' : 'lightcoral',
+            };
+      
+      // ✅ Store sample by cavityId
+      if (!this.samplesByCavity[payload.cavityId]) {
+        this.samplesByCavity[payload.cavityId] = [];
+      }
+      this.samplesByCavity[payload.cavityId].push(newSample);      
+            this.qualitativeInspectionObjects.clear();
+            this.quantitativeInspectionResults.clear();
+      
+            // ✅ moved here
+            // this._evaluationPlanQAOrderService.getIsSamplePassedListByProdQACavityId(this.productionQAId.id).subscribe({
+            //   next: (isSamplePassedList: boolean[]) => {
+            //     console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+            //     this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
+            //     console.log('SAMPLES STATUS ~ this.samplesStatus:', this.samplesStatus);
+      
+            //     this.evaluationplanQAFormGroup.patchValue({
+            //       samplesStatus: this.samplesStatus
+            //     });
+            //   },
+            //   error: (error) => {
+            //     console.error('getIsSamplePassedListByProdQAId API Error:', error);
+            //     this._snackBar.open('Failed to fetch samples against this Production Order QA .', 'Close', {
+            //       duration: 3000,
+            //       panelClass: ['snackbar-error']
+            //     });
+            //   }
+            // });
+      
+            this.closeQaManually();
+          },
+          error: (err) => {
+            console.error('Failed to add QA Sample:', err);
+            this._snackBar.open('Error adding sample.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+      }
+      
+      
     
 
     closeDialog(): void {
@@ -747,6 +912,8 @@ export class EvaluationPlanQaComponent implements OnInit {
           }
         });
     }
+
+
       
 
     
