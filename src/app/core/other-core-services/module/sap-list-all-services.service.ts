@@ -21,8 +21,8 @@ interface GRNPayload {
     vatGroup: string;
     warehouse: string;
     uoM: string;
-    qaStatus: string;
-    qaDocNum: string;
+    qStatus: string;
+    qCode: string;
 }
 
 // Interface for API response (optional, for better type safety)
@@ -38,6 +38,32 @@ interface GRNResponse {
         poLineNum: number;
         errorMessage: string | null;
     }[];
+}
+interface GRNPayloadProduction {
+    docNum: number;
+    docEntry: number;
+    docDate: string; // ISO Date string
+    itemCode: string;
+    productName: string;
+    plannedQuantity: number;
+    uoM: number;
+    inventoryUOM: string;
+    productionOrderStatus: string;
+    warehouse: string;
+    completedQuantity: number;
+    rejectedQuantity: number;
+    machine: string;
+    mold: string;
+    bmr: string;
+    cavity: number;
+    cycleTime: number;
+    weight: number;
+    lotNo: string;
+    shift: string;
+    variant: string;
+    plant: string;
+    qStatus: string;
+    qCode: string;
 }
 
 @Injectable({
@@ -115,7 +141,7 @@ export class SAPAllServices {
             })
         );
     }
-    // CREATING GRN IN SAP - @IAK
+    // CREATING PURCHASE GRN IN SAP - @IAK
     GoodReceiptPurchaseGRN(payload: GRNPayload[]): Observable<GRNResponse> {
         const headers = new HttpHeaders({
             'Accept': 'application/json',
@@ -133,6 +159,32 @@ export class SAPAllServices {
                 tap((response: GRNResponse) => {
                     if (response.succeeded) {
                         console.log('GRN CREATED SUCCESSFULLY', response);
+                    }
+                }),
+                catchError((error) => {
+                    console.error('HTTP ERROR WHILE CREATING GRN', error);
+                    return throwError(() => error);
+                })
+            );
+    }
+    // CREATING PRODUCTION GRN IN SAP - @IAK
+    goodReceiptProductionGRN(payload: GRNPayloadProduction): Observable<GRNResponse> {
+        const headers = new HttpHeaders({
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-API-KEY': 'super'
+        });
+
+        return this._httpClient
+            .post<GRNResponse>(
+                `${environment.SAPitemsApiUrl}/api/B1ProductionOrders/CreateReceiptFromProduction`,
+                payload,
+                { headers }
+            )
+            .pipe(
+                tap((response: GRNResponse) => {
+                    if (response.succeeded) {
+                        console.log('Production GRN CREATED SUCCESSFULLY', response);
                     }
                 }),
                 catchError((error) => {

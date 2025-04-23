@@ -82,7 +82,7 @@
 
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>QC Lot No:</mat-label>
-                    <input type="number" class="view-mode-bg-grey" matInput formControlName="qcLotNo" required [readonly]="isEditMode"
+                    <input class="view-mode-bg-grey" matInput formControlName="qcLotNo" required [readonly]="isEditMode"
                         [ngClass]="{'view-mode-bg-grey': isEditMode}" />
                 </mat-form-field>
 
@@ -509,16 +509,17 @@
             </div>
 
             <div class="button-container mt-4 flex justify-end gap-2">
+                <button mat-flat-button color="primary" (click)="saveRemarksPurchase()" *ngIf="(isEditMode && purchaseQcSamples?.length > 0) || (!isEditMode && samplesPurchaseOrder.length > 0)">Save Remarks</button>
                 <button mat-flat-button color="warn" (click)="closeOpenQC()"
                     *ngIf="(isEditMode && purchaseQcSamples?.length > 0) || (!isEditMode && samplesPurchaseOrder.length > 0)">
-                    Close QC
+                    Close&nbsp;QC   <!-- Close QC -->
                 </button>
                 <div class="custom-button-container" *ngIf="planPurchaseOrderFormGroup.get('isFlexible')?.value === false ? 
                                 (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length === sampleQuantity) || 
                                 (!isEditMode && samplesPurchaseOrder.length === sampleQuantity))) : 
                                 (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length > 0) || 
                                 (!isEditMode && samplesPurchaseOrder.length > 0)))">
-                    <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button">
+                    <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button" matTooltip="Good Receipt PO (GRN)">
                         Post to SAP
                     </button>
                     <div *ngIf="isDropdownOpen" class="dropdown-menu">

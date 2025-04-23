@@ -28,6 +28,7 @@ import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-al
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs'; 
+import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 
 
 
@@ -117,6 +118,7 @@ export class TestingStepperComponent implements AfterViewInit {
         private _SAPItemsService: SAPItemsService,
         private changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
+        private _sessionStorageService: SessionStorageService,
     ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
@@ -712,9 +714,9 @@ export class TestingStepperComponent implements AfterViewInit {
             //  AGAINST SAP LIST ALL ITEMS
             this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
             this.itemsInspectionCardsForm.get('itemType').setValue(selectedRow.itemType);
-            this.itemsInspectionCardsForm.get('itemGroupCode').setValue(selectedRow.uoMGroupEntry);
+            this.itemsInspectionCardsForm.get('itemGroupCode').setValue(String(selectedRow.itemsGroupCode));
             this.itemsInspectionCardsForm.get('itemU_QACard').setValue(selectedRow.u_QACard);
-            this.itemsInspectionCardsForm.get('itemUoMGroupEntry').setValue(String(selectedRow.itemsGroupCode));
+            this.itemsInspectionCardsForm.get('itemUoMGroupEntry').setValue(String(selectedRow.uoMGroupEntry));
             this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
             this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemName);
 
@@ -2016,6 +2018,9 @@ export class TestingStepperComponent implements AfterViewInit {
             //         this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
             //     }
             // });
+        }
+        if (this.isEditMode == false) {
+            this._sessionStorageService.clearAll();
         }
     }
 
