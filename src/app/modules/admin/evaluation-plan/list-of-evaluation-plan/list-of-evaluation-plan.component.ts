@@ -25,6 +25,9 @@ import { ListOfEvaluationPlanPurchaseOrderService } from 'app/core/other-core-se
 import { PageEvent } from '@angular/material/paginator';
 import { SapPlanProductionOrderService } from 'app/core/other-core-services/module/sap-plan-production-order.service';
 import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
+import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/evaluation-plan-purchase-order.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { EvaluationPlanProductionOrderService } from 'app/core/other-core-services/module/evaluation-plan-production-order.service';
 
 @Component({
   selector: 'app-list-of-evaluation-plan',
@@ -143,7 +146,10 @@ export class ListOfEvaluationPlanComponent implements OnInit, OnDestroy {
     private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService,
     private _productionQCService: ListOfEvaluationPlanPurchaseOrderService,
     private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,
-    private _productionQAService: EvaluationPlanQaOrderService
+    private _productionQAService: EvaluationPlanQaOrderService,
+    private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService,
+    private _evaluationPlanProductionOrderService: EvaluationPlanProductionOrderService,
+    private _snackBar: MatSnackBar,
   ) {
     this.dataSource = new MatTableDataSource([]);
    }
@@ -224,7 +230,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
           status: order.documentStatus,
           warehouse: order.warehouse,
           cardName: order.cardName,
-          
+          isClosed: null, // INITIALIZE isClosed          
           // action: 'View'
         }));
   
@@ -233,6 +239,29 @@ onEvaluationPlanTypeChange(orderType: string): void {
   
         // ✅ Total records ko update karo, taake paginator sahi kaam kare
         this.totalRecords = response.data.totalRecords;
+        // ✅ Call getQualityStatus for each purchase order
+        this.sapDocPurchaseOrderData.forEach((order, index) => {
+          this._evaluationPurchaseOrderService
+            .getQualityStatusQC('purchase_qc', order.itemCode, order.docNo, order.lineNum)
+            .subscribe({
+              next: (qualityResponse) => {
+                console.log(`Quality Status for ${order.docNo}:`, qualityResponse);
+                // Optionally update the order object or UI based on qualityResponse
+                // Example: order.qualityStatus = qualityResponse.data.overallStatus;
+
+                // Update the isClosed property for the specific order
+                this.sapDocPurchaseOrderData[index].isClosed = qualityResponse.data.isClosed;
+                // Trigger table update
+                this.dataSource.data = [...this.sapDocPurchaseOrderData];
+              },
+              error: (error) => {
+                console.error(`Error fetching quality status for ${order.docNo}:`, error);
+                // Optionally set a default value on error
+                this.sapDocPurchaseOrderData[index].isClosed = false;
+                this.dataSource.data = [...this.sapDocPurchaseOrderData];
+              }
+            });
+        });
       } else {
         console.error('Failed to fetch SAP Purchase Orders', response.message);
       }
@@ -260,7 +289,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
                 cycleTime: order.cycleTime,
                 weight: order.weight,
                 variant: order.variant,
-                shift: order.shift,
+                shift: order.shift, 
+                isClosed: null, // INITIALIZE isClosed      
               }));
 
             // ✅ MatTableDataSource ko update karo
@@ -269,6 +299,29 @@ onEvaluationPlanTypeChange(orderType: string): void {
 
             // ✅ Total records ko update karo, taake paginator sahi kaam kare
             this.totalRecords = response.data.totalRecords;
+          // ✅ Call getQualityStatus for each production order
+          this.sapDocProductionOrderData.forEach((order, index) => {
+            this._evaluationPlanProductionOrderService
+              .getQualityStatusQCProduction('production_qc', order.itemCode, order.docNo)
+              .subscribe({
+                next: (qualityResponse) => {
+                  console.log(`Quality Status for ${order.docNo}:`, qualityResponse);
+                  // Optionally update the order object or UI based on qualityResponse
+                  // Example: order.qualityStatus = qualityResponse.data.overallStatus;
+
+                  // Update the isClosed property for the specific order
+                  this.sapDocProductionOrderData[index].isClosed = qualityResponse.data.isClosed;
+                  // Trigger table update
+                  this.dataSource.data = [...this.sapDocProductionOrderData];
+                },
+                error: (error) => {
+                  console.error(`Error fetching quality status for ${order.docNo}:`, error);
+                  // Optionally set a default value on error
+                  this.sapDocProductionOrderData[index].isClosed = false;
+                  this.dataSource.data = [...this.sapDocProductionOrderData];
+                }
+              });
+          });
         } else {
             console.error('Failed to fetch SAP Production Orders', response.message);
         }
@@ -335,6 +388,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
           cycleTime: order.cycleTime || 0,
           itemWeight: order.itemWeight || 0,
           inspectionQuantity: order.inspectionQuantity || 0,
+          isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
         }));
   
         if (this.orderType === 'productionOrder') {
@@ -555,5 +609,16 @@ onEvaluationPlanTypeChange(orderType: string): void {
         return ''; // Default class if no match
     }
   }
-  
+  handlePerformQC(element: any): void {
+    console.log('isClosed- ',element.isClosed);
+    if (element.isClosed === true || element.isClosed == null) {
+      this.navigateToOrderForm(element);
+    } else {
+      this._snackBar.open('An open QC document is already in progress, kindly complete that first.', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+      });
+    }
+  }
 }

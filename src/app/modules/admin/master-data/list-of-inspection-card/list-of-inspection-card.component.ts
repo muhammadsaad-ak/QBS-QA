@@ -37,6 +37,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
+import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { debounceTime } from 'rxjs';
 
 @Component({
@@ -105,7 +106,8 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
         private _qbsConfirmationService: QbsConfirmationService,
         private _router: Router,
         private _activatedRoute: ActivatedRoute,
-         private _inspectionCard: InspectionCardService,
+        private _inspectionCard: InspectionCardService,
+        private _sessionStorageService: SessionStorageService,
         
     ) {}
 
@@ -117,17 +119,17 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
         this._inspectionCard.getInspectionCard().subscribe((response) => {
             this.dataSource = new MatTableDataSource(response.data);
             this.dataSource.paginator = this.paginator;
-          });
+        });
 
-              // Custom filter for better search
-this.dataSource.filterPredicate = (data: any, filter: string) => {
-    const searchText = filter.toLowerCase();
-    return data.intCode?.toString().toLowerCase().includes(searchText) ||
-           data.description?.toString().toLowerCase().includes(searchText) ||
-           data.type?.toString().toLowerCase().includes(searchText) ||
-           (data.isActive ? 'active' : 'inactive').includes(searchText);
-  };
-  
+        // Custom filter for better search
+        this.dataSource.filterPredicate = (data: any, filter: string) => {
+            const searchText = filter.toLowerCase();
+            return data.intCode?.toString().toLowerCase().includes(searchText) ||
+                data.description?.toString().toLowerCase().includes(searchText) ||
+                data.type?.toString().toLowerCase().includes(searchText) ||
+                (data.isActive ? 'active' : 'inactive').includes(searchText);
+        };
+
         // Build the config form
         this.configForm = this._formBuilder.group({
             title: 'Remove User',
@@ -177,6 +179,7 @@ this.dataSource.filterPredicate = (data: any, filter: string) => {
         // this.searchInputControl.valueChanges.pipe(debounceTime(300)).subscribe((searchTerm: string) => {
         //   this.applyFilter(searchTerm);
         // });
+        this._sessionStorageService.clearAll();
     }
     ngOnDestroy(): void {}
 

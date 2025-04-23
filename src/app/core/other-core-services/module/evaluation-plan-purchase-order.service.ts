@@ -14,6 +14,7 @@ export class EvaluationPlanPurchaseOrderService {
   private _itemIdSAP = new BehaviorSubject<any[]>([]);
   private _sampleQty = new BehaviorSubject<any[]>([]);
   private _qcPurchaseCode = new BehaviorSubject<any[]>([]);
+  private _qualityStatus = new BehaviorSubject<any>(null);
 
   // Observable to expose role data state
   listQualitativeResults$: Observable<any[]> = this._listQualitativeResults.asObservable();
@@ -200,5 +201,27 @@ export class EvaluationPlanPurchaseOrderService {
         return throwError(() => error);
       })
     );
+  }
+  // GET Q-STATUS API - @IAK
+  getQualityStatusQC(entityName: string, itemCode: string, docNumber: string, lineNo: number): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json',
+    });
+
+    return this._httpClient
+      .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetQualityStatus?entityName=${entityName}&itemCode=${itemCode}&docNumber=${docNumber}&lineNo=${lineNo}`, { headers })
+      .pipe(
+        tap((qualityStatus) => {
+          console.log('API RESPONSE:', qualityStatus);
+          const fetchedQualityStatus = (qualityStatus as any).data ?? {};
+          this._qualityStatus.next(fetchedQualityStatus);
+          console.log('FETCHED Q-STATUS RESPONSE', fetchedQualityStatus);
+        }),
+        catchError((error) => {
+          console.error('ERROR WHILE FETCHING QUALITY STATUS', error);
+          return throwError(error);
+        })
+      );
   }
 }

@@ -20,6 +20,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { InspectionCharacteristicsService } from 'app/core/other-core-services/module/inspection-characteristics.service';
+import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { debounceTime } from 'rxjs';
 
 @Component({
@@ -88,11 +89,12 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _inspectionCharateristics: InspectionCharacteristicsService,
+    private _sessionStorageService: SessionStorageService,
     
     
   ) { } 
 
-   ngOnInit(): void {
+  ngOnInit(): void {
 
     // this._inspectionCharateristics.getInspectionCharacteristics().subscribe((response) => {
     //   this.dataSource = new MatTableDataSource(response.data);
@@ -105,47 +107,47 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
     });
 
     // Custom filter for better search
-this.dataSource.filterPredicate = (data: any, filter: string) => {
-  const searchText = filter.toLowerCase();
-  return data.intCode?.toString().toLowerCase().includes(searchText) ||
-         data.description?.toString().toLowerCase().includes(searchText) ||
-         data.type?.toString().toLowerCase().includes(searchText) ||
-         (data.isActive ? 'active' : 'inactive').includes(searchText);
-};
+    this.dataSource.filterPredicate = (data: any, filter: string) => {
+      const searchText = filter.toLowerCase();
+      return data.intCode?.toString().toLowerCase().includes(searchText) ||
+        data.description?.toString().toLowerCase().includes(searchText) ||
+        data.type?.toString().toLowerCase().includes(searchText) ||
+        (data.isActive ? 'active' : 'inactive').includes(searchText);
+    };
 
-      // Build the config form
-      this.configForm = this._formBuilder.group({
-        title: 'Remove User',
-        message:
-            'Are you sure you want to remove this user permanently? <span class="font-medium">This action cannot be undone!</span>',
-        icon: this._formBuilder.group({
-            show: true,
-            name: 'heroicons_outline:exclamation-triangle',
-            color: 'warn',
+    // Build the config form
+    this.configForm = this._formBuilder.group({
+      title: 'Remove User',
+      message:
+        'Are you sure you want to remove this user permanently? <span class="font-medium">This action cannot be undone!</span>',
+      icon: this._formBuilder.group({
+        show: true,
+        name: 'heroicons_outline:exclamation-triangle',
+        color: 'warn',
+      }),
+      actions: this._formBuilder.group({
+        confirm: this._formBuilder.group({
+          show: true,
+          label: 'Remove',
+          color: 'warn',
         }),
-        actions: this._formBuilder.group({
-            confirm: this._formBuilder.group({
-                show: true,
-                label: 'Remove',
-                color: 'warn',
-            }),
-            cancel: this._formBuilder.group({
-                show: true,
-                label: 'Cancel',
-            }),
+        cancel: this._formBuilder.group({
+          show: true,
+          label: 'Cancel',
         }),
-        dismissible: true,
+      }),
+      dismissible: true,
     });
-  
-  
+
+
     //Search with complete payload values
     // Subscribe to search input field value changes to filter the table data
     this.searchInputControl.valueChanges
-    .pipe(debounceTime(300))
-    .subscribe((searchTerm: string) => {
-      this.applyFilter(searchTerm);
-    });
-  
+      .pipe(debounceTime(300))
+      .subscribe((searchTerm: string) => {
+        this.applyFilter(searchTerm);
+      });
+
     //Search with the specific payload values
     // Override the default filterPredicate
     // this.dataSource.filterPredicate = (data: User, filter: string) => {
@@ -158,14 +160,15 @@ this.dataSource.filterPredicate = (data: any, filter: string) => {
     //     data.department.toLowerCase().includes(transformedFilter)
     //   );
     // };
-  
+
     // Subscribe to search input field value changes to filter the table data
     // this.searchInputControl.valueChanges.pipe(debounceTime(300)).subscribe((searchTerm: string) => {
     //   this.applyFilter(searchTerm);
     // });
-   
-     
-   }
+
+
+    this._sessionStorageService.clearAll();
+  }
    ngOnDestroy(): void {  
    }
 

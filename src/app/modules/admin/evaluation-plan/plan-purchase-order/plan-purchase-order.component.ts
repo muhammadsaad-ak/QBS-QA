@@ -20,6 +20,9 @@ import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services
 import { SapPlanPurchaseOrderService } from '../../../../core/other-core-services/module/sap-plan-purchase-order.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
+import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
+import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all-services.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -39,6 +42,7 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
     MatTableModule,
     MatTabsModule,
     MatSelectModule,
+    MatTooltipModule,
   ],
   templateUrl: './plan-purchase-order.component.html',
   styleUrls: ['./plan-purchase-order.component.scss']
@@ -98,6 +102,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     private router: Router,
     private _activeRoute: ActivatedRoute,
     private _qbsConfirmationService: QbsConfirmationService,
+    private _SAPItemsService: SAPItemsService,
+    private _SAPAllServices: SAPAllServices,
   ) { }
 
   planPurchaseOrderFormGroup = this._formBuilder.group({
@@ -197,9 +203,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
       const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
       const itemId: string = String(this.planPurchaseOrderFormGroup.value.itemId);
-      const sapQuantity: number = Number(this.planPurchaseOrderFormGroup.value.sapQuantity);
-      if (inspectionQuantity > sapQuantity) {
-        const errorMessage = `Inspection Qty can't be greater than PO Quantity (${sapQuantity})`;
+      const openQuantity: number = Number(this.planPurchaseOrderFormGroup.value.openQuantity);
+      if (inspectionQuantity > openQuantity) {
+        const errorMessage = `Inspection Qty can't be greater than Open Quantity (${openQuantity})`;
         this._snackBar.open(errorMessage, 'Close', {
           duration: 3000,
           panelClass: ['snackbar-error']
@@ -1224,7 +1230,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   }
 
   toggleDropdown() {
-    alert('POST TO SAP CLICKED!')
+    // alert('POST TO SAP CLICKED!')
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
@@ -1345,11 +1351,11 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   // VALIDATE INSPECTION QTY WITH SAP QTY - @IAK
   isInspectionQuantityInvalid: boolean = false;
   onInspectionQuantityBlur(): void {
-    const sapQuantity: number = Number(this.planPurchaseOrderFormGroup.value.sapQuantity);
+    const openQuantity: number = Number(this.planPurchaseOrderFormGroup.value.openQuantity);
     const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
-    if (inspectionQuantity > sapQuantity) {
+    if (inspectionQuantity > openQuantity) {
       this.isInspectionQuantityInvalid = true;
-      const errorMessage = `Inspection Qty can't be greater than PO Quantity ${sapQuantity}.`;
+      const errorMessage = `Inspection Qty can't be greater than Open Quantity ${openQuantity}.`;
       this._snackBar.open(errorMessage, 'Close', {
         duration: 3000,
         panelClass: ['snackbar-error']
@@ -1359,4 +1365,136 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       this.isInspectionQuantityInvalid = false;
     }
   }
+  // CREATING PURCHASE GRN FOR POSTING TO SAP INTEGRATION - @IAK
+  createGRN(): void {
+    const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
+    const intQCode = this.planPurchaseOrderFormGroup.value.intCode;
+    const payloadToCloseOpenQC = [
+      {
+        documentStatus: 'bost_Open',
+        docEntry: 71,
+        docNum: 241100009,
+        docDate: '2025-04-15T00:00:00Z',
+        cardCode: 'VEN000017',
+        cardName: 'Chawla Industries (Pvt) Ltd',
+        lineNum: 0,
+        itemCode: 'SF000002',
+        itemDescription: 'Syngenta 250ml Bottle (PET)',
+        quantity: inspectionQuantity,
+        price: 15,
+        lineStatus: 'bost_Open',
+        remainingOpenQuantity: 10500,
+        vatGroup: 'IT02',
+        warehouse: 'WHCPH006',
+        uoM: 'Manual',
+        qStatus: 'tYes',
+        qCode: intQCode
+      }
+    ];
+    console.log('PAYLOAD', payloadToCloseOpenQC);
+    // return;
+    this._SAPAllServices.GoodReceiptPurchaseGRN(payloadToCloseOpenQC).subscribe({
+      next: (response) => {
+        console.log('GRN Created Successfully:', response);
+        if (response.succeeded) {
+          console.log('GRN created successfully in SAP! DocEntry: ' + response.data[0].docEntry);
+          const snackRefSuccess = this._snackBar.open('GRN created successfully in SAP!', 'Close',
+            {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            }
+          );
+          snackRefSuccess.afterDismissed().subscribe(() => {
+            this.closeOpenQCWithPostToSAP();
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error creating GRN:', error);
+        console.error('error.message: ', (error.message || 'Unknown error'));
+        this._snackBar.open('Failed to create GRN: ' + (error.message || 'Unknown error'), 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
   }
+  // CLOSE OPEN QC AFTER POST TO SAP - @IAK
+  closeOpenQCWithPostToSAP() {
+    const OpenPOqcId = this.planPurchaseOrderFormGroup.get('id')?.value;
+    if (!OpenPOqcId) {
+      console.error('NO VALID PURCHASE QC ID FOUND AGAINST THIS PO');
+      this._snackBar.open('FAILED TO CLOSE. QC ID MISSING.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error'],
+      });
+      return;
+    }
+    const closeQCPayloadWithPostToSAP = {
+      isPerformed: true,
+      isPostedToSap: true,
+      isClosed: true,
+      overallStatus: this.planPurchaseOrderFormGroup.get('samplesStatus')?.value,
+      id: OpenPOqcId,
+      inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || 'Closed on GRN posting',
+      isActive: true,
+    };
+    console.log('PAYLOAD', closeQCPayloadWithPostToSAP);
+    // API CALL
+    this._evaluationPurchaseOrderService.updateToCloseOpenQC(closeQCPayloadWithPostToSAP).subscribe({
+      next: (response) => {
+        this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+        });
+        this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+      },
+      error: (error) => {
+        console.error('ERROR WHILE CLOSING QC.', error);
+        this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error'],
+        });
+      },
+    });
+  }
+  saveRemarksPurchase() {
+    const OpenPOqcId = this.planPurchaseOrderFormGroup.get('id')?.value;
+    if (!OpenPOqcId) {
+      console.error('NO VALID PURCHASE QC ID FOUND AGAINST THIS PO');
+      this._snackBar.open('FAILED TO SAVE REMARKS. QC ID MISSING.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error'],
+      });
+      return;
+    }
+    const updateRemarksPurchase = {
+      isPerformed: true,
+      isPostedToSap: false,
+      isClosed: false,
+      overallStatus: this.planPurchaseOrderFormGroup.get('samplesStatus')?.value,
+      id: OpenPOqcId,
+      inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value,
+      isActive: true,
+    };
+    console.log('PAYLOAD', updateRemarksPurchase);
+    this._evaluationPurchaseOrderService.updateToCloseOpenQC(updateRemarksPurchase).subscribe({
+      next: (response) => {
+        this._snackBar.open('REMARKS SAVED SUCCESSFULLY', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+        });
+        this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+      },
+      error: (error) => {
+        console.error('ERROR WHILE SAVING REMARKS QC.', error);
+        this._snackBar.open('FAILED TO SAVE REMARKS.', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error'],
+        });
+      },
+    });
+  }
+}

@@ -128,6 +128,10 @@
           <mat-label>Item ID:</mat-label>
           <input class="view-mode-bg-grey" matInput formControlName="itemId">
         </mat-form-field>
+        <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
+          <mat-label>QC ID:</mat-label>
+          <input class="view-mode-bg-grey" matInput formControlName="id">
+        </mat-form-field>
       </div>
 
       <!-- Save Button -->
@@ -181,7 +185,7 @@
                     (samplesStatus === true && ((isEditMode && productionQcSamples?.length > 0) || 
                     (!isEditMode && samplesProductionOrder.length > 0)))">
         <mat-label>Remarks</mat-label>
-        <textarea matInput formControlName="prodOrderRemarks" placeholder="Enter your remarks"></textarea>
+        <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
       </mat-form-field>
 
       <ng-template #dialogTemplateItemsPP let-data="data">
@@ -470,14 +474,19 @@
         (samplesProductionOrder.length === sampleQuantity && samplesStatus === true) : 
         (samplesStatus === true && ((isEditMode && productionQcSamples?.length > 0) || 
         (!isEditMode && samplesProductionOrder.length > 0)))">
-        <button mat-flat-button color="primary" (click)="saveProdOrderRemarks()">Save Remarks</button>
+        <button mat-flat-button color="primary" (click)="saveRemarksProduction()">Save Remarks</button>
+        <button mat-flat-button color="warn" (click)="closeOpenQC()"
+          *ngIf="(isEditMode && productionQcSamples?.length > 0) || (!isEditMode && samplesProductionOrder.length > 0)">
+          Close&nbsp;QC <!-- Close QC -->
+        </button>
+
         <div class="custom-button-container">
-          <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button">
+          <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button" matTooltip="Create Receipt From Production"> <!-- toggleDropdown() -->
             Post to SAP
           </button>
           <div *ngIf="isDropdownOpen" class="dropdown-menu">
-            <button mat-menu-item (click)="action1()">
-              Good Receipt PO (GRN)
+            <button mat-menu-item (click)="closeOpenQCWithPostToSAP()">  <!-- action1() -->
+              Post&nbsp;Production&nbsp;Receipt <!-- Post Production Receipt -->
             </button>
           </div>
         </div>

@@ -155,13 +155,11 @@
                                 <ng-container *ngIf="currentView === 'evaluationPlan'">
                                     <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10"
                                     [ngClass]="{
-                                    'text-green-500': element.isClosed === true,
-                                    'text-amber-500': !element.isClosed === true}">
+                                    'text-green-500': element.isClosed,
+                                    'text-amber-500': !element.isClosed}">
                                         <span *ngIf="element.isClosed === true" class="warn">Closed</span>
-                                        <span *ngIf="element.isClosed === false">In-Progress</span>
-                                        <span *ngIf="element.isClosed !== true && element.isClosed !== false">
-                                            {{ element.isClosed ? element.isClosed : 'In-Progress' }}
-                                        </span>
+                                        <span *ngIf="element.isClosed === false">In&nbsp;Progress</span>
+                                        <span *ngIf="element.isClosed == null">In&nbsp;Progress</span>
                                     </td>
                                 </ng-container>
                             </ng-container>
@@ -171,10 +169,28 @@
                                     style="background-color: #e2e8f0 !important; text-align: center;">
                                     Q-Status
                                 </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10"
-                                    [ngClass]="getStatusClass('In Progress')">
-                                    Pending
-                                </td>
+                                <!-- <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10" [ngClass]="{
+                                'text-green-500': element.isClosed === true || element.isClosed == null,
+                                'text-amber-500': element.isClosed === false}">
+                                    {{ element.isClosed === false ? 'In Progress' : 'Pending' }}
+                                </td> -->
+                                <ng-container *ngIf="currentView === 'sapDocuments' && orderType === 'purchaseOrder'">
+                                    <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10" 
+                                    [ngClass]="{
+                                    'text-green-500': element.isClosed === true || element.isClosed == null,
+                                    'text-amber-500': element.isClosed === false
+                                    }">
+                                        {{ element.isClosed === false ? 'In Progress' : 'Pending' }}
+                                    </td>
+                                </ng-container>
+                                <ng-container *ngIf="currentView === 'sapDocuments' && orderType === 'productionOrder'">
+                                    <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10" [ngClass]="{
+                                                                          'text-green-500': element.isClosed === true || element.isClosed == null,
+                                                                          'text-amber-500': element.isClosed === false
+                                                                        }">
+                                        {{ element.isClosed === false ? 'In Progress' : 'Pending' }}
+                                    </td>
+                                </ng-container>
                             </ng-container>
 
                             <!-- Action COLUMN -->
@@ -190,13 +206,23 @@
                                     <mat-menu #menu="matMenu">
                                         <!-- Show "Perform QC" if we are on SAP Documents -->
                                         <button mat-menu-item class="text-red-400"
-                                            *ngIf="currentView === 'sapDocuments'"
-                                            (click)="navigateToOrderForm(element)">
+                                            *ngIf="currentView === 'sapDocuments' && orderType === 'purchaseOrder'"
+                                            (click)="handlePerformQC(element)">
                                             Perform&nbsp;QC
                                         </button>
+                                        <button mat-menu-item class="text-red-400"
+                                            *ngIf="currentView === 'sapDocuments' && orderType === 'productionOrder'"
+                                            (click)="handlePerformQC(element)">
+                                            Perform&nbsp;QC
+                                        </button>
+                                        <!-- <button mat-menu-item class="text-red-400"
+                                            *ngIf="currentView === 'sapDocuments' && orderType === 'productionOrder'"
+                                            (click)="navigateToOrderForm(element)">
+                                            Perform&nbsp;QC
+                                        </button> -->
 
                                         <button mat-menu-item class="text-red-400"
-                                            *ngIf="currentView === 'sapDocuments'"
+                                            *ngIf="currentView === 'sapDocuments' && orderType === 'productionOrder'"
                                             (click)="navigateToEvaluationPlanQAForm(element)">
                                             Perform&nbsp;QA
                                         </button>
