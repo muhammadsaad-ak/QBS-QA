@@ -37,6 +37,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { QualitativeResultsService } from 'app/core/other-core-services/module/qualitative-results.service';
+import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { debounceTime } from 'rxjs';
 
 @Component({
@@ -95,6 +96,7 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _qualitativeResultsService: QualitativeResultsService,
+    private _sessionStorageService: SessionStorageService,
   ) { }
 
   ngOnInit(): void {
@@ -119,6 +121,8 @@ export class QualitativeResultComponent implements OnInit, OnDestroy {
       .subscribe((searchTerm: string) => {
         this.applyFilter(searchTerm);
       });
+
+    this._sessionStorageService.clearAll();
   }
 
   ngOnDestroy(): void { }

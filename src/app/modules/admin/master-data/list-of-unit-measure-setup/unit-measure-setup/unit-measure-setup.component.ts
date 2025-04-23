@@ -19,6 +19,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
+import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { UomMasterService } from 'app/core/other-core-services/module/uom-master.service';
 import { debounceTime } from 'rxjs';
 
@@ -85,6 +86,7 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
     private router: Router,
     private _activatedRoute: ActivatedRoute,
     private _uommasterservice: UomMasterService,
+    private _sessionStorageService: SessionStorageService,
 
   ) { }
 
@@ -161,6 +163,7 @@ export class UnitMeasureSetupComponent implements OnInit, OnDestroy {
     // });
 
 
+    this._sessionStorageService.clearAll();
   }
 
   ngOnDestroy(): void { }

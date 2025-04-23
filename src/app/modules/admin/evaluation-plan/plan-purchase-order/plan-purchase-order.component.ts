@@ -22,6 +22,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
 import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all-services.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -41,6 +42,7 @@ import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all
     MatTableModule,
     MatTabsModule,
     MatSelectModule,
+    MatTooltipModule,
   ],
   templateUrl: './plan-purchase-order.component.html',
   styleUrls: ['./plan-purchase-order.component.scss']
@@ -1385,8 +1387,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         vatGroup: 'IT02',
         warehouse: 'WHCPH006',
         uoM: 'Manual',
-        qaStatus: 't',
-        qaDocNum: intQCode
+        qStatus: 'tYes',
+        qCode: intQCode
       }
     ];
     console.log('PAYLOAD', payloadToCloseOpenQC);
@@ -1451,6 +1453,44 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       error: (error) => {
         console.error('ERROR WHILE CLOSING QC.', error);
         this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error'],
+        });
+      },
+    });
+  }
+  saveRemarksPurchase() {
+    const OpenPOqcId = this.planPurchaseOrderFormGroup.get('id')?.value;
+    if (!OpenPOqcId) {
+      console.error('NO VALID PURCHASE QC ID FOUND AGAINST THIS PO');
+      this._snackBar.open('FAILED TO SAVE REMARKS. QC ID MISSING.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error'],
+      });
+      return;
+    }
+    const updateRemarksPurchase = {
+      isPerformed: true,
+      isPostedToSap: false,
+      isClosed: false,
+      overallStatus: this.planPurchaseOrderFormGroup.get('samplesStatus')?.value,
+      id: OpenPOqcId,
+      inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value,
+      isActive: true,
+    };
+    console.log('PAYLOAD', updateRemarksPurchase);
+    this._evaluationPurchaseOrderService.updateToCloseOpenQC(updateRemarksPurchase).subscribe({
+      next: (response) => {
+        this._snackBar.open('REMARKS SAVED SUCCESSFULLY', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+        });
+        this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+      },
+      error: (error) => {
+        console.error('ERROR WHILE SAVING REMARKS QC.', error);
+        this._snackBar.open('FAILED TO SAVE REMARKS.', 'Close', {
           duration: 3000,
           panelClass: ['snackbar-error'],
         });

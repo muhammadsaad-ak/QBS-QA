@@ -22,6 +22,7 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime, forkJoin } from 'rxjs';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
+import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 
 @Component({
   selector: 'app-items-inspection-cards',
@@ -85,6 +86,7 @@ export class ItemsInspectionCardsComponent {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemInspectionCardService: ItemInspectionCardService,
+    private _sessionStorageService: SessionStorageService,
 
   ) { }
 
@@ -132,7 +134,7 @@ export class ItemsInspectionCardsComponent {
     //   .subscribe((searchTerm: string) => {
     //     this.applyFilter(searchTerm);
     //   });
-    // X ngOnInit
+    this._sessionStorageService.clearAll();
   }
   
   ngOnDestroy(): void { }

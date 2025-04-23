@@ -17,6 +17,11 @@ import { InspectionCardService } from 'app/core/other-core-services/module/inspe
 import { EvaluationPlanProductionOrderService } from 'app/core/other-core-services/module/evaluation-plan-production-order.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SapPlanProductionOrderService } from 'app/core/other-core-services/module/sap-plan-production-order.service';
+import { Router } from '@angular/router';
+import { QbsConfirmationService } from '@qbs/services/confirmation';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all-services.service';
+import { QbsSuccessConfirmationService } from '@qbs/services/confirmation/success-confirmation.service';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -36,6 +41,7 @@ import { SapPlanProductionOrderService } from 'app/core/other-core-services/modu
     MatTableModule,
     MatTabsModule,
     MatSelectModule,
+    MatTooltipModule,
   ],
   templateUrl: './plan-production-order.component.html',
   styleUrl: './plan-production-order.component.scss'
@@ -107,9 +113,11 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     private cdr: ChangeDetectorRef,
     private _evaluationProductionOrderService: EvaluationPlanProductionOrderService,
     private _sapPlanProductionOrderService: SapPlanProductionOrderService,
-    
-    
     private _snackBar: MatSnackBar,
+    private router: Router,
+    private _qbsConfirmationService: QbsConfirmationService,
+    private _qbsSuccessConfirmationService: QbsSuccessConfirmationService,
+    private _SAPAllServices: SAPAllServices,
   ) { }
   planProductionOrderFormGroup = this._formBuilder.group({
     id: [''], 
@@ -135,7 +143,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     inspectionQuantity: [], 
     analyzedBy: [''], 
     status: [''],
-    prodOrderRemarks: [''],  // remarks:  [''],
+    remarks: [''],  // remarks:  [''],
 
     qualitativeInspectionObjects: this.fb.array([]),
     quantitativeInspectionResults: this.fb.array([]),
@@ -161,6 +169,10 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     sampleName: [''],
     isFlexible: [false],
     samplesStatus: [false],
+    isPerformed: [true],
+    isPostedToSap: [false],
+    isClosed: [false],
+    overallStatus: [false],
   });
 
   createInspectionObject(): FormGroup {
@@ -251,6 +263,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
         console.log('SENDING Production ORDER PAYLOAD:', payload);
 
         this.isFormSaved = true; // UI trigger karega
+        console.log(payload);
         // return;
         this._evaluationProductionOrderService.AddProductionOrder(payload).subscribe(
           (response) => {
@@ -924,6 +937,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       cycleTime: data.cycleTime ?? 'N/A',
       itemWeight: data.itemWeight ?? 'N/A',
       inspectionQuantity: data.inspectionQuantity,
+      id: data.id
     });
   }
 
@@ -1260,6 +1274,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
 
   action1() {
+    alert('toggleDropdown action CLICKED');
     console.log("Action 1 selected");
   }
 
@@ -1324,7 +1339,260 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
   saveProdOrderRemarks() {
     // alert('clicked');
-    alert(this.planProductionOrderFormGroup.get('prodOrderRemarks')?.value);
-    console.log(this.planProductionOrderFormGroup.get('prodOrderRemarks')?.value);
+    alert(this.planProductionOrderFormGroup.get('remarks')?.value);
+    console.log(this.planProductionOrderFormGroup.get('remarks')?.value);
+  }
+  // CLOSE OPEN QC FORCEFULLY - @IAK
+  closeOpenQC() {
+    const OpenPOqcId = this.planProductionOrderFormGroup.get('id')?.value;
+    if (!OpenPOqcId) {
+      console.error('NO VALID PRODUCTION QC ID FOUND AGAINST THIS PO');
+      this._snackBar.open('FAILED TO CLOSE. QC ID MISSING.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error'],
+      });
+      return;
+    }
+    const payloadToCloseOpenQC = {
+      isPerformed: true,
+      isPostedToSap: false,
+      isClosed: true,
+      overallStatus: this.planProductionOrderFormGroup.get('samplesStatus')?.value,
+      id: OpenPOqcId,
+      inspectionDateTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
+      remarks: this.planProductionOrderFormGroup.get('remarks')?.value || 'Closed due to unknown reasons',
+      isActive: true,
+    };
+    console.log('PAYLOAD', payloadToCloseOpenQC);
+    // FUNCTION TO HANDLE API CALL
+    const callCloseQCApi = () => {
+      this._evaluationProductionOrderService.updateToCloseOpenQC(payloadToCloseOpenQC).subscribe({
+        next: (response) => {
+          this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-success'],
+          });
+          this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+        },
+        error: (error) => {
+          console.error('ERROR WHILE CLOSING QC.', error);
+          this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error'],
+          });
+        },
+      });
+    };
+    if (payloadToCloseOpenQC.overallStatus === true) {
+      const confirmation = this._qbsConfirmationService.open({
+        title: 'Close QC',
+        message: 'Are you sure you want to close this QC instead of posting to SAP?',
+        actions: {
+          confirm: {
+            label: 'Yes, Close.',
+          },
+          cancel: {
+            label: 'No',
+          },
+        },
+      });
+      // subscribe afterClosed ACTION
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          callCloseQCApi();
+        }
+      });
+    } else if (payloadToCloseOpenQC.overallStatus === false) {
+      const confirmation = this._qbsConfirmationService.open({
+        title: 'Close QC',
+        message: 'Are you sure you want to close this QC?',
+        actions: {
+          confirm: {
+            label: 'Yes',
+          },
+          cancel: {
+            label: 'No',
+          },
+        },
+      });
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          callCloseQCApi();
+        }
+      });
+    }
+  }
+  saveRemarksProduction() {
+    const OpenPOqcId = this.planProductionOrderFormGroup.get('id')?.value;
+    if (!OpenPOqcId) {
+      console.error('NO VALID PRODUCTION QC ID FOUND AGAINST THIS PO');
+      this._snackBar.open('FAILED TO SAVE REMARKS. QC ID MISSING.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error'],
+      });
+      return;
+    }
+    const updateRemarksProduction = {
+      isPerformed: true,
+      isPostedToSap: false,
+      isClosed: false,
+      overallStatus: this.planProductionOrderFormGroup.get('samplesStatus')?.value,
+      id: OpenPOqcId,
+      inspectionDateTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
+      remarks: this.planProductionOrderFormGroup.get('remarks')?.value,
+      isActive: true,
+    };
+    console.log('PAYLOAD', updateRemarksProduction);
+    this._evaluationProductionOrderService.updateToCloseOpenQC(updateRemarksProduction).subscribe({
+      next: (response) => {
+        this._snackBar.open('REMARKS SAVED SUCCESSFULLY', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+        });
+        this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+      },
+      error: (error) => {
+        console.error('ERROR WHILE SAVING REMARKS QC.', error);
+        this._snackBar.open('FAILED TO SAVE REMARKS.', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error'],
+        });
+      },
+    });
+  }
+  // CLOSE OPEN QC AFTER POST TO SAP - @IAK
+  closeOpenQCWithPostToSAP() {
+    const OpenPOqcId = this.planProductionOrderFormGroup.get('id')?.value;
+    if (!OpenPOqcId) {
+      console.error('NO VALID PURCHASE QC ID FOUND AGAINST THIS PO');
+      this._snackBar.open('FAILED TO CLOSE. QC ID MISSING.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error'],
+      });
+      return;
+    }
+    const closeQCPayloadWithPostToSAP = {
+      isPerformed: true,
+      isPostedToSap: true,
+      isClosed: true,
+      overallStatus: this.planProductionOrderFormGroup.get('samplesStatus')?.value,
+      id: OpenPOqcId,
+      inspectionDateTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
+      remarks: this.planProductionOrderFormGroup.get('remarks')?.value || 'Closed on GRN posting',
+      isActive: true,
+    };
+    console.log('PAYLOAD', closeQCPayloadWithPostToSAP);
+    if (closeQCPayloadWithPostToSAP.overallStatus === true) {
+      const confirmation = this._qbsSuccessConfirmationService.open({
+        title: 'Create Receipt',
+        message: 'Do you want to post this document in SAP?',
+        actions: {
+          confirm: {
+            label: 'Yes.',
+          },
+          cancel: {
+            label: 'No',
+          },
+        },
+      });
+      // subscribe afterClosed ACTION
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          // callCloseQCApi();
+          // this.action1();
+          this.createGRN();
+        }
+      });
+    } 
+    // API CALL
+    // this._evaluationProductionOrderService.updateToCloseOpenQC(closeQCPayloadWithPostToSAP).subscribe({
+    //   next: (response) => {
+    //     this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
+    //       duration: 3000,
+    //       panelClass: ['snackbar-success'],
+    //     });
+    //     this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+    //   },
+    //   error: (error) => {
+    //     console.error('ERROR WHILE CLOSING QC.', error);
+    //     this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
+    //       duration: 3000,
+    //       panelClass: ['snackbar-error'],
+    //     });
+    //   },
+    // });
+  }
+  // CREATING PURCHASE GRN FOR POSTING TO SAP INTEGRATION - @IAK
+  createGRN(): void {
+    const inspectionQuantity: number = Number(this.planProductionOrderFormGroup.value.inspectionQuantity);
+    const intQCode = this.planProductionOrderFormGroup.value.intCode;
+
+    const payloadToCloseOpenQC =
+    {
+      docNum: 241000013,
+      docEntry: 17,
+      docDate: "2025-04-15T00:00:00Z",
+      itemCode: "SF000002",
+      productName: "Syngenta 250ml Bottle (PET)",
+      plannedQuantity: 25000,
+      uoM: -1,
+      inventoryUOM: "Pcs",
+      productionOrderStatus: "boposReleased",
+      warehouse: "01",
+      completedQuantity: inspectionQuantity,
+      rejectedQuantity: 0,
+      machine: "MCH014588",
+      mold: "M00258",
+      bmr: "BMR25067",
+      cavity: 6,
+      cycleTime: 8,
+      weight: 350,
+      lotNo: "L023987",
+      shift: "A",
+      variant: "Syngenta",
+      plant: "K",
+      qStatus: "tYes",
+      qCode: intQCode,
+    };
+    console.log('PAYLOAD', payloadToCloseOpenQC);
+    // return;
+    this._SAPAllServices.goodReceiptProductionGRN(payloadToCloseOpenQC).subscribe({
+      next: (response) => {
+        if (response.succeeded) {
+          // console.log('Production GRN Created Successfully:', response);
+          console.log('GRN created successfully in SAP! DocEntry: ' + response.data[0].docEntry);
+          const snackRefSuccess = this._snackBar.open('GRN created successfully in SAP!', 'Close',
+            {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            }
+          );
+          snackRefSuccess.afterDismissed().subscribe(() => {
+            this.closeOpenQCWithPostToSAP();
+          });
+        } else if (response.succeeded == false || response.statusCode == 422) {
+          console.warn(`Failed to create Production GRN: ${response.message}`);
+          this._snackBar.open(`Failed to generate receipt.`, 'Close', {
+            duration: 1000,
+            panelClass: ['snackbar-error']
+          }).afterDismissed().subscribe(() => {
+            this._snackBar.open(`Make sure that the consumed quantity of the component item would not cause the item's inventory to fall below zero`, 'Close',
+              {
+                duration: 5000,
+                panelClass: ['snackbar-error']
+              }
+            );
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error creating GRN:', error);
+        console.error('error.message: ', (error.message || 'Unknown error'));
+        this._snackBar.open('Failed to create Production GRN: ' + (error.message || 'Unknown error'), 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
   }
 }
