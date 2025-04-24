@@ -430,7 +430,7 @@ export class EvaluationPlanQaComponent implements OnInit {
                         qaId,
                         mouldNo,
                         cavityNum,
-                        isToggledOn: false,
+                        isToggledOn: true,
                         name: 'Cavity - '                      };
       
                       this._evaluationProductionOrderService.addProductionCavityQA(cavityBulkPayload).subscribe({
@@ -674,9 +674,11 @@ export class EvaluationPlanQaComponent implements OnInit {
           .every((i: any) => i.isQuantitativeResultPassed === true);
       
         const isSamplePassed = hasPassingQualitative && hasPassingQuantitative;
+        const currentSamples = this.samplesByCavity[this.selectedCavityId] || [];
+
       
         const payload = {
-          name: `Sample-${this.samples.length + 1}`,
+          name: `Sample-${currentSamples.length + 1}`,
           inspectionDateTime: new Date().toISOString(),
           inspectionBy,
         //   cavityId: this.productionQAId.id, // ✅ corrected key
