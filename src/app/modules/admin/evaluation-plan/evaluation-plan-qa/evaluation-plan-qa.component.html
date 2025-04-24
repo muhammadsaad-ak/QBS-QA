@@ -148,7 +148,7 @@
                     <div>
                     <h3>Cavity - {{ i + 1 }}</h3>
                     <p style="font-size: 12px; margin: 0;">Generated Time: {{ cavControl.value.generatedTime }}</p>
-                    <p style="font-size: 12px; margin: 0;">Cavity ID: {{ cavControl.value.id }}</p>
+                    <!-- <p style="font-size: 12px; margin: 0;">Cavity ID: {{ cavControl.value.id }}</p> -->
                   </div>
                     <!-- <h3>{{ cavControl.value.name }}</h3> -->
                     <mat-slide-toggle [checked]="cavControl.value.isToggledOn"
@@ -201,18 +201,17 @@
                                 required readonly />
                         </mat-form-field>
             
-                        <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+                        <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
                           <mat-label>Cavity ID</mat-label>
                           <input class="view-mode-bg-grey" matInput [value]="selectedCavity?.id" placeholder="Enter Code" readonly />
-                        </mat-form-field>
+                        </mat-form-field> -->
 
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
             <div
               *ngFor="let sample of samplesByCavity[selectedCavity?.id] || []; let i = index"
               class="sample-card"
-              style="background-color: #caead6;"
-            >
+              style="background-color: #caead6;">
               <h3 style="font-weight: 500">{{ sample.title }}</h3>
               <div style="font-weight: 400">Inspection Time: {{ sample.inspectionTime }}</div>
               <div style="font-weight: 400">Inspection By: {{ sample.inspectionBy }}</div>
