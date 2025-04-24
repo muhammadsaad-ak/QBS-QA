@@ -169,7 +169,8 @@
             </div>
 
             <!-- *ngIf="isFormSaved && samplesPurchaseOrder.length === sampleQuantity" -->
-            <mat-form-field class="mt-2 w-[330px]" *ngIf="(isEditMode && purchaseQcSamples?.length > 0) || (!isEditMode && samplesPurchaseOrder.length > 0)">
+            <!-- (isEditMode && purchaseQcSamples?.length > 0) || (!isEditMode && samplesPurchaseOrder.length > 0) -->
+            <mat-form-field class="mt-2 w-[330px]" *ngIf="isEditMode">
                 <mat-label>Remarks</mat-label>
                 <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
             </mat-form-field>
@@ -508,22 +509,24 @@
                 </mat-form-field>
             </div>
 
+            <!-- *ngIf="(isEditMode && purchaseQcSamples?.length > 0) || (!isEditMode && samplesPurchaseOrder.length > 0)" -->
             <div class="button-container mt-4 flex justify-end gap-2">
-                <button mat-flat-button color="primary" (click)="saveRemarksPurchase()" *ngIf="(isEditMode && purchaseQcSamples?.length > 0) || (!isEditMode && samplesPurchaseOrder.length > 0)">Save Remarks</button>
-                <button mat-flat-button color="warn" (click)="closeOpenQC()"
-                    *ngIf="(isEditMode && purchaseQcSamples?.length > 0) || (!isEditMode && samplesPurchaseOrder.length > 0)">
-                    Close&nbsp;QC   <!-- Close QC -->
+                <button mat-flat-button color="primary" (click)="saveRemarksPurchase()" *ngIf="isEditMode">
+                    Save&nbsp;Remarks <!-- Save Remarks -->
+                </button>
+                <button mat-flat-button color="warn" (click)="closeOpenQC()" *ngIf="isEditMode">
+                    Close&nbsp;QC <!-- Close QC -->
                 </button>
                 <div class="custom-button-container" *ngIf="planPurchaseOrderFormGroup.get('isFlexible')?.value === false ? 
                                 (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length === sampleQuantity) || 
                                 (!isEditMode && samplesPurchaseOrder.length === sampleQuantity))) : 
                                 (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length > 0) || 
                                 (!isEditMode && samplesPurchaseOrder.length > 0)))">
-                    <button mat-flat-button color="primary" (click)="toggleDropdown()" class="custom-button" matTooltip="Good Receipt PO (GRN)">
+                    <button mat-flat-button color="primary" (click)="confirmationPostToSAP()" class="custom-button" matTooltip="Good Receipt PO (GRN)">
                         Post to SAP
                     </button>
                     <div *ngIf="isDropdownOpen" class="dropdown-menu">
-                        <button mat-menu-item (click)="closeOpenQCWithPostToSAP()">
+                        <button mat-menu-item (click)="action1()">
                             Good Receipt PO (GRN)
                         </button>
                     </div>

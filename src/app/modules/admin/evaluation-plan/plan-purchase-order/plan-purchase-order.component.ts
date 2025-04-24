@@ -23,6 +23,7 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
 import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all-services.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { QbsSuccessConfirmationService } from '@qbs/services/confirmation/success-confirmation.service';
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -104,6 +105,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     private _qbsConfirmationService: QbsConfirmationService,
     private _SAPItemsService: SAPItemsService,
     private _SAPAllServices: SAPAllServices,
+    private _qbsSuccessConfirmationService: QbsSuccessConfirmationService,
   ) { }
 
   planPurchaseOrderFormGroup = this._formBuilder.group({
@@ -794,6 +796,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
     if (this.selectedOrder) {
       if (this.isEditMode) {
+        this.planPurchaseOrderFormGroup.patchValue({ id: this.selectedOrder.id });
         this.populateEditForm(this.selectedOrder); // Call Edit QC function
         this.ListAllPurchaseQCSamplesByQcId(this.selectedOrder.id)
         // API CALL TO FETCH isSamplePassed - @IAK
@@ -897,7 +900,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       vendor: data.vendor ?? "",
       remarks: data.remarks ?? "",
       itemId: data.itemDetails?.id ?? "",
-      id: data.id
+      // id: data.id,
     });
   }
 
@@ -1230,7 +1233,6 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   }
 
   toggleDropdown() {
-    // alert('POST TO SAP CLICKED!')
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
@@ -1256,11 +1258,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this._evaluationPurchaseOrderService.getFlexibilityByItemId(ItemId).subscribe({
       next: (isFlexible: boolean) => {
         console.log('FLEXIBILITY:', isFlexible);
-        // Ab yahan se use karo jaise chahiye:
         if (isFlexible) {
           this.planPurchaseOrderFormGroup.get('isFlexible')?.setValue(isFlexible);
         } else {
-          // Not flexible
+          console.log('FLEXIBILITY:', isFlexible);
         }
       },
       error: (err) => {
@@ -1360,12 +1361,12 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         duration: 3000,
         panelClass: ['snackbar-error']
       });
-      // this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: sapQuantity });
+      // this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: openQuantity });
     } else {
       this.isInspectionQuantityInvalid = false;
     }
   }
-  // CREATING PURCHASE GRN FOR POSTING TO SAP INTEGRATION - @IAK
+  // CREATING PURCHASE GRN PAYLOAD FOR POST TO SAP API INTEGRATION - @IAK
   createGRN(): void {
     const docNoPurchase = this.planPurchaseOrderFormGroup.get('docNo')?.value;
     const lineNoPurchase = this.planPurchaseOrderFormGroup.get('lineNo')?.value;
@@ -1378,8 +1379,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         // IF response CONTAINS VALID DATA
         if (response.succeeded && response.data.values.length > 0) {
           const purchaseOrder = response.data.values[0];
-          // DYNAMICALLY GRN PAYLOAD
-          const payloadToCloseOpenQC = [
+          // DYNAMICALLY CREATING GRN PAYLOAD
+          const payloadGoodReceiptPO = [
             {
               documentStatus: purchaseOrder.documentStatus,
               docEntry: purchaseOrder.docEntry,
@@ -1401,10 +1402,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
               qCode: intQCode
             }
           ];
-          console.log('GRN PAYLOAD', payloadToCloseOpenQC);
+          console.log('DYNAMICALLY CREATING GRN PAYLOAD', payloadGoodReceiptPO);
           // return;
-          // CALLING GoodReceiptPurchaseGRN WITH DYNAMICALLY GRN PAYLOAD
-          this._SAPAllServices.GoodReceiptPurchaseGRN(payloadToCloseOpenQC).subscribe({
+          // CALLING GoodReceiptPurchaseGRN WITH DYNAMICALLY CREATED GRN PAYLOAD
+          this._SAPAllServices.GoodReceiptPurchaseGRN(payloadGoodReceiptPO).subscribe({
             next: (grnResponse) => {
               console.log('GRN Created Successfully:', grnResponse);
               if (grnResponse.succeeded) {
@@ -1444,7 +1445,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       }
     });
   }
-  // CLOSE OPEN QC AFTER POST TO SAP - @IAK
+  // CLOSE OPEN QC AFTER POSTING TO SAP - @IAK
   closeOpenQCWithPostToSAP() {
     const OpenPOqcId = this.planPurchaseOrderFormGroup.get('id')?.value;
     if (!OpenPOqcId) {
@@ -1462,7 +1463,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       overallStatus: this.planPurchaseOrderFormGroup.get('samplesStatus')?.value,
       id: OpenPOqcId,
       inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
-      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || 'Closed on GRN posting',
+      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || 'Closed on GRN creation in SAP',
       isActive: true,
     };
     console.log('PAYLOAD', closeQCPayloadWithPostToSAP);
@@ -1482,6 +1483,44 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
           panelClass: ['snackbar-error'],
         });
       },
+    });
+  }
+  // CONFIRMATION DIALOG TO CONFIRM POSTING BEFORE CREATING GRN IN SAP - @IAK
+  confirmationPostToSAP() {
+    const overallStatus = this.planPurchaseOrderFormGroup.get('samplesStatus')?.value;
+    if (overallStatus === true) {
+      const confirmation = this._qbsSuccessConfirmationService.open({
+        title: ' Good Receipt PO',
+        message: 'Do you want to post this document in SAP?',
+        actions: {
+          confirm: {
+            label: 'Yes',
+          },
+          cancel: {
+            label: 'No',
+          },
+        },
+      });
+      // subscribe afterClosed ACTION
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          this.createGRN();
+        }
+      });
+    } 
+  }
+  // CALLING getPurchaseOrderDetails TO FETCH PURCHASE ORDER DATA
+  getPurchaseOrderDetails(docNo: number, lineNo: number, itemCode: string) {
+    const docNoPurchase = this.planPurchaseOrderFormGroup.get('docNo')?.value
+    const lineNoPurchase = this.planPurchaseOrderFormGroup.get('lineNo')?.value
+    const itemCodePurchase = this.planPurchaseOrderFormGroup.get('itemCode')?.value
+    this._SAPAllServices.getPurchaseOrdersByID(docNoPurchase, lineNoPurchase, itemCodePurchase).subscribe({
+      next: (response) => {
+        console.log('Purchase Order Data:', response.data.values);
+      },
+      error: (err) => {
+        console.error('Error fetching purchase order:', err);
+      }
     });
   }
   saveRemarksPurchase() {
@@ -1520,72 +1559,6 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
           panelClass: ['snackbar-error'],
         });
       },
-    });
-  }
-  getPurchaseOrderDetails(docNo: number, lineNo: number, itemCode: string) {
-    const docNoPurchase = this.planPurchaseOrderFormGroup.get('docNo')?.value
-    const lineNoPurchase = this.planPurchaseOrderFormGroup.get('lineNo')?.value
-    const itemCodePurchase = this.planPurchaseOrderFormGroup.get('itemCode')?.value
-    this._SAPAllServices.getPurchaseOrdersByID(docNoPurchase, lineNoPurchase, itemCodePurchase).subscribe({
-      next: (response) => {
-        console.log('Purchase Order Data:', response.data.values);
-      },
-      error: (err) => {
-        console.error('Error fetching purchase order:', err);
-      }
-    });
-  }
-  xcreateGRN(): void {
-    const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
-    const intQCode = this.planPurchaseOrderFormGroup.value.intCode;
-    const payloadToCloseOpenQC = [
-      {
-        documentStatus: 'bost_Open',
-        docEntry: 71,
-        docNum: 241100009,
-        docDate: '2025-04-15T00:00:00Z',
-        cardCode: 'VEN000017',
-        cardName: 'Chawla Industries (Pvt) Ltd',
-        lineNum: 0,
-        itemCode: 'SF000002',
-        itemDescription: 'Syngenta 250ml Bottle (PET)',
-        quantity: inspectionQuantity,
-        price: 15,
-        lineStatus: 'bost_Open',
-        remainingOpenQuantity: 10500,
-        vatGroup: 'IT02',
-        warehouse: 'WHCPH006',
-        uoM: 'Manual',
-        qStatus: 'tYes',
-        qCode: intQCode
-      }
-    ];
-    console.log('PAYLOAD', payloadToCloseOpenQC);
-    // return;
-    this._SAPAllServices.GoodReceiptPurchaseGRN(payloadToCloseOpenQC).subscribe({
-      next: (response) => {
-        console.log('GRN Created Successfully:', response);
-        if (response.succeeded) {
-          console.log('GRN created successfully in SAP! DocEntry: ' + response.data[0].docEntry);
-          const snackRefSuccess = this._snackBar.open('GRN created successfully in SAP!', 'Close',
-            {
-              duration: 3000,
-              panelClass: ['snackbar-success']
-            }
-          );
-          snackRefSuccess.afterDismissed().subscribe(() => {
-            this.closeOpenQCWithPostToSAP();
-          });
-        }
-      },
-      error: (error) => {
-        console.error('Error creating GRN:', error);
-        console.error('error.message: ', (error.message || 'Unknown error'));
-        this._snackBar.open('Failed to create GRN: ' + (error.message || 'Unknown error'), 'Close', {
-          duration: 3000,
-          panelClass: ['snackbar-error']
-        });
-      }
     });
   }
 }
