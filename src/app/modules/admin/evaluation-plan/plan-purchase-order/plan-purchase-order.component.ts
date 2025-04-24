@@ -1398,7 +1398,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
               vatGroup: purchaseOrder.vatGroup,
               warehouse: purchaseOrder.warehouse,
               uoM: purchaseOrder.uoM,
-              qStatus: 'tYes',
+              qStatus: 'tYES',
               qCode: intQCode
             }
           ];
