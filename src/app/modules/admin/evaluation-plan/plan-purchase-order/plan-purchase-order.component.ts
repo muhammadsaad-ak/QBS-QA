@@ -23,6 +23,7 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
 import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all-services.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { QbsSuccessConfirmationService } from '@qbs/services/confirmation/success-confirmation.service';
 
 @Component({
   selector: 'app-plan-purchase-order',
@@ -104,6 +105,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     private _qbsConfirmationService: QbsConfirmationService,
     private _SAPItemsService: SAPItemsService,
     private _SAPAllServices: SAPAllServices,
+    private _qbsSuccessConfirmationService: QbsSuccessConfirmationService,
   ) { }
 
   planPurchaseOrderFormGroup = this._formBuilder.group({
@@ -167,13 +169,13 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     return this.planPurchaseOrderFormGroup.get('inspectionObjects') as FormArray;
   }
 
- getQualitativeResultPassStatusResults(index: number): any[] {
-  const formArray = this.qualitativeInspectionObjects;
-  const formGroup = formArray.at(index) as FormGroup;
-  const resultControl = formGroup.get('qualitativeResultPassStatusResults');
+  getQualitativeResultPassStatusResults(index: number): any[] {
+    const formArray = this.qualitativeInspectionObjects;
+    const formGroup = formArray.at(index) as FormGroup;
+    const resultControl = formGroup.get('qualitativeResultPassStatusResults');
 
-  return resultControl?.value || [];
-}
+    return resultControl?.value || [];
+  }
 
   addInspectionObject() {
     this.inspectionObjects.push(this.createInspectionObject());
@@ -195,7 +197,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     return this.planPurchaseOrderFormGroup.get('quantitativeInspectionResults') as FormArray;
   }
 
- 
+
 
   onSubmitPurchaseOrder(): void {
     this.isValidate = true;
@@ -305,10 +307,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   getPurchaseByQcCodeX(itemCode: string, docNo: number, lineNum: number) {
     this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNum).subscribe({
       next: (response) => {
-       
+
         this.purchaseQcId = response.data;
-      
-         this.addNewSampleForPurchaseOrder()
+
+        this.addNewSampleForPurchaseOrder()
       },
       error: (err) => {
         console.error('QC SERVICE ERROR:', err);
@@ -316,7 +318,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
   }
 
-    getPurchaseByQcCode(itemCode: string, docNo: number, lineNum: number) {
+  getPurchaseByQcCode(itemCode: string, docNo: number, lineNum: number) {
     this._sapPlanPurchaseOrderService.GetPurchaseQCId(itemCode, docNo, lineNum).subscribe({
       next: (response) => {
         this.purchaseQcId = response.data;
@@ -500,7 +502,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       console.error('QC ID OR SAMPLE ID IS MISSING, CANNOT PROCEED!', { purchaseQcId: this.purchaseQcId, qcSampleID: this.qcSampleID });
       return;
     }
-   
+
     const formValue = this.planPurchaseOrderFormGroup.value;
 
     // STEP 1: PREPARE QUALITATIVE INSPECTIONS
@@ -557,45 +559,45 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this._sapPlanPurchaseOrderService.UpdatePurchaseQcSample(updatedSamplePayload).subscribe({
       next: (response) => {
         console.log('API Response:', response);
-        
-         const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
 
-    if (existingSampleIndex !== -1) {
-      // Update only the specific sample details
-      this.purchaseQcSamples[existingSampleIndex] = {
-        ...this.purchaseQcSamples[existingSampleIndex],
-        inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
-        inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value
-      };
+        const existingSampleIndex = this.purchaseQcSamples.findIndex(sample => sample.id === this.qcSampleID);
+
+        if (existingSampleIndex !== -1) {
+          // Update only the specific sample details
+          this.purchaseQcSamples[existingSampleIndex] = {
+            ...this.purchaseQcSamples[existingSampleIndex],
+            inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy')?.value
+          };
           this.purchaseQcSamples = [...this.purchaseQcSamples];
 
-                // Keep the selected card after update
-                this.selectedSampleId = this.qcSampleID;
-    } else {
-      console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
-    }
+          // Keep the selected card after update
+          this.selectedSampleId = this.qcSampleID;
+        } else {
+          console.error(`Sample with ID ${this.qcSampleID} not found in purchaseQcSamples`);
+        }
 
-    // Instead of reloading the full list, just update the form fields
-    this.planPurchaseOrderFormGroup.patchValue({
-      inspectionDateTime: this.purchaseQcSamples[existingSampleIndex]?.inspectionDateTime,
-      inspectionBy: this.purchaseQcSamples[existingSampleIndex]?.inspectionBy
-    });
+        // Instead of reloading the full list, just update the form fields
+        this.planPurchaseOrderFormGroup.patchValue({
+          inspectionDateTime: this.purchaseQcSamples[existingSampleIndex]?.inspectionDateTime,
+          inspectionBy: this.purchaseQcSamples[existingSampleIndex]?.inspectionBy
+        });
 
         // Refresh the samples list
         // this.ListAllPurchaseQCSamplesByQcId(this.purchaseQcId.id);
-       const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
-    
-    if (isNewSample) {
-      const newSample = {
-        id: this.nextSampleId,
-        inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
-        inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
-        cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  // cardColor: this.getRandomCardColor()
-      };
-      
-      this.samplesPurchaseOrder.push(newSample);
-      this.nextSampleId++;
-    }
+        const isNewSample = !this.purchaseQcSamples.some(sample => sample.id === this.qcSampleID);
+
+        if (isNewSample) {
+          const newSample = {
+            id: this.nextSampleId,
+            inspectionTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime').value,
+            inspectionBy: this.planPurchaseOrderFormGroup.get('inspectionBy').value,
+            cardColor: quantitativeInspections.some(item => item.isQuantitativeResultPassed) ? 'lightgreen' : 'lightcoral'  // cardColor: this.getRandomCardColor()
+          };
+
+          this.samplesPurchaseOrder.push(newSample);
+          this.nextSampleId++;
+        }
         this.closeDialog();
       },
       error: (error) => {
@@ -686,7 +688,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       next: (response) => {
         console.log('API Response:', response);
 
-        const addedSampleStatus = isSamplePassed ? 'Passed' : 'Failed'; 
+        const addedSampleStatus = isSamplePassed ? 'Passed' : 'Failed';
         this._snackBar.open(`Sample added successfully with status ${addedSampleStatus}`, 'Close', {
           duration: 3000,
           panelClass: ['snackbar-success']
@@ -696,10 +698,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         this._evaluationPurchaseOrderService.getIsSamplePassedListByQcId(this.purchaseQcId.id).subscribe({
           next: (isSamplePassedList: boolean[]) => {
             console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
-            
+
             this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
             console.log('SAMPLES STATUS ~ this.samplesStatus:', this.samplesStatus);
-            
+
             this.planPurchaseOrderFormGroup.patchValue({
               samplesStatus: this.samplesStatus
             });
@@ -786,14 +788,15 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
 
   ngOnInit() {
-   
-    
+
+
 
     this.selectedOrder = history.state.selectedOrder;
     this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
-    
+
     if (this.selectedOrder) {
       if (this.isEditMode) {
+        this.planPurchaseOrderFormGroup.patchValue({ id: this.selectedOrder.id });
         this.populateEditForm(this.selectedOrder); // Call Edit QC function
         this.ListAllPurchaseQCSamplesByQcId(this.selectedOrder.id)
         // API CALL TO FETCH isSamplePassed - @IAK
@@ -820,10 +823,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         });
         console.log('HAHA', this.selectedOrder)
       } else {
-          this.populateForm(this.selectedOrder); // Call Perform QC function
+        this.populateForm(this.selectedOrder); // Call Perform QC function
       }
       this.getItemId(this.selectedOrder.itemCode);
-  }
+    }
     if (!this.isEditMode) {
       this._evaluationPurchaseOrderService.getPurchaseQCCode().subscribe((purchaseQCCode) => {
         console.log('Purchase QC Code:', purchaseQCCode); // Debugging ke liye
@@ -877,30 +880,30 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     const formattedIntCode = `PQC-${rowIntCode.toString().padStart(7, '0')}`;
     this.planPurchaseOrderFormGroup.patchValue({
       intCode: formattedIntCode ?? "",  // intCode: data.intCode ?? "",  
-      itemCode: data.itemCode ?? "",  
-      itemDescription: data.itemDescription ?? "",  
-      openQuantity: data.openQuantity ?? 0,  
-      analyzedBy: data.analyzedBy,  
-      status: data.status ?? "",  
-      documentType: data.docType ?? "",  
-      documentDate: data.docDate ? new Date(data.docDate).toISOString() : new Date().toISOString(),  
-      lineNo: data.lineNum ?? 0,  
-      receiveQuantity: data.receiveQuantity ?? 0,  
-      inspectionQuantity: data.inspectionQuantity ?? 0,  
-      inspectionDateTime: data.inspectionDateTime ? new Date(data.inspectionDateTime).toISOString() : new Date().toISOString(),  
-      qcLotNo: data.qcLotNo ?? "",  
-      docDate: data.docDate ?? "",  
-      docNo: data.docNo ?? "",  
-      warehouse: data.warehouse ?? "",  
-      sapQuantity: data.sapQuantity ?? 0,  
-      sampleQuantity: data.sampleQuantity ?? 0,  
-      vendor: data.vendor ?? "",  
-      remarks: data.remarks ?? "",  
+      itemCode: data.itemCode ?? "",
+      itemDescription: data.itemDescription ?? "",
+      openQuantity: data.openQuantity ?? 0,
+      analyzedBy: data.analyzedBy,
+      status: data.status ?? "",
+      documentType: data.docType ?? "",
+      documentDate: data.docDate ? new Date(data.docDate).toISOString() : new Date().toISOString(),
+      lineNo: data.lineNum ?? 0,
+      receiveQuantity: data.receiveQuantity ?? 0,
+      inspectionQuantity: data.inspectionQuantity ?? 0,
+      inspectionDateTime: data.inspectionDateTime ? new Date(data.inspectionDateTime).toISOString() : new Date().toISOString(),
+      qcLotNo: data.qcLotNo ?? "",
+      docDate: data.docDate ?? "",
+      docNo: data.docNo ?? "",
+      warehouse: data.warehouse ?? "",
+      sapQuantity: data.sapQuantity ?? 0,
+      sampleQuantity: data.sampleQuantity ?? 0,
+      vendor: data.vendor ?? "",
+      remarks: data.remarks ?? "",
       itemId: data.itemDetails?.id ?? "",
-      id: data.id
+      // id: data.id,
     });
   }
-  
+
 
   ngAfterViewInit() {
     this.cdr.detectChanges();
@@ -942,18 +945,18 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     // alert('Sample ID: ' + (sample ? sample.id : 'undefined'));
     // alert('Sample : ' + (sample ? sample.name : 'undefined'));
     // alert('inspectionBy : ' + (sample ? sample.inspectionBy : 'undefined')); 
-  
+
     if (!sample || !sample.id) {
       console.error('Sample or sample.id is undefined!');
-      return; 
+      return;
     }
 
-      // 🧼 Clear previous state before patching the new one
-  this.qualitativeInspectionObjects.clear();
-  this.quantitativeInspectionResults.clear();
-  
+    // 🧼 Clear previous state before patching the new one
+    this.qualitativeInspectionObjects.clear();
+    this.quantitativeInspectionResults.clear();
+
     this.qcSampleID = sample.id;
-    
+
     this.planPurchaseOrderFormGroup.patchValue({
       sampleName: sample.name || '',
     });
@@ -969,7 +972,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         inspectionBy: sample.inspectionBy
       }
     });
-  
+
     this.getCardByItemCode(this.selectedOrder.itemCode);
     console.log(this.selectedOrder, 'this.selectedOrder');
     this.getPurchaseByQcCode(
@@ -977,7 +980,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       this.selectedOrder.docNo,
       this.selectedOrder.lineNum
     );
-  
+
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const index = this.samplesPurchaseOrder.findIndex(s => s.id === sample.id);
@@ -988,7 +991,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       console.log('EDIT DIALOG CLOSED');
     });
   }
- 
+
   onPurchaseOrderModal(): void {
     this.currentMode = 'add';
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
@@ -1003,8 +1006,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       inspectionByControl.updateValueAndValidity(); // Re-validate the control
     }
 
-    
-    
+
+
     this.getCardByItemCode(this.selectedOrder.itemCode);
     console.log(this.selectedOrder, 'this.selectedOrder')
     this.getPurchaseByQcCode(
@@ -1035,12 +1038,12 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         inspectionByControl.updateValueAndValidity();
       }
 
-      
+
       this.closeDialog();
     });
   }
 
-   onUpdatePurchaseOrderModal(): void {
+  onUpdatePurchaseOrderModal(): void {
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
       width: '70%',
       height: '75vh',
@@ -1053,8 +1056,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       inspectionByControl.updateValueAndValidity(); // Re-validate the control
     }
 
-    
-    
+
+
     this.getCardByItemCode(this.selectedOrder.itemCode);
     console.log(this.selectedOrder, 'this.selectedOrder')
     this.getPurchaseByQcCode(
@@ -1085,7 +1088,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         inspectionByControl.updateValueAndValidity();
       }
 
-      
+
       this.closeDialog();
     });
   }
@@ -1118,16 +1121,16 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   ListAllPurchaseQCSamplesByQcId(purchaseQcId: string) {
     this._sapPlanPurchaseOrderService.ListAllPurchaseQCSamplesByQcId(purchaseQcId).subscribe({
       next: (response) => {
-        this.purchaseQcSamples = response.data.filter(sample => sample.isActive === true); 
+        this.purchaseQcSamples = response.data.filter(sample => sample.isActive === true);
         console.log(this.purchaseQcSamples, 'purchaseQcSamples');
-                      console.log(this.purchaseQcSamples, 'purchaseQcSamples');
+        console.log(this.purchaseQcSamples, 'purchaseQcSamples');
 
-       if (this.purchaseQcSamples.length > 0) {
-        this.qcSampleID = this.qcSampleID 
-          ? this.purchaseQcSamples.find(sample => sample.id === this.qcSampleID)?.id || this.purchaseQcSamples[this.purchaseQcSamples.length - 1].id
-          : this.purchaseQcSamples[this.purchaseQcSamples.length - 1].id;
-      }
-      
+        if (this.purchaseQcSamples.length > 0) {
+          this.qcSampleID = this.qcSampleID
+            ? this.purchaseQcSamples.find(sample => sample.id === this.qcSampleID)?.id || this.purchaseQcSamples[this.purchaseQcSamples.length - 1].id
+            : this.purchaseQcSamples[this.purchaseQcSamples.length - 1].id;
+        }
+
       },
       error: (err) => {
         console.error('SERVICE ERROR:', err);
@@ -1230,7 +1233,6 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   }
 
   toggleDropdown() {
-    // alert('POST TO SAP CLICKED!')
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
@@ -1256,11 +1258,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     this._evaluationPurchaseOrderService.getFlexibilityByItemId(ItemId).subscribe({
       next: (isFlexible: boolean) => {
         console.log('FLEXIBILITY:', isFlexible);
-        // Ab yahan se use karo jaise chahiye:
         if (isFlexible) {
           this.planPurchaseOrderFormGroup.get('isFlexible')?.setValue(isFlexible);
         } else {
-          // Not flexible
+          console.log('FLEXIBILITY:', isFlexible);
         }
       },
       error: (err) => {
@@ -1360,66 +1361,91 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         duration: 3000,
         panelClass: ['snackbar-error']
       });
-      // this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: sapQuantity });
+      // this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: openQuantity });
     } else {
       this.isInspectionQuantityInvalid = false;
     }
   }
-  // CREATING PURCHASE GRN FOR POSTING TO SAP INTEGRATION - @IAK
+  // CREATING PURCHASE GRN PAYLOAD FOR POST TO SAP API INTEGRATION - @IAK
   createGRN(): void {
-    const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
-    const intQCode = this.planPurchaseOrderFormGroup.value.intCode;
-    const payloadToCloseOpenQC = [
-      {
-        documentStatus: 'bost_Open',
-        docEntry: 71,
-        docNum: 241100009,
-        docDate: '2025-04-15T00:00:00Z',
-        cardCode: 'VEN000017',
-        cardName: 'Chawla Industries (Pvt) Ltd',
-        lineNum: 0,
-        itemCode: 'SF000002',
-        itemDescription: 'Syngenta 250ml Bottle (PET)',
-        quantity: inspectionQuantity,
-        price: 15,
-        lineStatus: 'bost_Open',
-        remainingOpenQuantity: 10500,
-        vatGroup: 'IT02',
-        warehouse: 'WHCPH006',
-        uoM: 'Manual',
-        qStatus: 'tYes',
-        qCode: intQCode
-      }
-    ];
-    console.log('PAYLOAD', payloadToCloseOpenQC);
-    // return;
-    this._SAPAllServices.GoodReceiptPurchaseGRN(payloadToCloseOpenQC).subscribe({
+    const docNoPurchase = this.planPurchaseOrderFormGroup.get('docNo')?.value;
+    const lineNoPurchase = this.planPurchaseOrderFormGroup.get('lineNo')?.value;
+    const itemCodePurchase = this.planPurchaseOrderFormGroup.get('itemCode')?.value;
+    const inspectionQuantity = Number(this.planPurchaseOrderFormGroup.get('inspectionQuantity')?.value);
+    const intQCode = this.planPurchaseOrderFormGroup.get('intCode')?.value;
+    // CALLING getPurchaseOrderDetails TO FETCH PURCHASE ORDER DATA
+    this._SAPAllServices.getPurchaseOrdersByID(docNoPurchase, lineNoPurchase, itemCodePurchase).subscribe({
       next: (response) => {
-        console.log('GRN Created Successfully:', response);
-        if (response.succeeded) {
-          console.log('GRN created successfully in SAP! DocEntry: ' + response.data[0].docEntry);
-          const snackRefSuccess = this._snackBar.open('GRN created successfully in SAP!', 'Close',
+        // IF response CONTAINS VALID DATA
+        if (response.succeeded && response.data.values.length > 0) {
+          const purchaseOrder = response.data.values[0];
+          // DYNAMICALLY CREATING GRN PAYLOAD
+          const payloadGoodReceiptPO = [
             {
-              duration: 3000,
-              panelClass: ['snackbar-success']
+              documentStatus: purchaseOrder.documentStatus,
+              docEntry: purchaseOrder.docEntry,
+              docNum: purchaseOrder.docNum,
+              docDate: purchaseOrder.docDate,
+              cardCode: purchaseOrder.cardCode,
+              cardName: purchaseOrder.cardName,
+              lineNum: purchaseOrder.lineNum,
+              itemCode: purchaseOrder.itemCode,
+              itemDescription: purchaseOrder.itemDescription,
+              quantity: inspectionQuantity,
+              price: purchaseOrder.price,
+              lineStatus: purchaseOrder.lineStatus,
+              remainingOpenQuantity: purchaseOrder.remainingOpenQuantity,
+              vatGroup: purchaseOrder.vatGroup,
+              warehouse: purchaseOrder.warehouse,
+              uoM: purchaseOrder.uoM,
+              qStatus: 'tYES',
+              qCode: intQCode
             }
-          );
-          snackRefSuccess.afterDismissed().subscribe(() => {
-            this.closeOpenQCWithPostToSAP();
+          ];
+          console.log('DYNAMICALLY CREATING GRN PAYLOAD', payloadGoodReceiptPO);
+          // return;
+          // CALLING GoodReceiptPurchaseGRN WITH DYNAMICALLY CREATED GRN PAYLOAD
+          this._SAPAllServices.GoodReceiptPurchaseGRN(payloadGoodReceiptPO).subscribe({
+            next: (grnResponse) => {
+              console.log('GRN Created Successfully:', grnResponse);
+              if (grnResponse.succeeded) {
+                console.log('GRN created successfully in SAP! DocEntry: ' + grnResponse.data[0].docEntry);
+                const snackRefSuccess = this._snackBar.open('GRN created successfully in SAP!', 'Close', {
+                  duration: 3000,
+                  panelClass: ['snackbar-success']
+                });
+                snackRefSuccess.afterDismissed().subscribe(() => {
+                  this.closeOpenQCWithPostToSAP();
+                });
+              }
+            },
+            error: (error) => {
+              console.error('Error creating GRN:', error);
+              console.error('error.message: ', (error.message || 'Unknown error'));
+              this._snackBar.open('Failed to create GRN: ' + (error.message || 'Unknown error'), 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+        } else {
+          console.error('No purchase order data found in response');
+          this._snackBar.open('Failed to fetch purchase order details', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
           });
         }
       },
-      error: (error) => {
-        console.error('Error creating GRN:', error);
-        console.error('error.message: ', (error.message || 'Unknown error'));
-        this._snackBar.open('Failed to create GRN: ' + (error.message || 'Unknown error'), 'Close', {
+      error: (err) => {
+        console.error('Error fetching purchase order:', err);
+        this._snackBar.open('Failed to fetch purchase order details: ' + (err.message || 'Unknown error'), 'Close', {
           duration: 3000,
           panelClass: ['snackbar-error']
         });
       }
     });
   }
-  // CLOSE OPEN QC AFTER POST TO SAP - @IAK
+  // CLOSE OPEN QC AFTER POSTING TO SAP - @IAK
   closeOpenQCWithPostToSAP() {
     const OpenPOqcId = this.planPurchaseOrderFormGroup.get('id')?.value;
     if (!OpenPOqcId) {
@@ -1437,7 +1463,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       overallStatus: this.planPurchaseOrderFormGroup.get('samplesStatus')?.value,
       id: OpenPOqcId,
       inspectionDateTime: this.planPurchaseOrderFormGroup.get('inspectionDateTime')?.value,
-      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || 'Closed on GRN posting',
+      remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || 'Closed on GRN creation in SAP',
       isActive: true,
     };
     console.log('PAYLOAD', closeQCPayloadWithPostToSAP);
@@ -1457,6 +1483,44 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
           panelClass: ['snackbar-error'],
         });
       },
+    });
+  }
+  // CONFIRMATION DIALOG TO CONFIRM POSTING BEFORE CREATING GRN IN SAP - @IAK
+  confirmationPostToSAP() {
+    const overallStatus = this.planPurchaseOrderFormGroup.get('samplesStatus')?.value;
+    if (overallStatus === true) {
+      const confirmation = this._qbsSuccessConfirmationService.open({
+        title: ' Good Receipt PO',
+        message: 'Do you want to post this document in SAP?',
+        actions: {
+          confirm: {
+            label: 'Yes',
+          },
+          cancel: {
+            label: 'No',
+          },
+        },
+      });
+      // subscribe afterClosed ACTION
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          this.createGRN();
+        }
+      });
+    } 
+  }
+  // CALLING getPurchaseOrderDetails TO FETCH PURCHASE ORDER DATA
+  getPurchaseOrderDetails(docNo: number, lineNo: number, itemCode: string) {
+    const docNoPurchase = this.planPurchaseOrderFormGroup.get('docNo')?.value
+    const lineNoPurchase = this.planPurchaseOrderFormGroup.get('lineNo')?.value
+    const itemCodePurchase = this.planPurchaseOrderFormGroup.get('itemCode')?.value
+    this._SAPAllServices.getPurchaseOrdersByID(docNoPurchase, lineNoPurchase, itemCodePurchase).subscribe({
+      next: (response) => {
+        console.log('Purchase Order Data:', response.data.values);
+      },
+      error: (err) => {
+        console.error('Error fetching purchase order:', err);
+      }
     });
   }
   saveRemarksPurchase() {

@@ -1505,25 +1505,122 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       });
     } 
     // API CALL
-    // this._evaluationProductionOrderService.updateToCloseOpenQC(closeQCPayloadWithPostToSAP).subscribe({
-    //   next: (response) => {
-    //     this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
-    //       duration: 3000,
-    //       panelClass: ['snackbar-success'],
-    //     });
-    //     this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
-    //   },
-    //   error: (error) => {
-    //     console.error('ERROR WHILE CLOSING QC.', error);
-    //     this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
-    //       duration: 3000,
-    //       panelClass: ['snackbar-error'],
-    //     });
-    //   },
-    // });
+    this._evaluationProductionOrderService.updateToCloseOpenQC(closeQCPayloadWithPostToSAP).subscribe({
+      next: (response) => {
+        this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+        });
+        this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+      },
+      error: (error) => {
+        console.error('ERROR WHILE CLOSING QC.', error);
+        this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error'],
+        });
+      },
+    });
   }
-  // CREATING PURCHASE GRN FOR POSTING TO SAP INTEGRATION - @IAK
+  // CREATING PRODUCTION GRN POSTING TO SAP INTEGRATION - @IAK
   createGRN(): void {
+    const docNoProduction = Number(this.planProductionOrderFormGroup.get('docNo')?.value);
+    const itemCodeProduction = this.planProductionOrderFormGroup.get('itemCode')?.value;
+    const inspectionQuantity = Number(this.planProductionOrderFormGroup.get('inspectionQuantity')?.value);
+    const intQCode = this.planProductionOrderFormGroup.get('intCode')?.value;
+
+    // Step 1: Call getProductionOrdersByID to fetch production order data
+    this._SAPAllServices.getProductionOrdersByID(docNoProduction, itemCodeProduction).subscribe({
+      next: (response) => {
+        // Step 2: Check if response contains valid data
+        if (response.succeeded && response.data.values.length > 0) {
+          const productionOrder = response.data.values[0]; // Get the first production order
+
+          // Step 3: Dynamically create the GRN payload
+          const payloadToCloseOpenQC = {
+            docNum: productionOrder.docNum,
+            docEntry: productionOrder.docEntry,
+            docDate: productionOrder.docDate,
+            itemCode: productionOrder.itemCode,
+            productName: productionOrder.productName,
+            plannedQuantity: productionOrder.plannedQuantity,
+            uoM: productionOrder.uoM,
+            inventoryUOM: productionOrder.inventoryUOM,
+            productionOrderStatus: productionOrder.productionOrderStatus,
+            warehouse: productionOrder.warehouse,
+            completedQuantity: inspectionQuantity,
+            rejectedQuantity: productionOrder.rejectedQuantity,
+            machine: productionOrder.machine,
+            mold: productionOrder.mold,
+            bmr: productionOrder.bmr,
+            cavity: productionOrder.cavity,
+            cycleTime: productionOrder.cycleTime,
+            weight: productionOrder.weight,
+            lotNo: productionOrder.lotNo,
+            shift: productionOrder.shift,
+            variant: productionOrder.variant,
+            plant: productionOrder.plant,
+            qStatus: 'tYes',
+            qCode: intQCode
+          };
+
+          console.log('DYNAMIC PAYLOAD', payloadToCloseOpenQC);
+
+          // Step 4: Call goodReceiptProductionGRN with the dynamic payload
+          this._SAPAllServices.goodReceiptProductionGRN(payloadToCloseOpenQC).subscribe({
+            next: (ProductionGRNResponse) => {
+              if (ProductionGRNResponse.succeeded) {
+                console.log('Production GRN Created Successfully:', ProductionGRNResponse);
+                console.log('Production GRN Created Successfully:', ProductionGRNResponse);
+                console.log('GRN created successfully in SAP! DocEntry: ' + ProductionGRNResponse.data);
+                const snackRefSuccess = this._snackBar.open('GRN created successfully in SAP!', 'Close', {
+                  duration: 3000,
+                  panelClass: ['snackbar-success']
+                });
+                snackRefSuccess.afterDismissed().subscribe(() => {
+                  this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+                  // this.closeOpenQCWithPostToSAP();
+                });
+              } else if (ProductionGRNResponse.succeeded === false || ProductionGRNResponse.statusCode === 422) {
+                console.warn(`Failed to create Production GRN: ${ProductionGRNResponse.message}`);
+                this._snackBar.open(`Failed to generate receipt.`, 'Close', {
+                  duration: 1000,
+                  panelClass: ['snackbar-error']
+                }).afterDismissed().subscribe(() => {
+                  this._snackBar.open(`Make sure that the consumed quantity of the component item would not cause the item's inventory to fall below zero`, 'Close', {
+                    duration: 5000,
+                    panelClass: ['snackbar-error']
+                  });
+                });
+              }
+            },
+            error: (error) => {
+              console.error('Error creating GRN:', error);
+              console.error('error.message: ', (error.message || 'Unknown error'));
+              this._snackBar.open('Failed to create Production GRN: ' + (error.message || 'Unknown error'), 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+        } else {
+          console.error('No production order data found in response');
+          this._snackBar.open('Failed to fetch production order details', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching production order:', err);
+        this._snackBar.open('Failed to fetch production order details: ' + (err.message || 'Unknown error'), 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }
+  xcreateGRN(): void {
     const inspectionQuantity: number = Number(this.planProductionOrderFormGroup.value.inspectionQuantity);
     const intQCode = this.planProductionOrderFormGroup.value.intCode;
 
