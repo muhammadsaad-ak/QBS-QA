@@ -423,7 +423,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
           variant: order.variant || '-',
           bmrNo: order.bmrNo || '-',
           mouldNo: order.mouldNo || '-',
-          cavity: order.cavity || '-',
+          cavity: order.cavityNo || '-',
           cycleTime: order.cycleTime || 0,
           itemWeight: order.itemWeight || 0,
           inspectionQuantity: order.inspectionQuantity || 0,
@@ -593,6 +593,13 @@ onEvaluationPlanTypeChange(orderType: string): void {
 
     );
     // Pass the selected row data and origin info
+  }
+
+  navigateToEditQA(element: any) {
+    console.log('SENDING DATA for Edit QA:', element);
+    this.router.navigate(['/evaluation-plan/plan-evaluation-qa'], {
+      state: { selectedOrder: element, from: 'evaluationPlan' }
+    });
   }
   
   getStatusClass(status: string): string {

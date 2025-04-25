@@ -233,6 +233,12 @@
                                             (click)="navigateToOrderForm(element)">
                                             Edit&nbsp;QC
                                         </button>
+
+                                        <button mat-menu-item class="text-blue-400"
+                                            *ngIf="currentView === 'evaluationPlan' && orderType === 'productionOrderQA'"
+                                            (click)="navigateToEditQA(element)">
+                                            Edit&nbsp;QA
+                                        </button>
                                     </mat-menu>
                                 </td>
                             </ng-container>

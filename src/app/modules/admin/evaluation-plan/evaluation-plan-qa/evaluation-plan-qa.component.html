@@ -111,11 +111,11 @@
             formControlName="mouldNo" required />
         </mat-form-field>
 
-                <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
-                    <mat-label>Cavity</mat-label>
-                    <input class="view-mode-bg-grey" readonly style=" cursor: not-allowed;" class="view-mode-bg-grey"
-                        matInput formControlName="cavityNo">
-                </mat-form-field>
+        <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
+          <mat-label>Cavity</mat-label>
+          <input class="view-mode-bg-grey" readonly style=" cursor: not-allowed;" class="view-mode-bg-grey"
+              matInput formControlName="cavityNo">
+        </mat-form-field>
 
         <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
           <mat-label>Analyzed By:</mat-label>
@@ -196,9 +196,14 @@
                         </mat-form-field>
 
                         <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
-                            <mat-label>Cavity</mat-label>
-                            <input class="view-mode-bg-grey" matInput formControlName="cavityNo" placeholder="Enter Code"
-                                required readonly />
+                          <mat-label>Cavity</mat-label>
+                          <input
+                            class="view-mode-bg-grey"
+                            matInput
+                            [value]="selectedCavityName"
+                            placeholder="Cavity Name"
+                            readonly
+                          />
                         </mat-form-field>
             
                         <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
@@ -256,7 +261,8 @@
 
             <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
               <mat-label>Cavity</mat-label>
-              <input class="view-mode-bg-grey" matInput formControlName="cavityNo" placeholder="Enter Code"
+              <input class="view-mode-bg-grey"  matInput
+              [value]="selectedCavityName" placeholder="Enter Code"
                   required readonly />
           </mat-form-field>         
 

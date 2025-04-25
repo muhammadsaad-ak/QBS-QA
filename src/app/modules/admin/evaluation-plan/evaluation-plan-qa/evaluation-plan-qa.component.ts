@@ -44,6 +44,7 @@ export class EvaluationPlanQaComponent implements OnInit {
     selectedCavityIdForQaModal: string | null = null;
     selectedCavityId: string | null = null; // class level variable to use in payload
     samplesByCavity: { [cavityId: string]: any[] } = {};
+    orderType: string = ''; // Variable to hold the order type
 
 
     
@@ -89,6 +90,7 @@ export class EvaluationPlanQaComponent implements OnInit {
     // dataSourceQualitativeInspection: any[] = [];
     // dataSourceQuantitativeInspection: any[] = [];
     selectedCavityName: string = '';
+  cavityList: any;
 
     constructor(
         private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,
@@ -197,35 +199,46 @@ export class EvaluationPlanQaComponent implements OnInit {
         return this.evaluationplanQAFormGroup.get('inspectionObjects') as FormArray;
       }
 
-    ngOnInit(): void {
+      ngOnInit(): void {
         this.selectedOrder = history.state.selectedOrder; // Access the passed data
-        this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
-
+        this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Evaluation Plan
+        this.orderType = history.state.orderType; // Get the order type
+    
         if (this.selectedOrder) {
-            this.populateProductionOrderFormQA(this.selectedOrder); // Populate the form with the data
-            console.log('HAHA Production Order Form 1', this.selectedOrder);
-
-            this.getItemId(this.selectedOrder.itemCode);
-        }
-
-        if (this.selectedOrder) {
-            if (this.isEditMode) {
-                this.populateEditProductionOrderFormQA(this.selectedOrder); // Call Edit QC function
-                // this.ListAllProductionQCSamplesByQcId(this.selectedOrder.id)
-                console.log('HAHA Production Order Form', this.selectedOrder);
-            } else {
-                this.populateProductionOrderFormQA(this.selectedOrder); // Call Perform QC function
-            }
-            // this.getItemId(this.selectedOrder.itemCode);
-        }
-
-        this._evaluationPlanQaOrderService.getProductionQACode().subscribe((productionQACode) => {
-                const fullCode = `PQA-000${productionQACode.data || ''}`;
-                this.evaluationplanQAFormGroup
-                    .get('intCode')
-                    ?.setValue(fullCode);
-            });
+            console.log('Selected Order Data:', this.selectedOrder);
             
+            // Always get item ID regardless of mode
+            this.getItemId(this.selectedOrder.itemCode);
+            
+            // Only call one population method based on mode
+            if (this.isEditMode) {
+                // Edit mode - use the edit population method
+                console.log('EDIT MODE: Production Order Form', this.selectedOrder);
+                this.populateEditProductionOrderFormQA(this.selectedOrder);
+                this.getCavityListByQaId(this.selectedOrder.id);
+                // this.getCavityDetailsById(this.selectedOrder.cavityId);
+
+                // If needed, load related samples based on orderType
+                if (this.orderType === 'productionOrderQA') {
+                    // this.ListAllProductionQASamplesByQaId(this.selectedOrder.id);
+                    this.getCavityListByQaId(this.selectedOrder.id);
+
+                } else {
+                    // this.ListAllProductionQCSamplesByQcId(this.selectedOrder.id);
+                }
+            } else {
+                // Create mode - use the create population method
+                console.log('CREATE MODE: Production Order Form', this.selectedOrder);
+                this.populateProductionOrderFormQA(this.selectedOrder);
+            }
+        }
+    
+        // Get production QA code and other initializations
+        this._evaluationPlanQaOrderService.getProductionQACode().subscribe((productionQACode) => {
+            const fullCode = `PQA-000${productionQACode.data || ''}`;
+            this.evaluationplanQAFormGroup.get('intCode')?.setValue(fullCode);
+        });
+    
         this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
         this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionResults.controls);
         // const staticData = [
@@ -317,71 +330,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         return this.evaluationplanQAFormGroup.get('cavities') as FormArray;
     }
 
-    generateCavitiesX(): void {
-        const formData = this.evaluationplanQAFormGroup.value;
-      
-        const {
-          intCode,
-          itemCode,
-          itemDescription,
-          max,
-          min,
-          qualitativeInspectionObjects,
-          quantitativeInspectionResults,
-          target,
-          inspectionBy,
-          remarks,
-          cavities,
-          ...payload
-        } = formData;
-      
-        console.log('SENDING Production QA PAYLOAD:', payload);
-
-        this._evaluationProductionOrderService.addProductionQA(payload).subscribe(
-          (response) => {
-            if (response?.isRequestSuccess) {
-                const  itemCodeForQAid =   this.evaluationplanQAFormGroup.get('itemCode')?.value;
-                const  docNumForQAid =   this.evaluationplanQAFormGroup.get('docNum')?.value;
-                if (itemCodeForQAid && docNumForQAid) {
-                    this.getProductionByQACode(itemCodeForQAid, docNumForQAid);
-                  } else {
-                    console.warn('API CALLED FAILED. FAIL TO FETCH PO QA ID', {
-                    });
-                  }
-
-              this._snackBar.open('Production QA added successfully!', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-success']
-              });
-   
-      
-              // 🛠 Generate cavities after saving
-              this.cavitiesArray.clear();
-              const numberOfCavities = this.evaluationplanQAFormGroup.get('cavityNo')?.value;
-      
-              for (let i = 0; i < numberOfCavities; i++) {
-                this.cavitiesArray.push(
-                  this._formBuilder.group({
-                    cName: `Cavity ${i + 1}`,
-                    InspectionTime: '10:30 AM',
-                    inspectionBy: 'Mr.Kamran',
-                    enabled: false,
-                  })
-                );
-              }
-            }
-          },
-          (error) => {
-            console.error('Error adding Production QA:', error);
-            this._snackBar.open('Error saving Production QA.', 'Close', {
-              duration: 3000,
-              panelClass: ['snackbar-error']
-            });
-          }
-        );
-      }
-
-      generateCavities(): void {
+    generateCavities(): void {
         const formData = this.evaluationplanQAFormGroup.value;
       
         const {
@@ -486,37 +435,6 @@ export class EvaluationPlanQaComponent implements OnInit {
           }
         });
       }
-      
-
-      
-      
-      
-
-    onEvaluationPlanQaModalX(cav: any, index: any): void {
-        if (!cav.enabled) return;
-        alert('CAVITY ID' + cav.id);
-        console.log('Cavity:', cav);
-
-        const cavityNumber = `Cavity ${index + 1}`;
-
-        console.log('Modal Open:', cav);
-        console.log('Opening modal for:', cavityNumber);
-
-        this.selectedCavityName = cavityNumber;
-        this.selectedCavity = cav; // ✅ store the cavity object here
-
-
-        console.log('Opening modal for:', this.selectedCavityName);
-
-        const dialogRef = this._dialog.open(this.dialogTemplateItems, {
-            width: '70%',
-            height: '75vh',
-        });
-
-        dialogRef.afterClosed().subscribe((result) => {
-            this.closeDialog();
-        });
-    }
 
     onEvaluationPlanQaModal(cav: any, index: any): void {
         if (!cav.enabled) return;
@@ -583,7 +501,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         )
       }
 
-      getProductionByQACode(itemCode: string, docNum: string) {
+    getProductionByQACode(itemCode: string, docNum: string) {
         this._evaluationPlanQAOrderService.GetProductionQAId(itemCode, docNum).subscribe({
           next: (response) => {
             const id = response?.data?.id;
@@ -609,23 +527,8 @@ export class EvaluationPlanQaComponent implements OnInit {
           }
         });
       }
-      XgetProductionByQACode(itemCode: string, docNum: string) {
-        this._evaluationPlanQAOrderService.GetProductionQAId(itemCode, docNum).subscribe({
-          next: (response) => {
-            this.productionQAId = response.data;
-            this.evaluationplanQAFormGroup.patchValue({
-              // inspectionBy: response.inspectionBy || '', 
-              inspectionDateTime: response.inspectionDateTime || new Date().toISOString()
-            });
-          },
-          error: (err) => {
-            console.error('QC SERVICE ERROR:', err);
-          }
-        });
-      }
 
-
-      saveAndCloseQa(): void {
+    saveAndCloseQa(): void {
         if (!this.productionQAId) {
           console.error('Production QA ID IS MISSING, CANNOT PROCEED!');
           return;
@@ -717,24 +620,40 @@ export class EvaluationPlanQaComponent implements OnInit {
             this.quantitativeInspectionResults.clear();
       
             // ✅ moved here
-            // this._evaluationPlanQAOrderService.getIsSamplePassedListByProdQACavityId(this.productionQAId.id).subscribe({
-            //   next: (isSamplePassedList: boolean[]) => {
-            //     console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
-            //     this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
-            //     console.log('SAMPLES STATUS ~ this.samplesStatus:', this.samplesStatus);
+            this._evaluationPlanQAOrderService.getIsSamplePassedListByProdQACavityId(this.productionQAId.id).subscribe({
+              next: (isSamplePassedList: boolean[]) => {
+                console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+                this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
+                console.log('SAMPLES STATUS ~ this.samplesStatus:', this.samplesStatus);
       
-            //     this.evaluationplanQAFormGroup.patchValue({
-            //       samplesStatus: this.samplesStatus
-            //     });
-            //   },
-            //   error: (error) => {
-            //     console.error('getIsSamplePassedListByProdQAId API Error:', error);
-            //     this._snackBar.open('Failed to fetch samples against this Production Order QA .', 'Close', {
-            //       duration: 3000,
-            //       panelClass: ['snackbar-error']
-            //     });
-            //   }
-            // });
+                this.evaluationplanQAFormGroup.patchValue({
+                  samplesStatus: this.samplesStatus
+                });
+              },
+              error: (error) => {
+                console.error('getIsSamplePassedListByProdQAId API Error:', error);
+                this._snackBar.open('Failed to fetch samples against this Production Order QA .', 'Close', {
+                  duration: 3000,
+                  panelClass: ['snackbar-error']
+                });
+              }
+            });
+
+                // ✅ Add the new API call here to get all samples by cavity ID
+      this._evaluationPlanQAOrderService.getAllProductionQASamplesByCavityId(this.selectedCavityId).subscribe({
+        next: (response) => {
+          console.log('All cavity samples fetched successfully:', response);
+          // You can do additional processing with the response here if needed
+        },
+        error: (err) => {
+          console.error('Failed to fetch all cavity samples:', err);
+          this._snackBar.open('Error fetching all cavity samples.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+
       
             this.closeQaManually();
           },
@@ -747,14 +666,10 @@ export class EvaluationPlanQaComponent implements OnInit {
           }
         });
       }
-      
-      
-    
-
+  
     closeDialog(): void {
         this._dialog.closeAll();
     }
-
 
     closeQaManually(): void {
       if (this.selectedRowIndex !== null) {
@@ -795,6 +710,23 @@ export class EvaluationPlanQaComponent implements OnInit {
     populateEditProductionOrderFormQA(data: any): void {
         console.log('Populating Edit QC Form:', data);
         this.evaluationplanQAFormGroup.patchValue({
+          analyzedBy: data.analyzedBy ?? 'N/A',
+          mouldNo: data.mouldNo ?? 'N/A',
+          machineNo: data.machineNo ?? 'N/A',
+          bmrNo: data.bmrNo ?? 'N/A',
+          itemWeight: data.itemWeight ?? 'N/A',
+          openQuantity: data.openQuantity ?? 0,
+          qcLotNo: data.qcLotNo ?? 'N/A',
+          itemCode: data.itemCode ?? 'N/A',
+          itemDescription: data.itemDescription ?? 'N/A',
+          docNum: data.docNo.toString(), // Convert to string
+          warehouse: data.warehouse ?? 'N/A',
+          variant: data.variant ?? 'N/A',
+          cycleTime: data.cycleTime ?? 'N/A',
+          shift: data.shift ?? 'N/A',
+          cavityNo: data.cavity ?? 'N/A',
+          plannedQuantity: data.plannedQuantity ?? 0,
+          
             // intCode: data.intCode ?? "",
             // itemCode: data.itemCode ?? "",
             // itemDescription: data.itemDescription ?? "",
@@ -866,7 +798,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         }
       }
 
-      getQualitativeResultPassStatusResults(index: number): any[] {
+    getQualitativeResultPassStatusResults(index: number): any[] {
         const formArray = this.qualitativeInspectionObjects;
         const formGroup = formArray.at(index) as FormGroup;
         const resultControl = formGroup.get('qualitativeResultPassStatusResults');
@@ -874,11 +806,11 @@ export class EvaluationPlanQaComponent implements OnInit {
         return resultControl?.value || [];
       }
 
-      addInspectionObject() {
+    addInspectionObject() {
         this.inspectionObjects.push(this.createInspectionObject());
       }
     
-      removeInspectionObject(index: number) {
+    removeInspectionObject(index: number) {
         this.inspectionObjects.removeAt(index);
       }
       
@@ -913,6 +845,61 @@ export class EvaluationPlanQaComponent implements OnInit {
             console.error('SERVICE ERROR:', err);
           }
         });
+    }
+
+    getCavityListByQaId(qaId: string): void {
+      this._evaluationPlanQAOrderService
+        .getAllProductionQACavitiesByQaId(qaId)
+        .subscribe({
+          next: (response) => {
+            console.log('🟢 Cavity List fetched:', response);
+    
+            const cavityData = response.data || [];  // Ensure it's an array
+    
+            const cavityFormGroups = cavityData.map(cavity => this.fb.group({
+              id: [cavity.id],
+              name: [cavity.name],
+              generatedTime: [this.formatTime(cavity.createdDate)],
+              enabled: [true],
+              isToggledOn: [cavity.isToggledOn]
+            }));
+    
+            const cavityFormArray = this.fb.array(cavityFormGroups);
+            this.evaluationplanQAFormGroup.setControl('cavities', cavityFormArray);
+    
+            console.log("✅ cavities FormArray populated", cavityFormArray);
+          },
+          error: (err) => {
+            console.error('🔴 Error fetching cavity list:', err);
+          },
+        });
+    }
+
+    formatTime(isoString: string): string {
+      const date = new Date(isoString);
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      
+      const strMinutes = minutes < 10 ? '0' + minutes : minutes;
+      
+      return `${hours}:${strMinutes} ${ampm}`;
+    }
+
+    getCavityDetailsById(cavityId: string): void {
+      this._evaluationPlanQAOrderService.getProductionQACavityById(cavityId).subscribe({
+        next: (res) => {
+          this.selectedCavity = res.data;
+          console.log('✅ Cavity Details Loaded:', this.selectedCavity);
+        },
+        error: (err) => {
+          console.error('❌ Error Loading Cavity Details:', err);
+          // this._toastr.error('Failed to load cavity details');
+        }
+      });
     }
 
 
