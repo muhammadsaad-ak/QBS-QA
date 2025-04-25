@@ -91,6 +91,7 @@ export class EvaluationPlanQaComponent implements OnInit {
     // dataSourceQuantitativeInspection: any[] = [];
     selectedCavityName: string = '';
   cavityList: any;
+  selectedCavitySamples: any;
 
     constructor(
         private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,
@@ -436,7 +437,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
       }
 
-    onEvaluationPlanQaModal(cav: any, index: any): void {
+    onEvaluationPlanQaModalX(cav: any, index: any): void {
         if (!cav.enabled) return;
       
         alert('CAVITY ID: ' + cav.id);
@@ -471,6 +472,56 @@ export class EvaluationPlanQaComponent implements OnInit {
           this.closeDialog();
         });
       }
+
+      onEvaluationPlanQaModal(cav: any, index: number): void {
+        if (!cav.enabled) return;
+        
+        alert('CAVITY ID: ' + cav.id);
+        console.log('Cavity:', cav);
+      
+        const cavityNumber = `Cavity ${index + 1}`;
+        this.selectedCavityName = cavityNumber;
+        this.selectedCavity = cav;
+      
+        // ✅ Call API to get full cavity details
+        this._evaluationPlanQaOrderService.GetProductionQACavityById(cav.id).subscribe({
+          next: (res) => {
+            const data = res?.data;
+            if (data?.id) {
+              this.selectedCavityId = data.id;
+              console.log('Cavity Data Loaded:', data);
+              alert(`Loaded Cavity ID: ${this.selectedCavityId}`);
+            }
+          },
+          error: (err) => {
+            console.error('Error fetching cavity data', err);
+          }
+        });
+      
+        // ✅ Call the `getAllProductionQASamplesByCavityId` API for samples when editing
+        this._evaluationPlanQaOrderService.getAllProductionQASamplesByCavityId(cav.id).subscribe({
+          next: (sampleRes) => {
+            const samples = sampleRes?.data || [];
+            this.samplesByCavity[this.selectedCavityId] = samples;  // Store samples by cavity ID for display
+            console.log('Samples for Cavity:', samples);
+          },
+          error: (err) => {
+            console.error('Error fetching cavity samples:', err);
+          }
+        });
+      
+        // ✅ Open modal
+        const dialogRef = this._dialog.open(this.dialogTemplateItems, {
+          width: '70%',
+          height: '75vh',
+        });
+      
+        dialogRef.afterClosed().subscribe(() => {
+          this.closeDialog();
+        });
+      }
+      
+      
 
     onCavitySampleQaModal(rowIndex: any): void {
         // console.log('Row Index:', rowIndex);
