@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { environment } from 'environments/environment';
 import { BehaviorSubject, Observable, catchError, of, switchMap, tap, throwError } from 'rxjs';
 
-// Interface for GRN PAYLOAD (CreateGRN)
+// Interface FOR GRN PAYLOAD (CreateGRN)
 interface GRNPayload {
     documentStatus: string;
     docEntry: number;
@@ -25,16 +25,17 @@ interface GRNPayload {
     qCode: string;
 }
 
-// Interface for API response (optional, for better type safety)
-// Add this interface alongside other interfaces in sap-list-all-services.service.ts
+// Interface FOR API RESPONSE (FOR BETTER TYPE SAFETY)
+// CreateReceiptFromProduction RESPONSE
 interface ProductionGRNResponse {
     statusCode: number;
     succeeded: boolean;
     message: string;
     errors: any[] | null;
     count: number;
-    data: number; // IssueDocEntry for production GRN
+    data: number; // FOR PRODUCTION GRN
 }
+// CreateGRN RESPONSE
 interface GRNResponse {
     statusCode: number;
     succeeded: boolean;
@@ -48,6 +49,7 @@ interface GRNResponse {
         errorMessage: string | null;
     }[];
 }
+// Interface FOR CreateReceiptFromProduction PAYLOAD
 interface GRNPayloadProduction {
     docNum: number;
     docEntry: number;
@@ -64,6 +66,7 @@ interface GRNPayloadProduction {
     machine: string;
     mold: string;
     bmr: string;
+    // batchNo: string;
     cavity: number;
     cycleTime: number;
     weight: number;
@@ -74,7 +77,7 @@ interface GRNPayloadProduction {
     qStatus: string;
     qCode: string;
 }
-// Add this interface above the @Injectable decorator, alongside other interfaces
+// GetPurchaseOrdersByID RESPONSE
 interface PurchaseOrderResponse {
     statusCode: number;
     succeeded: boolean;
@@ -85,10 +88,10 @@ interface PurchaseOrderResponse {
         totalRecords: number;
         pageSize: number;
         pageNumber: number;
-        values: GRNPayload[]; // Reusing existing GRNPayload interface
+        values: GRNPayload[]; // 
     };
 }
-// Add this interface above the @Injectable decorator, alongside other interfaces
+// GetProductionOrdersByID RESPONSE
 interface ProductionOrderResponse {
     statusCode: number;
     succeeded: boolean;
@@ -99,9 +102,11 @@ interface ProductionOrderResponse {
         totalRecords: number;
         pageSize: number;
         pageNumber: number;
-        values: GRNPayloadProduction[]; // Reusing existing GRNPayloadProduction interface
+        values: GRNPayloadProduction[]; // 
     };
 }
+
+
 @Injectable({
     providedIn: 'root',
 })
@@ -229,7 +234,7 @@ export class SAPAllServices {
                 })
             );
     }
-    // Add this function inside the SAPAllServices class
+    //  - @IAK
     getPurchaseOrdersByID(docNum: number, lineNum: number, itemCode: string): Observable<PurchaseOrderResponse> {
         const headers = new HttpHeaders({
             'Accept': 'text/plain',
@@ -264,7 +269,7 @@ export class SAPAllServices {
                 })
             );
     }
-    // Inside the SAPAllServices class, add this function
+    //  - @IAK
     getProductionOrdersByID(docNum: number, itemCode: string): Observable<ProductionOrderResponse> {
         const headers = new HttpHeaders({
             'Accept': 'text/plain',
