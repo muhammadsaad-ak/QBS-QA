@@ -1402,7 +1402,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
               qCode: intQCode
             }
           ];
-          console.log('DYNAMICALLY CREATING GRN PAYLOAD', payloadGoodReceiptPO);
+          console.log('DYNAMICALLY CREATED payloadGoodReceiptPO PAYLOAD', payloadGoodReceiptPO);
           // return;
           // CALLING GoodReceiptPurchaseGRN WITH DYNAMICALLY CREATED GRN PAYLOAD
           this._SAPAllServices.GoodReceiptPurchaseGRN(payloadGoodReceiptPO).subscribe({
@@ -1466,8 +1466,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       remarks: this.planPurchaseOrderFormGroup.get('remarks')?.value || 'Closed on GRN creation in SAP',
       isActive: true,
     };
-    console.log('PAYLOAD', closeQCPayloadWithPostToSAP);
-    // API CALL
+    console.log('CLOSE QC PAYLOAD', closeQCPayloadWithPostToSAP);
+    // PUT API CALL TO CLOSE OPEN QC - SET isCLosed TO ture
     this._evaluationPurchaseOrderService.updateToCloseOpenQC(closeQCPayloadWithPostToSAP).subscribe({
       next: (response) => {
         this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
