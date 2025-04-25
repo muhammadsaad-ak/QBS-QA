@@ -1460,7 +1460,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       },
     });
   }
-  // CLOSE OPEN QC AFTER POST TO SAP - @IAK
+  // CLOSE OPEN QC AFTER POSTING TO SAP - @IAK
   closeOpenQCWithPostToSAP() {
     const OpenPOqcId = this.planProductionOrderFormGroup.get('id')?.value;
     if (!OpenPOqcId) {
@@ -1481,30 +1481,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       remarks: this.planProductionOrderFormGroup.get('remarks')?.value || 'Closed on GRN posting',
       isActive: true,
     };
-    console.log('PAYLOAD', closeQCPayloadWithPostToSAP);
-    if (closeQCPayloadWithPostToSAP.overallStatus === true) {
-      const confirmation = this._qbsSuccessConfirmationService.open({
-        title: 'Create Receipt',
-        message: 'Do you want to post this document in SAP?',
-        actions: {
-          confirm: {
-            label: 'Yes.',
-          },
-          cancel: {
-            label: 'No',
-          },
-        },
-      });
-      // subscribe afterClosed ACTION
-      confirmation.afterClosed().subscribe((result) => {
-        if (result === 'confirmed') {
-          // callCloseQCApi();
-          // this.action1();
-          this.createGRN();
-        }
-      });
-    } 
-    // API CALL
+    console.log('CLOSE OPEN QC', closeQCPayloadWithPostToSAP);
+    // PUT API CALL TO CLOSE OPEN QC - SET isCLosed TO ture
     this._evaluationProductionOrderService.updateToCloseOpenQC(closeQCPayloadWithPostToSAP).subscribe({
       next: (response) => {
         this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
@@ -1528,16 +1506,14 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     const itemCodeProduction = this.planProductionOrderFormGroup.get('itemCode')?.value;
     const inspectionQuantity = Number(this.planProductionOrderFormGroup.get('inspectionQuantity')?.value);
     const intQCode = this.planProductionOrderFormGroup.get('intCode')?.value;
-
-    // Step 1: Call getProductionOrdersByID to fetch production order data
+    // CALLING getProductionOrdersByID TO FETCH PRODUCTION ORDER DATA
     this._SAPAllServices.getProductionOrdersByID(docNoProduction, itemCodeProduction).subscribe({
       next: (response) => {
-        // Step 2: Check if response contains valid data
+        // IF response CONTAINS VALID DATA
         if (response.succeeded && response.data.values.length > 0) {
-          const productionOrder = response.data.values[0]; // Get the first production order
-
-          // Step 3: Dynamically create the GRN payload
-          const payloadToCloseOpenQC = {
+          const productionOrder = response.data.values[0];
+          // DYNAMICALLY CREATING GRN PAYLOAD
+          const payloadReceiptFromProduction = {
             docNum: productionOrder.docNum,
             docEntry: productionOrder.docEntry,
             docDate: productionOrder.docDate,
@@ -1560,44 +1536,42 @@ export class PlanProductionOrderComponent implements AfterViewInit {
             shift: productionOrder.shift,
             variant: productionOrder.variant,
             plant: productionOrder.plant,
-            qStatus: 'tYes',
+            qStatus: 'tYES',
             qCode: intQCode
           };
-
-          console.log('DYNAMIC PAYLOAD', payloadToCloseOpenQC);
-
-          // Step 4: Call goodReceiptProductionGRN with the dynamic payload
-          this._SAPAllServices.goodReceiptProductionGRN(payloadToCloseOpenQC).subscribe({
+          console.log('DYNAMICALLY CREATED ReceiptFromProduction PAYLOAD', payloadReceiptFromProduction);
+          // return; 
+          // CALLING goodReceiptProductionGRN WITH DYNAMICALLY CREATED ReceiptFromProduction PAYLOAD
+          this._SAPAllServices.goodReceiptProductionGRN(payloadReceiptFromProduction).subscribe({
             next: (ProductionGRNResponse) => {
+              console.log('Production GRN Created Successfully:', ProductionGRNResponse);
               if (ProductionGRNResponse.succeeded) {
-                console.log('Production GRN Created Successfully:', ProductionGRNResponse);
-                console.log('Production GRN Created Successfully:', ProductionGRNResponse);
-                console.log('GRN created successfully in SAP! DocEntry: ' + ProductionGRNResponse.data);
-                const snackRefSuccess = this._snackBar.open('GRN created successfully in SAP!', 'Close', {
+                // console.log('Receipt from production document created successfully in SAP!');
+                console.log('Receipt from production document created successfully in SAP! DocEntry: ' + ProductionGRNResponse.data);
+                const snackRefSuccess = this._snackBar.open('Receipt from production document created successfully in SAP!', 'Close', {
                   duration: 3000,
                   panelClass: ['snackbar-success']
                 });
                 snackRefSuccess.afterDismissed().subscribe(() => {
-                  this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
-                  // this.closeOpenQCWithPostToSAP();
+                  this.closeOpenQCWithPostToSAP();
                 });
               } else if (ProductionGRNResponse.succeeded === false || ProductionGRNResponse.statusCode === 422) {
                 console.warn(`Failed to create Production GRN: ${ProductionGRNResponse.message}`);
-                this._snackBar.open(`Failed to generate receipt.`, 'Close', {
-                  duration: 1000,
+                this._snackBar.open(`Failed to generate Receipt from production document.`, 'Close', {
+                  duration: 1500,
                   panelClass: ['snackbar-error']
                 }).afterDismissed().subscribe(() => {
                   this._snackBar.open(`Make sure that the consumed quantity of the component item would not cause the item's inventory to fall below zero`, 'Close', {
-                    duration: 5000,
+                    duration: 3000,
                     panelClass: ['snackbar-error']
                   });
                 });
               }
             },
             error: (error) => {
-              console.error('Error creating GRN:', error);
+              console.error('Failed to generate Receipt from production document:', error);
               console.error('error.message: ', (error.message || 'Unknown error'));
-              this._snackBar.open('Failed to create Production GRN: ' + (error.message || 'Unknown error'), 'Close', {
+              this._snackBar.open('Failed to generate Receipt from production document: ' + (error.message || 'Unknown error'), 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
               });
@@ -1691,5 +1665,30 @@ export class PlanProductionOrderComponent implements AfterViewInit {
         });
       }
     });
+  }
+
+  // CONFIRMATION DIALOG TO CONFIRM POSTING BEFORE CREATING GRN IN SAP - @IAK
+  confirmationPostToSAP() {
+    const overallStatus = this.planProductionOrderFormGroup.get('samplesStatus')?.value;
+    if (overallStatus === true) {
+      const confirmation = this._qbsSuccessConfirmationService.open({
+        title: ' Create Receipt From  Production',
+        message: 'Do you want to post this document in SAP?',
+        actions: {
+          confirm: {
+            label: 'Yes',
+          },
+          cancel: {
+            label: 'No',
+          },
+        },
+      });
+      // subscribe afterClosed ACTION
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          this.createGRN();
+        }
+      });
+    }
   }
 }

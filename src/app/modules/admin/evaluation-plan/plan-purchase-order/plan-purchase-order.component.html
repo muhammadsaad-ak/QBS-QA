@@ -522,8 +522,8 @@
                                 (!isEditMode && samplesPurchaseOrder.length === sampleQuantity))) : 
                                 (samplesStatus === true && ((isEditMode && purchaseQcSamples?.length > 0) || 
                                 (!isEditMode && samplesPurchaseOrder.length > 0)))">
-                    <button mat-flat-button color="primary" (click)="confirmationPostToSAP()" class="custom-button" matTooltip="Good Receipt PO (GRN)">
-                        Post to SAP
+                    <button mat-flat-button color="primary" (click)="confirmationPostToSAP()" class="custom-button" matTooltip="Good Receipt PO (GRN)"> <!-- (click)="toggleDropdown()" -->
+                        Post&nbsp;to&nbsp;SAP <!-- Post to SAP -->
                     </button>
                     <div *ngIf="isDropdownOpen" class="dropdown-menu">
                         <button mat-menu-item (click)="action1()">
