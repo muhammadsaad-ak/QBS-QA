@@ -26,6 +26,15 @@ interface GRNPayload {
 }
 
 // Interface for API response (optional, for better type safety)
+// Add this interface alongside other interfaces in sap-list-all-services.service.ts
+interface ProductionGRNResponse {
+    statusCode: number;
+    succeeded: boolean;
+    message: string;
+    errors: any[] | null;
+    count: number;
+    data: number; // IssueDocEntry for production GRN
+}
 interface GRNResponse {
     statusCode: number;
     succeeded: boolean;
@@ -65,7 +74,34 @@ interface GRNPayloadProduction {
     qStatus: string;
     qCode: string;
 }
-
+// Add this interface above the @Injectable decorator, alongside other interfaces
+interface PurchaseOrderResponse {
+    statusCode: number;
+    succeeded: boolean;
+    message: string;
+    errors: any[] | null;
+    count: number;
+    data: {
+        totalRecords: number;
+        pageSize: number;
+        pageNumber: number;
+        values: GRNPayload[]; // Reusing existing GRNPayload interface
+    };
+}
+// Add this interface above the @Injectable decorator, alongside other interfaces
+interface ProductionOrderResponse {
+    statusCode: number;
+    succeeded: boolean;
+    message: string;
+    errors: any[] | null;
+    count: number;
+    data: {
+        totalRecords: number;
+        pageSize: number;
+        pageNumber: number;
+        values: GRNPayloadProduction[]; // Reusing existing GRNPayloadProduction interface
+    };
+}
 @Injectable({
     providedIn: 'root',
 })
@@ -168,7 +204,7 @@ export class SAPAllServices {
             );
     }
     // CREATING PRODUCTION GRN IN SAP - @IAK
-    goodReceiptProductionGRN(payload: GRNPayloadProduction): Observable<GRNResponse> {
+    goodReceiptProductionGRN(payload: GRNPayloadProduction): Observable<ProductionGRNResponse> {
         const headers = new HttpHeaders({
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -176,19 +212,89 @@ export class SAPAllServices {
         });
 
         return this._httpClient
-            .post<GRNResponse>(
+            .post<ProductionGRNResponse>(
                 `${environment.SAPitemsApiUrl}/api/B1ProductionOrders/CreateReceiptFromProduction`,
                 payload,
                 { headers }
             )
             .pipe(
-                tap((response: GRNResponse) => {
+                tap((response: ProductionGRNResponse) => {
                     if (response.succeeded) {
                         console.log('Production GRN CREATED SUCCESSFULLY', response);
                     }
                 }),
                 catchError((error) => {
                     console.error('HTTP ERROR WHILE CREATING GRN', error);
+                    return throwError(() => error);
+                })
+            );
+    }
+    // Add this function inside the SAPAllServices class
+    getPurchaseOrdersByID(docNum: number, lineNum: number, itemCode: string): Observable<PurchaseOrderResponse> {
+        const headers = new HttpHeaders({
+            'Accept': 'text/plain',
+            'X-API-KEY': 'super'
+        });
+
+        return this._httpClient
+            .get(
+                `${environment.SAPitemsApiUrl}/api/B1PurchaseOrders/GetPurchaseOrdersByID?docNum=${docNum}&lineNum=${lineNum}&itemCode=${itemCode}`,
+                { headers, responseType: 'text' }
+            )
+            .pipe(
+                switchMap((response) => {
+                    try {
+                        const parsedResponse = JSON.parse(response);
+                        return of(parsedResponse);
+                    } catch (error) {
+                        console.error('ERROR PARSING PURCHASE ORDER RESPONSE', error);
+                        return throwError(() => error);
+                    }
+                }),
+                tap((response: PurchaseOrderResponse) => {
+                    if (response.succeeded) {
+                        console.log('PURCHASE ORDER FETCHED SUCCESSFULLY', response);
+                    } else {
+                        console.warn('PURCHASE ORDER FETCH FAILED:', response.message);
+                    }
+                }),
+                catchError((error) => {
+                    console.error('HTTP ERROR WHILE FETCHING PURCHASE ORDER', error);
+                    return throwError(() => error);
+                })
+            );
+    }
+    // Inside the SAPAllServices class, add this function
+    getProductionOrdersByID(docNum: number, itemCode: string): Observable<ProductionOrderResponse> {
+        const headers = new HttpHeaders({
+            'Accept': 'text/plain',
+            'X-API-KEY': 'super'
+        });
+
+        return this._httpClient
+            .get(
+                `${environment.SAPitemsApiUrl}/api/B1ProductionOrders/GetProductionOrdersByID?docNum=${docNum}&itemCode=${itemCode}`,
+                { headers, responseType: 'text' }
+            )
+            .pipe(
+                switchMap((response) => {
+                    try {
+                        const parsedResponse = JSON.parse(response);
+                        return of(parsedResponse);
+                    } catch (error) {
+                        console.error('ERROR PARSING PRODUCTION ORDER RESPONSE', error);
+                        return throwError(() => error);
+                    }
+                }),
+                tap((response: ProductionOrderResponse) => {
+                    if (response.succeeded) {
+                        console.log('PRODUCTION ORDER FETCHED SUCCESSFULLY', response);
+                    } else {
+                        console.warn('PRODUCTION ORDER FETCH FAILED:', response.message);
+                    }
+                }),
+                catchError((error) => {
+                    console.error('HTTP ERROR WHILE FETCHING PRODUCTION ORDER', error);
                     return throwError(() => error);
                 })
             );
