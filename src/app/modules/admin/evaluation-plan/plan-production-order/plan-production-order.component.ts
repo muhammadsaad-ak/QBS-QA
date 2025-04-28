@@ -22,6 +22,8 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all-services.service';
 import { QbsSuccessConfirmationService } from '@qbs/services/confirmation/success-confirmation.service';
+import { map, switchMap } from 'rxjs';
+import { GRNPayloadProduction } from 'app/core/other-core-services/module/sap-list-all-services.service';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -1506,19 +1508,19 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
   // CREATING PRODUCTION GRN POSTING TO SAP INTEGRATION - @IAK
   createGRN(): void {
-    // const productionQcIdForBMR = this.planProductionOrderFormGroup.get('id')?.value;
-    // let batchNo: string; 
-    // // CALLING getProductionQcBMRByQcId TO GET BMR BATCH NO
-    // this._evaluationProductionOrderService.getProductionQcBMRByQcId(productionQcIdForBMR).subscribe({
-    //   next: (bmr: string) => {
-    //     console.log('BMR:', bmr);
-    //     batchNo = bmr; 
-    //     console.log('batchNo:', batchNo);
-    //   },
-    //   error: (err) => {
-    //     console.error('Error fetching BMR:', err);
-    //   }
-    // });
+    const productionQcIdForBMR = this.planProductionOrderFormGroup.get('id')?.value;
+    let batchNo: string; 
+    // CALLING getProductionQcBMRByQcId TO GET BMR BATCH NO
+    this._evaluationProductionOrderService.getProductionQcBMRByQcId(productionQcIdForBMR).subscribe({
+      next: (bmr: string) => {
+        console.log('getProductionQcBMRByQcId ~ ', bmr);
+        batchNo = bmr; 
+        console.log('batchNo:', batchNo);
+      },
+      error: (err) => {
+        console.error('Error fetching BMR:', err);
+      }
+    });
     const docNoProduction = Number(this.planProductionOrderFormGroup.get('docNo')?.value);
     const itemCodeProduction = this.planProductionOrderFormGroup.get('itemCode')?.value;
     const inspectionQuantity = Number(this.planProductionOrderFormGroup.get('inspectionQuantity')?.value);
@@ -1529,6 +1531,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
         // IF response CONTAINS VALID DATA
         if (response.succeeded && response.data.values.length > 0) {
           const productionOrder = response.data.values[0];
+          console.log('batchManaged ~ ',productionOrder.batchManaged);
           // DYNAMICALLY CREATING GRN PAYLOAD
           const payloadReceiptFromProduction = {
             docNum: productionOrder.docNum,
@@ -1546,7 +1549,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
             machine: productionOrder.machine,
             mold: productionOrder.mold,
             bmr: productionOrder.bmr,
-            // batchNo: batchNo,
+            batchNo: batchNo,
             cavity: productionOrder.cavity,
             cycleTime: productionOrder.cycleTime,
             weight: productionOrder.weight,
@@ -1554,11 +1557,14 @@ export class PlanProductionOrderComponent implements AfterViewInit {
             shift: productionOrder.shift,
             variant: productionOrder.variant,
             plant: productionOrder.plant,
-            qStatus: 'tYES',
-            qCode: intQCode
+            qStatus: 'tYES',              qCode: intQCode,
+              batchManaged: productionOrder.batchManaged,
+              batchNumbers: productionOrder.batchManaged ? 
+                  [{ batchNumber: batchNo, quantity: inspectionQuantity }] : 
+                  [], // EMPTY [] WHEN batchManaged is false
           };
           console.log('DYNAMICALLY CREATED ReceiptFromProduction PAYLOAD', payloadReceiptFromProduction);
-          return; 
+          // return; 
           // CALLING goodReceiptProductionGRN WITH DYNAMICALLY CREATED ReceiptFromProduction PAYLOAD
           this._SAPAllServices.goodReceiptProductionGRN(payloadReceiptFromProduction).subscribe({
             next: (ProductionGRNResponse) => {

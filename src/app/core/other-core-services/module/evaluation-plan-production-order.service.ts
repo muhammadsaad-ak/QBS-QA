@@ -231,9 +231,9 @@ export class EvaluationPlanProductionOrderService {
       .pipe(
         tap((response: ProductionQcBMRResponse) => {
           if (response.isRequestSuccess) {
-            console.log('PRODUCTION QC BMR FETCHED SUCCESSFULLY', response.data);
+            console.log('getProductionQcBMRByQcId FETCHED SUCCESSFULLY: ', response.data);
           } else {
-            console.warn('PRODUCTION QC BMR FETCH FAILED:', response.message);
+            console.warn('FAILED TO FETCH PRODUCTION getProductionQcBMRByQcId: ', response.message);
           }
         }),
         switchMap((response: ProductionQcBMRResponse) => {

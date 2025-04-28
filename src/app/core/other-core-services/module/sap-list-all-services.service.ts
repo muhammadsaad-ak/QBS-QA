@@ -50,7 +50,7 @@ interface GRNResponse {
     }[];
 }
 // Interface FOR CreateReceiptFromProduction PAYLOAD
-interface GRNPayloadProduction {
+export interface GRNPayloadProduction {
     docNum: number;
     docEntry: number;
     docDate: string; // ISO Date string
@@ -66,7 +66,7 @@ interface GRNPayloadProduction {
     machine: string;
     mold: string;
     bmr: string;
-    // batchNo: string;
+    batchNo: string;
     cavity: number;
     cycleTime: number;
     weight: number;
@@ -76,6 +76,8 @@ interface GRNPayloadProduction {
     plant: string;
     qStatus: string;
     qCode: string;
+    batchManaged: boolean;
+    batchNumbers: { batchNumber: string; quantity: number }[]; // EMPTY [] WHEN batchManaged is false
 }
 // GetPurchaseOrdersByID RESPONSE
 interface PurchaseOrderResponse {
