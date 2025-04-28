@@ -1557,7 +1557,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
             shift: productionOrder.shift,
             variant: productionOrder.variant,
             plant: productionOrder.plant,
-            qStatus: 'tYES',              qCode: intQCode,
+            qStatus: 'tYES',
+            qCode: intQCode,
               batchManaged: productionOrder.batchManaged,
               batchNumbers: productionOrder.batchManaged ? 
                   [{ batchNumber: batchNo, quantity: inspectionQuantity }] : 
