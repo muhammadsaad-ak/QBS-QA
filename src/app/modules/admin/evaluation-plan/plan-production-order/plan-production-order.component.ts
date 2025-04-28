@@ -144,6 +144,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     analyzedBy: [''], 
     status: [''],
     remarks: [''],  // remarks:  [''],
+    bmrLoc: [''],   // plant
 
     qualitativeInspectionObjects: this.fb.array([]),
     quantitativeInspectionResults: this.fb.array([]),
@@ -910,7 +911,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       itemWeight: data.weight !== undefined ? data.weight.toString() : 'N/A', // ✅ Convert safely
       variant: data.variant ?? 'N/A',
       analyzedBy: data.analyzedBy ?? '', // ✅ Ensure empty string if not provided
-      status: data.status ?? 'Ali', // ✅ Ensure default value
+      status: data.status ?? false, // status: data.status ?? 'N/A', // ✅ Ensure default value
+      bmrLoc: data.bmrLoc ?? 'N/A',
     });
   }
 
@@ -937,7 +939,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       cycleTime: data.cycleTime ?? 'N/A',
       itemWeight: data.itemWeight ?? 'N/A',
       inspectionQuantity: data.inspectionQuantity,
-      id: data.id
+      id: data.id,
+      bmrLoc: data.bmrLoc ?? 'N/A',
     });
   }
 
@@ -1555,7 +1558,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
             qCode: intQCode
           };
           console.log('DYNAMICALLY CREATED ReceiptFromProduction PAYLOAD', payloadReceiptFromProduction);
-          // return; 
+          return; 
           // CALLING goodReceiptProductionGRN WITH DYNAMICALLY CREATED ReceiptFromProduction PAYLOAD
           this._SAPAllServices.goodReceiptProductionGRN(payloadReceiptFromProduction).subscribe({
             next: (ProductionGRNResponse) => {
