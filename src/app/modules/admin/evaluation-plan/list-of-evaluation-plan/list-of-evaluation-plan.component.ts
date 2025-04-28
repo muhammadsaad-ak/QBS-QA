@@ -291,6 +291,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
                 variant: order.variant,
                 shift: order.shift, 
                 isClosed: null, // INITIALIZE isClosed      
+                bmrLoc: order.plant,
               }));
 
             // ✅ MatTableDataSource ko update karo
@@ -389,6 +390,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
           itemWeight: order.itemWeight || 0,
           inspectionQuantity: order.inspectionQuantity || 0,
           isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
+          bmrLoc: order.bmrLoc || 'N/A',
         }));
   
         if (this.orderType === 'productionOrder') {
