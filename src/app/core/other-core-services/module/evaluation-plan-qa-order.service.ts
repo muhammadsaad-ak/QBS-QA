@@ -368,6 +368,25 @@ export class EvaluationPlanQaOrderService {
         );
       }
 
+      updateProductionQACavity(data: any): Observable<any> {
+        const headers = new HttpHeaders({
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        });
+        console.log('Sending toggle payload:', data);
+      
+        return this._httpClient.put(
+          `${environment.appApiUrl}/CSAPI/IProductionQACavityFeature/UpdateProductionQACavity`,
+          data,
+          { headers }
+        ).pipe(
+          tap(response => console.log('Toggle response:', response)),
+          catchError(error => {
+            console.error('Error while toggling cavity:', error);
+            return throwError(() => error);
+          })
+        );
+      }
 
   
 }
