@@ -22,6 +22,8 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all-services.service';
 import { QbsSuccessConfirmationService } from '@qbs/services/confirmation/success-confirmation.service';
+import { map, switchMap } from 'rxjs';
+import { GRNPayloadProduction } from 'app/core/other-core-services/module/sap-list-all-services.service';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -144,6 +146,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     analyzedBy: [''], 
     status: [''],
     remarks: [''],  // remarks:  [''],
+    bmrLoc: [''],   // plant
 
     qualitativeInspectionObjects: this.fb.array([]),
     quantitativeInspectionResults: this.fb.array([]),
@@ -910,7 +913,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       itemWeight: data.weight !== undefined ? data.weight.toString() : 'N/A', // ✅ Convert safely
       variant: data.variant ?? 'N/A',
       analyzedBy: data.analyzedBy ?? '', // ✅ Ensure empty string if not provided
-      status: data.status ?? 'Ali', // ✅ Ensure default value
+      status: data.status ?? false, // status: data.status ?? 'N/A', // ✅ Ensure default value
+      bmrLoc: data.bmrLoc ?? 'N/A',
     });
   }
 
@@ -937,7 +941,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       cycleTime: data.cycleTime ?? 'N/A',
       itemWeight: data.itemWeight ?? 'N/A',
       inspectionQuantity: data.inspectionQuantity,
-      id: data.id
+      id: data.id,
+      bmrLoc: data.bmrLoc ?? 'N/A',
     });
   }
 
@@ -1278,7 +1283,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     console.log("Action 1 selected");
   }
 
-  // GET ITEM ID API
+  // GET itemId AGAINST itemCode  - @IAK
   getItemId(itemCode: any): void {
     // console.log(itemCode);
     this._evaluationProductionOrderService.GetItemIdByCode(itemCode).subscribe({
@@ -1323,11 +1328,12 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       }
     });
   }
+  // GET FLEXIBILITY FROM itemSample AGAINST itemId - @IAK
   getItemFlexibility(ItemId: any): void {
     this._evaluationProductionOrderService.getFlexibilityByItemId(ItemId).subscribe({
       next: (isFlexible: boolean) => {
         console.log('FLEXIBILITY:', isFlexible);
-        // Ab yahan se use karo jaise chahiye:
+        // 
         if (isFlexible) {
           this.planProductionOrderFormGroup.get('isFlexible')?.setValue(isFlexible);
         }
@@ -1338,7 +1344,6 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     });
   }
   saveProdOrderRemarks() {
-    // alert('clicked');
     alert(this.planProductionOrderFormGroup.get('remarks')?.value);
     console.log(this.planProductionOrderFormGroup.get('remarks')?.value);
   }
@@ -1422,6 +1427,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       });
     }
   }
+  // SAVE / UPDATE REMARKS WITHOUT CLOSING QC  - @IAK
   saveRemarksProduction() {
     const OpenPOqcId = this.planProductionOrderFormGroup.get('id')?.value;
     if (!OpenPOqcId) {
@@ -1502,6 +1508,19 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
   // CREATING PRODUCTION GRN POSTING TO SAP INTEGRATION - @IAK
   createGRN(): void {
+    const productionQcIdForBMR = this.planProductionOrderFormGroup.get('id')?.value;
+    let batchNo: string; 
+    // CALLING getProductionQcBMRByQcId TO GET BMR BATCH NO
+    this._evaluationProductionOrderService.getProductionQcBMRByQcId(productionQcIdForBMR).subscribe({
+      next: (bmr: string) => {
+        console.log('getProductionQcBMRByQcId ~ ', bmr);
+        batchNo = bmr; 
+        console.log('batchNo:', batchNo);
+      },
+      error: (err) => {
+        console.error('Error fetching BMR:', err);
+      }
+    });
     const docNoProduction = Number(this.planProductionOrderFormGroup.get('docNo')?.value);
     const itemCodeProduction = this.planProductionOrderFormGroup.get('itemCode')?.value;
     const inspectionQuantity = Number(this.planProductionOrderFormGroup.get('inspectionQuantity')?.value);
@@ -1512,6 +1531,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
         // IF response CONTAINS VALID DATA
         if (response.succeeded && response.data.values.length > 0) {
           const productionOrder = response.data.values[0];
+          console.log('batchManaged ~ ',productionOrder.batchManaged);
           // DYNAMICALLY CREATING GRN PAYLOAD
           const payloadReceiptFromProduction = {
             docNum: productionOrder.docNum,
@@ -1529,6 +1549,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
             machine: productionOrder.machine,
             mold: productionOrder.mold,
             bmr: productionOrder.bmr,
+            batchNo: batchNo,
             cavity: productionOrder.cavity,
             cycleTime: productionOrder.cycleTime,
             weight: productionOrder.weight,
@@ -1537,7 +1558,11 @@ export class PlanProductionOrderComponent implements AfterViewInit {
             variant: productionOrder.variant,
             plant: productionOrder.plant,
             qStatus: 'tYES',
-            qCode: intQCode
+            qCode: intQCode,
+              batchManaged: productionOrder.batchManaged,
+              batchNumbers: productionOrder.batchManaged ? 
+                  [{ batchNumber: batchNo, quantity: inspectionQuantity }] : 
+                  [], // EMPTY [] WHEN batchManaged is false
           };
           console.log('DYNAMICALLY CREATED ReceiptFromProduction PAYLOAD', payloadReceiptFromProduction);
           // return; 
@@ -1594,79 +1619,6 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       }
     });
   }
-  xcreateGRN(): void {
-    const inspectionQuantity: number = Number(this.planProductionOrderFormGroup.value.inspectionQuantity);
-    const intQCode = this.planProductionOrderFormGroup.value.intCode;
-
-    const payloadToCloseOpenQC =
-    {
-      docNum: 241000013,
-      docEntry: 17,
-      docDate: "2025-04-15T00:00:00Z",
-      itemCode: "SF000002",
-      productName: "Syngenta 250ml Bottle (PET)",
-      plannedQuantity: 25000,
-      uoM: -1,
-      inventoryUOM: "Pcs",
-      productionOrderStatus: "boposReleased",
-      warehouse: "01",
-      completedQuantity: inspectionQuantity,
-      rejectedQuantity: 0,
-      machine: "MCH014588",
-      mold: "M00258",
-      bmr: "BMR25067",
-      cavity: 6,
-      cycleTime: 8,
-      weight: 350,
-      lotNo: "L023987",
-      shift: "A",
-      variant: "Syngenta",
-      plant: "K",
-      qStatus: "tYes",
-      qCode: intQCode,
-    };
-    console.log('PAYLOAD', payloadToCloseOpenQC);
-    // return;
-    this._SAPAllServices.goodReceiptProductionGRN(payloadToCloseOpenQC).subscribe({
-      next: (response) => {
-        if (response.succeeded) {
-          // console.log('Production GRN Created Successfully:', response);
-          console.log('GRN created successfully in SAP! DocEntry: ' + response.data[0].docEntry);
-          const snackRefSuccess = this._snackBar.open('GRN created successfully in SAP!', 'Close',
-            {
-              duration: 3000,
-              panelClass: ['snackbar-success']
-            }
-          );
-          snackRefSuccess.afterDismissed().subscribe(() => {
-            this.closeOpenQCWithPostToSAP();
-          });
-        } else if (response.succeeded == false || response.statusCode == 422) {
-          console.warn(`Failed to create Production GRN: ${response.message}`);
-          this._snackBar.open(`Failed to generate receipt.`, 'Close', {
-            duration: 1000,
-            panelClass: ['snackbar-error']
-          }).afterDismissed().subscribe(() => {
-            this._snackBar.open(`Make sure that the consumed quantity of the component item would not cause the item's inventory to fall below zero`, 'Close',
-              {
-                duration: 5000,
-                panelClass: ['snackbar-error']
-              }
-            );
-          });
-        }
-      },
-      error: (error) => {
-        console.error('Error creating GRN:', error);
-        console.error('error.message: ', (error.message || 'Unknown error'));
-        this._snackBar.open('Failed to create Production GRN: ' + (error.message || 'Unknown error'), 'Close', {
-          duration: 3000,
-          panelClass: ['snackbar-error']
-        });
-      }
-    });
-  }
-
   // CONFIRMATION DIALOG TO CONFIRM POSTING BEFORE CREATING GRN IN SAP - @IAK
   confirmationPostToSAP() {
     const overallStatus = this.planProductionOrderFormGroup.get('samplesStatus')?.value;

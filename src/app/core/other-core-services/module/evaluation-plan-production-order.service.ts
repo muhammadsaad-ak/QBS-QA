@@ -3,6 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { environment } from 'environments/environment';
 import { BehaviorSubject, Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
 
+interface ProductionQcBMRResponse {
+  isApiHandled: boolean;
+  isRequestSuccess: boolean;
+  statusCode: number;
+  message: string;
+  data: string;
+  exception: any[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -206,5 +215,38 @@ export class EvaluationPlanProductionOrderService {
         return throwError(() => error);
       })
     );
+  }
+  // GET BMR BATCH NO API - @IAK
+  getProductionQcBMRByQcId(qcId: string): Observable<string> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+    return this._httpClient
+      .get<ProductionQcBMRResponse>(
+        `${environment.appApiUrl}/CSAPI/IProductionQCFeature/GetProductionQcBMRByQcId?qcId=${qcId}`,
+        { headers }
+      )
+      .pipe(
+        tap((response: ProductionQcBMRResponse) => {
+          if (response.isRequestSuccess) {
+            console.log('getProductionQcBMRByQcId FETCHED SUCCESSFULLY: ', response.data);
+          } else {
+            console.warn('FAILED TO FETCH PRODUCTION getProductionQcBMRByQcId: ', response.message);
+          }
+        }),
+        switchMap((response: ProductionQcBMRResponse) => {
+          if (response.isRequestSuccess) {
+            return of(response.data); // RETURN ONLY THE "data"
+          } else {
+            return throwError(() => new Error(response.message));
+          }
+        }),
+        catchError((error) => {
+          console.error('HTTP ERROR WHILE FETCHING PRODUCTION QC BMR', error);
+          return throwError(() => error);
+        })
+      );
   }
 }
