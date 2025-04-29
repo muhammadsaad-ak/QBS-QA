@@ -13,6 +13,8 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
 import {MatSelectModule} from '@angular/material/select';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+
 
 @Component({
     selector: 'app-evaluation-plan-qa',
@@ -104,42 +106,13 @@ export class EvaluationPlanQaComponent implements OnInit {
     ) {}
 
     cavityNo = [
-        // {
-        //     cName: 'cavity 1',
-        //     InspectionTime: '10:30 AM',
-        //     inspectionBy: 'Mr.Kamran',
-        //     enabled: false,
-        // },
-        // {
-        //     cName: 'cavity 2',
-        //     InspectionTime: '10:30 AM',
-        //     inspectionBy: 'Mr.Kamran',
-        //     enabled: false,
-        // },
-        // {
-        //     cName: 'cavity 3',
-        //     InspectionTime: '10:30 AM',
-        //     inspectionBy: 'Mr.Kamran',
-        //     enabled: false,
-        // },
-        // {
-        //     cName: 'cavity 4',
-        //     InspectionTime: '10:30 AM',
-        //     inspectionBy: 'Mr.Kamran',
-        //     enabled: false,
-        // },
-        // {
-        //     cName: 'cavity 5',
-        //     InspectionTime: '10:30 AM',
-        //     inspectionBy: 'Mr.Kamran',
-        //     enabled: false,
-        // },
+
     ];
 
-    toggleCavity(index: number): void {
-        const cavity = this.cavitiesArray.at(index);
-        cavity.get('enabled')?.setValue(!cavity.value.enabled); // Toggle the enabled status
-    }
+    // toggleCavity(index: number): void {
+    //     const cavity = this.cavitiesArray.at(index);
+    //     cavity.get('enabled')?.setValue(!cavity.value.enabled); // Toggle the enabled status
+    // }
 
     evaluationplanQAFormGroup = this._formBuilder.group({
         intCode: [''],
@@ -400,7 +373,7 @@ export class EvaluationPlanQaComponent implements OnInit {
                                     id: cav.id,
                                     name: cav.name,
                                     isToggledOn: cav.isToggledOn,
-                                    enabled: cav.isToggledOn,
+                                    // enabled: cav.isToggledOn,
                                     generatedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) // ⏰ Add this
 
                                   })
@@ -437,51 +410,16 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
       }
 
-    onEvaluationPlanQaModalX(cav: any, index: any): void {
-        if (!cav.enabled) return;
-      
-        alert('CAVITY ID: ' + cav.id);
-        console.log('Cavity:', cav);
-      
-        const cavityNumber = `Cavity ${index + 1}`;
-        this.selectedCavityName = cavityNumber;
-        this.selectedCavity = cav;
-      
-        // ✅ Call API to get full cavity details
-        this._evaluationPlanQaOrderService.GetProductionQACavityById(cav.id).subscribe({
-          next: (res) => {
-            const data = res?.data;
-            if (data?.id) {
-              this.selectedCavityId = data.id;
-              console.log('Cavity Data Loaded:', data);
-              alert(`Loaded Cavity ID: ${this.selectedCavityId}`);
-            }
-          },
-          error: (err) => {
-            console.error('Error fetching cavity data', err);
-          }
-        });
-      
-        // ✅ Open modal
-        const dialogRef = this._dialog.open(this.dialogTemplateItems, {
-          width: '70%',
-          height: '75vh',
-        });
-      
-        dialogRef.afterClosed().subscribe((result) => {
-          this.closeDialog();
-        });
-      }
 
-      onEvaluationPlanQaModal(cav: any, index: number): void {
+    onEvaluationPlanQaModal(cav: any, index: number): void {
         if (!cav.enabled) return;
         
         alert('CAVITY ID: ' + cav.id);
         console.log('Cavity:', cav);
       
-        const cavityNumber = `Cavity ${index + 1}`;
-        this.selectedCavityName = cavityNumber;
-        this.selectedCavity = cav;
+        // const cavityNumber = `Cavity ${index + 1}`;
+        // this.selectedCavityName = cavityNumber;
+        this.selectedCavityName = cav.name;
       
         // ✅ Call API to get full cavity details
         this._evaluationPlanQaOrderService.GetProductionQACavityById(cav.id).subscribe({
@@ -498,18 +436,26 @@ export class EvaluationPlanQaComponent implements OnInit {
           }
         });
       
-        // ✅ Call the `getAllProductionQASamplesByCavityId` API for samples when editing
+            // ✅ Call the `getAllProductionQASamplesByCavityId` API for samples when editing
         this._evaluationPlanQaOrderService.getAllProductionQASamplesByCavityId(cav.id).subscribe({
           next: (sampleRes) => {
             const samples = sampleRes?.data || [];
-            this.samplesByCavity[this.selectedCavityId] = samples;  // Store samples by cavity ID for display
-            console.log('Samples for Cavity:', samples);
+
+            // Save samples only if they exist
+            if (samples.length > 0) {
+              this.samplesByCavity[this.selectedCavityId] = samples;
+              console.log('Samples for Cavity:', samples);
+            } else {
+              console.log('No samples found for this cavity.'); // Just log silently
+            }
           },
           error: (err) => {
             console.error('Error fetching cavity samples:', err);
+            this._snackBar.open('No Samples found in this cavity', 'Close', {
+              duration: 3000,
+            });
           }
         });
-      
         // ✅ Open modal
         const dialogRef = this._dialog.open(this.dialogTemplateItems, {
           width: '70%',
@@ -953,6 +899,57 @@ export class EvaluationPlanQaComponent implements OnInit {
       });
     }
 
+
+    toggleCavity(event: MatSlideToggleChange, index: number, cav: any): void {
+      const newToggleValue = event.checked;
+    
+      const cavity = this.cavitiesArray.at(index);
+      cavity.get('enabled')?.setValue(newToggleValue);
+    
+      const payload = {
+        id: cav.id,
+        name: cav.name,
+        inspectionBy: cav.inspectionBy ?? null,
+        inspectionDateTime: cav.inspectionDateTime ?? null,
+        isActive: cav.isActive ?? true,
+        isCavityPassed: cav.isCavityPassed ?? null,
+        mouldNo: cav.mouldNo ?? '',
+        isToggledOn: newToggleValue
+      };
+    
+      this._evaluationPlanQaOrderService.updateProductionQACavity(payload).subscribe({
+        next: (res) => {
+          console.log('Toggle API Success:', res);
+    
+          // ✅ Refresh the latest toggle state from server
+          this._evaluationPlanQaOrderService.GetProductionQACavityById(cav.id).subscribe({
+            next: (refreshRes) => {
+              const updatedCavity = refreshRes?.data;
+              if (updatedCavity) {
+                // Update the form group with latest value
+                cavity.patchValue({
+                  ...updatedCavity
+                });
+                console.log('Refreshed Cavity State:', updatedCavity);
+              }
+            },
+            error: (err) => {
+              console.warn('Failed to fetch updated cavity state', err);
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Toggle API Error:', err);
+          this._snackBar.open('Failed to update cavity toggle.', 'Close', {
+            duration: 3000,
+          });
+          cavity.get('enabled')?.setValue(!newToggleValue); // revert UI on error
+        }
+      });
+    }
+    
+    
+    
 
       
 
