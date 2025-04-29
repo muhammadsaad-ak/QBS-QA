@@ -119,7 +119,7 @@
 
         <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
           <mat-label>Analyzed By:</mat-label>
-          <input matInput placeholder="Enter " formControlName="analyzedBy" required>
+          <input matInput placeholder="Enter " formControlName="analyzedBy" required [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}">
         </mat-form-field>
 
         <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
@@ -129,7 +129,7 @@
       </div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
-        <button mat-flat-button color="primary" (click)="generateCavities()">
+        <button *ngIf="!isEditMode" mat-flat-button color="primary" (click)="generateCavities()">
           Generate
         </button>
       </div>
@@ -137,23 +137,24 @@
               <div formArrayName="cavities" class="flex flex-wrap gap-2 mt-4">
                 <div *ngFor="let cavControl of cavitiesArray.controls; let i = index" 
                      [formGroupName]="i"
-                     (click)="onEvaluationPlanQaModal(cavControl.value, i)"
+                     (click)="cavControl.value.isToggledOn && onEvaluationPlanQaModal(cavControl.value, i)"
                      class="sample-card"
                      [ngStyle]="{
-                        backgroundColor: cavControl.value.enabled ? '#caead6' : '#f2f2f2',
-                        cursor: cavControl.value.enabled ? 'pointer' : 'not-allowed'
+                        backgroundColor: cavControl.value.isToggledOn? '#caead6' : '#f2f2f2',
+                        cursor: cavControl.value.isToggledOn ? 'pointer' : 'not-allowed'
                      }">
                      
                   <div style="display: flex; justify-content: space-between;">
                     <div>
-                    <h3>Cavity - {{ i + 1 }}</h3>
-                    <p style="font-size: 12px; margin: 0;">Generated Time: {{ cavControl.value.generatedTime }}</p>
+                      <h3>{{ cavControl.value.name }}</h3>
+                      <p style="font-size: 12px; margin: 0;">Generated Time: {{ cavControl.value.generatedTime }}</p>
                     <!-- <p style="font-size: 12px; margin: 0;">Cavity ID: {{ cavControl.value.id }}</p> -->
                   </div>
                     <!-- <h3>{{ cavControl.value.name }}</h3> -->
-                    <mat-slide-toggle [checked]="cavControl.value.isToggledOn"
-                                      (click)="$event.stopPropagation()"
-                                      (change)="toggleCavity(i)">
+                    <mat-slide-toggle
+                      [checked]="cavControl.value.isToggledOn"
+                      (click)="$event.stopPropagation()"
+                      (change)="toggleCavity($event, i, cavControl.value)">
                     </mat-slide-toggle>
                   </div>
               
@@ -220,7 +221,7 @@
               <h3 style="font-weight: 500">{{ sample.title }}</h3>
               <div style="font-weight: 400">Inspection Time: {{ sample.inspectionTime }}</div>
               <div style="font-weight: 400">Inspection By: {{ sample.inspectionBy }}</div>
-              <div style="font-weight: 400">Cavity ID: {{ sample.cavityId }}</div>
+              <!-- <div style="font-weight: 400">Cavity ID: {{ sample.cavityId }}</div> -->
             </div>
           
             <div class="sample-card add-sample-card" (click)="onCavitySampleQaModal(i)">
