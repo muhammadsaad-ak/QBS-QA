@@ -2579,7 +2579,8 @@ export class TestingStepperComponent implements AfterViewInit {
             const formValues = this.itemSamplingForm.value;
             // const payload = { ...formValues, };
             const { id, itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
-
+            console.log('SENDING ITEM SAMPLING PAYLOAD:', payload); // Debugging
+            // return;
             // VALIDATION CHECKS FOR samplingRangeObjects
             const samplingRanges = payload.samplingRangeObjects as Array<{ sampleQty: number; lotSizeMin: number; lotSizeMax: number }>;
             for (let i = 0; i < samplingRanges.length; i++) {
@@ -2592,8 +2593,16 @@ export class TestingStepperComponent implements AfterViewInit {
                     });
                     return;
                 }
-                if (range.sampleQty < range.lotSizeMin || range.sampleQty > range.lotSizeMax) {
-                    const errorMessage = "Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.";
+                // if (range.sampleQty < range.lotSizeMin || range.sampleQty > range.lotSizeMax) {
+                //     const errorMessage = "Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.";
+                //     this._snackBar.open(errorMessage, 'Close', {
+                //         duration: 3000,
+                //         panelClass: ['snackbar-error']
+                //     });
+                //     return;
+                // }
+                if (range.sampleQty > range.lotSizeMax) {
+                    const errorMessage = "Sample Qty must be less than Lot Size Max.";
                     this._snackBar.open(errorMessage, 'Close', {
                         duration: 3000,
                         panelClass: ['snackbar-error']
@@ -2623,11 +2632,31 @@ export class TestingStepperComponent implements AfterViewInit {
                         if (response.isRequestSuccess) {
                             console.log('API RUN SUCCESSFULLY.', payload);
                             this._snackBar.open('DATA SAVED SUCCESSFULLY!', 'Close', {
-                                duration: 2000,
+                                duration: 1550,
                                 panelClass: ['snackbar-success']
                             });
-                            this.itemSamplingForm.reset();
-                            this.stepper.next();
+                            this.itemSamplingForm.get('itemCode')?.setValue(null);
+                            this.itemSamplingForm.get('itemDescription')?.setValue(null);
+                            this.itemSamplingForm.get('samplingRangeObjects')?.setValue([]);
+
+                            // (this.itemSamplingForm.get('samplingRangeObjects') as FormArray)?.clear(); 
+
+                            // Clear the sampling range objects
+                            
+                            this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
+                                const fetchedCodeIS = sampleCodeIS.data;
+                                console.log('FETCHED SAMPLE CODE:', fetchedCodeIS);
+                                if (fetchedCodeIS) {
+                                    const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
+                                    this.itemSamplingForm
+                                        .get('sampleCodeIS')
+                                        ?.setValue(formattedSampleCodeIS);
+                                }
+                                setTimeout(() => {
+                                    this.isLoading = false;
+                                }, 1500);
+                            });
+                            // this.stepper.next();
                         } else {
                             console.log('API RESPONSE (NON-ERROR):', response);
                         }
@@ -3688,8 +3717,13 @@ export class TestingStepperComponent implements AfterViewInit {
                         return null;
                     }
                     // VALIDATION: sampleQty STRICTLY BETWEEN lotSizeMin & lotSizeMax
-                    if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
-                        this.validatingSamplingRange = 'Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.';
+                    // if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
+                    //     this.validatingSamplingRange = 'Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.';
+                    //     this.isValidate = false;
+                    //     return null;
+                    // }
+                    if (sampleQty > lotSizeMax) {
+                        this.validatingSamplingRange = 'Sample Qty must be less than Lot Size Max';
                         this.isValidate = false;
                         return null;
                     }
@@ -3725,26 +3759,27 @@ export class TestingStepperComponent implements AfterViewInit {
             }
 
             // IF NO VALID ROWS OR VALIDATION FAILED
-            if (updatedSamplingRangeObjects.length === 0 || !this.isValidate) {
-                this.isValidate = false;
-                const errorMessage = this.validatingSamplingRange || 'No changes were made in Ranges. Redirecting to the main screen.';
-                this._snackBar.open(errorMessage, 'Close', {
-                    duration: 2050,
-                    panelClass: ['snackbar-error']
-                });
-                if (!this.validatingSamplingRange) {
-                    setTimeout(() => {
-                        this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-                    }, 2000);
-                    this.clearingSessionStorage();
-                }
-                return;
-            }
+            // if (updatedSamplingRangeObjects.length === 0 || !this.isValidate) {
+            //     this.isValidate = false;
+            //     const errorMessage = this.validatingSamplingRange || 'No changes were made in Ranges. Redirecting to the main screen.';
+            //     this._snackBar.open(errorMessage, 'Close', {
+            //         duration: 2050,
+            //         panelClass: ['snackbar-error']
+            //     });
+            //     if (!this.validatingSamplingRange) {
+            //         setTimeout(() => {
+            //             this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+            //         }, 2000);
+            //         this.clearingSessionStorage();
+            //     }
+            //     return;
+            // }
 
             const sendingPayloadIS = {
                 ...payload,
                 samplingRangeObjects: updatedSamplingRangeObjects,
-                id: formValues.id
+                id: formValues.id,
+                flexibility: this.itemSamplingForm.get('flexibility')?.value,
             };
             console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
 
@@ -3875,5 +3910,28 @@ export class TestingStepperComponent implements AfterViewInit {
                 panelClass: ['snackbar-error']
             });
         }
+    }
+    resetItemsIS: boolean = false;
+    onNextClickItemSample(): void {
+        const itemCodeValueIS = this.itemSamplingForm.get('itemCode')?.value;
+        const itemDescriptionValueIS = this.itemSamplingForm.get('itemDescription')?.value;
+    
+        const isItemCodeEmpty = !itemCodeValueIS; 
+        const isItemDescriptionEmpty = !itemDescriptionValueIS;
+    
+        if (isItemCodeEmpty && isItemDescriptionEmpty) {
+            this.stepper.next();
+        } else {
+            this.resetItemsIS = true;
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
+    onResetItemsClickIS(): void {
+        this.resetItemsIS = false;
+        this.itemSamplingForm.get('itemCode')?.setValue(null);
+        this.itemSamplingForm.get('itemDescription')?.setValue(null);
     }
 }
