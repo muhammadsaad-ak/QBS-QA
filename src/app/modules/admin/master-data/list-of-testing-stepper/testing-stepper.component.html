@@ -1259,16 +1259,23 @@
       <!-- ITEM SAMPLE STARTS -->
       <mat-step [stepControl]="itemSamplingForm" label="Item Sample">
         <form [formGroup]="itemSamplingForm">
-          <h1 class="custom-heading">Item Sample 0.3.1 </h1>
+          <!-- <h1 class="custom-heading">Item Sample</h1> -->
+           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 class="custom-heading">Item Sample</h3>
+            <button mat-button class="next-button bg-warn-400 text-white" *ngIf="!isEditMode && resetItemsIS"
+                    (click)="onResetItemsClickIS()">
+              Reset Item
+            </button>
+          </div>
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
             <!-- Sample Code -->
-            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+            <mat-form-field style="flex: 1 1 15%; min-width: 100px;">
               <mat-label>Sample Code</mat-label>
               <input class="view-mode-bg-grey" matInput formControlName="sampleCodeIS" readonly
                 style="cursor: not-allowed;">
             </mat-form-field>
             <!-- Item Code -->
-            <mat-form-field style="flex: 0 1 20%; min-width: 100px;">
+            <mat-form-field style="flex: 1 1 15%; min-width: 100px;">
               <mat-label>Item Code</mat-label>
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                 (click)="onItemSampleItemCodeClick()" *ngIf="!isEditMode"></mat-icon>
@@ -1277,7 +1284,7 @@
               <mat-error>Required.</mat-error>
             </mat-form-field>
             <!-- Item Description -->
-            <mat-form-field style="flex: 0 1 55%; min-width: 100px;">
+            <mat-form-field style="flex: 1 1 60%; min-width: 100px;">
               <mat-label>Item Description</mat-label>
               <input matInput formControlName="itemDescription" required readonly=""
                 [value]="selectedItemDescriptionIS ? selectedItemDescriptionIS : ''">
@@ -1337,8 +1344,8 @@
                     </ng-container>
                     <!-- Item Group -->
                     <ng-container matColumnDef="itemGroup">
-                      <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
-                      <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      <mat-header-cell *matHeaderCellDef class="single-line hidden">Item&nbsp;Group</mat-header-cell>
+                      <mat-cell *matCellDef="let row" class="single-line text-sm hidden">
                         {{ row.uoMGroupEntry ?? '-' }}
                       </mat-cell>
                     </ng-container>
@@ -1525,12 +1532,25 @@
             {{ validatingSamplingRange }}
           </div>
           <div class="step-navigation">
+            <div *ngIf="isLoading" class="loader">
+              <mat-spinner diameter="33"></mat-spinner>
+            </div>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" matStepperPrevious>
+              <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+            </button>
+            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+              (click)="onSubmitItemSamplingForm()">Save</button>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickItemSample()">
+              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+            </button>
+            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateIS()">Update</button>
+          </div>
+          <!-- <div class="step-navigation">
             <button mat-button class="back-button" *ngIf="!isEditMode" matStepperPrevious>Back</button>
             <button mat-button class="next-button" *ngIf="!isEditMode"
               (click)="onSubmitItemSamplingForm()">Next</button>
-            <!-- matStepperNext -->
             <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateIS()">Update</button>
-          </div>
+          </div> -->
         </form>
       </mat-step>
       <!-- ITEM SAMPLE ENDS -->

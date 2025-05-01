@@ -6,10 +6,12 @@ import { LayoutComponent } from 'app/layout/layout.component';
 export const appRoutes: Route[] = [
 
     // Redirect empty path to 'list-of-inspection-management'
-    { path: '', pathMatch: 'full', redirectTo: 'master-data/list-of-inspection-management' },
+    // { path: '', pathMatch: 'full', redirectTo: 'master-data/list-of-inspection-management' },
+    { path: '', pathMatch: 'full', redirectTo: 'evaluation-plan/list-of-evaluation-plan' },
 
     // Redirect signed-in user to 'list-of-inspection-management'
-    { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'master-data/list-of-inspection-management' },
+    // { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'master-data/list-of-inspection-management' },
+    { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'master-data/list-of-testing-stepper' },
 
     // Auth routes for guests
     {
