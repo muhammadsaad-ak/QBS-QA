@@ -29,7 +29,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs'; 
 import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
-
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 // Item Inspection Card
@@ -70,6 +70,7 @@ interface itemSamplingRangeIF {
             MatTabsModule,
             MatSelectModule,
             MatProgressSpinnerModule,
+            MatTooltipModule,
         ],
     animations: qbsAnimations,
     templateUrl: './testing-stepper.component.html',
@@ -195,7 +196,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.fetchListAllItems();
         const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
             width: '75vw',
-            height: '75vh',
+            height: '90vh',
             data: this.dataSourceItemCodeIS,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -269,7 +270,7 @@ export class TestingStepperComponent implements AfterViewInit {
     onItemSampleItemCodeClickx() {
         const dialogRef = this.dialog.open(this.dialogTemplateItemSampleItems, {
             width: '75vw',
-            height: '75vh',
+            height: '90vh',
             data: this.dataSourceItemSampleCode,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -368,6 +369,7 @@ export class TestingStepperComponent implements AfterViewInit {
     });
 
     displayedColumnsQualitative = [
+        'serialId',
         'parameter',
         'passCriteria',
         'mandatory',
@@ -376,6 +378,7 @@ export class TestingStepperComponent implements AfterViewInit {
         'fail',
     ];
     displayedColumnsQuantitative = [
+        'serialId',
         'parameterQty',
         'uoMId',
         'mandatoryQty',
@@ -703,13 +706,9 @@ export class TestingStepperComponent implements AfterViewInit {
             (row) => row.isSelected
         );
         if (selectedRow) {
-            // console.log('SELECTED ROW:', selectedRow);
-            // this.itemsInspectionCardsForm
-            //     .get('itemCode')
-            //     .setValue(selectedRow.itemCode);
-            // this.itemsInspectionCardsForm
-            //     .get('itemDescription')
-            //     .setValue(selectedRow.itemName);
+            console.log('SELECTED ROW:', selectedRow);
+            this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
+            this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemName);
 
             //  AGAINST SAP LIST ALL ITEMS
             this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
@@ -727,6 +726,29 @@ export class TestingStepperComponent implements AfterViewInit {
             // console.log("addSelectedRowItemCodeIIC - this.selectedItemCodeIIC:", this.selectedItemCodeIIC)
             this.selectedItemDescriptionICC = selectedRow.itemName;
             // console.log("addSelectedRowItemCodeIIC - this.selectedItemDescriptionICC:", this.selectedItemDescriptionICC)
+            this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
+                const isItemAlreadyOpened = items.data.some(
+                  (item) => item.itemCode === this.selectedItemCodeIIC
+                );
+                if (isItemAlreadyOpened) {
+                    const snackRefSuccess = this._snackBar.open('This item is already open, and an inspection card has been created for it.', 'Close', {
+                        duration: 3000,
+                        horizontalPosition: 'center',
+                        verticalPosition: 'top'
+                    });
+                    snackRefSuccess.afterDismissed().subscribe(() => {
+                        this.selectedItemCodeIIC = null;
+                        this.selectedItemDescriptionICC = null;
+                        this.itemsInspectionCardsForm.get('itemCode').setValue(null);
+                        this.itemsInspectionCardsForm.get('itemDescription').setValue(null);   
+                        this.itemsInspectionCardsForm.get('itemCode').setValidators([Validators.required]);
+                        this.itemsInspectionCardsForm.get('itemDescription').setValidators([Validators.required]);
+                        this.itemsInspectionCardsForm.get('itemCode').updateValueAndValidity();
+                        this.itemsInspectionCardsForm.get('itemDescription').updateValueAndValidity();
+                        this.cdr.detectChanges();
+                    });
+                }
+              });
         } else {
             console.log('NO ROW SELECTED');
         }
@@ -780,7 +802,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.fetchListAllCards();
         const dialogRef = this.dialog.open(this.dialogTemplateCardCodeIIC, {
             width: '75vw',
-            height: '75vh',
+            height: '90vh',
             data: this.dataSourceCardCodeIIC,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -810,9 +832,10 @@ export class TestingStepperComponent implements AfterViewInit {
         );
 
         if (selectedRowCardCodeIIC) {
+            let intCodePrefix = 'IC-000';
             this.itemsInspectionCardsForm
                 .get('intCode')
-                .setValue(selectedRowCardCodeIIC.intCode);
+                .setValue(intCodePrefix+selectedRowCardCodeIIC.intCode);
             this.itemsInspectionCardsForm
                 .get('cardDescription')
                 .setValue(selectedRowCardCodeIIC.description);
@@ -878,7 +901,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                     this.fb.group({
                                         id: characteristic.id,
                                         parameter: characteristic.description,
-                                        passCriteria: criteria.description,
+                                        passCriteria: characteristic.singleCriteria, // passCriteria: criteria.description,
                                         mandatory: false,
                                         pass: [], // Multiple pass values in array
                                         fail: [], // Multiple fail values in array
@@ -892,10 +915,10 @@ export class TestingStepperComponent implements AfterViewInit {
                             this.fb.group({
                                 id: characteristic.id, // Assigning qualitative ID
                                 parameter: characteristic.description,
-                                passCriteria: '',
+                                passCriteria: characteristic.singleCriteria, // passCriteria: '',
                                 mandatory: false,
-                                pass: '',
-                                fail: '',
+                                pass: [], // pass: '',
+                                fail: [], // fail: '',
                             })
                         );
                     }
@@ -946,7 +969,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.selectedRowIndexUoM = index; //  Save index
         const dialogRef = this.dialog.open(this.dialogTemplateUoMIIC, {
             width: '75vw',
-            height: '75vh',
+            height: '90vh',
             data: this.dataSourceUoMIIC,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -1031,7 +1054,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.dialogTemplateAddQualitativeIIC,
             {
                 width: '75vw',
-                height: '75vh',
+                height: '90vh',
                 data: this.dataSourceAddQualitativeIIC,
             }
         );
@@ -1063,8 +1086,7 @@ export class TestingStepperComponent implements AfterViewInit {
         if (selectedRow) {
             // Set the selected values
             this.selectedQualitativeDescriptionIIC = selectedRow.description;
-            this.selectedQualitativeCriteriaIIC =
-                selectedRow.inspectionCriteria;
+            this.selectedQualitativeCriteriaIIC = selectedRow.singleCriteria; // this.selectedQualitativeCriteriaIIC = selectedRow.inspectionCriteria;
 
             // Check if criteriaDescription exists
             const criteriaDescription = selectedRow.criteriaDescription || ''; // Default to empty if not available
@@ -1076,7 +1098,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.addQualitativeInspectionRow(
                 selectedRow.id,
                 selectedRow.description,
-                criteriaDescription
+                selectedRow.singleCriteria // criteriaDescription
             );
         } else {
             // console.log('NO ROW SELECTED');
@@ -1101,7 +1123,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this.dialogTemplateAddQuantitativeIIC,
             {
                 width: '75vw',
-                height: '75vh',
+                height: '90vh',
                 data: this.dataSourceAddQuantitativeIIC,
             }
         );
@@ -1174,7 +1196,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
         const dialogRef = this.dialog.open(this.dialogTemplateResultsIIC, {
             width: '75vw',
-            height: '75vh',
+            height: '90vh',
             data: { paramID, clickedRowParameter, clickedRowPassCriteria },
             // data: this.dataSourceQRIIC,
         });
@@ -2142,7 +2164,7 @@ export class TestingStepperComponent implements AfterViewInit {
         console.log(this.selectedControlAccountRowIndex);
         const dialogRef = this.dialog.open(this.dialogTemplateItems, {
             width: '75vw',
-            height: '75vh',
+            height: '90vh',
             data: this.dataSourceItems,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -2248,7 +2270,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
             width: '75vw',
-            height: '75vh',
+            height: '90vh',
             data: this.dataSourceItemsX,
         });
         dialogRef.afterClosed().subscribe(() => {
