@@ -417,8 +417,9 @@ export class EvaluationPlanQaComponent implements OnInit {
 
     onEvaluationPlanQaModal(cav: any, index: number): void {
         if (!cav.enabled) return;
-        
-        alert('CAVITY ID: ' + cav.id);
+        this.samplesByCavity = {}; // or just delete specific entry if needed
+
+        // alert('CAVITY ID: ' + cav.id);
         console.log('Cavity:', cav);
       
         // const cavityNumber = `Cavity ${index + 1}`;
@@ -432,7 +433,7 @@ export class EvaluationPlanQaComponent implements OnInit {
             if (data?.id) {
               this.selectedCavityId = data.id;
               console.log('Cavity Data Loaded:', data);
-              alert(`Loaded Cavity ID: ${this.selectedCavityId}`);
+              // alert(`Loaded Cavity ID: ${this.selectedCavityId}`);
             }
           },
           error: (err) => {
