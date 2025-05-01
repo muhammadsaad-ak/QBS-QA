@@ -126,6 +126,11 @@
           <mat-label>Item ID:</mat-label>
           <input class="view-mode-bg-grey" matInput formControlName="itemId">
         </mat-form-field>
+
+        <!-- <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="">
+          <mat-label>QA ID:</mat-label>
+          <input class="view-mode-bg-grey" matInput formControlName="id">
+      </mat-form-field> -->
       </div>
 
       <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
@@ -214,21 +219,24 @@
 
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
+            <!-- Sample Cards with Edit Click -->
             <div
               *ngFor="let sample of samplesByCavity[selectedCavityId] || []; let i = index"
               class="sample-card"
-              style="background-color: #caead6;">
+              [ngStyle]="{ 'background-color': sample.cardColor }"
+              (click)="onEditCavitySample(sample, i)">
               <h3 style="font-weight: 500">{{ sample.title }}</h3>
               <div style="font-weight: 400">Inspection Time: {{ sample.inspectionTime }}</div>
               <div style="font-weight: 400">Inspection By: {{ sample.inspectionBy }}</div>
-              <!-- <div style="font-weight: 400">Cavity ID: {{ sample.cavityId }}</div> -->
             </div>
           
-            <div class="sample-card add-sample-card" (click)="onCavitySampleQaModal(i)">
+            <!-- Add New Sample Card -->
+            <div class="sample-card add-sample-card" (click)="onCavitySampleQaModal(i, sample)">
               <span>Add Sample</span>
               <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
             </div>
           </div>
+          
         </div>
       </ng-template>
 
@@ -444,8 +452,12 @@
             </mat-tab>
           </mat-tab-group>
           <div class="mt-auto flex justify-end">
-            <button mat-flat-button color="primary" (click)="saveAndCloseQa()">
+            <button mat-flat-button color="primary" (click)="saveAndCloseQa()"  *ngIf="!isEditMode">
               Save & Close
+            </button>
+
+            <button mat-flat-button color="primary" (click)="updateSampleCavity(selectedSample?.id)"  *ngIf="isEditMode && selectedSample?.id">
+              Update & Close
             </button>
           </div>
         </div>

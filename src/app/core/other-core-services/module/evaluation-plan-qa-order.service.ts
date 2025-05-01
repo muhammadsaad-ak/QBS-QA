@@ -388,5 +388,45 @@ export class EvaluationPlanQaOrderService {
         );
       }
 
+      getProductionQACavitySampleById(sampleId: string): Observable<any> {
+        const headers = new HttpHeaders({
+          Authorization: `Bearer ${this.accessToken}`,
+          Accept: 'application/json',
+        });
+      
+        return this._httpClient
+          .get(`${environment.appApiUrl}/CSAPI/IProductionQACavitySampleFeature/GetProductionQACavitySampleById?sampleId=${sampleId}`, {
+            headers,
+          })
+          .pipe(
+            tap((res: any) => {
+              console.log('✅ Cavity Sample Data:', res?.data);
+            }),
+            catchError((error) => {
+              console.error('❌ Error fetching cavity sample:', error);
+              return throwError(() => new Error(`Error fetching cavity sample: ${error.message}`));
+            })
+          );
+      }
+
+      updateProductionQACavitySample(data: any): Observable<any> {
+        const headers = new HttpHeaders({
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        });
+        console.log('Sending cavity sample update payload:', data);
+      
+        return this._httpClient.put(
+          `${environment.appApiUrl}/CSAPI/IProductionQACavitySampleFeature/UpdateProductionQACavitySample`,
+          data,
+          { headers }
+        ).pipe(
+          tap(response => console.log('Cavity sample update response:', response)),
+          catchError(error => {
+            console.error('Error while updating cavity sample:', error);
+            return throwError(() => error);
+          })
+        );
+      }
   
 }

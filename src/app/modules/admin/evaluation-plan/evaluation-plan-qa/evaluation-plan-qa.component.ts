@@ -47,6 +47,8 @@ export class EvaluationPlanQaComponent implements OnInit {
     selectedCavityId: string | null = null; // class level variable to use in payload
     samplesByCavity: { [cavityId: string]: any[] } = {};
     orderType: string = ''; // Variable to hold the order type
+    selectedSample: any;
+
 
 
     
@@ -115,6 +117,8 @@ export class EvaluationPlanQaComponent implements OnInit {
     // }
 
     evaluationplanQAFormGroup = this._formBuilder.group({
+      id: [''], // ✅ Empty string if null not allowed
+
         intCode: [''],
         docNum: [''],
         itemCode: [''],
@@ -373,7 +377,7 @@ export class EvaluationPlanQaComponent implements OnInit {
                                     id: cav.id,
                                     name: cav.name,
                                     isToggledOn: cav.isToggledOn,
-                                    // enabled: cav.isToggledOn,
+                                    enabled: cav.isToggledOn,
                                     generatedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) // ⏰ Add this
 
                                   })
@@ -443,8 +447,16 @@ export class EvaluationPlanQaComponent implements OnInit {
 
             // Save samples only if they exist
             if (samples.length > 0) {
-              this.samplesByCavity[this.selectedCavityId] = samples;
-              console.log('Samples for Cavity:', samples);
+              const enhancedSamples = samples.map(sample => ({
+                ...sample,
+                cardColor: sample.isSamplePassed ? 'lightgreen' : 'lightcoral',
+                inspectionTime: new Date(sample.inspectionDateTime).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }),
+              }));
+              this.samplesByCavity[this.selectedCavityId] = enhancedSamples;
+              console.log('Samples for Cavity (Enhanced):', enhancedSamples);
             } else {
               console.log('No samples found for this cavity.'); // Just log silently
             }
@@ -464,16 +476,28 @@ export class EvaluationPlanQaComponent implements OnInit {
       
         dialogRef.afterClosed().subscribe(() => {
           this.closeDialog();
+            // ✅ Clear the samples for the currently selected cavity
+  if (this.selectedCavityId) {
+    this.samplesByCavity[this.selectedCavityId] = [];
+  }
+
+  // ✅ Optionally clear selectedCavityId too
+  this.selectedCavityId = null;
         });
       }
       
       
 
-    onCavitySampleQaModal(rowIndex: any): void {
+    onCavitySampleQaModal(rowIndex: any, sample?: any): void {
+      this.isEditMode = false; // ✅ Reset flag for new sample
+      this.selectedRowIndex = rowIndex;
+      this.selectedSample = sample; // Save selected sample
+      this.qualitativeInspectionObjects.clear();
+      this.quantitativeInspectionResults.clear();
+
         // console.log('Row Index:', rowIndex);
         // this.selectedControlAccountRowIndex = rowIndex;
         // console.log(this.selectedControlAccountRowIndex);
-        this.selectedRowIndex = rowIndex;
 
         const dialogRef = this._dialog.open(this.dialogQaTemplateItems, {
           width: '70%',
@@ -598,6 +622,7 @@ export class EvaluationPlanQaComponent implements OnInit {
 
       
             const newSample = {
+              id: response?.id || '', // ✅ Add this
               title: payload.name,
               inspectionTime: new Date(payload.inspectionDateTime).toLocaleTimeString([], {
                 hour: '2-digit',
@@ -723,6 +748,7 @@ export class EvaluationPlanQaComponent implements OnInit {
           shift: data.shift ?? 'N/A',
           cavityNo: data.cavity ?? 'N/A',
           plannedQuantity: data.plannedQuantity ?? 0,
+          id: data.id,
           
             // intCode: data.intCode ?? "",
             // itemCode: data.itemCode ?? "",
@@ -947,6 +973,199 @@ export class EvaluationPlanQaComponent implements OnInit {
         }
       });
     }
+
+    onEditCavitySample(sample: any, index: number): void {
+      this.isEditMode = true; // ✅ Set to true on edit
+      this.selectedRowIndex = index; // ✅ Set this!
+      this.selectedSample = sample; // set this when "Edit" is clicked
+      console.log('Sample ID:', sample.id); // ✅ Log it here
+
+      console.log('Editing Sample:', sample);
+      const dialogRef = this._dialog.open(this.dialogQaTemplateItems, {
+        width: '70%',
+        height: '75vh',
+        data: {
+          cardCode: this.cardCode,
+          sample: sample,
+        },
+      });
+    
+      this.dialogRefs[this.selectedRowIndex] = dialogRef;
+    
+      // Populate form fields using sample
+      this.evaluationplanQAFormGroup.patchValue({
+        inspectionBy: sample.inspectionBy,
+        // inspectionTime: sample.inspectionTime,
+        // other fields...
+      });
+    
+      // Call these AFTER patching values
+      this.getCardByItemCode(this.selectedOrder.itemCode);
+      this.getProductionByQACode(
+        this.selectedOrder.itemCode,
+        this.selectedOrder.docNo
+      );
+    }
+
+    updateSampleCavity(sampleId: string): void {
+      console.log('Debug - productionQAId:', this.productionQAId);
+      console.log('Debug - sampleId received:', sampleId);
+      if (!this.productionQAId || !sampleId) {
+        console.error('Production QA ID or Sample ID is missing, cannot proceed!');
+        return;
+      }
+    
+      const inspectionBy = this.evaluationplanQAFormGroup.get('inspectionBy')?.value || 'N/A';
+    
+      const qualitativeInspections = this.qualitativeInspectionObjects.value.map((item: any) => {
+        const selectedStatus = item?.qualitativeResultPassStatusResults?.find(
+          (status: any) => status.qualitativeResultId === item.qualitativeResultId
+        );
+        return {
+          id: item?.id || null, // Add the ID if available for update
+          qualitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || "",
+          quantitativeInspectionMappingId: null,
+          qualitativeResultId: item?.qualitativeResultId || null,
+          isQualitativeResultPassed: selectedStatus ? selectedStatus.isPassed : false,
+          quantitativeResult: 0,
+          isQuantitativeResultPassed: false,
+          remarks: item?.remarks || "",
+          isActive: true
+        };
+      }) || [];
+    
+      const quantitativeInspections = this.quantitativeInspectionResults.value.map((item: any) => {
+        const resultValue = item?.result ? parseFloat(item.result) : 0;
+        return {
+          id: item?.id || null, // Add the ID if available for update
+          qualitativeInspectionMappingId: null,
+          quantitativeInspectionMappingId: item?.inspectionCharacterisicMappingId || null,
+          qualitativeResultId: null,
+          isQualitativeResultPassed: false,
+          quantitativeResult: resultValue,
+          isQuantitativeResultPassed: !isNaN(resultValue) &&
+            resultValue >= (item.min ?? 0) &&
+            resultValue <= (item.max ?? 0),
+          remarks: item?.remarks || "",
+          isActive: true
+        };
+      }) || [];
+    
+      const inspectionObjects = [...qualitativeInspections, ...quantitativeInspections];
+    
+      const hasPassingQualitative = inspectionObjects
+        .filter((i: any) => i.qualitativeResultId !== null)
+        .every((i: any) => i.isQualitativeResultPassed === true);
+    
+      const hasPassingQuantitative = inspectionObjects
+        .filter((i: any) => i.quantitativeInspectionMappingId !== null)
+        .every((i: any) => i.isQuantitativeResultPassed === true);
+    
+      const isSamplePassed = hasPassingQualitative && hasPassingQuantitative;
+      
+      // Find the current sample to be updated
+      const currentSample = this.samplesByCavity[this.selectedCavityId]?.find(sample => sample.id === sampleId);
+      
+      const payload = {
+        id: sampleId,
+        name: currentSample?.title || `Sample-Updated`,
+        inspectionDateTime: new Date().toISOString(),
+        inspectionBy,
+        productionQcId: this.productionQAId.id, // Using productionQcId as mentioned in your API schema
+        isSamplePassed,
+        isActive: true,
+        inspectionObjects
+      };
+      
+      console.log('SENDING Production QA Sample UPDATE PAYLOAD:', payload);
+      
+      this._evaluationPlanQAOrderService.updateProductionQACavitySample(payload).subscribe({
+        next: (response) => {
+          this._snackBar.open(
+            `Sample updated successfully with status ${isSamplePassed ? 'Passed' : 'Failed'}`,
+            'Close',
+            { duration: 3000, panelClass: ['snackbar-success'] }
+          );
+          
+          // Update the sample in the UI
+          if (this.samplesByCavity[this.selectedCavityId]) {
+            const index = this.samplesByCavity[this.selectedCavityId].findIndex(sample => sample.id === sampleId);
+            if (index !== -1) {
+
+                  // 🔍 Add these logs here to verify
+    console.log('Update Color Check ~ isSamplePassed:', isSamplePassed);
+    console.log('payload.isSamplePassed:', payload.isSamplePassed);
+              this.samplesByCavity[this.selectedCavityId][index] = {
+                ...this.samplesByCavity[this.selectedCavityId][index],
+                inspectionTime: new Date().toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }),
+                inspectionBy: payload.inspectionBy,
+                cardColor: isSamplePassed ? 'lightgreen' : 'lightcoral',
+              };
+            }
+          }
+          
+          // Reset form fields if needed
+          this.qualitativeInspectionObjects.clear();
+          this.quantitativeInspectionResults.clear();
+          
+          // Update samples status
+          this._evaluationPlanQAOrderService.getIsSamplePassedListByProdQACavityId(this.productionQAId.id).subscribe({
+            next: (isSamplePassedList: boolean[]) => {
+              console.log('SAMPLES STATUS ~ isSamplePassedList:', isSamplePassedList);
+              this.samplesStatus = isSamplePassedList.length > 0 && isSamplePassedList.every(status => status === true);
+              console.log('SAMPLES STATUS ~ this.samplesStatus:', this.samplesStatus);
+              
+              this.evaluationplanQAFormGroup.patchValue({
+                samplesStatus: this.samplesStatus
+              });
+            },
+            error: (error) => {
+              console.error('getIsSamplePassedListByProdQAId API Error:', error);
+              this._snackBar.open('Failed to fetch samples against this Production Order QA.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+          
+          // Refresh samples by cavity ID
+          this._evaluationPlanQAOrderService.getAllProductionQASamplesByCavityId(this.selectedCavityId).subscribe({
+            next: (response) => {
+              console.log('All cavity samples fetched successfully after update:', response);
+                  // ✅ ADD THIS to assign color based on isSamplePassed
+    const samplesWithColor = response.data.map((sample: any) => ({
+      ...sample,
+      cardColor: sample.isSamplePassed ? 'lightgreen' : 'lightcoral'
+    }));
+
+    this.samplesByCavity[this.selectedCavityId] = samplesWithColor;
+  
+              // You can update your table/UI here with the fresh data if needed
+            },
+            error: (err) => {
+              console.error('Failed to fetch all cavity samples after update:', err);
+              this._snackBar.open('Error fetching all cavity samples.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+          
+          this.closeQaManually();
+        },
+        error: (err) => {
+          console.error('Failed to update QA Sample:', err);
+          this._snackBar.open('Error updating sample.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    }
+    
     
     
     
