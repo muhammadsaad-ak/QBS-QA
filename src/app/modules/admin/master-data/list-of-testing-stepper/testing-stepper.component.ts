@@ -3956,4 +3956,10 @@ export class TestingStepperComponent implements AfterViewInit {
         this.itemSamplingForm.get('itemCode')?.setValue(null);
         this.itemSamplingForm.get('itemDescription')?.setValue(null);
     }
+    onStepChange(event: any): void {
+        this.isValidate = false;
+        console.log('event.selectedIndex', event.selectedIndex);
+        console.log('this.isValidate', this.isValidate);
+        console.log('Step changed:', event);
+      } 
 }

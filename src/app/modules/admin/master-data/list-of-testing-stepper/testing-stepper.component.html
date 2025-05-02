@@ -1,6 +1,7 @@
 <div class="bg-card min-w-0 h-auto overflow-y-auto flex flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 ">
   <div class="p-2 mt-2"> <!-- p-3 mt-4 -->
-    <mat-stepper [linear]="isLinear" #stepper class="custom-stepper mt-2" displayDefaultIndicatorType="false"> <!-- mt-4 -->
+    <mat-stepper [linear]="isLinear" #stepper class="custom-stepper mt-2" displayDefaultIndicatorType="false"
+      (selectionChange)="onStepChange($event)"> <!-- mt-4 -->
 
       <!-- First Step -->
       <mat-step [stepControl]="firstFormGroup" label="Qualitative Result">
