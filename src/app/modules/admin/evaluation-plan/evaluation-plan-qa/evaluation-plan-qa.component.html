@@ -117,6 +117,12 @@
               matInput formControlName="cavityNo">
         </mat-form-field>
 
+        <mat-form-field style="flex: 0 1 calc(25.5% - 16px); min-width: 100px;">
+          <mat-label>Inspection Quantity:</mat-label>
+          <input matInput formControlName="inspectionQuantity" [readonly]="isEditMode"
+            [ngClass]="{'view-mode-bg-grey': isEditMode}" required>
+        </mat-form-field>
+
         <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px;">
           <mat-label>Analyzed By:</mat-label>
           <input matInput placeholder="Enter " formControlName="analyzedBy" required [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}">
@@ -195,27 +201,21 @@
                 required readonly />
             </mat-form-field>
 
-                        <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
-                            <mat-label>Mould No XX</mat-label>
-                            <input class="view-mode-bg-grey" matInput formControlName="mouldNo" placeholder="Enter Code"
-                                required readonly />
-                        </mat-form-field>
+            <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+              <mat-label>Mould No</mat-label>
+              <input class="view-mode-bg-grey" matInput formControlName="mouldNo" placeholder="Enter Code"
+              required readonly />
+            </mat-form-field>
 
-                        <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
-                          <mat-label>Cavity</mat-label>
-                          <input
-                            class="view-mode-bg-grey"
-                            matInput
-                            [value]="selectedCavityName"
-                            placeholder="Cavity Name"
-                            readonly
-                          />
-                        </mat-form-field>
+            <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+              <mat-label>Cavity</mat-label>
+              <input class="view-mode-bg-grey" matInput [value]="selectedCavityName" placeholder="Cavity Name" readonly />
+            </mat-form-field>
             
-                        <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+            <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
                           <mat-label>Cavity ID</mat-label>
                           <input class="view-mode-bg-grey" matInput [value]="selectedCavity?.id" placeholder="Enter Code" readonly />
-                        </mat-form-field> -->
+            </mat-form-field> -->           
 
           </div>
           <div class="mt-4 flex flex-wrap gap-2">

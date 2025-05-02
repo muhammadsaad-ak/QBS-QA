@@ -107,9 +107,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         private _dialog: MatDialog
     ) {}
 
-    cavityNo = [
-
-    ];
+    cavityNo = [];
 
     // toggleCavity(index: number): void {
     //     const cavity = this.cavitiesArray.at(index);
@@ -126,7 +124,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         inspectionDateTime: [new Date().toISOString()],
         // prodOrder: [''],
         qcLotNo: [''], 
-        docDate: [new Date().toISOString()], 
+        docDate: [], 
         // lotSize: [''],
         openQuantity: [], 
         plannedQuantity: [],
@@ -144,6 +142,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         itemId: [''],
         inspectionBy: [''],
         remarks: [''],
+        inspectionQuantity: [], 
         min: [''],
         max: [''],
         target: [''],
@@ -456,8 +455,8 @@ export class EvaluationPlanQaComponent implements OnInit {
                   minute: '2-digit',
                 }),
               }));
-              this.samplesByCavity[this.selectedCavityId] = enhancedSamples;
-              console.log('Samples for Cavity (Enhanced):', enhancedSamples);
+              this.samplesByCavity[cav.id] = enhancedSamples;
+              this.selectedCavityId = cav.id; // ✅ Set it *after* assigning data              console.log('Samples for Cavity (Enhanced):', enhancedSamples);
             } else {
               console.log('No samples found for this cavity.'); // Just log silently
             }
@@ -655,10 +654,10 @@ export class EvaluationPlanQaComponent implements OnInit {
               },
               error: (error) => {
                 console.error('getIsSamplePassedListByProdQAId API Error:', error);
-                this._snackBar.open('Failed to fetch samples against this Production Order QA .', 'Close', {
-                  duration: 3000,
-                  panelClass: ['snackbar-error']
-                });
+                // this._snackBar.open('Failed to fetch samples against this Production Order QA .', 'Close', {
+                //   duration: 3000,
+                //   panelClass: ['snackbar-error']
+                // });
               }
             });
 
@@ -736,6 +735,7 @@ export class EvaluationPlanQaComponent implements OnInit {
           analyzedBy: data.analyzedBy ?? 'N/A',
           mouldNo: data.mouldNo ?? 'N/A',
           machineNo: data.machineNo ?? 'N/A',
+          docDate: data.docDate ? new Date(data.docDate).toISOString().split('T')[0] : null,
           bmrNo: data.bmrNo ?? 'N/A',
           itemWeight: data.itemWeight ?? 'N/A',
           openQuantity: data.openQuantity ?? 0,
@@ -750,6 +750,8 @@ export class EvaluationPlanQaComponent implements OnInit {
           cavityNo: data.cavity ?? 'N/A',
           plannedQuantity: data.plannedQuantity ?? 0,
           id: data.id,
+          inspectionQuantity: data.inspectionQuantity,
+
           
             // intCode: data.intCode ?? "",
             // itemCode: data.itemCode ?? "",
