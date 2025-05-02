@@ -1,6 +1,7 @@
 <div class="bg-card min-w-0 h-auto overflow-y-auto flex flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 ">
-  <div class="p-3 mt-4">
-    <mat-stepper [linear]="isLinear" #stepper class="custom-stepper mt-4" displayDefaultIndicatorType="false">
+  <div class="p-2 mt-2"> <!-- p-3 mt-4 -->
+    <mat-stepper [linear]="isLinear" #stepper class="custom-stepper mt-2" displayDefaultIndicatorType="false"
+      (selectionChange)="onStepChange($event)"> <!-- mt-4 -->
 
       <!-- First Step -->
       <mat-step [stepControl]="firstFormGroup" label="Qualitative Result">
@@ -495,13 +496,10 @@
       <!-- itemsInspectionCardsForm  - Item Inspection Card STARTS -->
       <mat-step [stepControl]="itemsInspectionCardsForm" label="Item Inspection Card">
         <form [formGroup]="itemsInspectionCardsForm">
-
-          <!-- Custom Styled Heading -->
-          <h1 class="custom-heading">Item Inspection Card</h1>
-
-          <!-- Responsive Flexbox Container -->
+          <!-- Item Inspection Card -->
+          <div class="text-2xl font-extrabold">Item&nbsp;Inspection&nbsp;Card</div>
           <!-- UPPER FIELDS SECTION STARTS -->
-          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;" class="iic-py-2">
             <!-- ITEM CODE -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Item Code</mat-label>
@@ -534,10 +532,9 @@
               <mat-error>Required.</mat-error>
             </mat-form-field>
           </div>
-
           <!-- HIDDEN FIELDS -->
           <!-- itemName,itemType,itemGroupCode,itemU_QACard,itemUoMGroupEntry,inspectionCardId,id -->
-          <div class="w-full mt-4 hidden">
+          <div class="w-full hidden">
             <div class="px-6 flex space-x-10">
               <div class="w-full">
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
@@ -627,8 +624,8 @@
                   </ng-container>
                   <!-- Item Group -->
                   <ng-container matColumnDef="itemGroup">
-                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group&nbsp;Code</mat-header-cell>
-                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                    <mat-header-cell *matHeaderCellDef class="single-line hidden">Item&nbsp;Group&nbsp;Code</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm hidden">
                       {{ row.itemsGroupCode ?? '-' }}
                     </mat-cell>
                   </ng-container>
@@ -676,7 +673,7 @@
           <!-- CARD CODE NG TEMPLATE DIALOG STARTS -->
           <ng-template #dialogTemplateCardCodeIIC let-data="data">
             <div class="dialog-container flex flex-col h-full">
-              <div class="flex justify-between items-center p-4 border-b text-primary">
+              <div class="flex justify-between items-center p-2 border-b text-primary"> <!-- p-2 -->
                 <!-- List of All Inspection Cards -->
                 <h2 class="text-lg font-semibold">List&nbsp;of&nbsp;all&nbsp;Inspection&nbsp;Cards</h2>
                 <span (click)="closeDialog()" class="header-close-x">
@@ -699,7 +696,7 @@
                       <mat-checkbox [checked]="row.isSelected" (change)="onRowChangeCardCodeIIC(row)"
                         [disabled]="!row.isActive">
                       </mat-checkbox>
-                      {{row.intCode}}
+                      IC-000{{row.intCode}}
                     </mat-cell>
                   </ng-container>
                   <!-- Description COLUMN -->
@@ -739,8 +736,8 @@
           <!-- CARD CODE NG TEMPLATE DIALOG ENDS -->
 
           <!-- TABS SECTION STARTS -->
-          <mat-tab-group class="sm:px-2" mat-stretch-tabs="true" [animationDuration]="1500"
-            (selectedTabChange)="onTabChange($event)">
+          <mat-tab-group class="w-full p-0 h-72 overflow-y-auto" mat-stretch-tabs="true" [animationDuration]="1500"
+            (selectedTabChange)="onTabChange($event)"> <!-- class="sm:px-2" -->
             <!-- Qualitative Inspection TAB STARTS -->
             <mat-tab label="Qualitative Inspection">
               <ng-template matTabContent>
@@ -760,6 +757,13 @@
                     <section class="m-0 p-0 px-0 py-0 overflow-auto w-full">
                       <!-- Qualitative Inspection TABLE STARTS -->
                       <table mat-table [dataSource]="dataSourceQualitativeInspection" class="w-full">
+                        <ng-container matColumnDef="serialId">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                              S.No
+                            </th>
+                          <td mat-cell *matCellDef="let index = index" style="text-align: center;"> {{index + 1}}
+                          </td>
+                      </ng-container>
                         <!-- parameter COLUMN -->
                         <ng-container matColumnDef="parameter">
                           <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
@@ -842,9 +846,9 @@
                     <!-- ADD Qualitative Inspection NG TEMPLATE DIALOG STARTS -->
                     <ng-template #dialogTemplateAddQualitativeIIC let-data="data">
                       <div class="dialog-container flex flex-col h-full">
-                        <div class="flex justify-between items-center p-4 border-b text-primary">
+                        <div class="flex justify-between items-center p-2 border-b text-primary"> <!-- p-4 -->
                           <!-- Qualitative Characteristics -->
-                          <h2 class="text-lg font-semibold">Qualitative&nbsp;Characteristics</h2>
+                          <h2 class="text-lg font-semibold">Qualitative&nbsp;Inspection&nbsp;Characteristics</h2>
                           <span (click)="closeDialog()" class="header-close-x">
                             <mat-icon class="text-primary">close</mat-icon>
                           </span>
@@ -863,7 +867,7 @@
                                 class="single-line">Inspection&nbsp;Code</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm">
                                 <mat-checkbox [checked]="row.isSelected" (change)="onRowChangeAddQualitativeIIC(row)">
-                                </mat-checkbox> {{row.intCode}} </mat-cell>
+                                </mat-checkbox> ICH - 000{{row.intCode}} </mat-cell>
                             </ng-container>
                             <!-- inspectionDescription - Inspection Description COLUMN -->
                             <ng-container matColumnDef="inspectionDescription">
@@ -877,7 +881,7 @@
                               <mat-header-cell *matHeaderCellDef
                                 class="single-line">Inspection&nbsp;Criteria</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm">
-                                {{row.criteriaDescription}} </mat-cell>
+                                {{row.singleCriteria}} </mat-cell> <!-- {{row.criteriaDescription}} -->
                             </ng-container>
 
                             <mat-header-row
@@ -904,9 +908,9 @@
                     <!-- Results - Qualitative Inspection Results NG TEMPLATE DIALOG STARTS -->
                     <ng-template #dialogTemplateResultsIIC let-data>
                       <div class="dialog-container flex flex-col h-full">
-                        <div class="flex justify-between items-center p-4 border-b text-primary">
+                        <div class="flex justify-between items-center p-2 border-b text-primary"> <!-- p-4 -->
                           <!-- Qualitative Results -->
-                          <h2 class="text-lg font-semibold">Qualitative&nbsp;Result</h2>
+                          <h2 class="text-lg font-semibold">Qualitative&nbsp;Results</h2>
                           <span (click)="closeDialog()" class="header-close-x">
                             <mat-icon class="text-primary">close</mat-icon>
                           </span>
@@ -938,7 +942,7 @@
                             <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
                               style="padding: 0.2rem !important;">
                               <mat-label>Inspection&nbsp;Parameter</mat-label>
-                              <input matInput type="text" class="text-sm" [value]="data.clickedRowParameter">
+                              <input matInput type="text" class="text-sm view-mode-bg-grey" [value]="data.clickedRowParameter" readonly>
                             </mat-form-field>
                           </div>
                           <!-- Inspection Pass Criteria -->
@@ -946,19 +950,19 @@
                             <mat-form-field class="w-full" [subscriptSizing]="'dynamic'"
                               style="padding: 0.2rem !important;">
                               <mat-label>Inspection&nbsp;Pass&nbsp;Criteria</mat-label>
-                              <input matInput type="text" class="text-sm" readonly
+                              <input matInput type="text" class="text-sm view-mode-bg-grey" readonly
                                 [value]="data.clickedRowPassCriteria">
                             </mat-form-field>
                           </div>
                         </div>
 
                         <!-- Qualitative Result NG TABLE STARTS -->
-                        <div class="table-container flex-grow overflow-auto specific-table">
+                        <div class="table-container flex-grow overflow-auto specific-table" style="max-height: 333px; box-shadow: white; border-color: aliceblue; ">
                           <mat-table [dataSource]="dataSourceQRIIC">
                             <!-- code - Code COLUMN -->
                             <ng-container matColumnDef="code">
                               <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Code</mat-header-cell>
-                              <mat-cell *matCellDef="let row" class="single-line text-sm">{{row.intCode}}</mat-cell>
+                              <mat-cell *matCellDef="let row" class="single-line text-sm">QR-000{{row.intCode}}</mat-cell>
                             </ng-container>
                             <!-- description - DESCRIPTION COLUMN -->
                             <ng-container matColumnDef="description">
@@ -977,7 +981,7 @@
                                   </mat-select>
                                 </mat-form-field> -->
                                 <mat-form-field appearance="outline" class="w-full">
-                                  <mat-select matSelect [(value)]="row.criteria" class="py-4">
+                                  <mat-select matSelect [(value)]="row.criteria" class="py-2"> <!-- class="py-4" -->
                                     <mat-option value="true">Pass</mat-option>
                                     <mat-option value="false">Fail</mat-option>
                                   </mat-select>
@@ -1030,6 +1034,13 @@
                     <section class="m-0 p-0 px-0 py-0 overflow-auto w-full">
                       <!-- Quantitative Inspection TABLE STARTS -->
                       <table mat-table [dataSource]="dataSourceQuantitativeInspection" class="w-full">
+                                                <ng-container matColumnDef="serialId">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                              S.No
+                            </th>
+                          <td mat-cell *matCellDef="let index = index" style="text-align: center;"> {{index + 1}}
+                          </td>
+                      </ng-container>
                         <!-- parameterQty - Parameters COLUMN -->
                         <ng-container matColumnDef="parameterQty">
                           <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
@@ -1186,9 +1197,9 @@
                     <ng-template #dialogTemplateAddQuantitativeIIC let-data="data">
                       <div class="dialog-container flex flex-col h-full">
                         <div class="flex justify-between items-center p-4 border-b text-primary">
-                          <!-- Quantitative Characteristics -->
+                          <!-- Quantitative Inspection Characteristics -->
                           <h2 class="text-lg font-semibold">
-                            Quantitative&nbsp;Characteristics
+                            Quantitative&nbsp;Inspection&nbsp;Characteristics
                           </h2>
                           <span (click)="closeDialog()" class="header-close-x">
                             <mat-icon class="text-primary">close</mat-icon>
@@ -1208,7 +1219,7 @@
                                 class="single-line">Inspection&nbsp;Code</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm">
                                 <mat-checkbox [checked]="row.isSelected" (change)="onRowChangeAddQuantitativeIIC(row)">
-                                </mat-checkbox> {{row.intCode}} </mat-cell>
+                                </mat-checkbox> ICH - 000{{row.intCode}} </mat-cell>
                             </ng-container>
                             <!-- inspectionDescription - INSPECTION DESCRIPTION COLUMN -->
                             <ng-container matColumnDef="inspectionDescription">
@@ -1267,7 +1278,7 @@
               Reset Item
             </button>
           </div>
-          <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;" class="py-2"> <!-- margin-top: 10px; -->
             <!-- Sample Code -->
             <mat-form-field style="flex: 1 1 15%; min-width: 100px;">
               <mat-label>Sample Code</mat-label>
