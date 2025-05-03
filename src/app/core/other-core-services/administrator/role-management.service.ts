@@ -30,9 +30,9 @@ export class RoleManagementService {
         localStorage.setItem('accessToken', token);
     }
 
-    get accessToken(): string {
-        return localStorage.getItem('accessToken') ?? '';
-    }
+    // get accessToken(): string {
+    //     return localStorage.getItem('accessToken') ?? '';
+    // }
 
     /**
      * Fetch the list of roles and store in state

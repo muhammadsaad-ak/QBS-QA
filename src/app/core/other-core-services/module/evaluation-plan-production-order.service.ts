@@ -39,9 +39,9 @@ export class EvaluationPlanProductionOrderService {
     localStorage.setItem('accessToken', token);
   }
 
-  get accessToken(): string {
-    return localStorage.getItem('accessToken') ?? '';
-  }
+  // get accessToken(): string {
+  //   return localStorage.getItem('accessToken') ?? '';
+  // }
 
   constructor() { }
 

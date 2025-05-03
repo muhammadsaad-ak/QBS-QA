@@ -37,9 +37,9 @@ export class SapPlanProductionOrderService {
     localStorage.setItem('accessToken', token);
 }
 
-get accessToken(): string {
-    return localStorage.getItem('accessToken') ?? '';
-}
+// get accessToken(): string {
+//     return localStorage.getItem('accessToken') ?? '';
+// }
 
 getProductionOrders(pageNumber: number, pageSize: number): Observable<any> {
   const headers = new HttpHeaders({

@@ -24,6 +24,16 @@ export class AuthService {
 
     get accessToken(): string {
         return localStorage.getItem('accessToken') ?? '';
+        // return localStorage.getItem('accessToken');
+    }
+
+    // setter & getter for refreshToken
+    set refreshToken(token: string) {
+        localStorage.setItem('refreshToken', token);
+    }
+    get refreshToken(): string {
+        return localStorage.getItem('refreshToken');
+        // return localStorage.getItem('refreshToken') ?? '';
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -103,7 +113,8 @@ export class AuthService {
     signIn(credentials: { email: string; password: string }): Observable<any> {
         // Throw error, if the user is already logged in
         if (this._authenticated) {
-            return throwError('User is already logged in.');
+            // return throwError('User is already logged in.');
+            return throwError(() => new Error('User is already logged in.')); // - @IAK
         }
 
         // return this._httpClient.post('api/auth/sign-in', credentials).pipe(
@@ -121,6 +132,7 @@ export class AuthService {
             switchMap((response: any) => {
                 console.log('Login response:', response);
                 this.accessToken = response.data.token;
+                this.refreshToken = response.data.refreshToken; // Store the refreshToken in the localStorage  
                 this._authenticated = true;
                 this._userService.user = response.data;
                 return of(response);
@@ -173,6 +185,7 @@ export class AuthService {
     signOut(): Observable<any> {
         // Remove the access token from the local storage
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken'); // - @IAK
 
         this._userService.clearUser();
 
@@ -224,13 +237,62 @@ export class AuthService {
         }
 
         // Check the access token expire date
+        // if (AuthUtils.isTokenExpired(this.accessToken)) {
+        //     this.signOut().subscribe();
+        //     return of(false);
+        // }
+
+        // AUTHENTICATION CHECK - @IAK
+        // If the accessToken is expired, called IAuthFeature/RefreshToken to refresh the token
+        // if (AuthUtils.isTokenExpired(this.accessToken)) {
+        //     return this.refreshAccessToken();
+        // }
+
         if (AuthUtils.isTokenExpired(this.accessToken)) {
-            this.signOut().subscribe();
-            return of(false);
+            return this.refreshAccessToken().pipe(
+                switchMap((success) => of(success)),
+                catchError(() => {
+                    this.signOut().subscribe();
+                    return of(false);
+                })
+            );
         }
+
 
         // If the access token exists, and it didn't expire, sign in using it
         // return this.signInUsingToken();
         return of(true);
+    }
+
+    // Auth/IAuthFeature/RefreshToken - @IAK
+    refreshAccessToken(): Observable<boolean> {
+        const accessToken = this.accessToken;
+        const refreshToken = this.refreshToken;
+
+        if (!accessToken || !refreshToken) {
+            return of(false);
+        }
+
+        const body = { accessToken, refreshToken };
+
+        return this._httpClient.post(`${environment.authApiUrl}/Auth/IAuthFeature/RefreshToken`, body).pipe(
+            switchMap((response: any) => {
+                console.log('RefreshToken response:', response);
+
+                if (response?.data?.accessToken && response?.data?.refreshToken) {
+                    this.accessToken = response.data.accessToken;
+                    this.refreshToken = response.data.refreshToken;
+                    this._authenticated = true;
+                    return of(true);
+                }
+
+                return of(false);
+            }),
+            catchError((error) => {
+                console.error('refreshToken failed', error);
+                this.signOut().subscribe();
+                return of(false);
+            })
+        );
     }
 }

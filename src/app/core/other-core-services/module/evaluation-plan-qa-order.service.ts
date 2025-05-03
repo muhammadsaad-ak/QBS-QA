@@ -40,9 +40,9 @@ export class EvaluationPlanQaOrderService {
     localStorage.setItem('accessToken', token);
   }
 
-  get accessToken(): string {
-    return localStorage.getItem('accessToken') ?? '';
-  }
+  // get accessToken(): string {
+  //   return localStorage.getItem('accessToken') ?? '';
+  // }
 
     getProductionQACode(): Observable<any> {
       const headers = new HttpHeaders({
