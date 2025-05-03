@@ -23,9 +23,9 @@ export class ListOfEvaluationPlanPurchaseOrderService {
           localStorage.setItem('accessToken', token);
       }
     
-      get accessToken(): string {
-          return localStorage.getItem('accessToken') ?? '';
-      }
+    //   get accessToken(): string {
+    //       return localStorage.getItem('accessToken') ?? '';
+    //   }
     
       getEvaluationPlanPurchaseOrders(): Observable<any> {
         const headers = new HttpHeaders({

@@ -32,9 +32,9 @@ export class SapPlanPurchaseOrderService {
         localStorage.setItem('accessToken', token);
     }
 
-    get accessToken(): string {
-        return localStorage.getItem('accessToken') ?? '';
-    }
+    // get accessToken(): string {
+    //     return localStorage.getItem('accessToken') ?? '';
+    // }
 
     getPurchaseOrders(pageNumber: number, pageSize: number): Observable<any> {
         const headers = new HttpHeaders({

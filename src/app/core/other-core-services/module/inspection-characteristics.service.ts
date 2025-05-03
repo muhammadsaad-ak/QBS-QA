@@ -38,9 +38,9 @@ export class InspectionCharacteristicsService {
     localStorage.setItem('accessToken', token);
   }
 
-  get accessToken(): string {
-    return localStorage.getItem('accessToken') ?? '';
-  }
+  // get accessToken(): string {
+  //   return localStorage.getItem('accessToken') ?? '';
+  // }
 
   /**
    * Fetch the list of items and store in state

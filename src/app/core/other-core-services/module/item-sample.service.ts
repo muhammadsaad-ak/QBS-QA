@@ -37,9 +37,9 @@ export class ItemSamplesService {
         localStorage.setItem('accessToken', token);
     }
 
-    get accessToken(): string {
-        return localStorage.getItem('accessToken') ?? '';
-    }
+    // get accessToken(): string {
+    //     return localStorage.getItem('accessToken') ?? '';
+    // }
 
     // ADD ITEM SAMPLE API
     AddSampleWithRanges(data: any): Observable<any> {

@@ -46,9 +46,9 @@ export class ItemInspectionCardService {
         localStorage.setItem('accessToken', token);
     }
 
-    get accessToken(): string {
-        return localStorage.getItem('accessToken') ?? '';
-    }
+    // get accessToken(): string {
+    //     return localStorage.getItem('accessToken') ?? '';
+    // }
 
     // ADD API
     // ADD ITEM INSPECTION CARD 3.1 API

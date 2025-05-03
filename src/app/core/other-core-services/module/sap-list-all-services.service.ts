@@ -123,18 +123,18 @@ export class SAPAllServices {
     set accessToken(token: string) {
         localStorage.setItem('accessToken', token);
     }
-    get accessToken(): string {
-        return localStorage.getItem('accessToken') ?? '';
-    }
+    // get accessToken(): string {
+    //     return localStorage.getItem('accessToken') ?? '';
+    // }
     // GET LIST ALL ITEMS API
     getListAllItemsSAP(pageSize: number, pageNumber: number): Observable<any> {
-        if (this.accessToken.length > 0) {
-            this.accessToken = '';
-        }
+        // if (this.accessToken.length > 0) {
+        //     this.accessToken = '';
+        // }
         const headers = new HttpHeaders({
             // Authorization: `${this.accessToken}`,
             Accept: 'text/plain',
-            'X-API-KEY': 'super',
+            'X-API-KEY': environment.xApiKey,
         });
         return this._httpClient
             .get(`${environment.SAPitemsApiUrl}/api/B1Items/ListAllItems?pageSize=${pageSize}&pageNumber=${pageNumber}`, { headers, responseType: 'text' })
