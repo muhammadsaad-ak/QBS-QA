@@ -47,13 +47,6 @@ export const compactNavigation: QbsNavigationItem[] = [
         icon: 'feather:database',
         children: [
             {
-                id: 'master-data.list-of-inspection-management',
-                title: 'List of Inspection Characteristics',
-                type: 'basic',
-                icon: 'heroicons_outline:document-duplicate',
-                link: '/master-data/list-of-inspection-management',
-            },
-            {
                 id: 'master-data.list-of-qualitative-result',
                 title:'List Of Qualitative Result',
                 type: 'basic',
@@ -68,11 +61,18 @@ export const compactNavigation: QbsNavigationItem[] = [
                 link: '/master-data/list-of-unit-measure-setup',
             },
             {
-                id: 'master-data.list-of-items-samples',
-                title: 'List Of Item Sample',
+                id: 'master-data.list-of-inspection-management',
+                title: 'List of Inspection Characteristics',
                 type: 'basic',
-                icon: 'feather:server',
-                link: '/master-data/list-of-items-samples',
+                icon: 'heroicons_outline:document-duplicate',
+                link: '/master-data/list-of-inspection-management',
+            },
+            {
+                id: 'master-data.list-of-inspection-card',
+                title: 'List of Inspection Card',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/master-data/list-of-inspection-card',
             },
             {
                 id: 'master-data.list-of-items-inspection-cards',
@@ -82,11 +82,11 @@ export const compactNavigation: QbsNavigationItem[] = [
                 link: '/master-data/list-of-items-inspection-cards',
             },
             {
-                id: 'master-data.list-of-inspection-card',
-                title: 'List of Inspection Card',
+                id: 'master-data.list-of-items-samples',
+                title: 'List Of Item Sample',
                 type: 'basic',
-                icon: 'heroicons_outline:clipboard-document-check',
-                link: '/master-data/list-of-inspection-card',
+                icon: 'feather:server',
+                link: '/master-data/list-of-items-samples',
             },
             {
                 id: 'master-data.list-of-testing-stepper',
