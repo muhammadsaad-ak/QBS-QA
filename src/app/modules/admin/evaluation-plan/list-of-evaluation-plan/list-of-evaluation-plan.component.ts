@@ -356,6 +356,11 @@ onEvaluationPlanTypeChange(orderType: string): void {
           }));
 
           this.dataSource = new MatTableDataSource(this.evalPlanPurchaseOrderData);
+           // Important: Assign paginator here
+      setTimeout(() => {
+        this.dataSource.paginator = this.paginator;
+        this.totalRecords = this.evalPlanPurchaseOrderData.length;
+      });
       } else {
           console.error('Failed to fetch Evaluation Plan Purchase Orders', response.message);
       }
@@ -395,6 +400,10 @@ onEvaluationPlanTypeChange(orderType: string): void {
   
         if (this.orderType === 'productionOrder') {
           this.dataSource = new MatTableDataSource(this.evalPlanProductionOrderData);
+          setTimeout(() => {
+            this.dataSource.paginator = this.paginator;
+          });
+          this.totalRecords = this.evalPlanProductionOrderData.length;
           console.log('Evaluation Plan Production Orders:', this.evalPlanProductionOrderData);
         }
       } else {
@@ -433,7 +442,11 @@ onEvaluationPlanTypeChange(orderType: string): void {
   
         if (this.orderType === 'productionOrderQA') {
           this.dataSource = new MatTableDataSource(this.evalPlanProductionOrderQAData);
-          console.log('Evaluation Plan Production Orders:', this.evalPlanProductionOrderQAData);
+          setTimeout(() => {
+            this.dataSource.paginator = this.paginator;
+          });
+          this.totalRecords = this.evalPlanProductionOrderQAData.length;
+          console.log('Evaluation Plan Production Orders QA:', this.evalPlanProductionOrderQAData);
         }
       } else {
         console.error('Failed to fetch Evaluation Plan Production Orders', response.message);
