@@ -441,18 +441,31 @@ onEvaluationPlanTypeChange(orderType: string): void {
     });
   }
 
-  onPageChange(event: PageEvent) {
+  onPageChange(event: PageEvent): void {
     this.currentPage = event.pageIndex + 1;
     this.pageSize = event.pageSize;
-
-    if (this.currentView === 'sapDocuments' && this.orderType === 'purchaseOrder') {
+  
+    if (this.currentView === 'sapDocuments') {
+      if (this.orderType === 'purchaseOrder') {
         this.fetchSapDocPurchaseOrders();
         console.log('SAP Purchase Orders fetched');
-    } else if (this.currentView === 'sapDocuments' && this.orderType === 'productionOrder') {
+      } else if (this.orderType === 'productionOrder') {
         this.fetchSapDocProductionOrders();
         console.log('SAP Production Orders fetched');
+      }
+    } else if (this.currentView === 'evaluationPlan') {
+      if (this.orderType === 'purchaseOrder') {
+        this.fetchEvaluationPlanPurchaseOrders();
+        console.log('Evaluation Plan Purchase Orders fetched');
+      } else if (this.orderType === 'productionOrder') {
+        this.fetchEvaluationPlanProductionOrders();
+        console.log('Evaluation Plan Production Orders fetched');
+      } else if (this.orderType === 'productionOrderQA') {
+        this.fetchEvaluationPlanProductionOrdersQA();
+        console.log('Evaluation Plan Production Orders QA fetched');
+      }
     }
-}
+  }
   updateTableView(): void {
     const orderType = this.orderTypeControl.value;
     
@@ -461,8 +474,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
       
       if (orderType === 'purchaseOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate','lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'id', 'action'];
-        this.dataSource.data =  this.dataSource.data;
-        console.log('Purchase Order Data:', this.dataSource.data);
+        this.dataSource.data = this.evalPlanPurchaseOrderData;       
       } else if (orderType === 'productionOrder') {
         this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
         this.dataSource.data = this.evalPlanProductionOrderData;
@@ -491,8 +503,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
   toggleView(): void {
     this.currentView = this.currentView === 'evaluationPlan' ? 'sapDocuments' : 'evaluationPlan';
     console.log('Current View:', this.currentView);
-    
-    // Fetch data if switching to Evaluation Plan
+  
     if (this.currentView === 'evaluationPlan') {
       if (this.orderType === 'purchaseOrder') {
         this.fetchEvaluationPlanPurchaseOrders();
@@ -501,8 +512,14 @@ onEvaluationPlanTypeChange(orderType: string): void {
       } else if (this.orderType === 'productionOrderQA') {
         this.fetchEvaluationPlanProductionOrdersQA();
       }
+    } else if (this.currentView === 'sapDocuments') {
+      if (this.orderType === 'purchaseOrder') {
+        this.fetchSapDocPurchaseOrders();
+      } else if (this.orderType === 'productionOrder') {
+        this.fetchSapDocProductionOrders();
+      }
     }
-    
+  
     this.updateTableView();
   }
 
