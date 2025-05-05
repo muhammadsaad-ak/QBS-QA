@@ -37,8 +37,17 @@
             <div *ngIf="isLoading" class="loader">
               <mat-spinner diameter="33"></mat-spinner>
             </div>
-            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-              (click)="onSubmitQualitativeResult()">Save</button>
+            <!-- <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+              (click)="onSubmitQualitativeResult()">Save</button> -->
+              <div matTooltip="Fill&nbsp;the&nbsp;mandatory&nbsp;field" 
+              [matTooltipDisabled]="isQRFormValid()">
+                <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" 
+                [disabled]="!isQRFormValid()" 
+                [ngClass]="{
+                  'invalid-disabled-button': !isQRFormValid()}" (click)="onSubmitQualitativeResult()">
+                Save
+              </button>
+            </div>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickQR()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
@@ -85,8 +94,17 @@
             <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
               <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-              (click)="onSubmitUnitOfMeasure()">Save</button>
+            <!-- <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+              (click)="onSubmitUnitOfMeasure()">Save</button> -->
+              <div matTooltip="Fill&nbsp;the&nbsp;mandatory&nbsp;fields" 
+              [matTooltipDisabled]="isUOMFormValid()">
+                <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" 
+                [disabled]="!isUOMFormValid()" 
+                [ngClass]="{
+                  'invalid-disabled-button': !isUOMFormValid()}" (click)="onSubmitUnitOfMeasure()">
+                Save
+              </button>
+            </div>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickUOM()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
@@ -163,8 +181,15 @@
                 <button mat-button class="bg-primary-700" matStepperPrevious>
                   <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
                 </button>
-                <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-                  (click)="onSubmitInspectionCharacteristics()">Save</button>
+                <!-- <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+                  (click)="onSubmitInspectionCharacteristics()">Save</button> -->
+                  <div matTooltip="Fill&nbsp;the&nbsp;mandatory&nbsp;fields" [matTooltipDisabled]="isICFormValid()">
+                    <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" [disabled]="!isICFormValid()" 
+                    [ngClass]="{
+                      'invalid-disabled-button': !isICFormValid()}" (click)="onSubmitInspectionCharacteristics()">
+                      Save
+                    </button>
+                  </div>
                 <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCharacteristics()">
                   <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
                 </button>

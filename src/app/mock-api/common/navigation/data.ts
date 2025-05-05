@@ -121,13 +121,13 @@ export const compactNavigation: QbsNavigationItem[] = [
             //     icon: 'heroicons_outline:document-text',
             //     link: '/evaluation-plan/list-of-sap-document',
             // },
-            {
-                id: 'evaluation-plan.list-of-item-cavity',
-                title: 'List of Item Cavity',
-                type: 'basic',
-                icon: 'heroicons_outline:clipboard-document-check',
-                link: '/evaluation-plan/list-of-item-cavity',
-            },
+            // {
+            //     id: 'evaluation-plan.list-of-item-cavity',
+            //     title: 'List of Item Cavity',
+            //     type: 'basic',
+            //     icon: 'heroicons_outline:clipboard-document-check',
+            //     link: '/evaluation-plan/list-of-item-cavity',
+            // },
             // {
             //     id: 'evaluation-plan.plan-purchase-order',
             //     title: 'Plan Purchase Order ',
@@ -137,22 +137,22 @@ export const compactNavigation: QbsNavigationItem[] = [
             // },
         ],
     },
-    {
-        id: 'evaluation-stepper',
-        title: 'Evaluation Stepper',
-        subtitle: 'Unique evaluation stepper designs',
-        type: 'aside', // Changed from 'basic' to 'aside' so it can have children
-        icon: 'heroicons_outline:adjustments-horizontal',
-        children: [
-            {
-                id: 'evaluation-stepper.new-evaluation-stepper',
-                title: 'Evaluation Stepper',
-                type: 'basic',
-                icon: 'heroicons_outline:clipboard-document-check',
-                link: '/evaluation-stepper/new-evaluation-stepper',
-            },
-        ]
-    }
+    // {
+    //     id: 'evaluation-stepper',
+    //     title: 'Evaluation Stepper',
+    //     subtitle: 'Unique evaluation stepper designs',
+    //     type: 'aside', // Changed from 'basic' to 'aside' so it can have children
+    //     icon: 'heroicons_outline:adjustments-horizontal',
+    //     children: [
+    //         {
+    //             id: 'evaluation-stepper.new-evaluation-stepper',
+    //             title: 'Evaluation Stepper',
+    //             type: 'basic',
+    //             icon: 'heroicons_outline:clipboard-document-check',
+    //             link: '/evaluation-stepper/new-evaluation-stepper',
+    //         },
+    //     ]
+    // }
     // {
     //     id: 'list-of-qualitative-result',
     //     title: '',

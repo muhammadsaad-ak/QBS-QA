@@ -4104,7 +4104,30 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
     // @IAK
-    // VALIDATION itemSamplingForm
+    // VALIDATING QR FORM
+    isQRFormValid(): boolean {
+        const resultDescriptionControl = this.firstFormGroup.get('resultDescription');
+        return resultDescriptionControl?.valid && !!resultDescriptionControl.value;
+    }
+    // VALIDATING UOM FORM
+    isUOMFormValid(): boolean { 
+        const uoMCodeControl = this.secondFormGroup.get('uoMCode');
+        const descriptionControl = this.secondFormGroup.get('description');
+        return (
+            uoMCodeControl?.valid && !!uoMCodeControl.value &&
+            descriptionControl?.valid && !!descriptionControl.value
+        );
+    }
+    // @IAK
+    // VALIDATING INSPECTION CHARACTERISTIC FORM
+    isICFormValid(): boolean { 
+        const descriptionControl = this.fourthFormGroup.get('description');
+        return (
+            descriptionControl?.valid && !!descriptionControl.value
+        );
+    }
+    // @IAK
+    // VALIDATING itemSamplingForm
     isItemCodeValid(): boolean {
         const itemCodeControl = this.itemSamplingForm.get('itemCode');
         return itemCodeControl?.valid && !!itemCodeControl.value;
