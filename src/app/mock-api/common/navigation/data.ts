@@ -47,13 +47,6 @@ export const compactNavigation: QbsNavigationItem[] = [
         icon: 'feather:database',
         children: [
             {
-                id: 'master-data.list-of-inspection-management',
-                title: 'List of Inspection Characteristics',
-                type: 'basic',
-                icon: 'heroicons_outline:document-duplicate',
-                link: '/master-data/list-of-inspection-management',
-            },
-            {
                 id: 'master-data.list-of-qualitative-result',
                 title:'List Of Qualitative Result',
                 type: 'basic',
@@ -68,11 +61,18 @@ export const compactNavigation: QbsNavigationItem[] = [
                 link: '/master-data/list-of-unit-measure-setup',
             },
             {
-                id: 'master-data.list-of-items-samples',
-                title: 'List Of Item Sample',
+                id: 'master-data.list-of-inspection-management',
+                title: 'List of Inspection Characteristics',
                 type: 'basic',
-                icon: 'feather:server',
-                link: '/master-data/list-of-items-samples',
+                icon: 'heroicons_outline:document-duplicate',
+                link: '/master-data/list-of-inspection-management',
+            },
+            {
+                id: 'master-data.list-of-inspection-card',
+                title: 'List of Inspection Card',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/master-data/list-of-inspection-card',
             },
             {
                 id: 'master-data.list-of-items-inspection-cards',
@@ -82,11 +82,11 @@ export const compactNavigation: QbsNavigationItem[] = [
                 link: '/master-data/list-of-items-inspection-cards',
             },
             {
-                id: 'master-data.list-of-inspection-card',
-                title: 'List of Inspection Card',
+                id: 'master-data.list-of-items-samples',
+                title: 'List Of Item Sample',
                 type: 'basic',
-                icon: 'heroicons_outline:clipboard-document-check',
-                link: '/master-data/list-of-inspection-card',
+                icon: 'feather:server',
+                link: '/master-data/list-of-items-samples',
             },
             {
                 id: 'master-data.list-of-testing-stepper',
@@ -121,13 +121,13 @@ export const compactNavigation: QbsNavigationItem[] = [
             //     icon: 'heroicons_outline:document-text',
             //     link: '/evaluation-plan/list-of-sap-document',
             // },
-            {
-                id: 'evaluation-plan.list-of-item-cavity',
-                title: 'List of Item Cavity',
-                type: 'basic',
-                icon: 'heroicons_outline:clipboard-document-check',
-                link: '/evaluation-plan/list-of-item-cavity',
-            },
+            // {
+            //     id: 'evaluation-plan.list-of-item-cavity',
+            //     title: 'List of Item Cavity',
+            //     type: 'basic',
+            //     icon: 'heroicons_outline:clipboard-document-check',
+            //     link: '/evaluation-plan/list-of-item-cavity',
+            // },
             // {
             //     id: 'evaluation-plan.plan-purchase-order',
             //     title: 'Plan Purchase Order ',
@@ -137,22 +137,22 @@ export const compactNavigation: QbsNavigationItem[] = [
             // },
         ],
     },
-    {
-        id: 'evaluation-stepper',
-        title: 'Evaluation Stepper',
-        subtitle: 'Unique evaluation stepper designs',
-        type: 'aside', // Changed from 'basic' to 'aside' so it can have children
-        icon: 'heroicons_outline:adjustments-horizontal',
-        children: [
-            {
-                id: 'evaluation-stepper.new-evaluation-stepper',
-                title: 'Evaluation Stepper',
-                type: 'basic',
-                icon: 'heroicons_outline:clipboard-document-check',
-                link: '/evaluation-stepper/new-evaluation-stepper',
-            },
-        ]
-    }
+    // {
+    //     id: 'evaluation-stepper',
+    //     title: 'Evaluation Stepper',
+    //     subtitle: 'Unique evaluation stepper designs',
+    //     type: 'aside', // Changed from 'basic' to 'aside' so it can have children
+    //     icon: 'heroicons_outline:adjustments-horizontal',
+    //     children: [
+    //         {
+    //             id: 'evaluation-stepper.new-evaluation-stepper',
+    //             title: 'Evaluation Stepper',
+    //             type: 'basic',
+    //             icon: 'heroicons_outline:clipboard-document-check',
+    //             link: '/evaluation-stepper/new-evaluation-stepper',
+    //         },
+    //     ]
+    // }
     // {
     //     id: 'list-of-qualitative-result',
     //     title: '',

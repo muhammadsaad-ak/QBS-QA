@@ -53,7 +53,7 @@ export class QualitativeResultsService {
         ).pipe(
             tap(response => console.log('RESPONSE:', response)),
             catchError(error => {
-                console.error('Error adding qualitative result', error);
+                console.error('ERROR ADDING QUALITATIVE RESULT', error);
                 return throwError(() => error);
             })
         );
