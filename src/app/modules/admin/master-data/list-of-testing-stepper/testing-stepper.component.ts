@@ -1528,7 +1528,7 @@ export class TestingStepperComponent implements AfterViewInit {
             // 🚀 Log the final payload before sending
             console.log('FORM SUBMISSION PAYLOAD:', payload);
 
-            return;
+            // return;
 
             this._itemInspectionCardService
                 .AddItemInspectionCard(payload)
