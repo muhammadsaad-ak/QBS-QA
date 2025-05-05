@@ -128,7 +128,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     sapQuantity: [], // number
     sampleQuantity: [], // number
     vendor: [''], // string
-    remarks: ['remarks'], // string
+    remarks: [''], // string
     itemId: null, // ✅ Empty string instead of null
     itemCode: [''],
     itemDescription: [''],

@@ -943,6 +943,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       inspectionQuantity: data.inspectionQuantity,
       id: data.id,
       bmrLoc: data.bmrLoc ?? 'N/A',
+      remarks: data.remarks ?? 'N/A',
     });
   }
 
