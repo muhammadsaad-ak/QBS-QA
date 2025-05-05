@@ -353,6 +353,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
               qty: order.poQuantity || 0,
               status: order.status || '-',
               isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
+              remarks: order.remarks,
           }));
 
           this.dataSource = new MatTableDataSource(this.evalPlanPurchaseOrderData);
@@ -396,6 +397,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
           inspectionQuantity: order.inspectionQuantity || 0,
           isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
           bmrLoc: order.bmrLoc || 'N/A',
+          remarks: order.remarks,
+
         }));
   
         if (this.orderType === 'productionOrder') {
@@ -438,6 +441,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
           cycleTime: order.cycleTime || 0,
           itemWeight: order.itemWeight || 0,
           inspectionQuantity: order.inspectionQuantity || 0,
+          remarks: order.remarks,
+
         }));
   
         if (this.orderType === 'productionOrderQA') {
