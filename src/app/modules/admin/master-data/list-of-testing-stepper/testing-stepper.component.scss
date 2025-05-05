@@ -181,3 +181,19 @@
 // .mat-icon-primary {
 //   color: #5046E5 !important;
 // }
+
+// @IAK
+// CHANGED FROM rgba(220,38,38, 1) TO #a1a1a1 WHEN THE FIELD IS INVALID
+.mat-mdc-form-field.mat-form-field-appearance-fill.mat-form-field-invalid .mat-mdc-text-field-wrapper {
+  --tw-border-opacity: 1 !important;
+  // border-color: rgba(220,38,38, 1 !important) !important;
+  border-color: #a1a1a1 !important;
+}
+// @IAK
+// onSubmitInspectionCard
+.invalid-disabled-button {
+  background-color: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed;
+}
+
