@@ -33,6 +33,18 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 
 // Item Inspection Card
+interface qrPassStatusObjectIF {
+    qualitativeResultPassStatusObjects: { qualitativeResultId: string; isPassed: boolean }[];
+}
+interface QuantInspObjectIF {
+    inspectionCharacteristicId: number | null;
+    isMandatory: boolean;
+    uoMId: string;
+    target: number | null;
+    max: number | null;
+    min: number | null;
+}
+
 interface RowData {
     id: string;
     parameter: string;
@@ -354,16 +366,12 @@ export class TestingStepperComponent implements AfterViewInit {
         itemGroupCode: ['', Validators.required],
         itemU_QACard: [null],
         itemUoMGroupEntry: ['', Validators.required],
-        itemCode: ['', Validators.required], // ITM000017
-        itemDescription: ['', Validators.required], //  TAPAL DANEDAR POUCH 900G
-
+        itemCode: ['', Validators.required],
+        itemDescription: ['', Validators.required],
         // CARDS
         intCode: ['', Validators.required], // CARD CODE
         cardDescription: ['', Validators.required], //  CARD DESCRIPTION
         inspectionCardId: ['', Validators.required], //  CARD ID
-
-        // id: ['', Validators.required],    //  CARD ID
-
         // QUALITATIVE & QUANTITATIVE INSPECTION
         // FormArray FOR DYNAMIC ROWS
         qualitativeInspectionObjects: this.fb.array([]),
@@ -1453,6 +1461,8 @@ export class TestingStepperComponent implements AfterViewInit {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSourceQRIIC.filter = filterValue.trim().toLowerCase();
     }
+    
+    // ITEM INSPECTION CARD STARTS
     // DOUBLE ARRAY IIC
     XXsubmitItemsInspectionCardsForm(): void {
         if (this.itemsInspectionCardsForm.valid) {
@@ -1547,14 +1557,17 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     // SINGLE ARRAY IIC
-    submitItemsInspectionCardsForm(): void {
+    // @IAK
+    // 06052025
+    XsubmitItemsInspectionCardsForm(): void {
         this.isValidate = true;
         if (this.itemsInspectionCardsForm.valid) {
             const formValues = this.itemsInspectionCardsForm.value;
-            console.log('✅ IIC FORM VALUES:', formValues);
+            console.log('IIC FORM VALUES:', formValues);
+
             const itemCodeForQA = formValues.itemCode;
             console.log('Item Code for QA:', itemCodeForQA);
-            // return;
+
             // Handle null values for itemU_QACard
             formValues.itemU_QACard = formValues.itemU_QACard || null;
 
@@ -1572,7 +1585,18 @@ export class TestingStepperComponent implements AfterViewInit {
                     // const qualitativeResultPassStatusObjects = [];
 
                     // ✅ SAFER APPROACH TO PREVENT EMPTY ARRAYS
-                    const qualitativeResultPassStatusObjects = [...(item?.qualitativeResultPassStatusObjects || [])];
+                    // const qualitativeResultPassStatusObjects = [...(item?.qualitativeResultPassStatusObjects || [])];
+                    // const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
+                    //     ? [...item.qualitativeResultPassStatusObjects]
+                    //     : [];
+
+                    // safer deep copy to prevent mutation
+                    const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
+                    ? item.qualitativeResultPassStatusObjects.map((res: any) => ({ ...res }))
+                    : [];
+                    
+                        
+
 
                     if (qualitativeResultPassStatusObjects.length > 0) {
                         console.log("✅ qualitativeResultPassStatusObjects found:", qualitativeResultPassStatusObjects);
@@ -1603,15 +1627,9 @@ export class TestingStepperComponent implements AfterViewInit {
                     inspectionCharacteristicId: item?.id ?? null,
                     isMandatory: item?.mandatoryQty ?? false,
                     uoMId: item?.uoMId ?? '',
-                    target: item?.passCriteriaTarget !== undefined
-                        ? parseFloat(item.passCriteriaTarget)
-                        : null,
-                    max: item?.passCriteriaMax !== undefined
-                        ? parseFloat(item.passCriteriaMax)
-                        : null,
-                    min: item?.passCriteriaMin !== undefined
-                        ? parseFloat(item.passCriteriaMin)
-                        : null,
+                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
+                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
+                    min: isNaN(parseFloat(item?.passCriteriaMin)) ? null : parseFloat(item.passCriteriaMin),
                 }));
             } else {
                 console.warn("⚠️ quantitativeInspectionObjects is not an array, setting empty array.");
@@ -1620,56 +1638,205 @@ export class TestingStepperComponent implements AfterViewInit {
 
             // ✅ FINAL PAYLOAD CHECK
             console.log('🚀 IIC FINAL PAYLOAD TO API:', payload);
-
+            this.isValidate = false;
+            // return;
+            console.log('🚨 FINAL qualitativeInspectionObjects before API:', payload.qualitativeInspectionObjects);
+            console.log('🚨 FINAL quantitativeInspectionObjects before API:', payload.quantitativeInspectionObjects);
             this._itemInspectionCardService
                 .AddItemInspectionCard(payload)
-                .subscribe((response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('✅ API RUN SUCCESSFULLY.', payload);
-                        // this.stepper.next();
-                        this._snackBar.open('Inspection Card created successfully!', 'Close', {
-                            duration: 1500,
-                            panelClass: ['snackbar-success']
-                        });
-
-                        // CALLING SAP API TO ENABLE ITEM FOR QA
-                        this._SAPItemsService.enableItemForQA(itemCodeForQA)
-                            .subscribe({
-                                next: (sapResponse) => {
-                                    if (sapResponse.succeeded) {
-                                        console.log('✅ EnableItemForQA API RUN SUCCESSFULLY:', sapResponse);
-                                        // this.stepper.next();
-                                    } else {
-                                        console.warn('⚠️ SAP API FAILED:', sapResponse.message);
-                                        console.warn('⚠️ Response Message: Conversion failed when converting the nvarchar value  to data type int.');
-                                        // this._snackBar.open(
-                                        //     `FAILED TO ENABLE ITEM IN SAP FOR QA`,
-                                        //     'Close',
-                                        //     { duration: 500, panelClass: ['snackbar-error'] }
-                                        // );
-                                    }
-                                },
-                                error: (sapError) => {
-                                    console.error('❌ SAP API ERROR:', sapError);
-                                    // this._snackBar.open(
-                                    //     'Error enabling item for QA. Please try again.',
-                                    //     'Close',
-                                    //     { duration: 500, panelClass: ['snackbar-error'] }
-                                    // );
-                                }
+                .subscribe({
+                    next: (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('✅ API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Inspection Card created successfully!', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-success']
                             });
-                        setTimeout(() => {
-                            this.stepper.next();
-                        }, 1550);
 
-                    }
-                    else {
-                        console.warn('⚠️ API RESPONSE DID NOT SUCCEED:', response);
-                        console.error('❌ ERROR WHILE ADDING DATA.', response.message);
+                            this._SAPItemsService.enableItemForQA(itemCodeForQA)
+                                .subscribe({
+                                    next: (sapResponse) => {
+                                        if (sapResponse.succeeded) {
+                                            console.log('✅ EnableItemForQA API RUN SUCCESSFULLY:', sapResponse);
+                                        } else {
+                                            console.warn('⚠️ SAP API FAILED:', sapResponse.message);
+                                            console.warn('⚠️ Response Message: Conversion failed when converting the nvarchar value  to data type int.');
+                                        }
+                                    },
+                                    error: (sapError) => {
+                                        console.error('❌ SAP API ERROR:', sapError);
+                                    }
+                                });
+
+                            setTimeout(() => {
+                                this.stepper.next();
+                            }, 1550);
+                        } else {
+                            console.warn('⚠️ API RESPONSE DID NOT SUCCEED:', response);
+                            console.error('❌ ERROR WHILE ADDING DATA.', response.message);
+                        }
+                    },
+                    error: (error) => {
+                        console.error('❌ AddItemInspectionCard API ERROR:', error);
+                        this._snackBar.open('Error creating inspection card.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
                     }
                 });
+
+
         } else {
+            // this.isValidate = false;
+            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+    }
+    // @IAK
+    // 06052025
+    submitItemsInspectionCardsForm(): void {
+        this.isValidate = true;
+        if (this.itemsInspectionCardsForm.valid) {
+            const formValues = this.itemsInspectionCardsForm.value;
+            console.log('IIC FORM VALUES:', formValues);
+
+            const itemCodeForQA = formValues.itemCode;
+            console.log('Item Code for QA:', itemCodeForQA);
+
+            // Handle null values for itemU_QACard
+            formValues.itemU_QACard = formValues.itemU_QACard || null;
+
+            const { intCode, ...payload } = formValues; // EXCLUDING intCode
+
+            // ✅ DEBUG: Checking qualitativeInspectionObjects before processing
+            console.log("🔍 Before Processing - qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
+
+            // ✅ Ensure qualitativeInspectionObjects EXISTS BEFORE USING map
+            if (Array.isArray(payload.qualitativeInspectionObjects)) {
+                payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map((item: any) => {
+                    console.log("🛠️ Processing qualitative item:", item);
+                    console.log("📌 qualitativeResultPassStatusObjects Before Processing:", item?.qualitativeResultPassStatusObjects);
+
+                    // const qualitativeResultPassStatusObjects = [];
+
+                    // ✅ SAFER APPROACH TO PREVENT EMPTY ARRAYS
+                    // const qualitativeResultPassStatusObjects = [...(item?.qualitativeResultPassStatusObjects || [])];
+                    // const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
+                    //     ? [...item.qualitativeResultPassStatusObjects]
+                    //     : [];
+
+                    // safer deep copy to prevent mutation
+                    // const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
+                    //     ? item.qualitativeResultPassStatusObjects.map((res: any) => ({ ...res }))
+                    //     : [];
+                    const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
+                        ? item.qualitativeResultPassStatusObjects.map((res: any) => ({
+                            qualitativeResultId: res.qualitativeResultId ?? null,
+                            isPassed: res.isPassed ?? false
+                        }))
+                        : [];
+
+
+
+
+
+                    if (qualitativeResultPassStatusObjects.length > 0) {
+                        console.log("✅ qualitativeResultPassStatusObjects found:", qualitativeResultPassStatusObjects);
+                    } else {
+                        console.warn("⚠️ qualitativeResultPassStatusObjects is missing or empty for item:", item);
+                    }
+
+                    return {
+                        inspectionCharacteristicId: item?.id ?? null,
+                        isMandatory: item?.mandatory ?? false,
+                        qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
+                        qualitativeResultFailStatusObjects: [],
+                    };
+                });
+
+                // 🔐 HIGHLIGHTED CHANGE: Freeze each object to prevent accidental mutation
+                // This is a more robust way to ensure immutability.
+                payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map(obj => Object.freeze(obj));
+
+                console.log("✅ After Processing - qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
+            } else {
+                console.warn("⚠️ qualitativeInspectionObjects is not an array, setting empty array.");
+                payload.qualitativeInspectionObjects = [];
+            }
+
+            // ✅ DEBUG: Checking quantitativeInspectionObjects before processing
+            console.log("🔍 Raw quantitativeInspectionObjects:", payload.quantitativeInspectionObjects);
+
+            // ✅ Ensure quantitativeInspectionObjects EXISTS BEFORE USING map
+            if (Array.isArray(payload.quantitativeInspectionObjects)) {
+                payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
+                    inspectionCharacteristicId: item?.id ?? null,
+                    isMandatory: item?.mandatoryQty ?? false,
+                    uoMId: item?.uoMId ?? '',
+                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
+                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
+                    min: isNaN(parseFloat(item?.passCriteriaMin)) ? null : parseFloat(item.passCriteriaMin),
+                }));
+            } else {
+                console.warn("⚠️ quantitativeInspectionObjects is not an array, setting empty array.");
+                payload.quantitativeInspectionObjects = [];
+            }
+
+            // ✅ FINAL PAYLOAD CHECK
+            console.log('🚀 IIC FINAL PAYLOAD TO API:', payload);
             this.isValidate = false;
+
+            console.log('🚨 FINAL qualitativeInspectionObjects before API:', payload.qualitativeInspectionObjects);
+            console.log('🚨 FINAL quantitativeInspectionObjects before API:', payload.quantitativeInspectionObjects);
+            this._itemInspectionCardService
+                .AddItemInspectionCard(payload)
+                .subscribe({
+                    next: (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('✅ API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Inspection Card created successfully!', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-success']
+                            });
+
+                            this._SAPItemsService.enableItemForQA(itemCodeForQA)
+                                .subscribe({
+                                    next: (sapResponse) => {
+                                        if (sapResponse.succeeded) {
+                                            console.log('✅ EnableItemForQA API RUN SUCCESSFULLY:', sapResponse);
+                                        } else {
+                                            console.warn('⚠️ SAP API FAILED:', sapResponse.message);
+                                            console.warn('⚠️ Response Message: Conversion failed when converting the nvarchar value  to data type int.');
+                                        }
+                                    },
+                                    error: (sapError) => {
+                                        console.error('❌ SAP API ERROR:', sapError);
+                                    }
+                                });
+
+                            setTimeout(() => {
+                                this.stepper.next();
+                            }, 1550);
+                        } else {
+                            console.warn('⚠️ API RESPONSE DID NOT SUCCEED:', response);
+                            console.error('❌ ERROR WHILE ADDING DATA.', response.message);
+                        }
+                    },
+                    error: (error) => {
+                        console.error('❌ AddItemInspectionCard API ERROR:', error);
+                        this._snackBar.open('Error creating inspection card.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                    }
+                });
+
+
+        } else {
+            // this.isValidate = false;
             this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
@@ -3560,7 +3727,7 @@ export class TestingStepperComponent implements AfterViewInit {
         };
 
         console.log("Final API Request Body:", putRequestBodyIIC);
-        return;
+        // return;
 
         this._itemInspectionCardService
             .onUpdateItemInspectionCardBothCharacteristics(putRequestBodyIIC)
@@ -4027,11 +4194,54 @@ export class TestingStepperComponent implements AfterViewInit {
             });
         }
     }
+    // @IAK
+    // VALIDATE itemsInspectionCardsForm ON NEXT
+    resetItemsIIC: boolean = false;
     onNextClickIIC(): void {
+        this.clearingSessionStorage();
+        const itemCodeValueIIC = this.itemsInspectionCardsForm.get('itemCode')?.value;
+        const itemDescriptionValueIIC = this.itemsInspectionCardsForm.get('itemDescription')?.value;
+        const cardCodeValueIIC = this.itemsInspectionCardsForm.get('intCode')?.value;
+        const cardDescriptionValueIIC = this.itemsInspectionCardsForm.get('cardDescription')?.value;
+        const isItemCodeEmpty = !itemCodeValueIIC; 
+        const isItemDescriptionEmpty = !itemDescriptionValueIIC;
+        const isCardCodeEmpty = !cardCodeValueIIC; 
+        const isCardDescriptionEmpty = !cardDescriptionValueIIC;
+        if (isItemCodeEmpty && isItemDescriptionEmpty && isCardCodeEmpty && isCardDescriptionEmpty) {
             this.stepper.next();
+        } else {
+            this.resetItemsIIC = true;
+            this._snackBar.open('Save or clear the header data before moving to the next.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
     }
     // @IAK
-    // VALIDATE ITEM SAMPLE ON NEXT
+    // METHOD TO RESET itemsInspectionCardsForm IN ITEM SAMPLE FORM
+    onResetItemInspectionCardClick(): void {
+        this.resetItemsIIC = false;
+        console.log('BEFORE RESET',this.itemsInspectionCardsForm.value);
+        this.itemsInspectionCardsForm.get('id')?.setValue(null);
+        this.itemsInspectionCardsForm.get('itemCode')?.setValue(null);
+        this.itemsInspectionCardsForm.get('itemDescription')?.setValue(null);
+        this.itemsInspectionCardsForm.get('itemName')?.setValue(null);
+        this.itemsInspectionCardsForm.get('itemType')?.setValue(null);
+        this.itemsInspectionCardsForm.get('itemGroupCode')?.setValue(null);
+        this.itemsInspectionCardsForm.get('itemU_QACard')?.setValue(null);
+        this.itemsInspectionCardsForm.get('itemUoMGroupEntry')?.setValue(null);
+        this.itemsInspectionCardsForm.get('intCode')?.setValue(null);
+        this.itemsInspectionCardsForm.get('cardDescription')?.setValue(null);
+        this.itemsInspectionCardsForm.get('inspectionCardId')?.setValue(null);
+        this.dataSourceQualitativeInspection.data = []; // CLEAR THE MatTableDataSource
+        this.dataSourceQuantitativeInspection.data = []; // CLEAR THE MatTableDataSource
+        // this.itemsInspectionCardsForm.get('qualitativeInspectionItems')?.setValue([]);
+        // this.itemsInspectionCardsForm.get('qualitativeInspectionItems')?.setValue([]);
+        console.log('AFTER RESET',this.itemsInspectionCardsForm.value);
+        
+    }
+    // @IAK
+    // VALIDATE itemSamplingForm ON NEXT
     resetItemsIS: boolean = false;
     onNextClickItemSample(): void {
         this.clearingSessionStorage();
@@ -4125,6 +4335,18 @@ export class TestingStepperComponent implements AfterViewInit {
         return (
             descriptionControl?.valid && !!descriptionControl.value
         );
+    }
+    // @IAK
+    // VALIDATING itemsInspectionCardsForm
+    isIICFormValid(): boolean {
+        const itemCodeControl = this.itemsInspectionCardsForm.get('itemCode');
+        const itemDescriptionControl = this.itemsInspectionCardsForm.get('itemDescription');
+        const intCodeControl = this.itemsInspectionCardsForm.get('intCode');
+        const cardDescriptionControl = this.itemsInspectionCardsForm.get('cardDescription');
+        return itemCodeControl?.valid && !!itemCodeControl.value &&
+            itemDescriptionControl?.valid && !!itemDescriptionControl.value &&
+            intCodeControl?.valid && !!intCodeControl.value &&
+            cardDescriptionControl?.valid && !!cardDescriptionControl.value;
     }
     // @IAK
     // VALIDATING itemSamplingForm
