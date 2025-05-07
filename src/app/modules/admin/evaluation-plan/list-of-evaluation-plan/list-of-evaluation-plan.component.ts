@@ -443,6 +443,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
           itemWeight: order.itemWeight || 0,
           inspectionQuantity: order.inspectionQuantity || 0,
           remarks: order.remarks,
+          isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
 
         }));
   

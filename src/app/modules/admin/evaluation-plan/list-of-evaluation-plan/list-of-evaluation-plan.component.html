@@ -201,6 +201,26 @@
                                         {{ element.isClosed === false ? 'In Progress' : 'Pending' }}
                                     </td>
                                 </ng-container>
+                                <!-- ✅ For productionOrderQA -->
+                            <ng-container *ngIf="currentView === 'evaluationPlan' && orderType === 'productionOrderQA'">
+                                <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10" 
+                                    [ngClass]="{
+                                    'text-green-500': element.isClosed === true || element.isClosed == null,
+                                    'text-amber-500': element.isClosed === false
+                                    }">
+                                {{ element.isClosed === false ? 'In Progress' : 'Pending' }}
+                                </td>
+                            </ng-container>
+                                <!-- ✅ For productionOrder -->
+                                <ng-container *ngIf="currentView === 'evaluationPlan' && orderType === 'productionOrder'">
+                                    <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10" 
+                                    [ngClass]="{
+                                    'text-green-500': element.isClosed === true || element.isClosed == null,
+                                    'text-amber-500': element.isClosed === false
+                                    }">
+                                        {{ element.isClosed === false ? 'In Progress' : 'Pending' }}
+                                    </td>
+                                </ng-container>     
                             </ng-container>
 
                             <!-- Action COLUMN -->
