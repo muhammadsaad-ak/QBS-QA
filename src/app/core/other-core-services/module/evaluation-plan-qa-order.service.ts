@@ -18,6 +18,8 @@ export class EvaluationPlanQaOrderService {
     private _getProductionByQACode = new BehaviorSubject<any[]>([])
     private _getProductionQAId = new BehaviorSubject<any[]>([])
     private _allCavitySamples = new BehaviorSubject<any[]>([])
+    private _qualityStatus = new BehaviorSubject<any>(null);
+
 
 
 
@@ -428,5 +430,47 @@ export class EvaluationPlanQaOrderService {
           })
         );
       }
+
+      getQualityStatusQAProduction(entityName: string, itemCode: string, docNumber: string): Observable<any> {
+        const headers = new HttpHeaders({
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json',
+        });
+    
+        return this._httpClient
+          .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetQualityStatus?entityName=${entityName}&itemCode=${itemCode}&docNumber=${docNumber}`, { headers })
+          .pipe(
+            tap((qualityStatus) => {
+              console.log('API RESPONSE:', qualityStatus);
+              const fetchedQualityStatus = (qualityStatus as any).data ?? {};
+              this._qualityStatus.next(fetchedQualityStatus);
+              console.log('FETCHED Q-STATUS RESPONSE', fetchedQualityStatus);
+            }),
+            catchError((error) => {
+              console.error('ERROR WHILE FETCHING QUALITY STATUS', error);
+              return throwError(error);
+            })
+          );
+      }
+
+        // PUT API TO CLOSE OPEN QC FORCEFULLY - @IAK
+  updateToCloseOpenQA(data: any): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json',
+    });
+    console.log("SENDING PAYLOAD", data);
+    return this._httpClient.put(
+      `${environment.appApiUrl}/CSAPI/IProductionQAFeature/UpdateProductionQA`,
+      data,
+      { headers }
+    ).pipe(
+      tap(response => console.log('PUT RESPONSE:', response)),
+      catchError(error => {
+        console.error('ERROR WHILE CLOSING OPEN QC', error);
+        return throwError(() => error);
+      })
+    );
+  }
   
 }

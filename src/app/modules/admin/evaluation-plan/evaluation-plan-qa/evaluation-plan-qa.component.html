@@ -465,8 +465,12 @@
 
     </form>
     <div style="display: flex; flex-direction: row; justify-content: end">
-      <button mat-flat-button style="background-color: red; color: white">
+      <!-- <button mat-flat-button style="background-color: red; color: white">
         Close QA
+      </button> -->
+      <button mat-flat-button color="warn" (click)="closeOpenQA()"
+          *ngIf="isEditMode">
+          Close&nbsp;QA <!-- Close QC -->
       </button>
 
       <button mat-flat-button color="primary" style="margin-left: 5px;">

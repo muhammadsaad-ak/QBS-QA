@@ -12,8 +12,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
-import {MatSelectModule} from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { QbsConfirmationService } from '@qbs/services/confirmation';
+import { Router } from '@angular/router';
+
+
 
 
 @Component({
@@ -48,12 +52,6 @@ export class EvaluationPlanQaComponent implements OnInit {
     samplesByCavity: { [cavityId: string]: any[] } = {};
     orderType: string = ''; // Variable to hold the order type
     selectedSample: any;
-
-
-
-    
-
-
     dataSourceQualitativeInspection: MatTableDataSource<any>;
     dataSourceQuantitativeInspection: MatTableDataSource<any>;
 
@@ -95,6 +93,8 @@ export class EvaluationPlanQaComponent implements OnInit {
         private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,
         private _evaluationPlanQAOrderService:  EvaluationPlanQaOrderService,
         private _evaluationProductionOrderService: EvaluationPlanQaOrderService,
+        private _qbsConfirmationService: QbsConfirmationService,
+        private router: Router,
         private _snackBar: MatSnackBar,
         private _formBuilder: FormBuilder,
         private fb: FormBuilder,
@@ -225,7 +225,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         return this.evaluationplanQAFormGroup.get('cavities') as FormArray;
     }
 
-    generateCavities(): void {
+    generateCavitiesX(): void {
         const formData = this.evaluationplanQAFormGroup.value;
       
         const {
@@ -299,6 +299,7 @@ export class EvaluationPlanQaComponent implements OnInit {
                                   })
                                 );
                               });
+
                             },
                             error: (err) => {
                               console.error('❌ Error fetching cavities:', err);
@@ -329,6 +330,135 @@ export class EvaluationPlanQaComponent implements OnInit {
           }
         });
       }
+
+      generateCavities(): void {
+        const formData = this.evaluationplanQAFormGroup.value;
+      
+        const {
+          itemCode,
+          itemDescription,
+          max,
+          min,
+          qualitativeInspectionObjects,
+          quantitativeInspectionResults,
+          target,
+          inspectionBy,
+          remarks,
+          cavities,
+          inspectionObjects,
+          ...payload
+        } = formData;
+      
+        if (payload.openQuantity) {
+          payload.openQuantity = parseFloat(parseFloat(payload.openQuantity).toFixed(2));
+        }
+      
+        // ⛔ QC status check BEFORE adding QA
+        this._evaluationProductionOrderService.getQualityStatusQAProduction('production_qa', itemCode, formData.docNum)
+          .subscribe({
+            next: (qualityResponse) => {
+              console.log('Quality Response:', qualityResponse);
+              if (qualityResponse?.data?.isClosed !== true) {
+                this._snackBar.open('QA already open for this item. Cannot submit again.', 'Close', {
+                  duration: 3000,
+                  panelClass: ['snackbar-error']
+                });
+                return; // ⛔ Stop further execution
+              }
+      
+              // ✅ Proceed to add QA
+              console.log('Proceeding to call addProductionQA...');
+
+              this._evaluationProductionOrderService.addProductionQA(payload).subscribe({
+                next: (response) => {
+                  if (response?.isRequestSuccess) {
+                    const itemCode = this.evaluationplanQAFormGroup.get('itemCode')?.value;
+                    const docNum = this.evaluationplanQAFormGroup.get('docNum')?.value;
+      
+                    if (itemCode && docNum) {
+                      this._evaluationPlanQAOrderService.GetProductionQAId(itemCode, docNum).subscribe({
+                        next: (qaResponse) => {
+                          const qaId = qaResponse?.data?.id;
+                          const cavityNum = qaResponse?.data?.cavityNo;
+                          const mouldNo = qaResponse?.data?.mouldNo;
+      
+                          if (qaId && cavityNum) {
+                            this._snackBar.open('Production QA added successfully!', 'Close', {
+                              duration: 3000,
+                              panelClass: ['snackbar-success']
+                            });
+      
+                            const cavityBulkPayload = {
+                              qaId,
+                              mouldNo,
+                              cavityNum,
+                              isToggledOn: true,
+                              name: 'Cavity - '
+                            };
+      
+                            this._evaluationProductionOrderService.addProductionCavityQA(cavityBulkPayload).subscribe({
+                              next: (res) => {
+                                console.log('✅ Cavities created:', res);
+      
+                                this._evaluationProductionOrderService.getAllCavitiesByQaId(qaId).subscribe({
+                                  next: (cavityListRes) => {
+                                    const cavitiesFromBackend = cavityListRes?.data || [];
+                                    this.cavitiesArray.clear();
+      
+                                    cavitiesFromBackend.forEach((cav) => {
+                                      this.cavitiesArray.push(
+                                        this._formBuilder.group({
+                                          id: cav.id,
+                                          name: cav.name,
+                                          isToggledOn: cav.isToggledOn,
+                                          enabled: cav.isToggledOn,
+                                          generatedTime: new Date().toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })
+                                        })
+                                      );
+                                    });
+                                  },
+                                  error: (err) => {
+                                    console.error('❌ Error fetching cavities:', err);
+                                  }
+                                });
+                              },
+                              error: (err) => {
+                                console.error('❌ Failed to create cavities:', err);
+                              }
+                            });
+                          }
+                        },
+                        error: (err) => {
+                          console.error('❌ Failed to fetch QA ID:', err);
+                        }
+                      });
+                    } else {
+                      console.warn('⚠️ itemCode or docNum is missing.');
+                    }
+                  }
+                },
+                error: (error) => {
+                  console.error('❌ Error adding Production QA:', error);
+                  this._snackBar.open('Error saving Production QA.', 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                  });
+                }
+              });
+            },
+            error: (error) => {
+              console.error('❌ Error checking QC status:', error);
+              this._snackBar.open('Error checking QC status.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+      }
+      
 
 
     onEvaluationPlanQaModal(cav: any, index: number): void {
@@ -1091,6 +1221,90 @@ export class EvaluationPlanQaComponent implements OnInit {
       });
     }
     
+    closeOpenQA() {
+      const OpenPOqaId = this.evaluationplanQAFormGroup.get('id')?.value;
+      if (!OpenPOqaId) {
+        console.error('NO VALID PRODUCTION QC ID FOUND AGAINST THIS PO');
+        this._snackBar.open('FAILED TO CLOSE. QC ID MISSING.', 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error'],
+        });
+        return;
+      }
+      const payloadToCloseOpenQA = {
+        isPerformed: true,
+        isPostedToSap: false,
+        isClosed: true,
+        overallStatus: this.evaluationplanQAFormGroup.get('samplesStatus')?.value,
+        id: OpenPOqaId,
+        inspectionDateTime: this.evaluationplanQAFormGroup.get('inspectionDateTime')?.value,
+        remarks: this.evaluationplanQAFormGroup.get('remarks')?.value || 'Closed due to unknown reasons',
+        isActive: true,
+        operatedBy: null,
+        barcode: null,
+        reportReviewDate: null,
+        reportNextReviewDate: null,
+        reportRemarks: null,
+      };
+      console.log('PAYLOAD', payloadToCloseOpenQA);
+      // FUNCTION TO HANDLE API CALL
+      const callCloseQAApi = () => {
+        this._evaluationProductionOrderService.updateToCloseOpenQA(payloadToCloseOpenQA).subscribe({
+          next: (response) => {
+            this._snackBar.open('QC CLOSED SUCCESSFULLY', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-success'],
+            });
+            this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+          },
+          error: (error) => {
+            console.error('ERROR WHILE CLOSING QC.', error);
+            this._snackBar.open('FAILED TO CLOSE QC.', 'Close', {
+              duration: 3000,
+              panelClass: ['snackbar-error'],
+            });
+          },
+        });
+      };
+      if (payloadToCloseOpenQA.overallStatus === true) {
+        const confirmation = this._qbsConfirmationService.open({
+          title: 'Close QA',
+          message: 'Are you sure you want to close this QA instead of posting to SAP?',
+          actions: {
+            confirm: {
+              label: 'Yes, Close.',
+            },
+            cancel: {
+              label: 'No',
+            },
+          },
+        });
+        // subscribe afterClosed ACTION
+        confirmation.afterClosed().subscribe((result) => {
+          if (result === 'confirmed') {
+            callCloseQAApi();
+          }
+        });
+      } else if (payloadToCloseOpenQA.overallStatus === false) {
+        const confirmation = this._qbsConfirmationService.open({
+          title: 'Close QA',
+          message: 'Are you sure you want to close this QA?',
+          actions: {
+            confirm: {
+              label: 'Yes',
+            },
+            cancel: {
+              label: 'No',
+            },
+          },
+        });
+        confirmation.afterClosed().subscribe((result) => {
+          if (result === 'confirmed') {
+            callCloseQAApi();
+          }
+        });
+      }
+    }
     
     
     

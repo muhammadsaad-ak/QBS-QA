@@ -199,7 +199,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
 
 
-  onSubmitPurchaseOrder(): void {
+  onSubmitPurchaseOrderX(): void {
     this.isValidate = true;
     if (this.planPurchaseOrderFormGroup.valid) {
 
@@ -264,6 +264,103 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       });
     }
   }
+
+  onSubmitPurchaseOrder(): void {
+    this.isValidate = true;
+  
+    if (this.planPurchaseOrderFormGroup.valid) {
+      const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
+      const itemId: string = String(this.planPurchaseOrderFormGroup.value.itemId);
+      const openQuantity: number = Number(this.planPurchaseOrderFormGroup.value.openQuantity);
+  
+      if (inspectionQuantity > openQuantity) {
+        const errorMessage = `Inspection Qty can't be greater than Open Quantity (${openQuantity})`;
+        this._snackBar.open(errorMessage, 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+        this.isValidate = false;
+        this.isFormSaved = false;
+        return;
+      }
+  
+      console.log('PAYLOAD BEFORE GET sampleQuantity API:', this.planPurchaseOrderFormGroup.valid);
+  
+      this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
+        const formData = this.planPurchaseOrderFormGroup.value;
+  
+        if (formData) {
+          formData.qcLotNo = String(formData.qcLotNo);
+          formData.receiveQuantity = String(formData.receiveQuantity);
+          formData.inspectionQuantity = String(formData.inspectionQuantity);
+        }
+  
+        console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
+  
+        const {
+          id, documentType, inspectionByModalPO, inspectionQtyModalPO, inspectionTimeModalPO,
+          intCode, itemCode, itemCodeModalPO, itemDescription, poCode, receiveQtyPO,
+          ...payload
+        } = formData;
+  
+        console.log('SENDING PURCHASE ORDER PAYLOAD:', payload);
+  
+        this._evaluationPurchaseOrderService
+          .getQualityStatusQC('purchase_qc', formData.itemCode, formData.docNo, formData.lineNo)
+          .subscribe({
+            next: (qualityResponse) => {
+              if (qualityResponse?.data?.isClosed === false) {
+                // QC is already open
+                this._snackBar.open('QC already open for this item. Cannot submit again.', 'Close', {
+                  duration: 3000,
+                  panelClass: ['snackbar-error']
+                });
+                this.isFormSaved = false;
+                return;
+              }
+  
+              // ✅ Safe to proceed
+              this.isFormSaved = true;
+  
+              this._evaluationPurchaseOrderService.AddPurchaseOrder(payload).subscribe(
+                (response) => {
+                  if (response.isRequestSuccess) {
+                    console.log('API RUN SUCCESSFULLY.', payload);
+                    this._snackBar.open('Purchase Order added successfully!', 'Close', {
+                      duration: 3000,
+                      panelClass: ['snackbar-success']
+                    });
+                  }
+                },
+                (error) => {
+                  this._snackBar.open('Error adding purchase order.', 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                  });
+                }
+              );
+            },
+            error: (error) => {
+              console.error('Error calling QC API:', error);
+              this._snackBar.open('Failed to verify QC status.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+      }).catch((error) => {
+        console.error('Error in getSampleQuantity:', error);
+      });
+  
+    } else {
+      this.isValidate = false;
+      this._snackBar.open('Please fill all mandatory fields.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    }
+  }
+  
   // GET API CALL TO UPDATE sampleQuantity
   getSampleQuantity(inspectionQuantity: number, itemId: string): Promise<void> {
     return new Promise((resolve, reject) => {
