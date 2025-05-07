@@ -260,7 +260,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
 
         console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
 
-        const { id, intCode, itemCode, itemDescription, inspectionByModalPP, inspectionTimeModalPP, itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO,receiveQtyPO,
+        const { id, itemCode, itemDescription, inspectionByModalPP, inspectionTimeModalPP, itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO,receiveQtyPO,
           ...payload } = formData;
 
         console.log('SENDING Production ORDER PAYLOAD:', payload);

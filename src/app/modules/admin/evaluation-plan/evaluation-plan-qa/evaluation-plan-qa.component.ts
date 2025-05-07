@@ -83,19 +83,13 @@ export class EvaluationPlanQaComponent implements OnInit {
         'remarks',
     ];
 
-    samples = [
-        // {
-        //     title: 'Sample 1',
-        //     inspectionTime: '5:00 PM',
-        //     inspectionBy: 'Mr. Asad',
-        // },
-    ];
+    samples = [];
 
     // dataSourceQualitativeInspection: any[] = [];
     // dataSourceQuantitativeInspection: any[] = [];
     selectedCavityName: string = '';
-  cavityList: any;
-  selectedCavitySamples: any;
+    cavityList: any;
+    selectedCavitySamples: any;
 
     constructor(
         private _evaluationPlanQaOrderService: EvaluationPlanQaOrderService,
@@ -109,14 +103,9 @@ export class EvaluationPlanQaComponent implements OnInit {
 
     cavityNo = [];
 
-    // toggleCavity(index: number): void {
-    //     const cavity = this.cavitiesArray.at(index);
-    //     cavity.get('enabled')?.setValue(!cavity.value.enabled); // Toggle the enabled status
-    // }
-
     evaluationplanQAFormGroup = this._formBuilder.group({
-      id: [''], // ✅ Empty string if null not allowed
 
+        id: [''],
         intCode: [''],
         docNum: [''],
         itemCode: [''],
@@ -157,7 +146,6 @@ export class EvaluationPlanQaComponent implements OnInit {
         isFlexible: [false],
         samplesStatus: [false],
         cavityId: [''],
-
     });
 
     createInspectionObject(): FormGroup {
@@ -209,89 +197,19 @@ export class EvaluationPlanQaComponent implements OnInit {
                 this.populateProductionOrderFormQA(this.selectedOrder);
             }
         }
+
+        if (!this.isEditMode) {
+          this._evaluationPlanQaOrderService.getProductionQACode().subscribe((productionQACode) => {
+            console.log('Production QC Code:', productionQACode); // Debugging ke liye
     
-        // Get production QA code and other initializations
-        this._evaluationPlanQaOrderService.getProductionQACode().subscribe((productionQACode) => {
-            const fullCode = `PQA-000${productionQACode.data || ''}`;
-            this.evaluationplanQAFormGroup.get('intCode')?.setValue(fullCode);
-        });
+            const fullCode = `PQA-000${productionQACode.data || ''}`; // Code format
+            this.evaluationplanQAFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+          });
+        }
     
         this.dataSourceQualitativeInspection = new MatTableDataSource(this.qualitativeInspectionObjects.controls);
         this.dataSourceQuantitativeInspection = new MatTableDataSource(this.quantitativeInspectionResults.controls);
-        // const staticData = [
-        //     {
-        //         inspectionCharacteristicName: 'Color Check',
-        //         inspectionCharacteristicSingleCriteria: 'Should be Blue',
-        //         isMandatory: true,
-        //         qualitativeResultId: 'Passed',
-        //         remarks: 'Looks good',
-        //     }
-           
-        // ];
-
-        // this.dataSourceQualitativeInspection = staticData;
-
-        // const formArray = this.evaluationplanQAFormGroup.get(
-        //     'qualitativeInspectionObjects'
-        // ) as FormArray;
-
-        // staticData.forEach((item) => {
-        //     formArray.push(
-        //         this.fb.group({
-        //             inspectionCharacteristicName: [item.inspectionCharacteristicName],
-        //             inspectionCharacteristicSingleCriteria: [item.inspectionCharacteristicSingleCriteria],
-        //             isMandatory: [item.isMandatory],
-        //             qualitativeResultId: [item.qualitativeResultId],
-        //             remarks: [item.remarks],
-                    
-        //         })
-        //     );
-        // });
-
-        // const staticsData = [
-        //     {
-        //         inspectionCharacteristicName: 'Color Check',
-        //         uoMCode: 'Should be Blue',
-        //         isMandatory: true,
-        //         target: 12,
-        //         max: 3,
-        //         min: 5,
-        //         quantitativeResult: 'Looks Cool',
-        //         remarks: 'Looks good',
-        //     },
-        //     {
-        //         inspectionCharacteristicName: 'Weight Check',
-        //         uoMCode: 'Less than 5kg',
-        //         isMandatory: false,
-        //         target: 12,
-        //         max: 3,
-        //         min: 5,
-        //         quantitativeResult: 'Looks Cool',
-        //         remarks: 'Looks good',
-        //     },
-        // ];
-
-        // this.dataSourceQuantitativeInspection = staticsData;
-
-        // const formsArray = this.evaluationplanQAFormGroup.get(
-        //     'quantitativeInspectionResults'
-        // ) as FormArray;
-
-        // staticsData.forEach((item) => {
-        //     formsArray.push(
-        //         this.fb.group({
-        //             inspectionCharacteristicName: [item.inspectionCharacteristicName],
-        //             uoMCode: [item.uoMCode],
-        //             isMandatory: [item.isMandatory],
-        //             target: [item.target],
-        //             max: [item.max],
-        //             min: [item.min],
-        //             quantitativeResult: [item.quantitativeResult],
-        //             remarks: [item.remarks],
-        //         })
-        //     );
-        // });
-    }
+      }
 
    // Get form array controls
    get qualitativeInspectionObjects(): FormArray {
@@ -311,7 +229,6 @@ export class EvaluationPlanQaComponent implements OnInit {
         const formData = this.evaluationplanQAFormGroup.value;
       
         const {
-          intCode,
           itemCode,
           itemDescription,
           max,
@@ -707,6 +624,7 @@ export class EvaluationPlanQaComponent implements OnInit {
     populateProductionOrderFormQA(data: any): void {
         console.log('Selected Production Order QA:', data);
         this.evaluationplanQAFormGroup.patchValue({
+
             itemCode: data.itemCode ?? 'N/A',
             itemDescription: data.itemDescription ?? 'N/A',
             inspectionDateTime: new Date().toISOString(), // Add missing field
@@ -731,7 +649,11 @@ export class EvaluationPlanQaComponent implements OnInit {
 
     populateEditProductionOrderFormQA(data: any): void {
         console.log('Populating Edit QC Form:', data);
+            // FORMATTING intCode
+        const rowIntCode = data.intCode ?? '';
+        const formattedIntCode = `PQA-${rowIntCode.toString().padStart(7, '0')}`;
         this.evaluationplanQAFormGroup.patchValue({
+          intCode: formattedIntCode ?? "",  // intCode: data.intCode ?? "",
           analyzedBy: data.analyzedBy ?? 'N/A',
           mouldNo: data.mouldNo ?? 'N/A',
           machineNo: data.machineNo ?? 'N/A',
