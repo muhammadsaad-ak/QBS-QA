@@ -421,6 +421,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
         this.evalPlanProductionOrderQAData = response.data.map((order, index) => ({
           // serialId: index + 1,
           id: order.id,
+          intCode: order.intCode,
           docNo: order.docNum,
           docDate: order.docDate,
           itemCode: order.itemDetails?.itemCode || '-',
@@ -491,13 +492,13 @@ onEvaluationPlanTypeChange(orderType: string): void {
       this.pageTitle = 'List of Evaluation Plan';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate','lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'id', 'action'];
+        this.displayedColumns = ['serialId', 'intCode', 'docDate','lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'id', 'action'];
         this.dataSource.data = this.evalPlanPurchaseOrderData;       
       } else if (orderType === 'productionOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
+        this.displayedColumns = ['serialId', 'intCode', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
         this.dataSource.data = this.evalPlanProductionOrderData;
       } else if (orderType === 'productionOrderQA') {
-        this.displayedColumns = ['serialId' , 'docNo' , 'docDate' , 'itemCode' , 'itemDescription' , 'qty' , 'status' , 'action'];
+        this.displayedColumns = ['serialId' , 'intCode' , 'docDate' , 'itemCode' , 'itemDescription' , 'qty' , 'status' , 'action'];
         this.dataSource.data = this.evalPlanProductionOrderQAData;
       }
     } else if (this.currentView === 'sapDocuments') {
