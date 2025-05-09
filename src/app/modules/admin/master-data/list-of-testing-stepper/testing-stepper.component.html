@@ -292,7 +292,7 @@
                         <th class="p-2 text-left w-full">
                           <div class="flex justify-between">
                             <span>Parameters</span>
-                            <mat-icon class="mat-icon-primary cursor-pointer" svgIcon="feather:plus"
+                            <mat-icon class="mat-icon-primary cursor-pointer text-white" svgIcon="feather:plus"
                               (click)="addTableRow()"></mat-icon>
                           </div>
                         </th>
@@ -390,7 +390,7 @@
                         <th class="p-2 text-left w-full">
                           <div class="flex justify-between">
                             <span>Parameters</span>
-                            <mat-icon class="mat-icon-primary cursor-pointer" svgIcon="feather:plus"
+                            <mat-icon class="mat-icon-primary cursor-pointer text-white" svgIcon="feather:plus"
                               (click)="addTableRowX()"></mat-icon>
                           </div>
                         </th>
@@ -515,7 +515,13 @@
       <mat-step [stepControl]="itemsInspectionCardsForm" label="Item Inspection Card">
         <form [formGroup]="itemsInspectionCardsForm">
           <!-- Item Inspection Card -->
-          <div class="text-2xl font-extrabold">Item&nbsp;Inspection&nbsp;Card</div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="text-2xl font-extrabold">Item&nbsp;Inspection&nbsp;Card</div>
+            <button mat-button class="next-button mdc-button--raised bg-warn-400 h-5" *ngIf="!isEditMode && resetItemsIIC"
+              (click)="onResetItemInspectionCardClick()" matTooltip="Reset">
+              <mat-icon svgIcon="heroicons_outline:arrow-path" class="text-white"></mat-icon>
+            </button>
+          </div>
           <!-- UPPER FIELDS SECTION STARTS -->
           <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;" class="iic-py-2">
             <!-- ITEM CODE -->
@@ -525,14 +531,14 @@
                 (click)="onItemCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="itemCode" readonly
                 [value]="selectedItemCodeIIC ? selectedItemCodeIIC : ''">
-              <mat-error>Required.</mat-error>
+              <mat-error *ngIf="isValidate && itemsInspectionCardsForm.get('itemCode').invalid">Required.</mat-error>
             </mat-form-field>
             <!-- ITEM DESCRIPTION -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Item Description</mat-label>
               <input matInput formControlName="itemDescription" readonly
                 [value]="selectedItemDescriptionICC ? selectedItemDescriptionICC : ''">
-              <mat-error>Required.</mat-error>
+              <mat-error *ngIf="isValidate && itemsInspectionCardsForm.get('itemDescription').invalid">Required.</mat-error>
             </mat-form-field>
             <!-- CARD CODE -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
@@ -540,14 +546,14 @@
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                 (click)="onCardCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="intCode" readonly [value]="selectedCardCode ? selectedCardCode : ''">
-              <mat-error>Required.</mat-error>
+              <mat-error *ngIf="isValidate && itemsInspectionCardsForm.get('intCode').invalid">Required.</mat-error>
             </mat-form-field>
             <!-- CARD DESCRIPTION -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Card Description</mat-label>
               <input matInput formControlName="cardDescription" readonly
                 [value]="selectedCardDescription ? selectedCardDescription : ''">
-              <mat-error>Required.</mat-error>
+              <mat-error *ngIf="isValidate && itemsInspectionCardsForm.get('cardDescription').invalid">Required.</mat-error>
             </mat-form-field>
           </div>
           <!-- HIDDEN FIELDS -->
@@ -558,6 +564,18 @@
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
                   <mat-label>itemName</mat-label>
                   <input matInput type="text" class="text-sm" formControlName="itemName" readonly>
+                </mat-form-field>
+              </div>
+              <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                  <mat-label>groupName</mat-label>
+                  <input matInput type="text" class="text-sm" formControlName="groupName" readonly>
+                </mat-form-field>
+              </div>
+              <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                  <mat-label>isBatch</mat-label>
+                  <input matInput type="text" class="text-sm" formControlName="isBatch" readonly>
                 </mat-form-field>
               </div>
               <div class="w-full">
@@ -990,7 +1008,7 @@
                             </ng-container>
                             <!-- criteria - Criteria COLUMN -->
                             <ng-container matColumnDef="criteria">
-                              <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Criteria</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef class="single-line">Result&nbsp;Criteria</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="py-2">
                                 <mat-form-field style="width: 100%; margin: 0; padding: 0;" class="mt-2">
                                   <mat-select  [(value)]="row.criteria" class="py-2" disableOptionCentering>
@@ -1279,8 +1297,18 @@
             <button mat-button class="bg-primary-700" matStepperPrevious>
               <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-              (click)="submitItemsInspectionCardsForm()">Save</button>
+            <!-- <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
+              (click)="submitItemsInspectionCardsForm()">Save</button> -->
+              <!-- &nbsp; -->
+              <div matTooltip="Select&nbsp;the&nbsp;mandatory&nbsp;item&nbsp;code&nbsp;and&nbsp;card&nbsp;code." 
+              [matTooltipDisabled]="isIICFormValid()">
+                <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" 
+                [disabled]="!isIICFormValid()" 
+                [ngClass]="{
+                  'invalid-disabled-button': !isIICFormValid()}" (click)="submitItemsInspectionCardsForm()">
+                Save
+              </button>
+              </div>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickIIC()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
