@@ -248,6 +248,37 @@ export class TestingStepperComponent implements AfterViewInit {
             this.selectedItemCodeIS = selectedRow.itemCode;
             this.selectedItemDescriptionIS = selectedRow.name;
 
+            // @IAK
+            // VALIDATE DUPLICATE HANDLING - itemSamplingForm
+            this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
+                const isItemAlreadyOpened = items.data.some(
+                    (item) => item.itemCode === this.selectedItemCodeIS
+                );
+                if (isItemAlreadyOpened) {
+                    const snackRefSuccess = this._snackBar.open('This item is already open, and sampling ranges are defined.', 'Close', {
+                        duration: 3000,
+                        horizontalPosition: 'center',
+                        verticalPosition: 'top'
+                    });
+                    snackRefSuccess.afterDismissed().subscribe(() => {
+                        console.log(this.itemSamplingForm.value);
+                        this.selectedIntCodeIS = null;
+                        this.selectedItemIdIS = null;
+                        this.selectedItemCodeIS = null;
+                        this.selectedItemDescriptionIS = null;
+                        this.itemSamplingForm.get('itemCode').setValue(null);
+                        this.itemSamplingForm.get('itemDescription').setValue(null);
+                        this.itemSamplingForm.get('itemId').setValue(null);
+                        this.itemSamplingForm.get('itemCode').setValidators([Validators.required]);
+                        this.itemSamplingForm.get('itemDescription').setValidators([Validators.required]);
+                        this.itemSamplingForm.get('itemCode').updateValueAndValidity();
+                        this.itemSamplingForm.get('itemDescription').updateValueAndValidity();
+                        console.log(this.itemSamplingForm.value);
+                        this.cdr.detectChanges();
+                    });
+                }
+            });
+
             console.log('SELECTED ROW:', selectedRow);
         } else {
             console.log('NO ROW SELECTED');
@@ -362,6 +393,8 @@ export class TestingStepperComponent implements AfterViewInit {
     itemsInspectionCardsForm = this._formBuilder.group({
         // ITEMS
         itemName: ['', Validators.required],
+        groupName: ['', Validators.required],
+        isBatch: [false],
         itemType: ['', Validators.required],
         itemGroupCode: ['', Validators.required],
         itemU_QACard: [null],
@@ -718,11 +751,20 @@ export class TestingStepperComponent implements AfterViewInit {
         );
         if (selectedRow) {
             console.log('SELECTED ROW:', selectedRow);
+            let isBatch = false;
+            // console.log('isBatch',isBatch);
+            console.log('manageBatchNumbers',selectedRow.manageBatchNumbers);
+            if (selectedRow.manageBatchNumbers === 'tYES') {
+                isBatch = true;
+                // console.log('isBatch',isBatch);
+            }
             this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
             this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemName);
 
             //  AGAINST SAP LIST ALL ITEMS
             this.itemsInspectionCardsForm.get('itemName').setValue(selectedRow.itemName);
+            this.itemsInspectionCardsForm.get('groupName').setValue(selectedRow.itemGroups.groupName);
+            this.itemsInspectionCardsForm.get('isBatch').setValue(isBatch);
             this.itemsInspectionCardsForm.get('itemType').setValue(selectedRow.itemType);
             this.itemsInspectionCardsForm.get('itemGroupCode').setValue(String(selectedRow.itemsGroupCode));
             this.itemsInspectionCardsForm.get('itemU_QACard').setValue(selectedRow.u_QACard);
@@ -737,6 +779,9 @@ export class TestingStepperComponent implements AfterViewInit {
             // console.log("addSelectedRowItemCodeIIC - this.selectedItemCodeIIC:", this.selectedItemCodeIIC)
             this.selectedItemDescriptionICC = selectedRow.itemName;
             // console.log("addSelectedRowItemCodeIIC - this.selectedItemDescriptionICC:", this.selectedItemDescriptionICC)
+
+            // @IAK
+            // VALIDATE DUPLICATE HANDLING - itemsInspectionCardsForm
             this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
                 const isItemAlreadyOpened = items.data.some(
                   (item) => item.itemCode === this.selectedItemCodeIIC
@@ -1791,6 +1836,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
             console.log('🚨 FINAL qualitativeInspectionObjects before API:', payload.qualitativeInspectionObjects);
             console.log('🚨 FINAL quantitativeInspectionObjects before API:', payload.quantitativeInspectionObjects);
+            // return;
             this._itemInspectionCardService
                 .AddItemInspectionCard(payload)
                 .subscribe({
@@ -2522,6 +2568,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this._qualitativeResultsService.AddQualitativeResult(payload).subscribe(
                 (response) => {
                         if (response.isRequestSuccess) {
+                            this.isValidate = false;
                             console.log('API RUN SUCCESSFULLY.', payload);
                             this._snackBar.open('Data saved successfully!', 'Close', {
                                 duration: 1550,
@@ -2535,7 +2582,6 @@ export class TestingStepperComponent implements AfterViewInit {
                                         console.log('NEW DATA VALUE:', this.firstFormGroup.get('data')?.value);
                                         setTimeout(() => {
                                             this.isLoading = false;
-                                            this.isValidate = false;
                                         }, 1500);
                                     },
                                     (error) => {
@@ -2595,6 +2641,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 .subscribe(
                     (response) => {
                         if (response.isRequestSuccess) {
+                            this.isValidate = false;
                             console.log('API RUN SUCCESSFULLY.', payload);
                             this._snackBar.open('Data saved successfully!', 'Close', {
                                 duration: 1500,
@@ -2610,6 +2657,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     },
                     (error) => {
                         console.error('API REQUEST FAILED:', error);
+                        console.error('API ERROR RESPONSE:', error.error);
                         console.log('FULL ERROR OBJECT:', JSON.stringify(error, null, 2));
                         let errorMessages = [];
 
@@ -2678,16 +2726,27 @@ export class TestingStepperComponent implements AfterViewInit {
         singleCriteriaControl?.updateValueAndValidity();
     }
 
+    // INSPECTION CHARACTERISTIC STARTS
+    // fourthFormGroup
     onSubmitInspectionCharacteristics(): void {
         this.isValidate = true;
-        if (!this.fourthFormGroup.valid) {
-            this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+        // console.log(this.fourthFormGroup.value);
+        const formValue = this.fourthFormGroup.value;
+        if (formValue.type === "qualitative" && (!formValue.singleCriteria || formValue.singleCriteria.trim() === "")) {
+            this._snackBar.open('Add mandatory criteria field', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
             return;
         }
-
+        // if (!this.fourthFormGroup.valid) {
+        //     this._snackBar.open('Fill all the mandatory fields.', 'Close', {
+        //         duration: 3000,
+        //         panelClass: ['snackbar-error']
+        //     });
+        //     return;
+        // }
+        // return;
         const formValues = this.fourthFormGroup.value;
         const { intCode, qualitativeCriteriaObjects, ...payload } = formValues;
         if (payload.type === 'quantitative') {
@@ -2700,6 +2759,7 @@ export class TestingStepperComponent implements AfterViewInit {
             .pipe(
                 switchMap(response => {
                     if (response.isRequestSuccess) {
+                        this.isValidate = false;
                         console.log('API RUN SUCCESSFULLY.', payload);
                         this._snackBar.open('Data saved successfully!', 'Close', {
                             duration: 1550,
@@ -2717,8 +2777,9 @@ export class TestingStepperComponent implements AfterViewInit {
             .subscribe(
                 (intCodeICH) => {
                     const fetchedNextintCodeICH = intCodeICH.data;
-                    if (fetchedNextintCodeICH) {
-                        const formattedNextintCodeICH = `ICH-000${fetchedNextintCodeICH}`;
+                    if (fetchedNextintCodeICH && !isNaN(fetchedNextintCodeICH)) {
+                        // const formattedNextintCodeICH = `ICH-000${fetchedNextintCodeICH}`;
+                        const formattedNextintCodeICH = `ICH-${fetchedNextintCodeICH.toString().padStart(4, '0')}`;
                         setTimeout(() => {
                             this.fourthFormGroup.get('intCode')?.setValue(formattedNextintCodeICH);
                             console.log('New Inspection Code:', this.fourthFormGroup.get('intCode')?.value);
@@ -2726,11 +2787,18 @@ export class TestingStepperComponent implements AfterViewInit {
                         }, 1500);
                     } else {
                         console.error('FAILED TO GET NEW INSPECTION CODE');
-                        this.isLoading = false;
+                        this._snackBar.open('FAILED TO GET NEW INSPECTION CODE.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error'],
+                        });
+                        setTimeout(() => {
+                            this.isLoading = false;
+                        }, 1500);
                     }
                 },
                 (error) => {
                     console.error('API REQUEST FAILED:', error);
+                    console.error('API ERROR RESPONSE:', error.error);
                     let errorMessage = "This description is already being used and cannot be duplicated.";
                     if (error.error) {
                         if (error.error.exception?.description?.length) {
@@ -2751,6 +2819,8 @@ export class TestingStepperComponent implements AfterViewInit {
                 }
             );
     }
+    // fourthFormGroup
+    // INSPECTION CHARACTERISTIC ENDS
 
     // onSubmit(): void {
     //     if (this.fifthFormGroup.valid) {
@@ -2822,22 +2892,28 @@ export class TestingStepperComponent implements AfterViewInit {
             // return;
             this._itemSamplesService.AddSampleWithRanges(payload).subscribe(
                 (response) => {
-                        if (response.isRequestSuccess) {
-                            console.log('API RUN SUCCESSFULLY.', payload);
-                            this._snackBar.open('Data saved successfully!', 'Close', {
+                    if (response.isRequestSuccess) {
+                        this.isValidate = false;
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        setTimeout(() => {
+                            const snackRefSuccess = this._snackBar.open('Data saved successfully!', 'Close', {
                                 duration: 1550,
                                 panelClass: ['snackbar-success']
                             });
-                            this.itemSamplingForm.get('id')?.setValue(null);
-                            this.itemSamplingForm.get('itemId')?.setValue(null);
-                            this.itemSamplingForm.get('itemCode')?.setValue(null);
-                            this.itemSamplingForm.get('itemDescription')?.setValue(null);
-                            this.itemSamplingForm.get('flexibility')?.setValue(false);
-                            this.itemSamplingForm.get('isActive')?.setValue(true);
-                            this.itemSamplingForm.get('samplingRangeObjects')?.setValue([]);
-                            console.log(this.itemSamplingForm.value);
-                            // (this.itemSamplingForm.get('samplingRangeObjects') as FormArray)?.clear(); 
-                            
+                            snackRefSuccess.afterDismissed().subscribe(() => {
+                                // this.itemSamplingForm.get('sampleCodeIS')?.setValue(null);
+                                this.itemSamplingForm.get('id')?.setValue('');
+                                this.itemSamplingForm.get('itemId')?.setValue('');
+                                this.itemSamplingForm.get('itemCode')?.setValue('');
+                                this.itemSamplingForm.get('itemDescription')?.setValue('');
+                                this.itemSamplingForm.get('flexibility')?.setValue(false);
+                                this.itemSamplingForm.get('isActive')?.setValue(true);
+                                this.itemSamplingForm.get('samplingRangeObjects')?.reset(); // Reset the FormArray
+                                // this.itemSamplingForm.get('samplingRangeObjects')?.setValue([]);
+                                // (this.itemSamplingForm.get('samplingRangeObjects') as FormArray)?.clear(); 
+                                console.log(this.itemSamplingForm.value);
+                                this.cdr.detectChanges();
+                            });
                             this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
                                 const fetchedCodeIS = sampleCodeIS.data;
                                 console.log('FETCHED SAMPLE CODE:', fetchedCodeIS);
@@ -2850,14 +2926,16 @@ export class TestingStepperComponent implements AfterViewInit {
                                 setTimeout(() => {
                                     this.isLoading = false;
                                     this.isValidate = false;
-                                  }, 1500);
+                                    this.isValidate = false;
+                                }, 1500);
                             });
-                            // this.stepper.next();
-                        } else {
-                            console.log('API RESPONSE (NON-ERROR):', response);
-                        }
-                    },
-                    (error) => {
+                        }, 1500);
+                        // this.stepper.next();
+                    } else {
+                        console.log('API RESPONSE (NON-ERROR):', response);
+                    }
+                },
+                (error) => {
                         console.error('API REQUEST FAILED:', error);
                         console.log('API ERROR RESPONSE:', error.error);
                         let errorMessage = 'Error while adding data.';
@@ -2968,8 +3046,8 @@ export class TestingStepperComponent implements AfterViewInit {
                         return of(null);
                     }
                     if (response?.isRequestSuccess) {
-                        console.log('🎉 API RUN SUCCESSFULLY:', response);
                         this.isValidate = false;
+                        console.log('🎉 API RUN SUCCESSFULLY:', response);
                         this._snackBar.open('Data saved successfully!', 'Close', {
                             duration: 1500,
                             panelClass: ['snackbar-success']
@@ -3439,10 +3517,15 @@ export class TestingStepperComponent implements AfterViewInit {
                 (error) => {
                     console.error('API REQUEST FAILED:', error);
                     let errorMessage = 'Something went wrong. Please try again.';
-                    if (error.exception?.description?.length) {
-                      errorMessage = error.exception.description[0];
-                    } else if (error.message) {
-                      errorMessage = error.message;
+                    // if (error.exception?.description?.length) {
+                    //     errorMessage = error.exception.description[0];
+                    // } else if (error.error.message || error.error.statusCode) {
+                    //     errorMessage = error.error.message;
+                    // }
+                    if (Array.isArray(error.exception?.description) && error.exception.description.length) {
+                        errorMessage = error.exception.description[0];
+                    } else if (error.error?.message || error.error?.statusCode === 400) {
+                        errorMessage = error.error.message;
                     }
                     this._snackBar.open(errorMessage, 'Close', {
                       duration: 3000,
@@ -4226,6 +4309,8 @@ export class TestingStepperComponent implements AfterViewInit {
         this.itemsInspectionCardsForm.get('itemCode')?.setValue(null);
         this.itemsInspectionCardsForm.get('itemDescription')?.setValue(null);
         this.itemsInspectionCardsForm.get('itemName')?.setValue(null);
+        this.itemsInspectionCardsForm.get('groupName')?.setValue(null);
+        this.itemsInspectionCardsForm.get('isBatch')?.setValue(false);
         this.itemsInspectionCardsForm.get('itemType')?.setValue(null);
         this.itemsInspectionCardsForm.get('itemGroupCode')?.setValue(null);
         this.itemsInspectionCardsForm.get('itemU_QACard')?.setValue(null);

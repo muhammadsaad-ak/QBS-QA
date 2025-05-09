@@ -292,7 +292,7 @@
                         <th class="p-2 text-left w-full">
                           <div class="flex justify-between">
                             <span>Parameters</span>
-                            <mat-icon class="mat-icon-primary cursor-pointer" svgIcon="feather:plus"
+                            <mat-icon class="mat-icon-primary cursor-pointer text-white" svgIcon="feather:plus"
                               (click)="addTableRow()"></mat-icon>
                           </div>
                         </th>
@@ -390,7 +390,7 @@
                         <th class="p-2 text-left w-full">
                           <div class="flex justify-between">
                             <span>Parameters</span>
-                            <mat-icon class="mat-icon-primary cursor-pointer" svgIcon="feather:plus"
+                            <mat-icon class="mat-icon-primary cursor-pointer text-white" svgIcon="feather:plus"
                               (click)="addTableRowX()"></mat-icon>
                           </div>
                         </th>
@@ -564,6 +564,18 @@
                 <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
                   <mat-label>itemName</mat-label>
                   <input matInput type="text" class="text-sm" formControlName="itemName" readonly>
+                </mat-form-field>
+              </div>
+              <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                  <mat-label>groupName</mat-label>
+                  <input matInput type="text" class="text-sm" formControlName="groupName" readonly>
+                </mat-form-field>
+              </div>
+              <div class="w-full">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                  <mat-label>isBatch</mat-label>
+                  <input matInput type="text" class="text-sm" formControlName="isBatch" readonly>
                 </mat-form-field>
               </div>
               <div class="w-full">
@@ -996,7 +1008,7 @@
                             </ng-container>
                             <!-- criteria - Criteria COLUMN -->
                             <ng-container matColumnDef="criteria">
-                              <mat-header-cell *matHeaderCellDef class="single-line">&nbsp;Criteria</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef class="single-line">Result&nbsp;Criteria</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="py-2">
                                 <mat-form-field style="width: 100%; margin: 0; padding: 0;" class="mt-2">
                                   <mat-select  [(value)]="row.criteria" class="py-2" disableOptionCentering>

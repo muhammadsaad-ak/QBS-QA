@@ -68,6 +68,15 @@
                                 <td mat-cell *matCellDef="let element">
                                     {{element.itemDescription ? element.itemDescription : '-' }} </td>
                             </ng-container>
+                            <!-- isBatch - Batch Managed COLUMN -->
+                            <ng-container matColumnDef="isBatch">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
+                                    Batch&nbsp;Managed
+                                </th>
+                                <td mat-cell *matCellDef="let element" class="px-10">
+                                    {{ element.isBatch ? 'Yes' : 'No' }}
+                                </td>
+                            </ng-container>
                             <!-- flexibility COLUMN -->
                             <ng-container matColumnDef="flexibility">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">

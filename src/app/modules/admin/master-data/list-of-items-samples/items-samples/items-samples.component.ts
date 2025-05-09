@@ -70,7 +70,7 @@ export class ItemsSamplesComponent {
 
   List_Of_Inspection_Data = [];
 
-  displayedColumnsItemSamples: string[] = ['serialId', 'sampleCode', 'itemCode', 'itemDescription', 'flexibility', 'isActive', 'action'];
+  displayedColumnsItemSamples: string[] = ['serialId', 'sampleCode', 'itemCode', 'itemDescription', 'isBatch','flexibility', 'isActive', 'action'];
   // dataSource = new MatTableDataSource<any>([]);
   dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
 
@@ -86,8 +86,6 @@ export class ItemsSamplesComponent {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemSamplesService: ItemSamplesService,
-
-
   ) { }
 
   ngOnInit(): void {

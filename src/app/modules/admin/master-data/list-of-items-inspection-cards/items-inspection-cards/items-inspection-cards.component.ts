@@ -70,7 +70,8 @@ export class ItemsInspectionCardsComponent {
 
   ListIAlltemsInspectionCards = [];
 
-  displayedColumnsItemsInspectionCards: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'action'];
+  // displayedColumnsItemsInspectionCards: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'action'];
+  displayedColumnsItemsInspectionCards: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'isBatch', 'action'];
   dataSourceItemsInspectionCards = new MatTableDataSource<any>(this.ListIAlltemsInspectionCards);
   // dataSource = new MatTableDataSource<any>([]);
 
@@ -91,19 +92,52 @@ export class ItemsInspectionCardsComponent {
   ) { }
 
   ngOnInit(): void {
+    // interface ItemMapValue FOR MAPPING THE VALUES
+    interface ItemMapValue {
+      itemCode: string;
+      isBatch: boolean;
+    }
     forkJoin({
       inspectionCards: this._itemInspectionCardService.ListAllItemsInspectionCards(),
       items: this._itemInspectionCardService.getListAllItems()
     }).subscribe(({ inspectionCards, items }) => {
 
       // Convert item list to a map for quick lookup
-      const itemMap = new Map(items.data.map(item => [item.id, item.itemCode]));
-
       // Map itemId to itemCode in the inspectionCards response
+
+      // const itemMap = new Map(items.data.map(item => [item.id, item.itemCode]));
+      const itemMap = new Map<string, ItemMapValue>(
+        items.data.map(item => [
+          item.id,
+          { itemCode: item.itemCode, isBatch: item.isBatch }
+        ])
+
+      );
+      // Create an object with itemCode and isBatch properties to match the ItemMapValue interface
+
+      // console.log('ITEMS:', items.data);
+      // console.log('MAPPED RESPONSE:', itemMap); // MAPPED AGAINST itemId
+      // console.log('INSPECTION CARDS:', inspectionCards.data);
+      // console.log('INSPECTION CARDS:', inspectionCards.data.map(card => card.itemId));
+      // console.log('ITEMS:', items.data.map(item => item.id));
+      // console.log('ITEMS:', items.data.map(item => item.itemCode));
+      // console.log('ITEMS:', items.data.map(item => item.isBatch));
+      // console.log('ITEMS:', items.data.map(item => item.id).includes(inspectionCards.data[0].itemId));
+      // console.log('ITEMS:', itemMap.get(inspectionCards.data[0].itemId));
+      // console.log('ITEMS:', itemMap.get(inspectionCards.data[0].itemId)?.itemCode);
+      // console.log('ITEMS:', itemMap.get(inspectionCards.data[2].itemId)?.isBatch);
+      // console.log('ITEMS:', itemMap.get(inspectionCards.data[2].itemId)?.isBatch === true ? 'YES' : 'NO');
+
+      // Map itemId to itemCode and isBatch in the inspectionCards response
       this.ListIAlltemsInspectionCards = inspectionCards.data.map(card => ({
         ...card,
-        itemCode: itemMap.get(card.itemId) || 'N/A' // Default to 'N/A' if not found
+        itemCode: itemMap.get(card.itemId)?.itemCode || 'N/A',
+        isBatch: itemMap.get(card.itemId)?.isBatch || false
       }));
+      // this.ListIAlltemsInspectionCards = inspectionCards.data.map(card => ({
+      //   ...card,
+      //   itemCode: itemMap.get(card.itemId) || 'N/A'
+      // }));
 
       // Assign updated data to table
       this.dataSourceItemsInspectionCards.data = this.ListIAlltemsInspectionCards;
@@ -115,7 +149,8 @@ export class ItemsInspectionCardsComponent {
         this.applyFilter(searchTerm);
       });
 
-    // X ngOnInit
+    this._sessionStorageService.clearAll();
+
     // this._itemInspectionCardService.ListAllItemsInspectionCards().subscribe((items) => {
     //   this.dataSourceItemsInspectionCards.data = items.data;
     // })
@@ -129,12 +164,6 @@ export class ItemsInspectionCardsComponent {
     //   // REFRESHING THE TABLE DATA SOURCE - dataSourceItemsInspectionCards
     //   this.dataSourceItemsInspectionCards = new MatTableDataSource<any>(this.ListIAlltemsInspectionCards);
     // }
-    // this.searchInputControl.valueChanges
-    //   .pipe(debounceTime(300))
-    //   .subscribe((searchTerm: string) => {
-    //     this.applyFilter(searchTerm);
-    //   });
-    this._sessionStorageService.clearAll();
   }
   
   ngOnDestroy(): void { }
