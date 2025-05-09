@@ -69,7 +69,6 @@
             style=" cursor: not-allowed;">
         </mat-form-field>
 
-
         <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
           <mat-label>Variant:</mat-label>
           <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="variant" required readonly
@@ -466,12 +465,16 @@
 
     </form>
     <div style="display: flex; flex-direction: row; justify-content: end">
-      <button mat-flat-button style="background-color: red; color: white">
-        Cancel
+      <!-- <button mat-flat-button style="background-color: red; color: white">
+        Close QA
+      </button> -->
+      <button mat-flat-button color="warn" (click)="closeOpenQA()"
+          *ngIf="isEditMode">
+          Close&nbsp;QA <!-- Close QC -->
       </button>
 
       <button mat-flat-button color="primary" style="margin-left: 5px;">
-        Submit
+        Save Remarks
       </button>
     </div>
   </div>

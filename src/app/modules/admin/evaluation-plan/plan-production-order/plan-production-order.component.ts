@@ -245,7 +245,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   //   }
   // }
 
-  onSubmitProductionOrder(): void {
+  onSubmitProductionOrderX(): void {
     this.isValidate = true;
     if (this.planProductionOrderFormGroup.valid) {
 
@@ -260,7 +260,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
 
         console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
 
-        const { id, intCode, itemCode, itemDescription, inspectionByModalPP, inspectionTimeModalPP, itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO,receiveQtyPO,
+        const { id, itemCode, itemDescription, inspectionByModalPP, inspectionTimeModalPP, itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO,receiveQtyPO,
           ...payload } = formData;
 
         console.log('SENDING Production ORDER PAYLOAD:', payload);
@@ -288,6 +288,83 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       }).catch((error) => {
         console.error('Error in getSampleQuantity:', error);
       });
+    } else {
+      this.isValidate = false;
+      this._snackBar.open('Please fill all mandatory fields.', 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    }
+  }
+
+  onSubmitProductionOrder(): void {
+    this.isValidate = true;
+  
+    if (this.planProductionOrderFormGroup.valid) {
+      const inspectionQuantity: number = Number(this.planProductionOrderFormGroup.value.inspectionQuantity);
+      const itemId: string = String(this.planProductionOrderFormGroup.value.itemId);
+  
+      console.log('PAYLOAD BEFORE GET sampleQuantity API:', this.planProductionOrderFormGroup.valid);
+  
+      this.getSampleQuantity(inspectionQuantity, itemId)
+        .then(() => {
+          const formData = this.planProductionOrderFormGroup.value;
+  
+          console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
+  
+          const {
+            id, itemCode, itemDescription, inspectionByModalPP, inspectionTimeModalPP,
+            itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO, receiveQtyPO,
+            ...payload
+          } = formData;
+  
+          console.log('SENDING Production ORDER PAYLOAD:', payload);
+  
+          this._evaluationProductionOrderService
+            .getQualityStatusQCProduction('production_qc', formData.itemCode, formData.docNo)
+            .subscribe({
+              next: (qualityResponse) => {
+                if (qualityResponse?.data?.isClosed === false) {
+                  this._snackBar.open('QC already open for this item. Cannot submit again.', 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                  });
+                  this.isFormSaved = false;
+                  return;
+                }
+  
+                this.isFormSaved = true;
+  
+                this._evaluationProductionOrderService.AddProductionOrder(payload).subscribe(
+                  (response) => {
+                    if (response.isRequestSuccess) {
+                      console.log('API RUN SUCCESSFULLY.', payload);
+                      this._snackBar.open('Production Order added successfully!', 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-success']
+                      });
+                    }
+                  },
+                  (error) => {
+                    this._snackBar.open('Error adding Production order.', 'Close', {
+                      duration: 3000,
+                      panelClass: ['snackbar-error']
+                    });
+                  }
+                );
+              },
+              error: (error) => {
+                console.error('Error in getQualityStatusQCProduction:', error);
+              }
+            });
+        })
+        .catch((error) => {
+          console.error('Error in getSampleQuantity:', error);
+          this._snackBar.open('Error fetching sample quantity.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        });
     } else {
       this.isValidate = false;
       this._snackBar.open('Please fill all mandatory fields.', 'Close', {
