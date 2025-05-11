@@ -4420,6 +4420,7 @@ export class TestingStepperComponent implements AfterViewInit {
         sessionStorage.removeItem('stepperDataIC');
         sessionStorage.removeItem('stepperDataIS');
         sessionStorage.removeItem('stepperDataIIC');
+        sessionStorage.removeItem('stepperDataIICNew');
         this.isEditMode = false;
         this.isValidate = false;
         console.log('this.isEditMode', this.isEditMode);
