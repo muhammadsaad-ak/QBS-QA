@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
 import { OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
@@ -23,6 +23,9 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime, forkJoin } from 'rxjs';
 import { ItemInspectionCardService } from 'app/core/other-core-services/module/item-inspection-card.service';
 import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
+import { ListOfEvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/list-of-evaluation-plan-purchase-order.service';
+import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-items-inspection-cards',
@@ -70,7 +73,6 @@ export class ItemsInspectionCardsComponent {
 
   ListIAlltemsInspectionCards = [];
 
-  // displayedColumnsItemsInspectionCards: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'action'];
   displayedColumnsItemsInspectionCards: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'isBatch', 'action'];
   dataSourceItemsInspectionCards = new MatTableDataSource<any>(this.ListIAlltemsInspectionCards);
   // dataSource = new MatTableDataSource<any>([]);
@@ -88,32 +90,56 @@ export class ItemsInspectionCardsComponent {
     private _activatedRoute: ActivatedRoute,
     private _itemInspectionCardService: ItemInspectionCardService,
     private _sessionStorageService: SessionStorageService,
-
+    private _purchaseQCService: ListOfEvaluationPlanPurchaseOrderService,
+    private _productionQAService: EvaluationPlanQaOrderService,
+    private _snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef,
   ) { }
 
   ngOnInit(): void {
+    // @IAK
     // interface ItemMapValue FOR MAPPING THE VALUES
     interface ItemMapValue {
       itemCode: string;
       isBatch: boolean;
+      groupName: string;
+      type: string;
+      groupCode: string;
+      u_QACard: string;
+      uoMGroupEntry: string;
     }
     forkJoin({
       inspectionCards: this._itemInspectionCardService.ListAllItemsInspectionCards(),
       items: this._itemInspectionCardService.getListAllItems()
     }).subscribe(({ inspectionCards, items }) => {
 
-      // Convert item list to a map for quick lookup
       // Map itemId to itemCode in the inspectionCards response
 
       // const itemMap = new Map(items.data.map(item => [item.id, item.itemCode]));
+
+      // const itemMap = new Map<string, ItemMapValue>(
+      //   items.data.map(item => [
+      //     item.id,
+      //     { itemCode: item.itemCode, isBatch: item.isBatch }
+      //   ])
+      // );
+
+      // @IAK
+      // Create an object to match the ItemMapValue interface
       const itemMap = new Map<string, ItemMapValue>(
         items.data.map(item => [
           item.id,
-          { itemCode: item.itemCode, isBatch: item.isBatch }
+          {
+            itemCode: item.itemCode,
+            isBatch: item.isBatch,
+            groupName: item.groupName,
+            type: item.type,
+            groupCode: item.groupCode,
+            u_QACard: item.u_QACard,
+            uoMGroupEntry: item.uoMGroupEntry,
+          }
         ])
-
       );
-      // Create an object with itemCode and isBatch properties to match the ItemMapValue interface
 
       // console.log('ITEMS:', items.data);
       // console.log('MAPPED RESPONSE:', itemMap); // MAPPED AGAINST itemId
@@ -128,15 +154,29 @@ export class ItemsInspectionCardsComponent {
       // console.log('ITEMS:', itemMap.get(inspectionCards.data[2].itemId)?.isBatch);
       // console.log('ITEMS:', itemMap.get(inspectionCards.data[2].itemId)?.isBatch === true ? 'YES' : 'NO');
 
-      // Map itemId to itemCode and isBatch in the inspectionCards response
-      this.ListIAlltemsInspectionCards = inspectionCards.data.map(card => ({
+      // Map itemId to itemCode in the inspectionCards response
+      
+      // @IAK
+      this.ListIAlltemsInspectionCards = inspectionCards.data.filter(card => card.isActive).map(card => ({
         ...card,
         itemCode: itemMap.get(card.itemId)?.itemCode || 'N/A',
-        isBatch: itemMap.get(card.itemId)?.isBatch || false
+        isBatch: itemMap.get(card.itemId)?.isBatch || false,
+        groupName: itemMap.get(card.itemId)?.groupName || 'N/A',
+        type: itemMap.get(card.itemId)?.type || 'N/A',
+        groupCode: itemMap.get(card.itemId)?.groupCode || 'N/A',
+        u_QACard: itemMap.get(card.itemId)?.u_QACard || 'N/A',
+        uoMGroupEntry: itemMap.get(card.itemId)?.uoMGroupEntry || 'N/A',
       }));
+
       // this.ListIAlltemsInspectionCards = inspectionCards.data.map(card => ({
       //   ...card,
       //   itemCode: itemMap.get(card.itemId) || 'N/A'
+      // }));
+
+      // this.ListIAlltemsInspectionCards = inspectionCards.data.map(card => ({
+      //   ...card,
+      //   itemCode: itemMap.get(card.itemId)?.itemCode || 'N/A',
+      //   isBatch: itemMap.get(card.itemId)?.isBatch || false
       // }));
 
       // Assign updated data to table
@@ -185,7 +225,7 @@ export class ItemsInspectionCardsComponent {
   //     });
   // }
 
-  openStepperToUpdateIIC(rowDataIIC: any): void {
+  XopenStepperToUpdateIIC(rowDataIIC: any): void {
     console.log('SENDING IIC DATA:', rowDataIIC);
     const dataToSendIntoStepperIIC = {
       ...rowDataIIC, isEditMode: true
@@ -195,6 +235,71 @@ export class ItemsInspectionCardsComponent {
       queryParams: { step: 4 }
     });
   }
+
+  openStepperToUpdateIIC(rowDataIIC: any): void {
+  const rowItemCode = rowDataIIC.itemCode;
+
+  if (!rowItemCode) {
+    console.warn('Item code is missing in the selected row');
+    return;
+  }
+
+  forkJoin({
+    purchaseQC: this._purchaseQCService.getEvaluationPlanPurchaseOrders(),
+    productionQC: this._purchaseQCService.getEvaluationPlanProductionOrders(),
+    productionQA: this._productionQAService.getEvaluationPlanProductionOrdersQA()
+  }).subscribe(({ purchaseQC, productionQC, productionQA }) => {
+
+    const matchPurchaseQC = purchaseQC.data.some(item =>
+      rowItemCode === item.itemDetails?.itemCode
+    );
+    const matchProductionQC = productionQC.data.some(item =>
+      rowItemCode === item.itemDetails?.itemCode
+    );
+    const matchProductionQA = productionQA.data.some(item =>
+      rowItemCode === item.itemDetails?.itemCode
+    );
+
+    // IF MATCHED IN ANY CASE, ASK FOR CONFIRMATION
+    if (matchPurchaseQC || matchProductionQC || matchProductionQA) {
+      const confirmation = this._qbsConfirmationService.open({
+        title: 'Confirmation',
+        message: 'QC or QA is already performed on this item inspection card. Do you want to update it by creating a new one?',
+        actions: {
+          confirm: { label: 'Yes, Create' },
+          cancel: { label: 'No, Cancel' },
+        },
+      });
+
+      confirmation.afterClosed().subscribe((result) => {
+        if (result === 'confirmed') {
+          const dataToSendIntoStepperIICNew = {
+            ...rowDataIIC,
+            isEditMode: true,
+            isIICNewAdd: true,
+          };
+          sessionStorage.setItem('stepperDataIICNew', JSON.stringify(dataToSendIntoStepperIICNew));
+          this._router.navigate(['/master-data/list-of-testing-stepper'], {
+            queryParams: { step: 4 },
+          });
+        } else {
+          // CANCELLED
+          return;
+        }
+      });
+
+    } else {
+      const dataToSendIntoStepperIIC = {
+        ...rowDataIIC,
+        isEditMode: true,
+      };
+      sessionStorage.setItem('stepperDataIIC', JSON.stringify(dataToSendIntoStepperIIC));
+      this._router.navigate(['/master-data/list-of-testing-stepper'], {
+        queryParams: { step: 4 },
+      });
+    }
+  });
+}
 
   openStepperToAddIIC(): void {
     sessionStorage.removeItem('stepperDataIIC');
