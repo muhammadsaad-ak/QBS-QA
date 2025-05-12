@@ -89,6 +89,7 @@ interface itemSamplingRangeIF {
     styleUrl: './testing-stepper.component.scss',
 })
 export class TestingStepperComponent implements AfterViewInit {
+    isIICNewAdd: boolean = false;
     isEditMode: boolean = false;
     isValidate: boolean = false;
     isLoading: boolean = false;
@@ -97,7 +98,8 @@ export class TestingStepperComponent implements AfterViewInit {
     rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
     rowDataIC: any; // TO STORE RECEIVED IC DATA FROM NAVIGATION
     rowDataIS: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM SAMPLE
-    rowDataIIC: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM SAMPLE
+    rowDataIIC: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM INSPECTION CARD
+    rowDataIICNew: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM INSPECTION CARD
     initialSamplingRangeObjects: any[] = []; //  DECLARE  TO STORE INITIAL samplingRangeObjects VALUES
 
     // private _formBuilder = inject(FormBuilder);
@@ -1890,6 +1892,159 @@ export class TestingStepperComponent implements AfterViewInit {
             return;
         }
     }
+    // 10052025
+    submitItemsInspectionCardsFormNew(): void {
+        this.itemsInspectionCardsForm.get('id').setValue('');
+         const formValues = this.itemsInspectionCardsForm.value;
+        const { intCode, ...payload } = formValues; // EXCLUDING intCode
+        console.log(payload);
+        this.isValidate = true;
+        if (this.itemsInspectionCardsForm.valid) {
+            const formValues = this.itemsInspectionCardsForm.value;
+            console.log('IIC FORM VALUES:', formValues);
+
+            const itemCodeForQA = formValues.itemCode;
+            console.log('Item Code for QA:', itemCodeForQA);
+
+            // Handle null values for itemU_QACard
+            formValues.itemU_QACard = formValues.itemU_QACard || null;
+
+            const { intCode, ...payload } = formValues; // EXCLUDING intCode
+
+            // ✅ DEBUG: Checking qualitativeInspectionObjects before processing
+            console.log("🔍 Before Processing - qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
+
+            // ✅ Ensure qualitativeInspectionObjects EXISTS BEFORE USING map
+            if (Array.isArray(payload.qualitativeInspectionObjects)) {
+                payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map((item: any) => {
+                    console.log("🛠️ Processing qualitative item:", item);
+                    console.log("📌 qualitativeResultPassStatusObjects Before Processing:", item?.qualitativeResultPassStatusObjects);
+
+                    // const qualitativeResultPassStatusObjects = [];
+
+                    // ✅ SAFER APPROACH TO PREVENT EMPTY ARRAYS
+                    // const qualitativeResultPassStatusObjects = [...(item?.qualitativeResultPassStatusObjects || [])];
+                    // const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
+                    //     ? [...item.qualitativeResultPassStatusObjects]
+                    //     : [];
+
+                    // safer deep copy to prevent mutation
+                    // const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
+                    //     ? item.qualitativeResultPassStatusObjects.map((res: any) => ({ ...res }))
+                    //     : [];
+                    const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
+                        ? item.qualitativeResultPassStatusObjects.map((res: any) => ({
+                            qualitativeResultId: res.qualitativeResultId ?? null,
+                            isPassed: res.isPassed ?? false
+                        }))
+                        : [];
+
+
+
+
+
+                    if (qualitativeResultPassStatusObjects.length > 0) {
+                        console.log("✅ qualitativeResultPassStatusObjects found:", qualitativeResultPassStatusObjects);
+                    } else {
+                        console.warn("⚠️ qualitativeResultPassStatusObjects is missing or empty for item:", item);
+                    }
+
+                    return {
+                        inspectionCharacteristicId: item?.id ?? null,
+                        isMandatory: item?.mandatory ?? false,
+                        qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
+                        qualitativeResultFailStatusObjects: [],
+                    };
+                });
+
+                // 🔐 HIGHLIGHTED CHANGE: Freeze each object to prevent accidental mutation
+                // This is a more robust way to ensure immutability.
+                payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map(obj => Object.freeze(obj));
+
+                console.log("✅ After Processing - qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
+            } else {
+                console.warn("⚠️ qualitativeInspectionObjects is not an array, setting empty array.");
+                payload.qualitativeInspectionObjects = [];
+            }
+
+            // ✅ DEBUG: Checking quantitativeInspectionObjects before processing
+            console.log("🔍 Raw quantitativeInspectionObjects:", payload.quantitativeInspectionObjects);
+
+            // ✅ Ensure quantitativeInspectionObjects EXISTS BEFORE USING map
+            if (Array.isArray(payload.quantitativeInspectionObjects)) {
+                payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
+                    inspectionCharacteristicId: item?.id ?? null,
+                    isMandatory: item?.mandatoryQty ?? false,
+                    uoMId: item?.uoMId ?? '',
+                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
+                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
+                    min: isNaN(parseFloat(item?.passCriteriaMin)) ? null : parseFloat(item.passCriteriaMin),
+                }));
+            } else {
+                console.warn("⚠️ quantitativeInspectionObjects is not an array, setting empty array.");
+                payload.quantitativeInspectionObjects = [];
+            }
+
+            // ✅ FINAL PAYLOAD CHECK
+            console.log('🚀 IIC FINAL PAYLOAD TO API:', payload);
+            this.isValidate = false;
+
+            console.log('🚨 FINAL qualitativeInspectionObjects before API:', payload.qualitativeInspectionObjects);
+            console.log('🚨 FINAL quantitativeInspectionObjects before API:', payload.quantitativeInspectionObjects);
+            // return;
+            this._itemInspectionCardService
+                .AddItemInspectionCard(payload)
+                .subscribe({
+                    next: (response) => {
+                        if (response.isRequestSuccess) {
+                            console.log('✅ API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Inspection Card created successfully!', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-success']
+                            });
+
+                            this._SAPItemsService.enableItemForQA(itemCodeForQA)
+                                .subscribe({
+                                    next: (sapResponse) => {
+                                        if (sapResponse.succeeded) {
+                                            console.log('✅ EnableItemForQA API RUN SUCCESSFULLY:', sapResponse);
+                                        } else {
+                                            console.warn('⚠️ SAP API FAILED:', sapResponse.message);
+                                            console.warn('⚠️ Response Message: Conversion failed when converting the nvarchar value  to data type int.');
+                                        }
+                                    },
+                                    error: (sapError) => {
+                                        console.error('❌ SAP API ERROR:', sapError);
+                                    }
+                                });
+
+                            setTimeout(() => {
+                                this.stepper.next();
+                            }, 1550);
+                        } else {
+                            console.warn('⚠️ API RESPONSE DID NOT SUCCEED:', response);
+                            console.error('❌ ERROR WHILE ADDING DATA.', response.message);
+                        }
+                    },
+                    error: (error) => {
+                        console.error('❌ AddItemInspectionCard API ERROR:', error);
+                        this._snackBar.open('Error creating inspection card.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                    }
+                });
+
+
+        } else {
+            // this.isValidate = false;
+            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+    }
     // ITEM INSPECTION CARD ENDS
 
 
@@ -2257,6 +2412,54 @@ export class TestingStepperComponent implements AfterViewInit {
             //     }
             // });
         }
+        // UPDATE ITEM INSPECTION CARD ENDS
+        // @IAK
+                // UPDATE ITEM INSPECTION CARD STARTS
+        //  RETRIEVING rowDataIIC
+        if (!this.rowDataIICNew) {
+            const storedDataIICNew = sessionStorage.getItem('stepperDataIICNew'); // IF rowDataIIC IS MISSING, GET FROM sessionStorage
+            this.rowDataIICNew = storedDataIICNew ? JSON.parse(storedDataIICNew) : null;
+        }
+        if (this.rowDataIICNew) {
+            this.isEditMode = this.rowDataIICNew.isEditMode ?? false;
+            console.log('IIC - this.isEditMode:', this.isEditMode);
+            this.isIICNewAdd = this.rowDataIICNew.isIICNewAdd ?? false;
+            console.log('IIC - this.isIICNewAdd:', this.isIICNewAdd);
+            // console.log('RECEIVED IIC DATA:', this.rowDataIIC);
+            // POPULATE FORM, itemsInspectionCardsForm, WITH RECEIVED DATA - rowDataIIC
+            this.populateIICDataNew(this.rowDataIICNew);
+            this.loadBothCharacteristics(this.rowDataIICNew.id);
+            // this._itemInspectionCardService
+            //     .getBothCharacteristicsByItemInspectionCard(this.rowDataIIC.id)
+            //     .subscribe();
+
+        } else {
+            console.log('NO IIC DATA RECEIVED');
+            // this.isEditMode = false;
+            // this.addTableRow();   // ✅ Only if creating new
+            // this.addTableRowX();  // ✅ Only if creating new
+            // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+            // Inspection Card Code Get API.
+            // this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+            //     const y = inspectionCardCode.data; // 13 mil raha hai
+            //     console.log('Fetched Code:', y); // Check for debugging
+            // Inspection Card Code Get API.
+            // this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+            //     const y = inspectionCardCode.data; // 13 mil raha hai
+            //     console.log('Fetched Code:', y); // Check for debugging
+
+            //     if (y) {
+            //         const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
+            //         this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+            //     }
+            // });
+            //     if (y) {
+            //         const fullCode = `IC-000${y}`; // Combine 'ICH - ' with the fetched code
+            //         this.fifthFormGroup.get('intCode')?.setValue(fullCode); // Set the combined value in the form
+            //     }
+            // });
+        }
+        // UPDATE ITEM INSPECTION CARD ENDS
         if (this.isEditMode == false) {
             this._sessionStorageService.clearAll();
         }
@@ -3564,6 +3767,30 @@ export class TestingStepperComponent implements AfterViewInit {
             intCode: formattedCardintCode,
         });
     }
+    populateIICDataNew(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE THE IIC FORM FIELDS.');
+            return;
+        }
+        // MAPPING RESPONSE
+        // console.log(data);
+        const formattedCardintCode =
+            'IC-' + this.rowDataIICNew.inspectionCardIntCode.toString().padStart(5, '0');
+        this.itemsInspectionCardsForm.patchValue({
+            id: this.rowDataIICNew.id,
+            itemCode: this.rowDataIICNew.itemCode,
+            itemDescription: this.rowDataIICNew.itemDescription,
+            itemName: this.rowDataIICNew.itemDescription,
+            cardDescription: this.rowDataIICNew.cardDescription,
+            inspectionCardId: this.rowDataIICNew.inspectionCardId,
+            groupName: this.rowDataIICNew.groupName,
+            itemType: this.rowDataIICNew.type,
+            itemGroupCode: this.rowDataIICNew.groupCode,
+            itemU_QACard: this.rowDataIICNew.u_QACard,
+            itemUoMGroupEntry: this.rowDataIICNew.uoMGroupEntry,
+            intCode: formattedCardintCode,
+        });
+    }
 
     loadBothCharacteristicsx(itemInspectionCardId: string): void {
         this._itemInspectionCardService
@@ -4193,6 +4420,7 @@ export class TestingStepperComponent implements AfterViewInit {
         sessionStorage.removeItem('stepperDataIC');
         sessionStorage.removeItem('stepperDataIS');
         sessionStorage.removeItem('stepperDataIIC');
+        sessionStorage.removeItem('stepperDataIICNew');
         this.isEditMode = false;
         this.isValidate = false;
         console.log('this.isEditMode', this.isEditMode);

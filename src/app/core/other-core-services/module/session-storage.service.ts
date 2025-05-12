@@ -12,7 +12,8 @@ export class SessionStorageService {
             'stepperDataICH',
             'stepperDataIC',
             'stepperDataIS',
-            'stepperDataIIC'
+            'stepperDataIIC',
+            'stepperDataIICNew',
         ];
 
         keysToRemove.forEach(key => sessionStorage.removeItem(key));
