@@ -82,8 +82,8 @@ export class AuthSignInComponent implements OnInit {
                 'inspection@inspection.com',
                 [Validators.required, Validators.email],
             ],
-            // password: ['Ageeks!23', Validators.required],
-            password: ['Inspection!23', Validators.required],
+            password: ['Ageeks!23', Validators.required],
+            // password: ['Inspection!23', Validators.required],
             rememberMe: [true],
         });
         // this.signInForm = this._formBuilder.group({

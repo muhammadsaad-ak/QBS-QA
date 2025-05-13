@@ -26,6 +26,8 @@ import { SessionStorageService } from 'app/core/other-core-services/module/sessi
 import { ListOfEvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/list-of-evaluation-plan-purchase-order.service';
 import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/module/evaluation-plan-qa-order.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-items-inspection-cards',
@@ -236,70 +238,105 @@ export class ItemsInspectionCardsComponent {
     });
   }
 
+  // @IAK
   openStepperToUpdateIIC(rowDataIIC: any): void {
-  const rowItemCode = rowDataIIC.itemCode;
-
-  if (!rowItemCode) {
-    console.warn('Item code is missing in the selected row');
-    return;
-  }
-
-  forkJoin({
-    purchaseQC: this._purchaseQCService.getEvaluationPlanPurchaseOrders(),
-    productionQC: this._purchaseQCService.getEvaluationPlanProductionOrders(),
-    productionQA: this._productionQAService.getEvaluationPlanProductionOrdersQA()
-  }).subscribe(({ purchaseQC, productionQC, productionQA }) => {
-
-    const matchPurchaseQC = purchaseQC.data.some(item =>
-      rowItemCode === item.itemDetails?.itemCode
-    );
-    const matchProductionQC = productionQC.data.some(item =>
-      rowItemCode === item.itemDetails?.itemCode
-    );
-    const matchProductionQA = productionQA.data.some(item =>
-      rowItemCode === item.itemDetails?.itemCode
-    );
-
-    // IF MATCHED IN ANY CASE, ASK FOR CONFIRMATION
-    if (matchPurchaseQC || matchProductionQC || matchProductionQA) {
-      const confirmation = this._qbsConfirmationService.open({
-        title: 'Confirmation',
-        message: 'QC or QA is already performed on this item inspection card. Do you want to update it by creating a new one?',
-        actions: {
-          confirm: { label: 'Yes, Create' },
-          cancel: { label: 'No, Cancel' },
-        },
-      });
-
-      confirmation.afterClosed().subscribe((result) => {
-        if (result === 'confirmed') {
-          const dataToSendIntoStepperIICNew = {
-            ...rowDataIIC,
-            isEditMode: true,
-            isIICNewAdd: true,
-          };
-          sessionStorage.setItem('stepperDataIICNew', JSON.stringify(dataToSendIntoStepperIICNew));
-          this._router.navigate(['/master-data/list-of-testing-stepper'], {
-            queryParams: { step: 4 },
-          });
-        } else {
-          // CANCELLED
-          return;
-        }
-      });
-
-    } else {
-      const dataToSendIntoStepperIIC = {
-        ...rowDataIIC,
-        isEditMode: true,
-      };
-      sessionStorage.setItem('stepperDataIIC', JSON.stringify(dataToSendIntoStepperIIC));
-      this._router.navigate(['/master-data/list-of-testing-stepper'], {
-        queryParams: { step: 4 },
-      });
+    const rowItemCode = rowDataIIC.itemCode;
+    // Null or Undefined itemCode check
+    if (!rowItemCode) {
+      console.warn('Item code is missing in the selected row');
+      return;
     }
-  });
-}
+    // Parallel API calls with error handling using forkJoin + catchError
+    forkJoin({
+      purchaseQC: this._purchaseQCService.getEvaluationPlanPurchaseOrders().pipe(
+        catchError(err => {
+          console.error('Error fetching Purchase QC:', err);
+          return of({ data: [] }); // fallback to empty array
+        })
+      ),
+      productionQC: this._purchaseQCService.getEvaluationPlanProductionOrders().pipe(
+        catchError(err => {
+          console.error('Error fetching Production QC:', err);
+          return of({ data: [] });
+        })
+      ),
+      productionQA: this._productionQAService.getEvaluationPlanProductionOrdersQA().pipe(
+        catchError(err => {
+          console.error('Error fetching Production QA:', err);
+          return of({ data: [] });
+        })
+      )
+    }).subscribe(({ purchaseQC, productionQC, productionQA }) => {
+      // Safe extraction, in case data is null
+      const purchaseData = Array.isArray(purchaseQC?.data) ? purchaseQC.data : [];
+      const productionQCData = Array.isArray(productionQC?.data) ? productionQC.data : [];
+      const productionQAData = Array.isArray(productionQA?.data) ? productionQA.data : [];
+      // Match checks - Matching itemCode against all three responses
+      const matchPurchaseQC = purchaseData.some(item =>
+        rowItemCode === item.itemDetails?.itemCode
+      );
+      const matchProductionQC = productionQCData.some(item =>
+        rowItemCode === item.itemDetails?.itemCode
+      );
+      const matchProductionQA = productionQAData.some(item =>
+        rowItemCode === item.itemDetails?.itemCode
+      );
+      // Color-coded logging for exact match source
+      if (matchPurchaseQC) {
+        console.log('%c✔ Matched in: Purchase QC', 'color: white; background: #007acc; padding: 2px 6px; border-radius: 3px;');
+      }
+      if (matchProductionQC) {
+        console.log('%c✔ Matched in: Production QC', 'color: white; background: #28a745; padding: 2px 6px; border-radius: 3px;');
+      }
+      if (matchProductionQA) {
+        console.log('%c✔ Matched in: Production QA', 'color: white; background: #ff9800; padding: 2px 6px; border-radius: 3px;');
+      }
+      // Combined Summary
+      console.log('%cMatch Results:', 'font-weight: bold; color: red;', {
+        matchPurchaseQC,
+        matchProductionQC,
+        matchProductionQA
+      });
+      // If matched in any list, show confirmation
+      if (matchPurchaseQC || matchProductionQC || matchProductionQA) {
+        const confirmation = this._qbsConfirmationService.open({
+          title: 'Confirmation',
+          message: 'QC or QA is already performed on this item inspection card. Do you want to update it by creating a new one?',
+          actions: {
+            confirm: { label: 'Yes, Create' },
+            cancel: { label: 'No, Cancel' },
+          },
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+          if (result === 'confirmed') {
+            const dataToSendIntoStepperIICNew = {
+              ...rowDataIIC,
+              isEditMode: true,
+              isIICNewAdd: true,
+            };
+            sessionStorage.setItem('stepperDataIICNew', JSON.stringify(dataToSendIntoStepperIICNew));
+            this._router.navigate(['/master-data/list-of-testing-stepper'], {
+              queryParams: { step: 4 },
+            });
+          } else {
+            console.log('%c✖ User cancelled creation of new IIC', 'color: red; font-weight: bold;');
+            return;
+          }
+        });
+      } else {
+        // No match found — go with regular update
+        const dataToSendIntoStepperIIC = {
+          ...rowDataIIC,
+          isEditMode: true,
+        };
+        sessionStorage.setItem('stepperDataIIC', JSON.stringify(dataToSendIntoStepperIIC));
+        this._router.navigate(['/master-data/list-of-testing-stepper'], {
+          queryParams: { step: 4 },
+        });
+      }
+    });
+  }
 
   openStepperToAddIIC(): void {
     sessionStorage.removeItem('stepperDataIIC');
