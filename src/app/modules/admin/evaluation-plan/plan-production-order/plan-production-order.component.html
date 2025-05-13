@@ -152,18 +152,23 @@
       <div class="mt-4 flex flex-wrap gap-2" *ngIf="!isFormSaved">
         <div *ngFor="let sample of productionQcSamples" [class.selected]="sample.id === selectedSampleId"
           class="sample-card" [ngStyle]="{'background-color': sample.isSamplePassed ? 'lightgreen' : 'lightcoral'}"
-          (click)="onEditSample(sample)">
+          (click)="planProductionOrderFormGroup.get('isClosed')?.value === false && onEditSample(sample)" 
+          [ngClass]="{ 'no-cursor': planProductionOrderFormGroup.get('isClosed')?.value === true }">
           <h3 style="font-weight: 500">Sample {{ sample.name }}</h3>
           <div style="font-weight: 400">qcSampleId: {{ sample.id }}</div>
           <div style="font-weight: 400">Inspection Time: {{ sample.inspectionDateTime }}</div>
           <div style="font-weight: 400">Inspection By: {{ sample.inspectionBy }}</div>
         </div>
-
-        <div class="sample-card add-sample-card" *ngIf="isEditMode && productionQcSamples?.length < sampleQuantity"
-          (click)="onUpdateProductionOrderModal()">
-          <span>Add Sample</span>
-          <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
+        
+        <!-- @IAK -->
+        <div *ngIf="planProductionOrderFormGroup.get('isClosed')?.value !== true">
+          <div class="sample-card add-sample-card" *ngIf="isEditMode && productionQcSamples?.length < sampleQuantity"
+            (click)="onUpdateProductionOrderModal()">
+            <span>Add Sample</span>
+            <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
+          </div>
         </div>
+
       </div>
 
       <!-- Divider -->
@@ -191,7 +196,9 @@
       (!isEditMode && samplesProductionOrder.length > 0)))" -->
       <mat-form-field class="w-[330px] mt-2" *ngIf="isEditMode">
         <mat-label>Remarks</mat-label>
-        <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
+        <textarea matInput formControlName="remarks" placeholder="Enter your remarks" 
+        [readonly]="planProductionOrderFormGroup.get('isClosed')?.value === true" 
+        [ngClass]="{ 'no-cursor': planProductionOrderFormGroup.get('isClosed')?.value === true }"></textarea>
       </mat-form-field>
 
       <ng-template #dialogTemplateItemsPP let-data="data">
@@ -475,30 +482,38 @@
           <input class="view-mode-bg-grey" matInput formControlName="samplesStatus">
         </mat-form-field>
       </div>
-
-      <div class="button-container mt-4 flex justify-end gap-2" *ngIf="isEditMode">
-        <button mat-flat-button color="primary" (click)="saveRemarksProduction()">
-          Save&nbsp;Remarks <!-- Save Remarks -->
-        </button>
-        <button mat-flat-button color="warn" (click)="closeOpenQC()"
-          *ngIf="isEditMode">
-          Close&nbsp;QC <!-- Close QC -->
-        </button>
-
-        <div class="custom-button-container" *ngIf="planProductionOrderFormGroup.get('isFlexible')?.value === false ? 
-        (samplesProductionOrder.length === sampleQuantity && samplesStatus === true) : 
-        (samplesStatus === true && ((isEditMode && productionQcSamples?.length > 0) || 
-        (!isEditMode && samplesProductionOrder.length > 0)))">
-          <button mat-flat-button color="primary" (click)="confirmationPostToSAP()" class="custom-button" matTooltip="Create Receipt From Production"> <!-- (click)="toggleDropdown()" -->
-            Post&nbsp;to&nbsp;SAP <!-- Post to SAP -->
+      <div *ngIf="planProductionOrderFormGroup.get('isClosed')?.value === false">
+        <div class="button-container mt-4 flex justify-end gap-2" *ngIf="isEditMode">
+          <button mat-flat-button color="primary" (click)="saveRemarksProduction()">
+            Save&nbsp;Remarks <!-- Save Remarks -->
           </button>
-          <div *ngIf="isDropdownOpen" class="dropdown-menu">
-            <button mat-menu-item (click)="action1()">  <!-- closeOpenQCWithPostToSAP() -->
-              Post&nbsp;Production&nbsp;Receipt <!-- Post Production Receipt -->
+          <button mat-flat-button color="warn" (click)="closeOpenQC()" *ngIf="isEditMode">
+            Close&nbsp;QC <!-- Close QC -->
+          </button>
+      
+          <div class="custom-button-container" *ngIf="planProductionOrderFormGroup.get('isFlexible')?.value === false ? 
+              (samplesProductionOrder.length === sampleQuantity && samplesStatus === true) : 
+              (samplesStatus === true && ((isEditMode && productionQcSamples?.length > 0) || 
+              (!isEditMode && samplesProductionOrder.length > 0)))">
+            <button mat-flat-button color="primary" (click)="confirmationPostToSAP()" class="custom-button"
+              matTooltip="Create Receipt From Production"> <!-- (click)="toggleDropdown()" -->
+              Post&nbsp;to&nbsp;SAP <!-- Post to SAP -->
             </button>
+            <div *ngIf="isDropdownOpen" class="dropdown-menu">
+              <button mat-menu-item (click)="action1()"> <!-- closeOpenQCWithPostToSAP() -->
+                Post&nbsp;Production&nbsp;Receipt <!-- Post Production Receipt -->
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </form>
+      <div *ngIf="planProductionOrderFormGroup.get('isClosed')?.value === true">
+        <div class="button-container mt-4 flex justify-end gap-2" *ngIf="isEditMode">
+          <button mat-flat-button color="primary" (click)="backTolist()">
+            <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+          </button>
+        </div>
+      </div>
+      </form>
   </div>
 </div>

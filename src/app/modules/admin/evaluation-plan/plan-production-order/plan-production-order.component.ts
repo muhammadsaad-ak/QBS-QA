@@ -1021,6 +1021,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       id: data.id,
       bmrLoc: data.bmrLoc ?? 'N/A',
       remarks: data.remarks ?? 'N/A',
+      isClosed: data.isClosed === true ? true : false,
     });
   }
 
@@ -1720,5 +1721,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
         }
       });
     }
+  }
+  backTolist() {
+    this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
   }
 }

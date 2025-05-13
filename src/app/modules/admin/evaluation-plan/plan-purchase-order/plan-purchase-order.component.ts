@@ -998,6 +998,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       remarks: data.remarks ?? "",
       itemId: data.itemDetails?.id ?? "",
       // id: data.id,
+      isClosed: data.isClosed === true ? true : false,
     });
   }
 
@@ -1657,5 +1658,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         });
       },
     });
+  }
+  backTolist() {
+    this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
   }
 }

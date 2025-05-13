@@ -254,3 +254,13 @@
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
 }
+
+.no-cursor {
+  cursor: not-allowed !important;
+  // caret-color: transparent;
+}
+
+.disabled {
+  pointer-events: none !important;
+  opacity: 0.6;
+}

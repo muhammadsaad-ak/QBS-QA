@@ -147,21 +147,22 @@
               <div formArrayName="cavities" class="flex flex-wrap gap-2 mt-4">
                 <div *ngFor="let cavControl of cavitiesArray.controls; let i = index" 
                      [formGroupName]="i"
-                     (click)="cavControl.value.isToggledOn && onEvaluationPlanQaModal(cavControl.value, i)"
+                     (click)="evaluationplanQAFormGroup.get('isClosed')?.value === false && cavControl.value.isToggledOn && onEvaluationPlanQaModal(cavControl.value, i)"
                      class="sample-card"
                      [ngStyle]="{
                         backgroundColor: cavControl.value.isToggledOn? '#caead6' : '#f2f2f2',
                         cursor: cavControl.value.isToggledOn ? 'pointer' : 'not-allowed'
-                     }">
+                     }" 
+                     [ngClass]="{ 'no-cursor': evaluationplanQAFormGroup.get('isClosed')?.value === true }">
                      
                   <div style="display: flex; justify-content: space-between;">
                     <div>
                       <h3>{{ cavControl.value.name }}</h3>
                       <p style="font-size: 12px; margin: 0;">Generated Time: {{ cavControl.value.generatedTime }}</p>
-                    <!-- <p style="font-size: 12px; margin: 0;">Cavity ID: {{ cavControl.value.id }}</p> -->
-                  </div>
+                      <!-- <p style="font-size: 12px; margin: 0;">Cavity ID: {{ cavControl.value.id }}</p> -->
+                    </div>
                     <!-- <h3>{{ cavControl.value.name }}</h3> -->
-                    <mat-slide-toggle
+                    <mat-slide-toggle *ngIf="evaluationplanQAFormGroup.get('isClosed')?.value === false"
                       [checked]="cavControl.value.isToggledOn"
                       (click)="$event.stopPropagation()"
                       (change)="toggleCavity($event, i, cavControl.value)">
@@ -173,9 +174,11 @@
 
 
 
-      <mat-form-field class="w-[330px] mt-2">
+      <mat-form-field class="w-[330px] mt-2" *ngIf="isEditMode">
         <mat-label>Remarks</mat-label>
-        <textarea matInput formControlName="remarks" placeholder="Enter your remarks"></textarea>
+        <textarea matInput formControlName="remarks" placeholder="Enter your remarks" 
+        [readonly]="evaluationplanQAFormGroup.get('isClosed')?.value === true" 
+        [ngClass]="{ 'no-cursor': evaluationplanQAFormGroup.get('isClosed')?.value === true }"></textarea>
       </mat-form-field>
       <ng-template #dialogTemplateItems>
         <div class="dialog-container flex h-full flex-col">
@@ -461,23 +464,29 @@
           </div>
         </div>
       </ng-template>
-
-
+      
+      
+      <div *ngIf="evaluationplanQAFormGroup.get('isClosed')?.value === false">
+        <div style="display: flex; flex-direction: row; justify-content: end">
+          <!-- <button mat-flat-button style="background-color: red; color: white">
+                              Close QA
+                            </button> -->
+          <button mat-flat-button color="warn" (click)="closeOpenQA()" *ngIf="isEditMode">
+            Close&nbsp;QA <!-- Close QA -->
+          </button>
+      
+          <button mat-flat-button color="primary" style="margin-left: 5px;" *ngIf="isEditMode">
+            Save Remarks
+          </button>
+        </div>
+      </div>
+      <div *ngIf="evaluationplanQAFormGroup.get('isClosed')?.value === true">
+        <div class="button-container mt-4 flex justify-end gap-2" *ngIf="isEditMode">
+          <button mat-flat-button color="primary" (click)="backTolist()">
+            <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+          </button>
+        </div>
+      </div>
     </form>
-    <div style="display: flex; flex-direction: row; justify-content: end">
-      <!-- <button mat-flat-button style="background-color: red; color: white">
-        Close QA
-      </button> -->
-      <button mat-flat-button color="warn" (click)="closeOpenQA()"
-          *ngIf="isEditMode">
-          Close&nbsp;QA <!-- Close QC -->
-      </button>
-
-      <button mat-flat-button color="primary" style="margin-left: 5px;">
-        Save Remarks
-      </button>
-    </div>
   </div>
-
-
-</div>
+  </div>

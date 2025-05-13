@@ -56,3 +56,13 @@
   .custom-add-icon {
     color: #5046E5;
   }
+
+  .no-cursor {
+      cursor: not-allowed !important;
+      // caret-color: transparent;
+  }
+    
+  .disabled {
+      pointer-events: none !important;
+      opacity: 0.6;
+  }
