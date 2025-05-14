@@ -514,6 +514,15 @@
           </button>
         </div>
       </div>
+      <div>
+        <mat-form-field appearance="fill">
+          <mat-label>Barcode Value</mat-label>
+          <input matInput formControlName="barcodeValue" placeholder="Enter barcode value" />
+        </mat-form-field>
+      
+        <!-- Canvas for barcode rendering -->
+        <canvas id="barcode"></canvas>
+      </div>
       </form>
   </div>
 </div>

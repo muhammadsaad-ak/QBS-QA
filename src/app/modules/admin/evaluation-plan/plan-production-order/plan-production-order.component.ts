@@ -24,6 +24,7 @@ import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all
 import { QbsSuccessConfirmationService } from '@qbs/services/confirmation/success-confirmation.service';
 import { map, switchMap } from 'rxjs';
 import { GRNPayloadProduction } from 'app/core/other-core-services/module/sap-list-all-services.service';
+import JsBarcode from 'jsbarcode';
 
 @Component({
   selector: 'app-plan-production-order',
@@ -176,6 +177,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     isPostedToSap: [false],
     isClosed: [false],
     overallStatus: [false],
+    barcodeValue: ['', Validators.required],
   });
 
   createInspectionObject(): FormGroup {
@@ -889,6 +891,14 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   selectedControlAccountRowIndex: number = -1;
   
   ngOnInit() {
+    // SUBSCRIBE TO barcodeValue CHANGES TO UPDATE BARCODE
+    this.planProductionOrderFormGroup
+      .get('barcodeValue')
+      ?.valueChanges.subscribe((value) => {
+        if (value) {
+          this.generateBarcode(value);
+        }
+      });
 
     this.selectedOrder = history.state.selectedOrder; // Access the passed data
     this.isEditMode = history.state.from === 'evaluationPlan'; // Set edit mode if coming from Edit QC
@@ -1028,6 +1038,12 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   
   
   ngAfterViewInit() {
+    this.cdr.detectChanges();
+    // GENERATE BARCODE WITH INITIAL VALUE IF EXISTS
+    const barcodeValue = this.planProductionOrderFormGroup.get('barcodeValue')?.value;
+    if (barcodeValue) {
+      this.generateBarcode(barcodeValue);
+    }
     this.cdr.detectChanges();
   }
   
@@ -1724,5 +1740,21 @@ export class PlanProductionOrderComponent implements AfterViewInit {
   }
   backTolist() {
     this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+  }
+  // Function to generate barcode
+  generateBarcode(value: string) {
+    try {
+      JsBarcode('#barcode', value, {
+        format: 'CODE128', // CAN CHANGE THE FORMAT (e.g., EAN13, UPC, etc.)
+        lineColor: 'white', // lineColor: '#000',
+        background: 'black',
+        width: 2,
+        height: 100,
+        displayValue: true,
+      });
+    } catch (error) {
+      console.error('Error generating barcode:', error);
+      this._snackBar.open('Invalid barcode value', 'Close', { duration: 3000 });
+    }
   }
 }
