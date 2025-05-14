@@ -259,7 +259,7 @@
 
                                         <!-- Show "Edit QC" if we are on Evaluation Plan -->
                                         <button mat-menu-item class="text-blue-400"
-                                            *ngIf="currentView === 'evaluationPlan'"
+                                            *ngIf="currentView === 'evaluationPlan' && (orderType === 'productionOrder' || orderType === 'purchaseOrder')"
                                             (click)="navigateToOrderForm(element)">
                                             Edit&nbsp;QC
                                         </button>

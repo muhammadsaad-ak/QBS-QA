@@ -146,6 +146,7 @@ export class EvaluationPlanQaComponent implements OnInit {
         isFlexible: [false],
         samplesStatus: [false],
         cavityId: [''],
+        isClosed: [false],
     });
 
     createInspectionObject(): FormGroup {
@@ -803,6 +804,7 @@ export class EvaluationPlanQaComponent implements OnInit {
           plannedQuantity: data.plannedQuantity ?? 0,
           id: data.id,
           inspectionQuantity: data.inspectionQuantity,
+          isClosed: data.isClosed === true ? true : false,
 
           
             // intCode: data.intCode ?? "",
@@ -1312,4 +1314,7 @@ export class EvaluationPlanQaComponent implements OnInit {
       
 
     
+  backTolist() {
+    this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+  }
 }
