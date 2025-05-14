@@ -267,12 +267,14 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
   onSubmitPurchaseOrder(): void {
     this.isValidate = true;
-  
+
     if (this.planPurchaseOrderFormGroup.valid) {
       const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
+      const receiveQuantity: number = Number(this.planPurchaseOrderFormGroup.value.receiveQuantity);
+      const qcLotNo  = this.planPurchaseOrderFormGroup.value.qcLotNo;
       const itemId: string = String(this.planPurchaseOrderFormGroup.value.itemId);
       const openQuantity: number = Number(this.planPurchaseOrderFormGroup.value.openQuantity);
-  
+
       if (inspectionQuantity > openQuantity) {
         const errorMessage = `Inspection Qty can't be greater than Open Quantity (${openQuantity})`;
         this._snackBar.open(errorMessage, 'Close', {
@@ -283,7 +285,27 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         this.isFormSaved = false;
         return;
       }
-  
+      else if (receiveQuantity > openQuantity) {
+        const errorMessage = `Receive Qty can't be greater than Open Quantity (${openQuantity})`;
+        this._snackBar.open(errorMessage, 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+        this.isValidate = false;
+        this.isFormSaved = false;
+        return;
+      }
+      else if (receiveQuantity < 1 || inspectionQuantity < 1) {
+        const errorMessage = `Quantity can't be 0`;
+        this._snackBar.open(errorMessage, 'Close', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+        this.isValidate = false;
+        this.isFormSaved = false;
+        return;
+      }
+
       console.log('PAYLOAD BEFORE GET sampleQuantity API:', this.planPurchaseOrderFormGroup.valid);
   
       this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
@@ -885,7 +907,9 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
 
   ngOnInit() {
-
+    this.planPurchaseOrderFormGroup.valueChanges.subscribe(() => {
+      this.isPlanPurchaseOrderFormGroupValid();
+    });
 
 
     this.selectedOrder = history.state.selectedOrder;
@@ -953,10 +977,10 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       documentDate: new Date().toISOString(), // Add missing field
       lineNo: data.lineNum, // Add missing field
       analyzedBy: data.analyzedBy,
-      receiveQuantity: 0, // Add missing field
-      inspectionQuantity: 0, // Add missing field
+      // receiveQuantity: 0, // Add missing field
+      // inspectionQuantity: 0, // Add missing field
       inspectionDateTime: new Date().toISOString(), // Add missing field
-      qcLotNo: 0, // Add missing field
+      // qcLotNo: 0, // Add missing field
       docDate: data.docDate,
       poCode: data.docNo.toString(), // Convert to string
       warehouse: data.warehouse,
@@ -1460,7 +1484,16 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
         panelClass: ['snackbar-error']
       });
       // this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: openQuantity });
-    } else {
+      this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: 0 });
+    } else if (inspectionQuantity < 1 ) {
+      this.isReceiveQuantityInvalid = true;
+      const errorMessage = `Inspection Qty can't be 0.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    }
+    else {
       this.isInspectionQuantityInvalid = false;
     }
   }
@@ -1661,5 +1694,71 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   }
   backTolist() {
     this.router.navigate(['/evaluation-plan/list-of-evaluation-plan']);
+  }
+  isReceiveQuantityInvalid: boolean = false;
+  onReceiveQuantityBlur(): void {
+    const receiveQuantity: number = Number(this.planPurchaseOrderFormGroup.value.receiveQuantity);
+    const openQuantity: number = Number(this.planPurchaseOrderFormGroup.value.openQuantity);
+    if (receiveQuantity > openQuantity) {
+      this.isReceiveQuantityInvalid = true;
+      const errorMessage = `Receive Qty can't be greater than Open Quantity ${openQuantity}.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planPurchaseOrderFormGroup.patchValue({ receiveQuantity: 0 });
+    } else if (receiveQuantity < 1) {
+      this.isReceiveQuantityInvalid = true;
+      const errorMessage = `Receive Qty can't be 0.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    } else {
+      this.isReceiveQuantityInvalid = false;
+    }
+  }
+  isQCLotNoInvalid: boolean = false;
+  onQCLotNoBlur(): void {
+    const qcLotNo = this.planPurchaseOrderFormGroup.value.qcLotNo;
+    if (qcLotNo.trim() === "") {
+      this.isQCLotNoInvalid = true;
+      const errorMessage = `QC Lot No is mandatory and can't be empty.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planPurchaseOrderFormGroup.patchValue({ qcLotNo: '' });
+    } else {
+      this.isQCLotNoInvalid = false;
+    }
+  }
+  isPlanPurchaseOrderFormValid: boolean = false;
+  isPlanPurchaseOrderFormGroupValid(): void {
+    const qcLotNoValid = this.planPurchaseOrderFormGroup.get('qcLotNo')?.valid;
+    const inspectionQuantityValid = this.planPurchaseOrderFormGroup.get('inspectionQuantity')?.valid;
+    const receiveQuantityValid = this.planPurchaseOrderFormGroup.get('receiveQuantity')?.valid;
+    const analyzedByValid = this.planPurchaseOrderFormGroup.get('analyzedBy')?.valid;
+    console.log('qcLotNo:', qcLotNoValid);
+    console.log('inspectionQuantity:', inspectionQuantityValid);
+    console.log('receiveQuantity:', receiveQuantityValid);
+    console.log('analyzedBy:', analyzedByValid);
+    this.isPlanPurchaseOrderFormValid =
+      !!(qcLotNoValid && inspectionQuantityValid && receiveQuantityValid && analyzedByValid);
+  }
+  isAnalyzedByInvalid: boolean = false;
+  onAnalyzedByBlur(): void {
+    const analyzedBy = this.planPurchaseOrderFormGroup.value.analyzedBy;
+    if (analyzedBy.trim() === "") {
+      this.isAnalyzedByInvalid = true;
+      const errorMessage = `Analyzed By is mandatory and can't be empty.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planPurchaseOrderFormGroup.patchValue({ analyzedBy: '' });
+    } else {
+      this.isAnalyzedByInvalid = false;
+    }
   }
 }
