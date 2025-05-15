@@ -177,7 +177,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     isPostedToSap: [false],
     isClosed: [false],
     overallStatus: [false],
-    barcodeValue: ['', Validators.required],
+    // barcodeValue: ['', Validators.required],
+    barcodeValue: [''],
   });
 
   createInspectionObject(): FormGroup {
@@ -1746,8 +1747,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     try {
       JsBarcode('#barcode', value, {
         format: 'CODE128', // CAN CHANGE THE FORMAT (e.g., EAN13, UPC, etc.)
-        lineColor: 'white', // lineColor: '#000',
-        background: 'black',
+        lineColor: '#000',
         width: 2,
         height: 100,
         displayValue: true,
@@ -1756,5 +1756,28 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       console.error('Error generating barcode:', error);
       this._snackBar.open('Invalid barcode value', 'Close', { duration: 3000 });
     }
+  }
+  showBarcodeSection = false;
+  onGenerateTagClick() {
+    const id = this.planProductionOrderFormGroup.get('id')?.value;
+    this.showBarcodeSection = true;
+    this.generateTag(id);
+  }
+  generateTag(id: string) {
+    const productionQcId = id;
+    const productionQcIdForBMR = id;
+    let batchNoBC: string; 
+    // CALLING getProductionQcBMRByQcId TO GET BMR BATCH NO
+    this._evaluationProductionOrderService.getProductionQcBMRByQcId(productionQcIdForBMR).subscribe({
+      next: (bmr: string) => {
+        batchNoBC = bmr; 
+        if (batchNoBC) {
+          this.planProductionOrderFormGroup.get('barcodeValue').setValue(batchNoBC);
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching BMR:', err);
+      }
+    });
   }
 }
