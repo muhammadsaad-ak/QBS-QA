@@ -234,3 +234,34 @@ border-bottom-right-radius: 8px;
   pointer-events: none !important;
   opacity: 0.6;
 }
+
+#barcode {
+  display: block;
+  // margin: 20px 0;
+  max-width: 100%;
+}
+
+.fuse-card {
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bg-red-200 {
+  background-color: #fee2e2;
+}
+
+table {
+  border: 1px solid #e0e0e0;
+}
+
+td {
+  border: 1px solid #e0e0e0;
+}
+
+.barcode-section {
+  text-align: center;
+}
+
+p {
+  margin: 0;
+}

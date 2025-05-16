@@ -2,6 +2,7 @@
   <div class="p-5 mt-4 h-auto overflow-y-auto padding-right: 8px;">
 
     <form [formGroup]="planProductionOrderFormGroup">
+      <section class="main-section" id="mainSection" *ngIf="!showBarcodeSection">
 
       <!-- Custom Styled Heading -->
       <h1 class="custom-heading">Evaluation Plan Production Order</h1>
@@ -137,7 +138,11 @@
           <mat-label>QC ID:</mat-label>
           <input class="view-mode-bg-grey" matInput formControlName="id">
         </mat-form-field>
-      </div>
+        <mat-form-field style="flex: 0 1 calc(25%); min-width: 100px;" appearance="fill">
+          <mat-label>Barcode Value:</mat-label>
+          <input matInput formControlName="barcodeValue" readonly [ngClass]="{'view-mode-bg-grey': isEditMode}">
+        </mat-form-field>
+        </div>
 
       <!-- Save Button -->
       <button mat-flat-button color="primary" *ngIf="
@@ -512,8 +517,69 @@
           <button mat-flat-button color="primary" (click)="backTolist()">
             <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
           </button>
+          <button mat-flat-button color="primary" (click)="onGenerateTagClick()">
+            Generate Tag
+          </button>
         </div>
       </div>
+      </section>
+
+      <section class="barcode-section" id="barcodeSection" *ngIf="showBarcodeSection">
+        <!-- <div class="button-container mt-4 flex justify-end gap-2 hidden" *ngIf="isEditMode">
+          <canvas id="barcode"></canvas>
+        </div> -->
+        <div class="fuse-card p-4">
+          <div class="flex justify-between">
+            <div class="text-left font-semibold">
+              <p>DOC NO: QC/SPI/R/283</p>
+              <p>Version: 01</p>
+            </div>
+            <div class="text-right font-semibold">
+              <p>Effective Date: 19-Mar-2024</p>
+              <p>Next Review Date: 18-Mar-27</p>
+            </div>
+          </div>
+          <h2 class="text-center font-bold uppercase mb-2">RELEASED</h2>
+          <table class="w-full border-collapse">
+            <tr>
+              <td class="p-2 border text-left font-semibold">Item Code</td>
+              <td class="p-2 border text-left font-semibold">250037C1</td>
+            </tr>
+            <tr>
+              <td class="p-2 border text-left font-semibold">Product Name</td>
+              <td class="p-2 border text-left font-semibold">Meclay Conditioner 175ml Bottle Pink</td>
+            </tr>
+            <tr>
+              <td class="p-2 border text-left font-semibold">Production Date</td>
+              <td class="p-2 border text-left font-semibold">3-Jan-2025<span class="ml-2">SHIFT</span><span class="ml-2">C</span></td>
+            </tr>
+            <tr>
+              <td class="p-2 border text-left font-semibold">Machine ID</td>
+              <td class="p-2 border text-left font-semibold">7</td>
+            </tr>
+            <tr>
+              <td class="p-2 border text-left font-semibold">Operator</td>
+              <td class="p-2 border text-left font-semibold">Qadir</td>
+            </tr>
+            <tr>
+              <td class="p-2 border text-left font-semibold">QC Analyst</td>
+              <td class="p-2 border text-left font-semibold">MR-MA</td>
+            </tr>
+            <tr>
+              <td class="p-2 border text-left font-semibold">Batch No</td>
+              <td class="p-2 border text-left font-semibold">{{ planProductionOrderFormGroup.get('barcodeValue')?.value }}</td>
+            </tr>
+          </table>
+          <div class="mt-2">
+            <div class="barcode-section">
+              <div class="button-container flex justify-end gap-2" *ngIf="isEditMode">
+                <!-- Canvas for barcode rendering -->
+                <canvas id="barcode"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       </form>
-  </div>
-</div>
+      </div>
+      </div>
