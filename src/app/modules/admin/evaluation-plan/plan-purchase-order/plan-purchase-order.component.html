@@ -83,25 +83,31 @@
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>QC Lot No:</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="qcLotNo" required [readonly]="isEditMode"
-                        [ngClass]="{'view-mode-bg-grey': isEditMode}" />
+                        [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter QC Lot No" (blur)="onQCLotNoBlur()"/>
+                        <mat-error *ngIf="planPurchaseOrderFormGroup.get('qcLotNo').invalid">Required.</mat-error>
                 </mat-form-field>
 
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px">
                     <mat-label>Receive Qty</mat-label>
-                    <input type="number" class="view-mode-bg-grey" matInput formControlName="receiveQuantity" required
-                        [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" />
+                    <input type="number" class="view-mode-bg-grey" matInput formControlName="receiveQuantity" required 
+                        [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter Receive Qty" min="1"
+                        (blur)="onReceiveQuantityBlur()" />
+                    <mat-error *ngIf="planPurchaseOrderFormGroup.get('receiveQuantity').invalid">Required.</mat-error>
                 </mat-form-field>
-
+                
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px">
                     <mat-label>Inspection Qty:</mat-label>
                     <input type="number" class="view-mode-bg-grey" matInput formControlName="inspectionQuantity" required
-                        [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" (blur)="onInspectionQuantityBlur()" />
+                    [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter Inspection Qty" min="1" 
+                    (blur)="onInspectionQuantityBlur()" />
+                    <mat-error *ngIf="planPurchaseOrderFormGroup.get('inspectionQuantity').invalid">Required.</mat-error>
                 </mat-form-field>
-
+                
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Analyzed By:</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="analyzedBy" required
-                        [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" />
+                    [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" (blur)="onAnalyzedByBlur()" />
+                    <mat-error *ngIf="planPurchaseOrderFormGroup.get('analyzedBy').invalid">Required.</mat-error>
                 </mat-form-field>
 
                 <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
@@ -113,15 +119,19 @@
                     <input class="view-mode-bg-grey" matInput formControlName="id">
                 </mat-form-field>
                 </div>
-
-            <button mat-flat-button color="primary" *ngIf="
-                        planPurchaseOrderFormGroup.get('inspectionQuantity')
-                            ?.valid 
-                            && !isFormSaved
-                            && !isEditMode
-                    " (click)="onSubmitPurchaseOrder()">
-                Save
-            </button>
+                
+            <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                <!-- <button mat-flat-button color="primary" *ngIf="isPlanPurchaseOrderFormValid   
+                                    && !isFormSaved
+                                    && !isEditMode
+                                    " (click)="onSubmitPurchaseOrder()">
+                            Save
+                        </button> -->
+                <button mat-flat-button color="primary" (click)="onSubmitPurchaseOrder()"
+                    [disabled]="!isPlanPurchaseOrderFormValid || isFormSaved || isEditMode">
+                    Save
+                </button>
+            </div>
             <div class="mt-4 flex flex-wrap gap-2">
                 <div *ngFor="let sample of purchaseQcSamples" [class.selected]="sample.id === selectedSampleId"
                     class="sample-card"
