@@ -25,6 +25,11 @@ import { QbsSuccessConfirmationService } from '@qbs/services/confirmation/succes
 import { map, switchMap } from 'rxjs';
 import { GRNPayloadProduction } from 'app/core/other-core-services/module/sap-list-all-services.service';
 import JsBarcode from 'jsbarcode';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core'; 
+import { formatDate } from '@angular/common';
+
+
 
 @Component({
   selector: 'app-plan-production-order',
@@ -45,6 +50,9 @@ import JsBarcode from 'jsbarcode';
     MatTabsModule,
     MatSelectModule,
     MatTooltipModule,
+      MatDatepickerModule,
+  MatInputModule,
+  MatNativeDateModule
   ],
   templateUrl: './plan-production-order.component.html',
   styleUrl: './plan-production-order.component.scss'
@@ -107,6 +115,15 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     { id: 4, intCode: 'PH001', description: 'pH Level', isSelected: false },
     { id: 5, intCode: 'VS001', description: 'Viscosity', isSelected: false }
   ];
+
+  // your.component.ts
+
+productionShifts = [
+  { value: 'A', label: 'SHIFT - A' },
+  { value: 'B', label: 'SHIFT - B' },
+  { value: 'C', label: 'SHIFT - C' }
+];
+
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -148,14 +165,14 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     status: [''],
     remarks: [''],  // remarks:  [''],
     bmrLoc: [''],   // plant
-
+    
     qualitativeInspectionObjects: this.fb.array([]),
     quantitativeInspectionResults: this.fb.array([]),
     inspectionBy: [''],
     qcId: [''],
     result: [0],
     inspectionObjects: this.fb.array([this.createInspectionObject()]),
-
+    
     // vendor: ['a'], 
     // remarks: ['aa'], 
     // isActive: [true], 
@@ -179,6 +196,11 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     overallStatus: [false],
     // barcodeValue: ['', Validators.required],
     barcodeValue: [''],
+    receiptQuantity: [],
+    operatedBy: [],
+    producedQuantity: [],
+  productionDate: [null],
+  productionShift: [null]
   });
 
   createInspectionObject(): FormGroup {
@@ -312,12 +334,17 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       this.getSampleQuantity(inspectionQuantity, itemId)
         .then(() => {
           const formData = this.planProductionOrderFormGroup.value;
+          const defaultProductionDate: Date = this.planProductionOrderFormGroup.value.productionDate;
+          const formattedProductionDate = formatDate(defaultProductionDate, 'dd-MM-yyyy', 'en-PK');
+          console.log('Formatted Date:', formattedProductionDate);
+          this.planProductionOrderFormGroup.value.productionDate = formattedProductionDate;
+
   
           console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
   
           const {
             id, itemCode, itemDescription, inspectionByModalPP, inspectionTimeModalPP,
-            itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO, receiveQtyPO,
+            itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO, receiveQtyPO, productionDate, productionShift,
             ...payload
           } = formData;
   
@@ -337,7 +364,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
                 }
   
                 this.isFormSaved = true;
-  
+                console.log(payload);
+  // return;
                 this._evaluationProductionOrderService.AddProductionOrder(payload).subscribe(
                   (response) => {
                     if (response.isRequestSuccess) {
@@ -980,6 +1008,14 @@ export class PlanProductionOrderComponent implements AfterViewInit {
 
   populateProductionOrderForm(data: any): void {
     console.log('Selected Production Order:', data);
+    const cavity = Number(data.cavity);
+    const cycleTime = Number(data.cycleTime);
+    
+    // const inspectionQuantity = !isNaN(cavity) && !isNaN(cycleTime) ? cavity * cycleTime : 0;
+    const hoursInSeconds = 8 * 3600;
+    const producedQuantity = (!isNaN(cavity) && !isNaN(cycleTime) && cycleTime > 0) 
+    ? (hoursInSeconds / cycleTime) * cavity : 0;
+    
     this.planProductionOrderFormGroup.patchValue({
       itemCode: data.itemCode ?? 'N/A',
       itemDescription: data.itemDescription ?? 'N/A',
@@ -1003,6 +1039,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       analyzedBy: data.analyzedBy ?? '', // ✅ Ensure empty string if not provided
       status: data.status ?? false, // status: data.status ?? 'N/A', // ✅ Ensure default value
       bmrLoc: data.bmrLoc ?? 'N/A',
+      producedQuantity: producedQuantity,
+      inspectionQuantity: producedQuantity,
     });
   }
 
@@ -1033,6 +1071,8 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       bmrLoc: data.bmrLoc ?? 'N/A',
       remarks: data.remarks ?? 'N/A',
       isClosed: data.isClosed === true ? true : false,
+      receiptQuantity: data.receiptQuantity,
+      operatedBy: data.operatedBy,
     });
   }
 
@@ -1463,6 +1503,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       inspectionDateTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
       remarks: this.planProductionOrderFormGroup.get('remarks')?.value || 'Closed due to unknown reasons',
       isActive: true,
+      receiptQuantity: this.planProductionOrderFormGroup.get('receiptQuantity')?.value,
     };
     console.log('PAYLOAD', payloadToCloseOpenQC);
     // FUNCTION TO HANDLE API CALL
@@ -1543,6 +1584,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       inspectionDateTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
       remarks: this.planProductionOrderFormGroup.get('remarks')?.value,
       isActive: true,
+      receiptQuantity: this.planProductionOrderFormGroup.get('receiptQuantity')?.value,
     };
     console.log('PAYLOAD', updateRemarksProduction);
     this._evaluationProductionOrderService.updateToCloseOpenQC(updateRemarksProduction).subscribe({
@@ -1582,6 +1624,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
       inspectionDateTime: this.planProductionOrderFormGroup.get('inspectionDateTime')?.value,
       remarks: this.planProductionOrderFormGroup.get('remarks')?.value || 'Closed on GRN posting',
       isActive: true,
+      receiptQuantity: this.planProductionOrderFormGroup.get('receiptQuantity')?.value,
     };
     console.log('CLOSE OPEN QC', closeQCPayloadWithPostToSAP);
     // PUT API CALL TO CLOSE OPEN QC - SET isCLosed TO ture
@@ -1620,6 +1663,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
     const docNoProduction = Number(this.planProductionOrderFormGroup.get('docNo')?.value);
     const itemCodeProduction = this.planProductionOrderFormGroup.get('itemCode')?.value;
     const inspectionQuantity = Number(this.planProductionOrderFormGroup.get('inspectionQuantity')?.value);
+    const receiptQuantity = Number(this.planProductionOrderFormGroup.get('receiptQuantity')?.value);
     const intQCode = this.planProductionOrderFormGroup.get('intCode')?.value;
     // CALLING getProductionOrdersByID TO FETCH PRODUCTION ORDER DATA
     this._SAPAllServices.getProductionOrdersByID(docNoProduction, itemCodeProduction).subscribe({
@@ -1640,7 +1684,7 @@ export class PlanProductionOrderComponent implements AfterViewInit {
             inventoryUOM: productionOrder.inventoryUOM,
             productionOrderStatus: productionOrder.productionOrderStatus,
             warehouse: productionOrder.warehouse,
-            completedQuantity: inspectionQuantity,
+            completedQuantity: receiptQuantity,
             rejectedQuantity: productionOrder.rejectedQuantity,
             machine: productionOrder.machine,
             mold: productionOrder.mold,
@@ -1779,5 +1823,104 @@ export class PlanProductionOrderComponent implements AfterViewInit {
         console.error('Error fetching BMR:', err);
       }
     });
+  }
+  // VALIDATE inspectionQuantity - @IAK
+  isInspectionQuantityInvalid: boolean = false;
+  onInspectionQuantityBlur(): void {
+    const openQuantity: number = Number(this.planProductionOrderFormGroup.value.openQuantity);
+    const inspectionQuantity: number = Number(this.planProductionOrderFormGroup.value.inspectionQuantity);
+    if (inspectionQuantity > openQuantity) {
+      this.isInspectionQuantityInvalid = true;
+      const errorMessage = `Inspection Qty can't be greater than Open Quantity ${openQuantity}.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planProductionOrderFormGroup.patchValue({ inspectionQuantity: 0 });
+    } else if (inspectionQuantity < 1 ) {
+      this.isInspectionQuantityInvalid = true;
+      const errorMessage = `Inspection Qty can't be 0.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    } else {
+      this.isInspectionQuantityInvalid = false;
+    }
+  }
+  // VALIDATE receiptQuantity - @IAK
+  isReceiptQuantityInvalid: boolean = false;
+  onReceiptQuantityBlur(): void {
+    const receiptQuantity: number = Number(this.planProductionOrderFormGroup.value.receiptQuantity);
+    const openQuantity: number = Number(this.planProductionOrderFormGroup.value.openQuantity);
+    if (receiptQuantity > openQuantity) {
+      this.isReceiptQuantityInvalid = true;
+      const errorMessage = `Receipt Qty can't be greater than Open Quantity ${openQuantity}.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planProductionOrderFormGroup.patchValue({ receiptQuantity: 0 });
+    } else if (receiptQuantity < 1) {
+      this.isReceiptQuantityInvalid = true;
+      const errorMessage = `Receipt Qty can't be 0.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    } else {
+      this.isReceiptQuantityInvalid = false;
+    }
+  }
+  // VALIDATE analyzedBy - @IAK
+  isAnalyzedByInvalid: boolean = false;
+  onAnalyzedByBlur(): void {
+    const analyzedBy = this.planProductionOrderFormGroup.value.analyzedBy;
+    if (analyzedBy.trim() === "") {
+      this.isAnalyzedByInvalid = true;
+      const errorMessage = `Analyzed By is mandatory and can't be empty.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planProductionOrderFormGroup.patchValue({ analyzedBy: '' });
+    } else {
+      this.isAnalyzedByInvalid = false;
+    }
+  }
+  // VALIDATE operatedBy - @IAK
+  isOperatedByInvalid: boolean = false;
+  onOperatedByBlur(): void {
+    const analyzedBy = this.planProductionOrderFormGroup.value.operatedBy;
+    if (analyzedBy.trim() === "") {
+      this.isOperatedByInvalid = true;
+      const errorMessage = `Operated By is mandatory and can't be empty.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planProductionOrderFormGroup.patchValue({ operatedBy: '' });
+    } else {
+      this.isOperatedByInvalid = false;
+    }
+  }
+    isPlanPurchaseOrderFormValid: boolean = false;
+  isplanProductionOrderFormGroupValid(): void {
+    const qcLotNoValid = this.planProductionOrderFormGroup.get('qcLotNo')?.valid;
+    const inspectionQuantityValid = this.planProductionOrderFormGroup.get('inspectionQuantity')?.valid;
+    const receiveQuantityValid = this.planProductionOrderFormGroup.get('receiveQuantity')?.valid;
+    const analyzedByValid = this.planProductionOrderFormGroup.get('analyzedBy')?.valid;
+    console.log('qcLotNo:', qcLotNoValid);
+    console.log('inspectionQuantity:', inspectionQuantityValid);
+    console.log('receiveQuantity:', receiveQuantityValid);
+    console.log('analyzedBy:', analyzedByValid);
+    this.isPlanPurchaseOrderFormValid =
+      !!(qcLotNoValid && inspectionQuantityValid && receiveQuantityValid && analyzedByValid);
+  }
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    // Format: DD/MM/YYYY
+    return date.toLocaleDateString('en-GB');
   }
 }

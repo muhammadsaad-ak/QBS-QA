@@ -354,6 +354,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
               status: order.status || '-',
               isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
               remarks: order.remarks,
+              inspectionDateTime: order.inspectionDateTime,
           }));
 
           this.dataSource = new MatTableDataSource(this.evalPlanPurchaseOrderData);
@@ -398,6 +399,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
           isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
           bmrLoc: order.bmrLoc || 'N/A',
           remarks: order.remarks,
+          receiptQuantity: order.receiptQuantity || null,
+          operatedBy: order.operatedBy || null,
 
         }));
   
@@ -496,7 +499,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
         this.displayedColumns = ['serialId', 'intCode', 'docDate','lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'id', 'action'];
         this.dataSource.data = this.evalPlanPurchaseOrderData;       
       } else if (orderType === 'productionOrder') {
-        this.displayedColumns = ['serialId', 'intCode', 'docDate', 'itemCode', 'itemDescription', 'qty', 'status', 'action']; 
+        this.displayedColumns = ['serialId', 'intCode', 'docDate', 'itemCode', 'itemDescription', 'qty', 'receiptQty', 'status', 'action']; 
         this.dataSource.data = this.evalPlanProductionOrderData;
       } else if (orderType === 'productionOrderQA') {
         this.displayedColumns = ['serialId' , 'intCode' , 'docDate' , 'itemCode' , 'itemDescription' , 'qty' , 'status' , 'action'];
