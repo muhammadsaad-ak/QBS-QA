@@ -128,7 +128,8 @@ export class AuthService {
         //     // Return a new observable with the response
         //     return of(response);
         // })
-        return this._httpClient.post(`${environment.authApiUrl}/Auth/IAuthFeature/Login`, credentials).pipe(
+        // return this._httpClient.post(`${environment.authApiUrl}/Auth/IAuthFeature/Login`, credentials).pipe(
+        return this._httpClient.post(`${environment.authApiUrl}/CSAPI/IAuthFeature/Login`, credentials).pipe(
             switchMap((response: any) => {
                 console.log('Login response:', response);
                 this.accessToken = response.data.token;
@@ -275,7 +276,8 @@ export class AuthService {
 
         const body = { accessToken, refreshToken };
 
-        return this._httpClient.post(`${environment.authApiUrl}/Auth/IAuthFeature/RefreshToken`, body).pipe(
+        // return this._httpClient.post(`${environment.authApiUrl}/Auth/IAuthFeature/RefreshToken`, body).pipe(
+        return this._httpClient.post(`${environment.authApiUrl}/CSAPI/IAuthFeature/RefreshToken`, body).pipe(
             switchMap((response: any) => {
                 console.log('RefreshToken response:', response);
 

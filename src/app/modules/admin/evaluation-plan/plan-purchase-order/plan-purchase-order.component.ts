@@ -120,7 +120,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     receiveQuantity: [], // number
     inspectionQuantity: [], // number
     inspectionDateTime: [new Date().toISOString()], // ✅ Correct ISO format
-    qcLotNo: [], // number
+    qcLotNo: [''],
     docDate: [new Date().toISOString()], // ✅ Correct ISO format
     analyzedBy: [''], // string
     poCode: [], // string
@@ -150,6 +150,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     isPostedToSap: [false],
     isClosed: [false],
     overallStatus: [false],
+    inspectionDateTimeSamples: [new Date().toISOString()], // ✅ Correct ISO format
   });
 
   createInspectionObject(): FormGroup {
@@ -199,7 +200,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
 
 
-  onSubmitPurchaseOrderX(): void {
+  XonSubmitPurchaseOrderX(): void {
     this.isValidate = true;
     if (this.planPurchaseOrderFormGroup.valid) {
 
@@ -307,14 +308,15 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       }
 
       console.log('PAYLOAD BEFORE GET sampleQuantity API:', this.planPurchaseOrderFormGroup.valid);
+      console.log('PAYLOAD BEFORE GET sampleQuantity API:', this.planPurchaseOrderFormGroup.value);
   
       this.getSampleQuantity(inspectionQuantity, itemId).then(() => {
         const formData = this.planPurchaseOrderFormGroup.value;
   
         if (formData) {
           formData.qcLotNo = String(formData.qcLotNo);
-          formData.receiveQuantity = String(formData.receiveQuantity);
-          formData.inspectionQuantity = String(formData.inspectionQuantity);
+          // formData.receiveQuantity = String(formData.receiveQuantity);
+          // formData.inspectionQuantity = String(formData.inspectionQuantity);
         }
   
         console.log('UPDATED FORM DATA AFTER SAMPLE QTY:', formData);
@@ -545,7 +547,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     const updatedSamplePayload = {
       id: this.qcSampleID,
       name: formValue.sampleName,
-      inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
+      // inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
+      inspectionDateTime: formValue.inspectionDateTimeSamples || new Date().toISOString(),
       inspectionBy: formValue.inspectionBy || "",
       qcId: this.purchaseQcId.id,
       isSamplePassed: isSamplePassed,
@@ -998,7 +1001,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     console.log('Populating Edit QC Form:', data);
     // FORMATTING intCode
     const rowIntCode = data.intCode ?? '';
-    const formattedIntCode = `PQC-${rowIntCode.toString().padStart(7, '0')}`;
+    const formattedIntCode = `PQC-${rowIntCode.toString().padStart(5, '0')}`;
     this.planPurchaseOrderFormGroup.patchValue({
       intCode: formattedIntCode ?? "",  // intCode: data.intCode ?? "",  
       itemCode: data.itemCode ?? "",
@@ -1034,8 +1037,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   xonEditSample(sample: any): void {
     alert("this is the function");
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-      width: '70%',
-      height: '75vh',
+      width: '75vw',
+      height: '90vh',
       data: this.cardCode
     });
     this.getCardByItemCode(this.selectedOrder.itemCode);
@@ -1084,8 +1087,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     });
 
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-      width: '70%',
-      height: '75vh',
+      width: '75vw',
+      height: '90vh',
       data: {
         qcSampleId: sample.id,
         cardCode: this.cardCode,
@@ -1117,8 +1120,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   onPurchaseOrderModal(): void {
     this.currentMode = 'add';
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-      width: '70%',
-      height: '75vh',
+      width: '75vw',
+      height: '90vh',
       data: this.cardCode,
     });
     // DYNAMICALLY ADD Validators.required TO inspectionBy
@@ -1167,8 +1170,8 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
 
   onUpdatePurchaseOrderModal(): void {
     const dialogRef = this.dialog.open(this.dialogTemplateItems, {
-      width: '70%',
-      height: '75vh',
+      width: '75vw',
+      height: '90vh',
       data: this.cardCode,
     });
     // DYNAMICALLY ADD Validators.required TO inspectionBy
@@ -1476,6 +1479,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
   onInspectionQuantityBlur(): void {
     const openQuantity: number = Number(this.planPurchaseOrderFormGroup.value.openQuantity);
     const inspectionQuantity: number = Number(this.planPurchaseOrderFormGroup.value.inspectionQuantity);
+    const receiveQuantity: number = Number(this.planPurchaseOrderFormGroup.value.receiveQuantity);
     if (inspectionQuantity > openQuantity) {
       this.isInspectionQuantityInvalid = true;
       const errorMessage = `Inspection Qty can't be greater than Open Quantity ${openQuantity}.`;
@@ -1486,12 +1490,20 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       // this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: openQuantity });
       this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: 0 });
     } else if (inspectionQuantity < 1 ) {
-      this.isReceiveQuantityInvalid = true;
+      this.isInspectionQuantityInvalid = true;
       const errorMessage = `Inspection Qty can't be 0.`;
       this._snackBar.open(errorMessage, 'Close', {
         duration: 3000,
         panelClass: ['snackbar-error']
       });
+    } else if (inspectionQuantity > receiveQuantity) {
+      this.isInspectionQuantityInvalid = true;
+      const errorMessage = `Inspection Qty can't be greater than Receive Quantity ${receiveQuantity}.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planPurchaseOrderFormGroup.patchValue({ inspectionQuantity: 0 });
     }
     else {
       this.isInspectionQuantityInvalid = false;
@@ -1504,6 +1516,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
     const itemCodePurchase = this.planPurchaseOrderFormGroup.get('itemCode')?.value;
     const inspectionQuantity = Number(this.planPurchaseOrderFormGroup.get('inspectionQuantity')?.value);
     const intQCode = this.planPurchaseOrderFormGroup.get('intCode')?.value;
+    const receiveQuantity = Number(this.planPurchaseOrderFormGroup.get('receiveQuantity')?.value);
     // CALLING getPurchaseOrderDetails TO FETCH PURCHASE ORDER DATA
     this._SAPAllServices.getPurchaseOrdersByID(docNoPurchase, lineNoPurchase, itemCodePurchase).subscribe({
       next: (response) => {
@@ -1522,7 +1535,7 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
               lineNum: purchaseOrder.lineNum,
               itemCode: purchaseOrder.itemCode,
               itemDescription: purchaseOrder.itemDescription,
-              quantity: inspectionQuantity,
+              quantity: receiveQuantity,
               price: purchaseOrder.price,
               lineStatus: purchaseOrder.lineStatus,
               remainingOpenQuantity: purchaseOrder.remainingOpenQuantity,
@@ -1761,4 +1774,39 @@ export class PlanPurchaseOrderComponent implements AfterViewInit, OnInit {
       this.isAnalyzedByInvalid = false;
     }
   }
+  formatDateTime(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // months start from 0
+  const year = date.getFullYear();
+
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 => 12
+  const hourStr = String(hours).padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hourStr}:${minutes} ${ampm}`;
+}
+formatDateTimeToPKT(dateString: string): string {
+  if (!dateString) return '';
+
+  const date = new Date(dateString);
+  
+  return date.toLocaleString('en-GB', {
+    timeZone: 'Asia/Karachi',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  }).replace(',', ' -'); // replace comma with dash
+}
 }

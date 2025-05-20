@@ -3,149 +3,150 @@
         <form [formGroup]="planPurchaseOrderFormGroup">
             <h1 class="custom-heading">Evaluation Plan Purchase Order</h1>
 
-            <div style="
-                    display: flex;
-                    gap: 2px 8px;
-                    margin-top: 10px;
-                    flex-wrap: wrap;
-                    align-items: flex-start;
-                ">
+            <div style="display: flex; gap: 2px 8px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>Q-Code</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="intCode" placeholder="Enter Code"
-                        readonly style="cursor: not-allowed" />
+                    <input class="view-mode-bg-grey" matInput formControlName="intCode" readonly style="cursor: not-allowed" />
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>Item Code</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="itemCode" placeholder="Enter" readonly
-                        style="cursor: not-allowed" />
+                    <input class="view-mode-bg-grey" matInput formControlName="itemCode" readonly style="cursor: not-allowed" />
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>Item Description</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="itemDescription" placeholder="Enter Code"
-                        readonly style="cursor: not-allowed" />
+                    <input class="view-mode-bg-grey" matInput formControlName="itemDescription" readonly
+                        style="cursor: not-allowed" />
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>Inspection Date & Time</mat-label>
-                    <input class="view-mode-bg-grey pr-10 text-left" matInput formControlName="inspectionDateTime"
-                        readonly style="cursor: not-allowed" />
+                    <!-- <input class="view-mode-bg-grey pr-10 text-left" matInput formControlName="inspectionDateTime" readonly
+                                    style="cursor: not-allowed" /> -->
+                    <input class="view-mode-bg-grey pr-10 text-left" matInput readonly
+                        [value]="formatDateTime(planPurchaseOrderFormGroup.get('inspectionDateTime')?.value)"
+                        style="cursor: not-allowed" />
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Document Date</mat-label>
-                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="docDate"
-                        placeholder="Enter Code" readonly style=" cursor: not-allowed;">
+                    <!-- <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="docDate"
+                                placeholder="Enter Code" readonly style=" cursor: not-allowed;"> -->
+                    <input class="view-mode-bg-grey" matInput readonly
+                        [value]="planPurchaseOrderFormGroup.get('docDate')?.value | date: 'dd/MM/yyyy'"
+                        style="cursor: not-allowed;">
+                    <input type="hidden" formControlName="docDate">
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Document No</mat-label>
                     <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="docNo" readonly
                         style=" cursor: not-allowed;">
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Warehouse</mat-label>
-                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="warehouse"
-                        placeholder="Enter Code" readonly style=" cursor: not-allowed;">
+                    <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="warehouse" readonly
+                        style=" cursor: not-allowed;">
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Quantity:</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="sapQuantity"
-                        readonly style=" cursor: not-allowed;">
+                    <input class="view-mode-bg-grey" matInput formControlName="sapQuantity" readonly style=" cursor: not-allowed;">
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>Open Qty:</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="openQuantity" placeholder="Enter Code"
-                        readonly style="cursor: not-allowed" />
+                    <input class="view-mode-bg-grey" matInput formControlName="openQuantity" readonly style="cursor: not-allowed" />
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>Vendor</mat-label>
-                    <input class="view-mode-bg-grey" readonly matInput placeholder="Enter" formControlName="vendor"
-                        style="cursor: not-allowed" />
+                    <input class="view-mode-bg-grey" readonly matInput formControlName="vendor" style="cursor: not-allowed" />
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>Sample Qty</mat-label>
                     <input class="view-mode-bg-grey" readonly matInput formControlName="sampleQuantity"
-                        placeholder="Enter Code" style=" cursor: not-allowed;">
+                        style=" cursor: not-allowed;">
                 </mat-form-field>
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Line Num:</mat-label>
-                    <input class="view-mode-bg-grey" matInput placeholder="Enter " formControlName="lineNo" readonly>
+                    <input class="view-mode-bg-grey" matInput formControlName="lineNo" readonly>
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px">
                     <mat-label>QC Lot No:</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="qcLotNo" required [readonly]="isEditMode"
-                        [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter QC Lot No" (blur)="onQCLotNoBlur()"/>
-                        <mat-error *ngIf="planPurchaseOrderFormGroup.get('qcLotNo').invalid">Required.</mat-error>
+                        [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter QC Lot No" (blur)="onQCLotNoBlur()" />
+                    <mat-error *ngIf="planPurchaseOrderFormGroup.get('qcLotNo').invalid">Required.</mat-error>
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px">
                     <mat-label>Receive Qty</mat-label>
-                    <input type="number" class="view-mode-bg-grey" matInput formControlName="receiveQuantity" required 
-                        [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter Receive Qty" min="1"
-                        (blur)="onReceiveQuantityBlur()" />
+                    <input type="number" class="view-mode-bg-grey" matInput formControlName="receiveQuantity" required
+                        [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter Receive Qty"
+                        min="1" (blur)="onReceiveQuantityBlur()" />
                     <mat-error *ngIf="planPurchaseOrderFormGroup.get('receiveQuantity').invalid">Required.</mat-error>
                 </mat-form-field>
-                
+            
                 <mat-form-field style="flex: 0 1 calc(25% - 10px); min-width: 100px">
                     <mat-label>Inspection Qty:</mat-label>
                     <input type="number" class="view-mode-bg-grey" matInput formControlName="inspectionQuantity" required
-                    [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter Inspection Qty" min="1" 
-                    (blur)="onInspectionQuantityBlur()" />
+                        [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" placeholder="Enter Inspection Qty"
+                        min="1" (blur)="onInspectionQuantityBlur()" />
                     <mat-error *ngIf="planPurchaseOrderFormGroup.get('inspectionQuantity').invalid">Required.</mat-error>
                 </mat-form-field>
-                
+            
                 <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
                     <mat-label>Analyzed By:</mat-label>
-                    <input class="view-mode-bg-grey" matInput formControlName="analyzedBy" required
-                    [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" (blur)="onAnalyzedByBlur()" />
+                    <input matInput formControlName="analyzedBy" placeholder="Enter Analyzed By" class="view-mode-bg-grey" required
+                        [readonly]="isEditMode" [ngClass]="{'view-mode-bg-grey': isEditMode}" (blur)="onAnalyzedByBlur()" />
                     <mat-error *ngIf="planPurchaseOrderFormGroup.get('analyzedBy').invalid">Required.</mat-error>
                 </mat-form-field>
-
+            
                 <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
                     <mat-label>Item ID:</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="itemId">
                 </mat-form-field>
+            
                 <mat-form-field style="flex: 0 1 calc(50%); min-width: 100px;" class="hidden">
                     <mat-label>QC ID:</mat-label>
                     <input class="view-mode-bg-grey" matInput formControlName="id">
                 </mat-form-field>
-                </div>
+            </div>
                 
             <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
-                <!-- <button mat-flat-button color="primary" *ngIf="isPlanPurchaseOrderFormValid   
-                                    && !isFormSaved
-                                    && !isEditMode
-                                    " (click)="onSubmitPurchaseOrder()">
-                            Save
-                        </button> -->
-                <button mat-flat-button color="primary" (click)="onSubmitPurchaseOrder()"
+                <!-- <button mat-flat-button color="primary" *ngIf="isPlanPurchaseOrderFormValid && !isFormSaved && !isEditMode"
+                    (click)="onSubmitPurchaseOrder()">
+                    Save
+                </button> -->
+                <button *ngIf="!isFormSaved && !isEditMode" mat-flat-button color="primary" (click)="onSubmitPurchaseOrder()"
                     [disabled]="!isPlanPurchaseOrderFormValid || isFormSaved || isEditMode">
                     Save
                 </button>
             </div>
-            <div class="mt-4 flex flex-wrap gap-2">
-                <div *ngFor="let sample of purchaseQcSamples" [class.selected]="sample.id === selectedSampleId"
+            <div class="flex flex-wrap gap-x-1.5">
+                <div *ngFor="let sample of purchaseQcSamples; let i = index" [class.selected]="sample.id === selectedSampleId"
                     class="sample-card"
-                    [ngStyle]="{'background-color': sample.isSamplePassed ? 'lightgreen' : 'lightcoral'}"
                     (click)="planPurchaseOrderFormGroup.get('isClosed')?.value === false && onEditSample(sample)" 
-                    [ngClass]="{ 'no-cursor': planPurchaseOrderFormGroup.get('isClosed')?.value === true }">
-                    <h3 style="font-weight: 500">{{ sample.name }}</h3>
-                    <div style="font-weight: 400">
+                    [ngStyle]="{'background-color': sample.isSamplePassed ? 'lightgreen' : 'lightcoral'}"
+                    [ngClass]="{ 'no-cursor': planPurchaseOrderFormGroup.get('isClosed')?.value === true }"
+                    >
+
+                    <h3 style="font-weight: 500" class="font-semibold">Sample-{{ i+1 }}</h3>  <!-- {{ sample.name }} -->
+
+                    <div style="font-weight: 400" class="font-medium hidden">
                         qcSampleId: {{ sample.id }}
                     </div>
-                    <div style="font-weight: 400">
-                        Inspection Time: {{ sample.inspectionDateTime }}
+                    <div class="font-medium">
+                        <!-- Inspection Time: {{ sample.inspectionDateTime }} -->
+                        Inspection Time: {{ formatDateTime(sample.inspectionDateTime) }}
+
                     </div>
-                    <div style="font-weight: 400">
+                    <div class="font-medium">
                         Inspection By: {{ sample.inspectionBy }}
                     </div>
                 </div>
@@ -163,13 +164,15 @@
             <hr class="custom-divider" *ngIf="isFormSaved" />
 
             <div class="mt-4 flex flex-wrap gap-2" *ngIf="isFormSaved">
-                <div *ngFor="let sample of samplesPurchaseOrder" class="sample-card"
+                <div *ngFor="let sample of samplesPurchaseOrder; let i = index" class="sample-card"
                     [style.background-color]="sample.cardColor">
-                    <h3 style="font-weight: 500">Sample {{ sample.id }}</h3>
-                    <div style="font-weight: 400">
-                        Inspection Time: {{ sample.inspectionTime }}
+                    <h3 class="font-semibold">Sample-{{ i+1 }}</h3> <!-- Sample {{ sample.id }} -->
+                    <div class="font-medium">
+                        <!-- Inspection Time: {{ sample.inspectionTime }} -->
+                        Inspection Time: {{ formatDateTime(sample.inspectionTime) }}
+                       
                     </div>
-                    <div style="font-weight: 400">
+                    <div class="font-medium">
                         Inspection By: {{ sample.inspectionBy }}
                     </div>
                 </div>
@@ -191,69 +194,48 @@
                 ></textarea>
             </mat-form-field>
 
+            <!-- dialogTemplateItems -->
             <ng-template #dialogTemplateItems let-data="data">
                 <div class="dialog-container flex h-full flex-col">
                     <div class="flex items-center justify-between border-b p-4 text-primary">
                         <h2 class="text-lg font-semibold">
-                            Evaluation Plan Purchase Order
+                         Evaluation Plan Purchase Order
                         </h2>
                         <span (click)="closeDialog()" class="header-close-x">
                             <mat-icon class="text-primary">close</mat-icon>
                         </span>
                     </div>
-                    <div style="
-                            display: flex;
-                            gap: 10px;
-                            flex-wrap: nowrap;
-                            width: 100%;
-                            margin-top: 10px;
-                        ">
+                    <div style="display: flex; gap: 10px;   flex-wrap: nowrap;   width: 100%;  margin-top: 10px;">
                         <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
                             <mat-label>Item Code:</mat-label>
-                            <input class="view-mode-bg-grey" matInput formControlName="itemCode"
-                                placeholder="Enter Code" readonly />
+                            <input class="view-mode-bg-grey" matInput formControlName="itemCode" readonly />
                         </mat-form-field>
-
+                    
                         <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
                             <mat-label>Inspection By</mat-label>
-                            <input matInput formControlName="inspectionBy" placeholder="Enter Code" required />
+                            <input matInput formControlName="inspectionBy" required />
                             <mat-error *ngIf="planPurchaseOrderFormGroup.get('inspectionBy')?.hasError('required')">
                                 Required
                             </mat-error>
                         </mat-form-field>
-
-                        <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
-                            <mat-label>Inspection Date & Time</mat-label>
-                            <input matInput formControlName="inspectionDateTime" required />
-                            <input matInput formControlName="inspectionDateTime" required type="type="datetime-local" />
-                            <mat-error *ngIf="planPurchaseOrderFormGroup.get('inspectionDateTime')?.hasError('required')">
-                                Required
-                            </mat-error>
-                        </mat-form-field> -->
+                    
                         <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
                             <mat-label>Inspection Date & Time</mat-label>
-                            <input class="view-mode-bg-grey" matInput [matDatepicker]="picker"
-                                formControlName="inspectionDateTime" readonly />
+                            <!-- <input class="view-mode-bg-grey" matInput [matDatepicker]="picker" formControlName="inspectionDateTime" />
                             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                             <mat-datepicker #picker></mat-datepicker>
-                            <mat-error
-                                *ngIf="planPurchaseOrderFormGroup.get('inspectionDateTime')?.hasError('required')">
+                            <mat-error *ngIf="planPurchaseOrderFormGroup.get('inspectionDateTime')?.hasError('required')">
                                 Inspection Date & Time is required
-                            </mat-error>
+                            </mat-error> -->
+                            <input class="view-mode-bg-grey pr-10 text-left cursor-not-allowed" matInput
+                                [value]="formatDateTime(planPurchaseOrderFormGroup.get('inspectionDateTimeSamples')?.value)" readonly />
                         </mat-form-field>
                     </div>
 
-                    <div style="
-                            display: flex;
-                            gap: 10px;
-                            flex-wrap: nowrap;
-                            width: 100%;
-                            margin-top: 10px;
-                        ">
+                    <div style="display: flex; gap: 10px; flex-wrap: nowrap; width: 100%; margin-top: 10px;">
                         <mat-form-field style="flex: 1 1 calc(50% - 10px); min-width: 100px">
                             <mat-label>Item Description</mat-label>
-                            <input class="view-mode-bg-grey" matInput formControlName="itemDescription"
-                                placeholder="Enter Code" readonly />
+                            <input class="view-mode-bg-grey" matInput formControlName="itemDescription" readonly />
                         </mat-form-field>
                     </div>
 
@@ -556,6 +538,6 @@
                     </button>
                 </div>
             </div>
-            </form>
-            </div>
-            </div>
+        </form>
+    </div>
+</div>
