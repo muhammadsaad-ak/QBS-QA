@@ -920,6 +920,10 @@ export class TestingStepperComponent implements AfterViewInit {
                     error: (err) =>
                         console.error('ERROR FETCHING CHARACTERISTICS:', err),
                 });
+            // CALLING LIST ALL QUALITATIVE RESULTS
+            this._itemInspectionCardService.ListAllQualitativeResultsIIC().subscribe((items) => {
+                this.dataSourceQRIIC.data = items.data;
+            });
         } else {
             // console.log('NO ROW SELECTED');
         }
@@ -1241,6 +1245,10 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedRowData: RowData;
 
     onResultsClickIIC(index: number, data: any) {
+        // CALLING LIST ALL QUALITATIVE RESULTS
+        this._itemInspectionCardService.ListAllQualitativeResultsIIC().subscribe((items) => {
+            this.dataSourceQRIIC.data = items.data;
+        });
         this.selectedRowIndexResults = index; // Save index
         // console.log(this.selectedRowIndexResults);
         this.selectedRowData = data; // Save data
@@ -2206,14 +2214,14 @@ export class TestingStepperComponent implements AfterViewInit {
                 );
             });
 
-        // LIST ALL QUALITATIVE RESULTS
-        this._itemInspectionCardService
-            .ListAllQualitativeResultsIIC()
-            .subscribe((items) => {
-                this.dataSourceQRIIC.data = items.data;
-                // const activeItems = items.data.filter(item => item.isActive === true);
-                // this.dataSourceQRIIC.data = activeItems;
-            });
+        // CALLING LIST ALL QUALITATIVE RESULTS
+        // this._itemInspectionCardService
+        //     .ListAllQualitativeResultsIIC()
+        //     .subscribe((items) => {
+        //         this.dataSourceQRIIC.data = items.data;
+        //         const activeQRItems = items.data.filter(item => item.isActive === true);
+        //         this.dataSourceQRIIC.data = activeQRItems;
+        //     });
 
         // UOM - UNIT OF MEASURE API
         // this._itemInspectionCardService
