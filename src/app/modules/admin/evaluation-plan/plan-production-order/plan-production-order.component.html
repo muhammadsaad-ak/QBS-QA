@@ -27,18 +27,17 @@
       
         <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
           <mat-label>Inspection Date & Time</mat-label>
-          <input class="view-mode-bg-grey" matInput formControlName="inspectionDateTime" readonly style=" cursor: not-allowed;">
+          <!-- <input class="view-mode-bg-grey" matInput formControlName="inspectionDateTime" readonly style=" cursor: not-allowed;"> -->
+          <input class="view-mode-bg-grey pr-10 text-left" matInput readonly
+            [value]="formatDateTime(planProductionOrderFormGroup.get('inspectionDateTime')?.value)" style="cursor: not-allowed" />
         </mat-form-field>
         
-        <!-- <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-          <mat-label>Document Date</mat-label>
-          <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="docDate" readonly
-            style=" cursor: not-allowed;">
-        </mat-form-field> -->
         <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
           <mat-label>Document Date</mat-label>
+          <!-- <input class="view-mode-bg-grey" class="view-mode-bg-grey" matInput formControlName="docDate" readonly
+            style=" cursor: not-allowed;"> -->
           <input class="view-mode-bg-grey" matInput readonly
-            [value]="planProductionOrderFormGroup.get('docDate')?.value | date: 'MM/dd/yyyy'" style="cursor: not-allowed;">
+            [value]="planProductionOrderFormGroup.get('docDate')?.value | date: 'dd/MM/yyyy'" style="cursor: not-allowed;">
           <input type="hidden" formControlName="docDate">
         </mat-form-field>
         
@@ -125,20 +124,19 @@
           <mat-label>Produced Quantity:</mat-label>
           <input matInput formControlName="producedQuantity" type="number" [readonly]="true" class="view-mode-bg-grey">
         </mat-form-field>
-      
-        <mat-form-field style="flex: 0 1 calc(25.5% - 16px); min-width: 100px;">
-          <mat-label>Inspection Quantity:</mat-label>
-          <input matInput formControlName="inspectionQuantity" type="number" min="1" [readonly]="isEditMode"
-            [ngClass]="{'view-mode-bg-grey': isEditMode}" required (blur)="onInspectionQuantityBlur()">
-          <mat-error
-            *ngIf="planProductionOrderFormGroup.get('inspectionQuantity').invalid && !isEditMode">Required.</mat-error>
-        </mat-form-field>
-      
+        
         <mat-form-field style="flex: 0 1 calc(25.5% - 16px); min-width: 100px;">
           <mat-label>Receipt Quantity:</mat-label>
           <input matInput formControlName="receiptQuantity" type="number" min="1" [readonly]="isEditMode"
             [ngClass]="{'view-mode-bg-grey': isEditMode}" required (blur)="onReceiptQuantityBlur()">
           <mat-error *ngIf="planProductionOrderFormGroup.get('receiptQuantity').invalid && !isEditMode">Required.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field style="flex: 0 1 calc(25.5% - 16px); min-width: 100px;">
+          <mat-label>Inspection Quantity:</mat-label>
+          <input matInput formControlName="inspectionQuantity" type="number" min="1" [readonly]="isEditMode"
+            [ngClass]="{'view-mode-bg-grey': isEditMode}" required (blur)="onInspectionQuantityBlur()">
+          <mat-error *ngIf="planProductionOrderFormGroup.get('inspectionQuantity').invalid && !isEditMode">Required.</mat-error>
         </mat-form-field>
       
         <mat-form-field style="flex: 0 1 calc(25.5% - 16px); min-width: 100px;">
@@ -189,13 +187,19 @@
       </div>
 
       <!-- Save Button -->
-      <button mat-flat-button color="primary" *ngIf="
-                planProductionOrderFormGroup.get('analyzedBy')?.valid && 
-                !isFormSaved && 
-                !isEditMode
-              " (click)="onSubmitProductionOrder()">
+      <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+        <!-- <button mat-flat-button color="primary" *ngIf="
+                      planProductionOrderFormGroup.get('analyzedBy')?.valid && 
+                      !isFormSaved && 
+                      !isEditMode
+                    " (click)="onSubmitProductionOrder()">
         Save
-      </button>
+      </button> -->
+        <button *ngIf="!isFormSaved && !isEditMode" mat-flat-button color="primary" (click)="onSubmitProductionOrder()"
+          [disabled]="!isPlanProductionOrderFormValid || isFormSaved || isEditMode">
+          Save
+        </button>
+      </div>
 
       <!-- Editable Sample Cards Section -->
       <div class="mt-4 flex flex-wrap gap-2" *ngIf="!isFormSaved">
@@ -204,8 +208,9 @@
           (click)="planProductionOrderFormGroup.get('isClosed')?.value === false && onEditSample(sample)" 
           [ngClass]="{ 'no-cursor': planProductionOrderFormGroup.get('isClosed')?.value === true }">
           <h3 style="font-weight: 500">Sample {{ sample.name }}</h3>
-          <div style="font-weight: 400">qcSampleId: {{ sample.id }}</div>
-          <div style="font-weight: 400">Inspection Time: {{ sample.inspectionDateTime }}</div>
+          <!-- <div style="font-weight: 400">qcSampleId: {{ sample.id }}</div> -->
+          <!-- <div style="font-weight: 400">Inspection Time: {{ sample.inspectionDateTime }}</div> -->
+          <div style="font-weight: 400">Inspection Time: {{ formatDateTime(sample.inspectionDateTime) }}</div>
           <div style="font-weight: 400">Inspection By: {{ sample.inspectionBy }}</div>
         </div>
         
@@ -227,8 +232,9 @@
       <div class="flex flex-wrap gap-2 mt-4" *ngIf="isFormSaved">
         <div *ngFor="let sample of samplesProductionOrder" class="sample-card"
           [style.background-color]="sample.cardColor">
-          <h3 style="font-weight: 500;">Sample {{sample.id}}</h3>
-          <div style="font-weight: 400;">Inspection Time: {{sample.inspectionTime}}</div>
+          <!-- <h3 style="font-weight: 500;">Sample {{sample.id}}</h3> -->
+          <!-- <div style="font-weight: 400;">Inspection Time: {{sample.inspectionTime}}</div> -->
+          <div style="font-weight: 400">Inspection Time: {{ formatDateTime(sample.inspectionTime) }}</div>
           <div style="font-weight: 400;">Inspection By: {{sample.inspectionBy}}</div>
         </div>
 
@@ -254,7 +260,7 @@
         <div class="dialog-container flex h-full flex-col">
           <div class="flex items-center justify-between border-b p-4 text-primary">
             <h2 class="text-lg font-semibold">
-              Evaluation Plan Production Order
+              MODAL Evaluation Plan Production Order
             </h2>
             <span (click)="closeDialog()" class="header-close-x">
               <mat-icon class="text-primary">close</mat-icon>
@@ -280,15 +286,17 @@
               </mat-error>
             </mat-form-field>
 
-            <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
-                            <mat-label>Inspection Date & Time</mat-label>
-                            <input matInput formControlName="inspectionDateTime" required />
-                            <input matInput formControlName="inspectionDateTime" required type="type="datetime-local" />
-                            <mat-error *ngIf="planPurchaseOrderFormGroup.get('inspectionDateTime')?.hasError('required')">
-                                Required
-                            </mat-error>
-                        </mat-form-field> -->
             <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
+                            <mat-label>Inspection Date & Time</mat-label>
+                            <!-- <input matInput formControlName="inspectionDateTime" required />
+                            <input matInput formControlName="inspectionDateTime" required type="datetime-local" />
+                            <mat-error *ngIf="planProductionOrderFormGroup.get('inspectionDateTime')?.hasError('required')">
+                                Required
+                            </mat-error> -->
+                            <input class="view-mode-bg-grey pr-10 text-left cursor-not-allowed" matInput
+                                [value]="formatDateTime(planProductionOrderFormGroup.get('inspectionDateTimeSamples')?.value)" readonly />
+                        </mat-form-field>
+            <!-- <mat-form-field style="flex: 1 1 calc(25% - 10px); min-width: 100px">
               <mat-label>Inspection Date & Time</mat-label>
               <input class="view-mode-bg-grey" matInput [matDatepicker]="picker" formControlName="inspectionDateTime"
                 readonly />
@@ -297,7 +305,7 @@
               <mat-error *ngIf="planProductionOrderFormGroup.get('inspectionDateTime')?.hasError('required')">
                 Inspection Date & Time is required
               </mat-error>
-            </mat-form-field>
+            </mat-form-field> -->
           </div>
 
           <div style="
