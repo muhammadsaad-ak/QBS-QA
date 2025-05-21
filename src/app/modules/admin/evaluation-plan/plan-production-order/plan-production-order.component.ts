@@ -199,8 +199,9 @@ productionShifts = [
     receiptQuantity: [],
     operatedBy: [],
     producedQuantity: [],
-  productionDate: [null],
-  productionShift: [null]
+    productionDate: [null],
+    productionShift: [null],
+    inspectionDateTimeSamples: [new Date().toISOString()], // ✅ Correct ISO format
   });
 
   createInspectionObject(): FormGroup {
@@ -270,7 +271,7 @@ productionShifts = [
   //   }
   // }
 
-  onSubmitProductionOrderX(): void {
+  XonSubmitProductionOrderX(): void {
     this.isValidate = true;
     if (this.planProductionOrderFormGroup.valid) {
 
@@ -344,7 +345,7 @@ productionShifts = [
   
           const {
             id, itemCode, itemDescription, inspectionByModalPP, inspectionTimeModalPP,
-            itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO, receiveQtyPO, productionDate, productionShift,
+            itemCodeModalPO, inspectionQtyModalPO, inspectionByModalPO, inspectionTimeModalPO, receiveQtyPO, productionDate, 
             ...payload
           } = formData;
   
@@ -365,7 +366,7 @@ productionShifts = [
   
                 this.isFormSaved = true;
                 console.log(payload);
-  // return;
+                // return;
                 this._evaluationProductionOrderService.AddProductionOrder(payload).subscribe(
                   (response) => {
                     if (response.isRequestSuccess) {
@@ -705,7 +706,8 @@ productionShifts = [
     // STEP 4: CREATING THE FINAL PAYLOAD
     const updatedSamplePayload = {
       id: this.qcSampleID,
-      inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
+      // inspectionDateTime: formValue.inspectionDateTime || new Date().toISOString(),
+      inspectionDateTime: formValue.inspectionDateTimeSamples || new Date().toISOString(),
       inspectionBy: formValue.inspectionBy || "",
       qcId: this.productionQcId.id,
       inspectionObjects: inspectionObjects
@@ -920,6 +922,9 @@ productionShifts = [
   selectedControlAccountRowIndex: number = -1;
   
   ngOnInit() {
+    this.planProductionOrderFormGroup.valueChanges.subscribe(() => {
+      this.isPlanProductionOrderFormGroupValid();
+    });
     // SUBSCRIBE TO barcodeValue CHANGES TO UPDATE BARCODE
     this.planProductionOrderFormGroup
       .get('barcodeValue')
@@ -974,9 +979,18 @@ productionShifts = [
     if (!this.isEditMode) {
       this._evaluationProductionOrderService.getProductionQCCode().subscribe((productionQCCode) => {
         console.log('Production QC Code:', productionQCCode); // Debugging ke liye
+        console.log('Production QC Code:', productionQCCode.data);
 
-        const fullCode = `PQC-000${productionQCCode.data || ''}`; // Code format
-        this.planProductionOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+        const intCodeNumber = productionQCCode.data?.toString() ?? '';
+        let formattedIntCode = intCodeNumber;
+        if (formattedIntCode.length < 5) {
+          formattedIntCode = formattedIntCode.padStart(5, '0');
+        }
+        const formattedIntCodePlanProduction = `PRDQC-${formattedIntCode}`;
+        this.planProductionOrderFormGroup.get('intCode')?.setValue(formattedIntCodePlanProduction);
+
+        // const fullCode = `PQC-000${productionQCCode.data || ''}`; // Code format
+        // this.planProductionOrderFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
       });
     }
 
@@ -1040,7 +1054,8 @@ productionShifts = [
       status: data.status ?? false, // status: data.status ?? 'N/A', // ✅ Ensure default value
       bmrLoc: data.bmrLoc ?? 'N/A',
       producedQuantity: producedQuantity,
-      inspectionQuantity: producedQuantity,
+      // inspectionQuantity: producedQuantity,
+      
     });
   }
 
@@ -1048,9 +1063,15 @@ productionShifts = [
     console.log('Populating Edit QC Form:', data);
     // FORMATTING intCode
     const rowIntCode = data.intCode ?? '';
-    const formattedIntCode = `PQC-${rowIntCode.toString().padStart(7, '0')}`;
+    // const formattedIntCode = `PQC-${rowIntCode.toString().padStart(5, '0')}`;
+    let formattedIntCode = rowIntCode.toString();
+    if (formattedIntCode.length < 5) {
+      formattedIntCode = formattedIntCode.padStart(5, '0');
+    }
+    const formattedIntCodePlanProduction = `PRDQC-${formattedIntCode}`;
     this.planProductionOrderFormGroup.patchValue({
-      intCode: formattedIntCode ?? "",  // intCode: data.intCode ?? "",
+      // intCode: formattedIntCode ?? "",  // intCode: data.intCode ?? "",
+      intCode: formattedIntCodePlanProduction ?? "",
       itemCode: data.itemCode ?? "",
       itemDescription: data.itemDescription ?? "",
       openQuantity: data.openQuantity ?? 0,
@@ -1073,6 +1094,8 @@ productionShifts = [
       isClosed: data.isClosed === true ? true : false,
       receiptQuantity: data.receiptQuantity,
       operatedBy: data.operatedBy,
+      productionShift: data.productionShift,
+       inspectionDateTime: data.inspectionDateTime 
     });
   }
 
@@ -1240,8 +1263,8 @@ productionShifts = [
     });
 
     const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
-      width: '70vw',
-      height: '79vh',
+      width: '75vw',  // width: '70vw',
+      height: '90vh', // height: '79vh',
       data: {
         qcSampleId: sample.id,
         cardCode: this.cardCode,
@@ -1300,8 +1323,8 @@ productionShifts = [
   onUpdateProductionOrderModal(): void {
     this.currentMode = 'add';
     const dialogRef = this.dialog.open(this.dialogTemplateItemsPP, {
-      width: '70vw',
-      height: '79vh',
+      width: '75vw',  // width: '70vw',
+      height: '90vh', // height: '79vh',
       data: this.cardCode,
     });
     // DYNAMICALLY ADD Validators.required TO inspectionBy
@@ -1829,9 +1852,18 @@ productionShifts = [
   onInspectionQuantityBlur(): void {
     const openQuantity: number = Number(this.planProductionOrderFormGroup.value.openQuantity);
     const inspectionQuantity: number = Number(this.planProductionOrderFormGroup.value.inspectionQuantity);
+    const receiptQuantity: number = Number(this.planProductionOrderFormGroup.value.receiptQuantity);
     if (inspectionQuantity > openQuantity) {
       this.isInspectionQuantityInvalid = true;
       const errorMessage = `Inspection Qty can't be greater than Open Quantity ${openQuantity}.`;
+      this._snackBar.open(errorMessage, 'Close', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      this.planProductionOrderFormGroup.patchValue({ inspectionQuantity: 0 });
+    } else if (inspectionQuantity > receiptQuantity ) {
+      this.isInspectionQuantityInvalid = true;
+      const errorMessage = `Inspection Qty can't be greater than Receipt Quantity ${receiptQuantity}.`;
       this._snackBar.open(errorMessage, 'Close', {
         duration: 3000,
         panelClass: ['snackbar-error']
@@ -1904,23 +1936,40 @@ productionShifts = [
       this.isOperatedByInvalid = false;
     }
   }
-    isPlanPurchaseOrderFormValid: boolean = false;
-  isplanProductionOrderFormGroupValid(): void {
-    const qcLotNoValid = this.planProductionOrderFormGroup.get('qcLotNo')?.valid;
-    const inspectionQuantityValid = this.planProductionOrderFormGroup.get('inspectionQuantity')?.valid;
-    const receiveQuantityValid = this.planProductionOrderFormGroup.get('receiveQuantity')?.valid;
-    const analyzedByValid = this.planProductionOrderFormGroup.get('analyzedBy')?.valid;
-    console.log('qcLotNo:', qcLotNoValid);
-    console.log('inspectionQuantity:', inspectionQuantityValid);
-    console.log('receiveQuantity:', receiveQuantityValid);
-    console.log('analyzedBy:', analyzedByValid);
-    this.isPlanPurchaseOrderFormValid =
-      !!(qcLotNoValid && inspectionQuantityValid && receiveQuantityValid && analyzedByValid);
-  }
   formatDate(dateStr: string): string {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     // Format: DD/MM/YYYY
     return date.toLocaleDateString('en-GB');
   }
+  isPlanProductionOrderFormValid: boolean = false;
+  isPlanProductionOrderFormGroupValid(): void {
+    const receiptQuantityValid = this.planProductionOrderFormGroup.get('receiptQuantity')?.valid;
+    const inspectionQuantityValid = this.planProductionOrderFormGroup.get('inspectionQuantity')?.valid;
+    const analyzedByValid = this.planProductionOrderFormGroup.get('analyzedBy')?.valid;
+    console.log('receiptQuantity:', receiptQuantityValid);
+    console.log('inspectionQuantity:', inspectionQuantityValid);
+    console.log('analyzedBy:', analyzedByValid);
+    this.isPlanProductionOrderFormValid =
+      !!(receiptQuantityValid && inspectionQuantityValid && analyzedByValid);
+  }
+    formatDateTime(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // months start from 0
+  const year = date.getFullYear();
+
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 => 12
+  const hourStr = String(hours).padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hourStr}:${minutes} ${ampm}`;
+}
 }

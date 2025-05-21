@@ -401,7 +401,8 @@ onEvaluationPlanTypeChange(orderType: string): void {
           remarks: order.remarks,
           receiptQuantity: order.receiptQuantity || null,
           operatedBy: order.operatedBy || null,
-
+          productionShift: order.productionShift || null,
+          inspectionDateTime: order.inspectionDateTime,
         }));
   
         if (this.orderType === 'productionOrder') {
@@ -512,7 +513,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
         this.displayedColumns = ['serialId', 'docNo',  'docDate', 'lineNo', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status','inspectionStatus', 'action'];
         this.dataSource.data = this.sapDocPurchaseOrderData;
       } else if (orderType === 'productionOrder') {
-        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'qty', 'openQty', 'status', 'inspectionStatus', 'action'];
+        this.displayedColumns = ['serialId', 'docNo', 'docDate', 'itemCode', 'itemDescription', 'machineNo', 'qty', 'openQty', 'status', 'inspectionStatus', 'action'];
         this.dataSource.data = this.sapDocProductionOrderData;
       }
     }
