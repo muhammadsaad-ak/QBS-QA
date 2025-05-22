@@ -420,6 +420,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
   }
 
   fetchEvaluationPlanProductionOrdersQA(): void {
+    console.log('xx')
     this._productionQAService.getEvaluationPlanProductionOrdersQA().subscribe((response: any) => {
       if (response.data) {
         this.evalPlanProductionOrderQAData = response.data.map((order, index) => ({
@@ -448,6 +449,7 @@ onEvaluationPlanTypeChange(orderType: string): void {
           inspectionQuantity: order.inspectionQuantity || 0,
           remarks: order.remarks,
           isClosed: order.isClosed,   // isClosed: order.isClosed || 'In-Progress',
+                    inspectionDateTime: order.inspectionDateTime,
 
         }));
   
@@ -497,13 +499,13 @@ onEvaluationPlanTypeChange(orderType: string): void {
       this.pageTitle = 'List of Evaluation Plan';
       
       if (orderType === 'purchaseOrder') {
-        this.displayedColumns = ['serialId', 'intCode', 'docDate','lineNo', 'itemCode', 'itemDescription', 'qty', 'status', 'id', 'action'];
+        this.displayedColumns = ['serialId', 'intCode', 'docNoSAP', 'docDate', 'itemCode', 'itemDescription', 'receiveQty', 'qty', 'analyzedBy', 'status', 'id', 'action'];
         this.dataSource.data = this.evalPlanPurchaseOrderData;       
       } else if (orderType === 'productionOrder') {
-        this.displayedColumns = ['serialId', 'intCode', 'docDate', 'itemCode', 'itemDescription', 'qty', 'receiptQty', 'status', 'action']; 
+        this.displayedColumns = ['serialId', 'intCode', 'docNoSAP', 'docDate', 'itemCode', 'itemDescription', 'receiptQty', 'qty', 'analyzedBy', 'status', 'action']; 
         this.dataSource.data = this.evalPlanProductionOrderData;
       } else if (orderType === 'productionOrderQA') {
-        this.displayedColumns = ['serialId' , 'intCode' , 'docDate' , 'itemCode' , 'itemDescription' , 'qty' , 'status' , 'action'];
+        this.displayedColumns = ['serialId' , 'intCode' , 'docNoSAP', 'docDate', 'itemCode', 'itemDescription', 'qty', 'analyzedBy', 'status', 'action'];
         this.dataSource.data = this.evalPlanProductionOrderQAData;
       }
     } else if (this.currentView === 'sapDocuments') {

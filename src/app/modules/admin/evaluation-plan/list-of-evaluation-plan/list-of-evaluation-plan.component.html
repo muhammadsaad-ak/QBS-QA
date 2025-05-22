@@ -1,4 +1,3 @@
-<!-- <p>items-samples works!</p> -->
 <div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
     <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent" (backdropClick)="onBackdropClicked()">
         <mat-drawer class="w-full dark:bg-gray-900 sm:w-128" [mode]="drawerMode" [opened]="false" [position]="'end'"
@@ -29,7 +28,6 @@
                             QA</mat-option>
                     </mat-select>
                 </mat-form-field>
-
                 <!-- Search Field -->
                 <mat-form-field
                     class="icon-border-color qbs-mat-dense qbs-mat-rounded w-full sm:w-1/3 md:w-1/4 sm:ml-2">
@@ -37,7 +35,6 @@
                     <input matInput [autocomplete]="'off'" placeholder="Search..." [formControl]="searchInputControl" />
                 </mat-form-field>
             </div>
-
             <!-- Main Content -->
             <div class="-mt-px flex flex-auto border-t pt-4 sm:pt-2 overflow-hidden"
                 style="padding-top: 0px !important;">
@@ -46,56 +43,88 @@
                         <table mat-table [dataSource]="dataSource" class="table-border-color">
                             <!-- Serial Id COLUMN -->
                             <ng-container matColumnDef="serialId">
-                                <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important;  text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;  text-align: center;">
                                     S.No </th>
                                 <td mat-cell *matCellDef="let index = index" style="text-align: center;"> {{index + 1}}
                                 </td>
                             </ng-container>
-                            <!-- Document No COLUMN -->
                             <ng-container matColumnDef="docNo">
-                                <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Document&nbsp;No
                                 </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                <td mat-cell *matCellDef="let element">
                                     {{ element.docNo ? element.docNo : '-' }}
                                 </td>
                             </ng-container>
-
+                            <!-- Q-Code COLUMN -->
                             <ng-container matColumnDef="intCode">
-                                <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important; text-align: center;">
-                                    Doc.&nbsp;No
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
+                                    Q-Code
                                 </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                <td mat-cell *matCellDef="let element">
                                     {{ element.intCode ? 'PQC-000' + element.intCode : '-' }}
                                 </td>
                             </ng-container>
-                            <!-- Doc. Date COLUMN -->
+                            <!-- Document No COLUMN -->
+                            <ng-container *ngIf="currentView !== 'sapDocuments'" matColumnDef="docNoSAP">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
+                                    Document&nbsp;No
+                                </th>
+                                <td mat-cell *matCellDef="let element">
+                                    {{ element.docNo }}
+                                </td>
+                            </ng-container>
+                            <!-- Doc. Date / Inspection Date COLUMN -->
                             <ng-container matColumnDef="docDate">
-                                <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important; text-align: center;">
-                                    Doc.&nbsp;Date </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;">
-                                    {{ element.docDate ? (element.docDate | date:'d/M/y') : '-' }}
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
+                                    <!-- Doc. Date -->
+                                    <ng-container *ngIf="currentView === 'sapDocuments'">
+                                        Doc.&nbsp;Date
+                                    </ng-container>
+                                    <!-- Inspection Date -->
+                                    <ng-container *ngIf="currentView === 'evaluationPlan'">
+                                        Inspection&nbsp;Date
+                                    </ng-container>
+                                </th>
+                                <td mat-cell *matCellDef="let element">
+                                    <!-- {{ element.docDate ? (element.docDate | date:'d/M/y') : '-' }} -->
+                                    <!-- Doc. Date -->
+                                    <ng-container *ngIf="currentView === 'sapDocuments'">
+                                        {{ element.docDate | date:'d/M/y' }}
+                                    </ng-container>
+                                    <!-- Inspection Date  -->
+                                    <ng-container *ngIf="currentView === 'evaluationPlan'">
+                                        <ng-container *ngIf="orderType !== 'productionOrderQA'">
+                                            {{ element.inspectionDateTime ? (element.inspectionDateTime | date:'d/M/y') : '-' }}
+                                        </ng-container>
+                                        <ng-container *ngIf="orderType === 'productionOrderQA'">
+                                            {{ element.inspectionDateTime ? (element.inspectionDateTime | date:'d/M/y') : '-' }}
+                                        </ng-container>
+                                    </ng-container>
                                 </td>
                             </ng-container>
                             <!-- Line No COLUMN -->
-                            <ng-container matColumnDef="lineNo">
+                            <!-- <ng-container matColumnDef="lineNo">
                                 <th mat-header-cell *matHeaderCellDef
                                     style="background-color: #e2e8f0 !important; text-align: center;">
                                     Line&nbsp;No </th>
                                 <td mat-cell *matCellDef="let element" style="text-align: center;">
                                     {{ element.lineNum ?? '0' }}
                                 </td>
+                            </ng-container> -->
+                            <ng-container *ngIf="currentView === 'sapDocuments'" matColumnDef="lineNo">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                    Line&nbsp;No
+                                </th>
+                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                    {{ element.lineNum ?? '0' }}
+                                </td>
                             </ng-container>
                             <!-- Item Code COLUMN -->
                             <ng-container matColumnDef="itemCode">
-                                <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important; text-align: center;">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Item&nbsp;Code </th>
-                                <td mat-cell *matCellDef="let element" style="text-align: center;">
+                                <td mat-cell *matCellDef="let element">
                                     {{element.itemCode ? element.itemCode : '-'}} </td>
                             </ng-container>
                             <!-- Item Description COLUMN -->
@@ -105,8 +134,7 @@
                                     Item&nbsp;Description </th>
                                 <td mat-cell *matCellDef="let element">
                                     {{element.itemDescription ? element.itemDescription : '-' }} </td>
-                            </ng-container>
-                            
+                            </ng-container>                            
                             <!-- machineNo / Machine No COLUMN -->
                             <ng-container matColumnDef="machineNo">
                                 <ng-container *ngIf="currentView === 'sapDocuments' && orderType === 'productionOrder'">
@@ -117,7 +145,36 @@
                                     </td>
                                 </ng-container>
                             </ng-container>
-
+                            <!-- Receive Qty COLUMN -->
+                            <ng-container matColumnDef="receiveQty">
+                                <ng-container *ngIf="currentView === 'evaluationPlan' && orderType === 'purchaseOrder'">
+                                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                        Receive&nbsp;Qty </th>
+                                    <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10">
+                                        {{ element.receiveQuantity ? element.receiveQuantity : '-' }}
+                                    </td>
+                                </ng-container>
+                            </ng-container>
+                            <!-- Cycle Time COLUMN -->
+                            <!-- <ng-container matColumnDef="cycleTime">
+                                <ng-container *ngIf="currentView === 'evaluationPlan' && 'orderType === 'productionOrderQA''">
+                                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                        Cycle&nbsp;Time </th>
+                                    <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10">
+                                        {{ element.cycleTime ? element.cycleTime : '-' }}
+                                    </td>
+                                </ng-container>
+                            </ng-container> -->
+                            <!-- Cavity COLUMN -->
+                            <!-- <ng-container matColumnDef="cavities">
+                                <ng-container *ngIf="currentView === 'evaluationPlan' && 'orderType === 'productionOrderQA''">
+                                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important; text-align: center;">
+                                        Cavity </th>
+                                    <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10">
+                                        {{ element.cavity ? element.cavity : '-' }}
+                                    </td>
+                                </ng-container>
+                            </ng-container> -->
                             <!-- Qty / Inspection Qty COLUMN -->
                             <ng-container matColumnDef="qty">
                                 <!-- List of SAP Documents -->
@@ -134,6 +191,18 @@
                                         Inspection&nbsp;Qty </th>
                                     <td mat-cell *matCellDef="let element" style="text-align: center;" class="px-10">
                                         {{ element.inspectionQuantity ? element.inspectionQuantity : '-' }}
+                                    </td>
+                                </ng-container>
+                            </ng-container>
+                             <!-- Analyzed By COLUMN -->
+                            <ng-container matColumnDef="analyzedBy">
+                                <!-- <ng-container *ngIf="currentView === 'evaluationPlan' && orderType === 'purchaseOrder'"> -->
+                                <ng-container *ngIf="currentView !== 'sapDocuments'">
+                                    <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
+                                        Analyzed&nbsp;By </th>
+                                    <td mat-cell *matCellDef="let element"> 
+                                        <!-- class="px-10" -->
+                                        {{ element.analyzedBy ? element.analyzedBy : '-' }}
                                     </td>
                                 </ng-container>
                             </ng-container>
