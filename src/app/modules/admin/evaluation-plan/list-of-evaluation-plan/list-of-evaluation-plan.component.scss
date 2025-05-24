@@ -47,20 +47,24 @@
 //     font-size: 16px;
 // }
 
-// .example-container {
-//     height: 100vh;
-//     width: 100%;
-//     max-width: 100%;
-//     overflow: auto;
-// }
+.example-container {
+    // height: 100vh;
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+    overflow-y: scroll;
+    overflow-x: scroll;
+    // overflow: auto;
+
+}
 
 // .mat-mdc-header-row {
 //     height: 39px !important;
 // }
 
-// .mat-mdc-row {
-//     height: 39px !important;
-// }
+.mat-mdc-row {
+    height: 39px !important;
+}
 
 .single-line {
     white-space: nowrap;
