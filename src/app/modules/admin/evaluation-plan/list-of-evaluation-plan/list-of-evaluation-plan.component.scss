@@ -31,3 +31,43 @@
 .border-pagination {
     border-bottom: 1px solid #a1a1a1 !important;
 }
+
+// .custom-border-button {
+//     border: 2px solid #4f46e5 !important;
+// }
+
+// .ml-2,
+// .mr-1 {
+//     display: inline-flex;
+//     align-items: center;
+// }
+
+// .mat-icon {
+//     margin-right: 4px;
+//     font-size: 16px;
+// }
+
+.example-container {
+    // height: 100vh;
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+    overflow-y: scroll;
+    overflow-x: scroll;
+    // overflow: auto;
+
+}
+
+// .mat-mdc-header-row {
+//     height: 39px !important;
+// }
+
+.mat-mdc-row {
+    height: 39px !important;
+}
+
+.single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

@@ -202,9 +202,17 @@ export class EvaluationPlanQaComponent implements OnInit {
         if (!this.isEditMode) {
           this._evaluationPlanQaOrderService.getProductionQACode().subscribe((productionQACode) => {
             console.log('Production QC Code:', productionQACode); // Debugging ke liye
-    
-            const fullCode = `PQA-000${productionQACode.data || ''}`; // Code format
-            this.evaluationplanQAFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+
+            const intCodeNumber = productionQACode.data?.toString() ?? '';
+            let formattedIntCode = intCodeNumber;
+            if (formattedIntCode.length < 5) {
+              formattedIntCode = formattedIntCode.padStart(5, '0');
+            }
+            const formattedIntCodePlanProduction = `PRDQA-${formattedIntCode}`;
+            this.evaluationplanQAFormGroup.get('intCode')?.setValue(formattedIntCodePlanProduction);
+
+            // const fullCode = `PQA-000${productionQACode.data || ''}`; // Code format
+            // this.evaluationplanQAFormGroup.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
           });
         }
     
@@ -778,13 +786,19 @@ export class EvaluationPlanQaComponent implements OnInit {
         });
     }
 
-    populateEditProductionOrderFormQA(data: any): void {
-        console.log('Populating Edit QC Form:', data);
-            // FORMATTING intCode
-        const rowIntCode = data.intCode ?? '';
-        const formattedIntCode = `PQA-${rowIntCode.toString().padStart(7, '0')}`;
-        this.evaluationplanQAFormGroup.patchValue({
-          intCode: formattedIntCode ?? "",  // intCode: data.intCode ?? "",
+  populateEditProductionOrderFormQA(data: any): void {
+    console.log('Populating Edit QC Form:', data);
+    // FORMATTING intCode
+    const rowIntCode = data.intCode ?? '';
+    // const formattedIntCode = `PQA-${rowIntCode.toString().padStart(7, '0')}`;
+    let formattedIntCode = rowIntCode.toString();
+    if (formattedIntCode.length < 5) {
+      formattedIntCode = formattedIntCode.padStart(5, '0');
+    }
+    const formattedIntCodePlanProductionQA = `PRDQA-${formattedIntCode}`;
+    this.evaluationplanQAFormGroup.patchValue({
+      // intCode: formattedIntCode ?? "",  // intCode: data.intCode ?? "",
+      intCode: formattedIntCodePlanProductionQA,
           analyzedBy: data.analyzedBy ?? 'N/A',
           mouldNo: data.mouldNo ?? 'N/A',
           machineNo: data.machineNo ?? 'N/A',
