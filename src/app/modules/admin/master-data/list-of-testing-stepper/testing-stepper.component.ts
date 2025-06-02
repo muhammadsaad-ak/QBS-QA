@@ -30,9 +30,23 @@ import { switchMap } from 'rxjs/operators';
 import { of } from 'rxjs'; 
 import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { InspectionAttributesService } from 'app/core/other-core-services/module/inspection-attributes.service';
 
+interface AddInspectionAttributeRequest {
+    name: string;
+    description: string;
+    tag: string | null;
+    // intCode?: string; // OPTIONAL, IF REQUIRED BY API
+}
 
-// Item Inspection Card
+interface UpdateInspectionAttributeRequest {
+    id: string;
+    name: string;
+    description: string;
+    tag: string | null;
+    isActive: boolean;
+}
+
 interface qrPassStatusObjectIF {
     qualitativeResultPassStatusObjects: { qualitativeResultId: string; isPassed: boolean }[];
 }
@@ -88,19 +102,23 @@ interface itemSamplingRangeIF {
     templateUrl: './testing-stepper.component.html',
     styleUrl: './testing-stepper.component.scss',
 })
+
 export class TestingStepperComponent implements AfterViewInit {
     isIICNewAdd: boolean = false;
     isEditMode: boolean = false;
     isValidate: boolean = false;
     isLoading: boolean = false;
-    rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION
-    rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM NAVIGATION
-    rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION
-    rowDataIC: any; // TO STORE RECEIVED IC DATA FROM NAVIGATION
-    rowDataIS: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM SAMPLE
-    rowDataIIC: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM INSPECTION CARD
-    rowDataIICNew: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION    -   ITEM INSPECTION CARD
+    rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION                -   QUALITATIVE RESULTS
+    rowDataUOM: any; // TO STORE RECEIVED UOM DATA FROM                         -   UNIT OF MEASURE
+    rowDataIA: any; // TO STORE RECEIVED IA DATA FROM NAVIGATION                -   INSPECTION ATTRIBUTES
+    rowDataICH: any; // TO STORE RECEIVED ICH DATA FROM NAVIGATION              -   INSPECTION CHARACTERISTICS
+    rowDataIC: any; // TO STORE RECEIVED IC DATA FROM NAVIGATION                -   INSPECTION CARD
+    rowDataIS: any; // TO STORE RECEIVED IS DATA FROM NAVIGATION                -   ITEM SAMPLE
+    rowDataIIC: any; // TO STORE RECEIVED IIC DATA FROM NAVIGATION              -   ITEM INSPECTION CARD
+    rowDataIICNew: any; // TO STORE RECEIVED IIC DATA FROM NAVIGATION           -   ITEM INSPECTION CARD
+    
     initialSamplingRangeObjects: any[] = []; //  DECLARE  TO STORE INITIAL samplingRangeObjects VALUES
+    attributes: { id: string; name: string }[] = [];
 
     // private _formBuilder = inject(FormBuilder);
     dataSourceItemCodeIS!: MatTableDataSource<any>;
@@ -109,9 +127,9 @@ export class TestingStepperComponent implements AfterViewInit {
     unitOfMeasureLOV: any = [];
     characteristicsList: any[] = [];
     inspectionCardModalList: any[] = [];
+    nextIntCountIA: number | null = null; // Explicitly type to allow null
 
     constructor(
-        //Form Builder
         private cdr: ChangeDetectorRef,
         private _formBuilder: FormBuilder,
         private dialog: MatDialog,
@@ -134,6 +152,9 @@ export class TestingStepperComponent implements AfterViewInit {
         private changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
         private _sessionStorageService: SessionStorageService,
+        // INSPECTION ATTRIBUTES
+        private inspectionAttributesNextIntCode: QualitativeResultsService,
+        private inspectionAttributesService: InspectionAttributesService,
     ) { }
     qualitativeData = [
         { parameter: 'Sample Parameter 1' }, // Initial row
@@ -156,6 +177,15 @@ export class TestingStepperComponent implements AfterViewInit {
         id: [''],
         uoMCode: ['', Validators.required],
         description: ['', Validators.required],
+        isActive: [true],
+    });
+    // Inspection Attributes - inspectionAttributesForm
+    inspectionAttributesForm = this._formBuilder.group({
+        id: [null],
+        intCode: [null],
+        name: ['', Validators.required],
+        description: ['', Validators.required],
+        tag: [null],
         isActive: [true],
     });
     // ITEM SAMPLE
@@ -366,13 +396,15 @@ export class TestingStepperComponent implements AfterViewInit {
 
     // Inspection Characteristic
     fourthFormGroup = this._formBuilder.group({
-        id: [''],
-        intCode: [''],
+        id: [null],
+        intCode: [null],
         description: ['', Validators.required],
         isActive: [true],
         type: ['qualitative', Validators.required],
         singleCriteria: [''],
         qualitativeCriteriaObjects: this._formBuilder.array([]),
+        attributeId: [null, Validators.required],
+        quantitativeCriteria: [''],
     });
 
     // Inspection Card
@@ -2131,8 +2163,40 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
     isLinear = false;
+    // nextIntCountIA: number;
+    // attributes: any[] = [];
+    selectedIndex: number = 0;
 
     ngOnInit(): void {
+        // INSPECTION ATTRIBUTES STARTS
+        // INITIAL LOADING OF inspection_attributes mat-select VALUES
+        this.loadInspectionAttributes();
+        // InspectionAttributesService
+        this.inspectionAttributesService.getNextIntCount().subscribe({
+            next: (nextIntCodeIA) => {
+                // console.log('API RESPONSE inspection_attribute nextIntCode:', nextIntCodeIA);
+                if (nextIntCodeIA.isRequestSuccess && nextIntCodeIA.data !== null) {
+                    this.nextIntCountIA = nextIntCodeIA.data;
+                    console.log('inspection_attribute nextIntCountIA:', this.nextIntCountIA);
+                    const formattedNextintCodeIA = `IA-${nextIntCodeIA.data.toString().padStart(5, '0')}`;
+                    this.inspectionAttributesForm.get('intCode')?.setValue(formattedNextintCodeIA);
+                } 
+            },
+            error: (error) => {
+                console.error('ERROR FETCHING inspection_attribute nextIntCount:', error.message);
+                // ERROR HANDLING
+                this.nextIntCountIA = null;
+                this.inspectionAttributesForm.get('intCode')?.setValue('');
+            }
+        });
+        this.inspectionAttributesForm.get('name')?.valueChanges.subscribe((value: string) => {
+            this.inspectionAttributesForm.get('description')?.setValue(value, { emitEvent: false });
+            // console.log('Description:', this.inspectionAttributesForm.get('description')?.value);
+        });
+        // INSPECTION ATTRIBUTES ENDS
+        
+        
+        this._itemInspectionCardService.ListAllInspectionCards();
         // Inspection Card Code Get API.
         // this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
         //     const y = inspectionCardCode.data; // 13 mil raha hai
@@ -2144,11 +2208,13 @@ export class TestingStepperComponent implements AfterViewInit {
         //     }
         // });
 
-        // this._qualityResultsCode.getQualitativeResultCode().subscribe((qualityResultCode) => {
-        //     console.log('Quality Code:', qualityResultCode); // Debugging ke liye
+        // this.inspectionAttributesNextIntCode.getInspectionAttributesNextIntCount().subscribe((inspectionAttributesNextIntCode) => {
+        //     console.log('Quality Code:', inspectionAttributesNextIntCode); // Debugging ke liye
+        //     this.nextIntCountIA = inspectionAttributesNextIntCode.data;
 
-        //     const fullCode = `QR-000${qualityResultCode.data || ''}`; // Code format
-        //     this.firstFormGroup.get('data')?.setValue(fullCode); // Yahan correct form group use karo
+        //     const fullCode = `IA-000${inspectionAttributesNextIntCode.data || ''}`; // Code format
+        //     this.inspectionAttributesForm.get('intCode')?.setValue(fullCode); // Yahan correct form group use karo
+        //     console.log('Attribute Int Code:', this.nextIntCountIA); // Debugging ke liye
         // });
 
         // Inspection Card Modal - Qualitative and Quantitative
@@ -2229,6 +2295,34 @@ export class TestingStepperComponent implements AfterViewInit {
         //     .subscribe((unitOfMeasure) => {
         //         this.dataSourceUoMIIC.data = unitOfMeasure.data;
         //     });
+
+        // UPDATE INSPECTION ATTRIBUTES STARTS
+        //  RETRIEVING rowDataIA
+        if (!this.rowDataIA) {
+            const storedDataIA = sessionStorage.getItem('stepperDataIA'); // IF rowDataIA IS MISSING, GET FROM sessionStorage
+            this.rowDataIA = storedDataIA ? JSON.parse(storedDataIA) : null;
+        }
+        if (this.rowDataIA) {
+            console.log('RECEIVED IA DATA:', this.rowDataIA);
+            this.isEditMode = this.rowDataIA.isEditMode ?? false;
+            console.log('isEditMode:', this.isEditMode);
+            // POPULATE FORM, inspectionAttributesForm, WITH RECEIVED DATA - rowDataIA
+            this.populateinspectionAttributesForm(this.rowDataIA);
+        } else {
+            // console.log('NO DATA RECEIVED');
+            // this.isEditMode = false;
+            // GETTING AND SETTING NEXT INT COUNT FOR QUALITATIVE RESULT
+            this._qualityResultsCode
+                .getQualitativeResultCode()
+                .subscribe((qualityResultCode) => {
+                    // console.log('Quality Code:', qualityResultCode);
+                    const fullCode = `QR-000${qualityResultCode.data || ''}`;
+                    this.firstFormGroup.get('data')?.setValue(fullCode);
+                });
+
+
+        }
+        // UPDATE INSPECTION ATTRIBUTES ENDS
 
         // UPDATE QUALITATIVE RESULT STARTS
         //  RETRIEVING rowDataQR
@@ -2481,8 +2575,19 @@ export class TestingStepperComponent implements AfterViewInit {
             Promise.resolve().then(
                 () => (this.stepper.selectedIndex = stepIndex)
             ); // Ensure stepper is initialized
+
+            // Promise.resolve().then(() => {
+            //     this.stepper.selectedIndex = stepIndex;
+            //     // Now check if the step index is 3
+            //     if (this.stepper.selectedIndex === 3) {
+            //         // INITIAL LOADING OF inspection_attributes mat-select VALUES
+            //         this.loadInspectionAttributes();
+            //     }
+            //     console.log('Stepper initialized with index:', this.stepper.selectedIndex);
+            // });
         });
     }
+    
 
     fetchListAllItems(): void {
         this._itemSamplesService.getListAllItems().subscribe({
@@ -2586,7 +2691,7 @@ export class TestingStepperComponent implements AfterViewInit {
             .getInspectionCardModal()
             .subscribe((inspectionCardModal) => {
                 const qualitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'qualitative' && item.isActive
+                    (item: any) => item.type !== 'quantitative' && item.isActive
                 );
                 this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
             });
@@ -2695,7 +2800,7 @@ export class TestingStepperComponent implements AfterViewInit {
             .getInspectionCardModal()
             .subscribe((inspectionCardModal) => {
                 const quantitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'quantitative' && item.isActive
+                    (item: any) => item.type !== 'qualitative' && item.isActive
                 );
                 this.dataSourceItemsX = new MatTableDataSource(quantitativeData); // Quantitative data
             });
@@ -2966,6 +3071,7 @@ export class TestingStepperComponent implements AfterViewInit {
         console.log('SENDING INSPECTION CHARACTERISTICS PAYLOAD:', payload);
 
         this.isLoading = true;
+        // return
         this._inspectionCharateristics.AddInspectionCharacteristics(payload)
             .pipe(
                 switchMap(response => {
@@ -2979,6 +3085,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         setTimeout(() => {
                             this.fourthFormGroup.get('description')?.setValue(null);
                             this.fourthFormGroup.get('singleCriteria')?.setValue(null);
+                            this.fourthFormGroup.get('attributeId')?.setValue(null);
                         }, 1500);
                         return this._inspectionCharateristics.getInspectionCharacteristicsCode();
                     }
@@ -3323,6 +3430,24 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
     // UPDATE QUALITATIVE RESULT STARTS
+    populateinspectionAttributesForm(data: any): void {
+        if (!data) {
+            console.error('NO DATA RECEIVED TO POPULATE inspectionAttributesForm.');
+            return;
+        }
+        // MAPPING RESPONSE
+        console.log('inspectionAttributesForm',data);
+        const formattedIAintCode =
+            'IA-' + this.rowDataIA.intCode.toString().padStart(5, '0');
+        this.inspectionAttributesForm.patchValue({
+            id: this.rowDataIA.id,
+            intCode: formattedIAintCode,
+            name: this.rowDataIA.name,
+            description: this.rowDataIA.description,
+            isActive: this.rowDataIA.isActive,
+        });
+    }
+    // UPDATE QUALITATIVE RESULT STARTS
     populateQualitativeResultData(data: any): void {
         if (!data) {
             console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
@@ -3490,6 +3615,7 @@ export class TestingStepperComponent implements AfterViewInit {
             singleCriteria: this.rowDataICH.singleCriteria,
             isActive: this.rowDataICH.isActive,
             type: this.rowDataICH.type,
+            attributeId: this.rowDataICH.attributeId,
         });
         const criteriaFormArray = this.fourthFormGroup.get(
             'qualitativeCriteriaObjects'
@@ -3532,7 +3658,7 @@ export class TestingStepperComponent implements AfterViewInit {
             if (payload.type === 'quantitative') {
                 payload.singleCriteria = null;
             }
-            // console.log('SENDING PAYLOAD:', payload);
+            console.log('SENDING PAYLOAD:', payload);
             // return
             this._inspectionCharateristics
                 .updateInspectionWithCriteria(payload)
@@ -4424,6 +4550,7 @@ export class TestingStepperComponent implements AfterViewInit {
     clearingSessionStorage(): void {
         sessionStorage.removeItem('stepperDataQR');
         sessionStorage.removeItem('stepperDataUOM');
+        sessionStorage.removeItem('stepperDataIA');
         sessionStorage.removeItem('stepperDataICH');
         sessionStorage.removeItem('stepperDataIC');
         sessionStorage.removeItem('stepperDataIS');
@@ -4617,6 +4744,9 @@ export class TestingStepperComponent implements AfterViewInit {
         console.log('event.selectedIndex', event.selectedIndex);
         console.log('this.isValidate', this.isValidate);
         console.log('Step changed:', event);
+        if (event.selectedIndex === 3) {
+            this.loadInspectionAttributes(); // LOAD inspection_attributes mat-select VALUES WHEN SWITCHING TO THE INSPECTION CARD STEP
+        } 
     }
     // @IAK
     // VALIDATION FOR QUALITATIVE CRITERIA IN INSPECTION CARD
@@ -4635,6 +4765,11 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
     // @IAK
+    // VALIDATING IA FORM
+    isIAFormValid(): boolean {
+        const resultDescriptionControl = this.inspectionAttributesForm.get('name');
+        return resultDescriptionControl?.valid && !!resultDescriptionControl.value;
+    }
     // VALIDATING QR FORM
     isQRFormValid(): boolean {
         const resultDescriptionControl = this.firstFormGroup.get('resultDescription');
@@ -4674,5 +4809,216 @@ export class TestingStepperComponent implements AfterViewInit {
     isItemCodeValid(): boolean {
         const itemCodeControl = this.itemSamplingForm.get('itemCode');
         return itemCodeControl?.valid && !!itemCodeControl.value;
+    }
+    
+     onSubmitInspectionAttributes(): void {
+        console.log('inspection_attribute nextIntCountIA:', this.nextIntCountIA);
+        this.isValidate = true;
+
+        if (this.inspectionAttributesForm.valid) {
+            console.log('inspectionAttributesForm VALUES:', this.inspectionAttributesForm.value);
+            const formValues = this.inspectionAttributesForm.value;
+            const payload: AddInspectionAttributeRequest = {
+                name: formValues.name || '',
+                description: formValues.description || '',
+                tag: formValues.tag || null,
+                // intCode: formValues.intCode, // if required by API
+            };
+            console.log('SENDING PAYLOAD:', payload);
+
+            this.isLoading = true;
+            this.inspectionAttributesService.addInspectionAttribute(payload).subscribe({
+                next: (response) => {
+                    if (response.isRequestSuccess && response.data === true) {
+                        this.isValidate = false;
+                        console.log('Inspection attribute added successfully:', response);
+                        this._snackBar.open('Data saved successfully!', 'Close', {
+                            duration: 1550,
+                            panelClass: ['snackbar-success'],
+                        });
+                        // CALL inspection_attributes mat-select VALUES
+                        this.loadInspectionAttributes();
+                        // RESET FORM FIELDS
+                        this.inspectionAttributesForm.get('name')?.setValue('');
+                        this.inspectionAttributesForm.get('description')?.setValue('');
+                        this.inspectionAttributesForm.get('tag')?.setValue(null);
+
+                        // Fetch next int code
+                        this.inspectionAttributesService.getNextIntCount().subscribe({
+                            next: (nextIntCode) => {
+                                if (nextIntCode.isRequestSuccess && nextIntCode.data !== null) {
+                                    const formattedNextIntCode = `IA-${nextIntCode.data.toString().padStart(5, '0')}`;
+                                    this.inspectionAttributesForm.get('intCode')?.setValue(formattedNextIntCode);
+                                    console.log('NEW INT CODE:', this.inspectionAttributesForm.get('intCode')?.value);
+                                } else {
+                                    console.error('FAILED TO FETCH nextIntCount:', nextIntCode.message);
+                                    this._snackBar.open(nextIntCode.message || 'Failed to fetch new code', 'Close', {
+                                        duration: 3000,
+                                        panelClass: ['snackbar-error'],
+                                    });
+                                }
+                                setTimeout(() => {
+                                    this.isLoading = false;
+                                }, 1500);
+                            },
+                            error: (error) => {
+                                console.error('FAILED TO FETCH nextIntCount:', error.message);
+                                this._snackBar.open(error.message || 'Failed to fetch new code', 'Close', {
+                                    duration: 3000,
+                                    panelClass: ['snackbar-error'],
+                                });
+                                setTimeout(() => {
+                                    this.isLoading = false;
+                                }, 1500);
+                            }
+                        });
+                    } else {
+                        console.error('Failed to add inspection attribute:', response.message);
+                        this._snackBar.open(response.message || 'Failed to save data', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error'],
+                        });
+                        this.isLoading = false;
+                    }
+                },
+                // error: (error) => {
+                //     console.error('ERROR ADDING inspection_attribute:', error);
+                //     console.error('API ERROR RESPONSE:', error.error);
+                //     console.error('FULL ERROR OBJECT:', JSON.stringify(error, null, 2));
+                //     let errorMessage = 'Failed to add inspection attribute';
+                //     if (error.error) {
+                //         if (error.error.exception?.resultDescription?.length) {
+                //             errorMessage = error.error.exception.resultDescription[0];
+                //         } else if (error.error.message) {
+                //             errorMessage = error.error.message;
+                //         } else {
+                //             errorMessage = error.message || 'An unknown error occurred.';
+                //         }
+                //     }
+                //     this._snackBar.open(errorMessage, 'Close', {
+                //         duration: 3000,
+                //         panelClass: ['snackbar-error'],
+                //     });
+                //     this.isLoading = false;
+                // }
+            });
+        } else {
+            this._snackBar.open('Fill the mandatory Attribute field.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error'],
+            });
+        }
+    }
+    // attributes = [
+    //     { id: '746e6d32-cc14-4c8a-bf5f-11ea7b004237', name: 'Aesthetic' },
+    //     { id: '16eaea79-8f12-43b6-9a74-496af1ab075d', name: 'Dimensional' },
+    //     { id: '5df8cf9b-5b38-4964-b24d-02c35d934d65', name: 'Functional' }
+    // ];
+    onNextClickInspectionAttributes(): void {
+        this._qualitativeResultsService.ListAllInspectionAttributes().subscribe({
+            next: () => {
+                // Go to next step after data is fetched
+                this.clearingSessionStorage();
+                this.stepper.next();
+            },
+            error: (err) => {
+                console.error('Failed to load inspection attributes:', err);
+            }
+        });
+    }
+    onUpdateInspectionAttributes(): void {
+        this.isValidate = true;
+        if (this.inspectionAttributesForm.valid) {
+            const formValues = this.inspectionAttributesForm.value;
+            if (!formValues.id) {
+                this._snackBar.open('ID is required for updating the attribute.', 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+            const payload: UpdateInspectionAttributeRequest = {
+                id: formValues.id,
+                name: formValues.name,
+                description: formValues.description,
+                tag: formValues.tag ?? null,
+                isActive: formValues.isActive ?? false,
+            };
+            console.log('UPDATING PAYLOAD:', payload);
+            // return;
+            this.inspectionAttributesService.updateInspectionAttribute(payload).subscribe({
+                next: (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-success'],
+                        });
+                        setTimeout(() => {
+                            this._router.navigate(['/master-data/list-of-inspection-attributes'], {
+                                relativeTo: this._activatedRoute,
+                            });
+                            this.clearingSessionStorage();
+                        }, 1500);
+                    }
+                },
+                error: (error) => {
+                    console.error('API REQUEST FAILED:', error);
+                    let errorMessage = 'Update failed. Please try again.';
+                    if (error.error?.exception?.name?.length) {
+                        errorMessage = error.error.exception.name[0];
+                    } else if (error.error?.message) {
+                        errorMessage = error.error.message;
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-error'],
+                    });
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-inspection-attributes'], {
+                            relativeTo: this._activatedRoute,
+                        });
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode:', this.isEditMode);
+                    }, 2000);
+                }
+            });
+        } else {
+            this._snackBar.open('Fill the mandatory fields.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error'],
+            });
+        }
+    }
+
+    // FETCH inspection_attributes mat-select VALUES DYNAMICALLY
+    private loadInspectionAttributes(): void {
+        this.inspectionAttributesService.ListAllInspectionAttributes().subscribe({
+            next: (response) => {
+                if (response.isRequestSuccess && response.data) {
+                    // Map to dropdown format, filter active attributes
+                    this.attributes = response.data
+                        .filter(attr => attr.isActive)
+                        .map(attr => ({
+                            id: attr.id,
+                            name: attr.name
+                        }));
+                    console.log('DYNAMIC ATTRIBUTES LOADED:', this.attributes);
+                } else {
+                    console.error('FAILED TO LOAD ATTRIBUTES:', response.message);
+                    this._snackBar.open(response.message || 'Failed to load attributes', 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error'],
+                    });
+                }
+            },
+            error: (error) => {
+                console.error('ERROR FETCHING ATTRIBUTES:', error.message);
+                this._snackBar.open(error.message || 'Error fetching attributes', 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+            }
+        });
     }
 }

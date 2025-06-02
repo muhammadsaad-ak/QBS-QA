@@ -61,6 +61,13 @@ export const compactNavigation: QbsNavigationItem[] = [
                 link: '/master-data/list-of-unit-measure-setup',
             },
             {
+                id: 'master-data.list-of-inspection-attributes',
+                title: 'List of Inspection Attributes',
+                type: 'basic',
+                icon: 'heroicons_outline:document-duplicate',
+                link: '/master-data/list-of-inspection-attributes',
+            },
+            {
                 id: 'master-data.list-of-inspection-management',
                 title: 'List of Inspection Characteristics',
                 type: 'basic',

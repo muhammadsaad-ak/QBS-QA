@@ -114,18 +114,90 @@
       </mat-step>
       <!-- Unit Of Measure ENDS -->
 
+      <!-- Inspection Attributes STARTS -->
+      <mat-step [stepControl]="inspectionAttributesForm" label="Inspection Attributes">
+        <form [formGroup]="inspectionAttributesForm">
+          <h1 class="custom-heading">Inspection&nbsp;Attributes</h1>
+          <div class="flex flex-wrap gap-4 mt-2 items-start">
+            <!-- ID (CONDITIONALLY HIDDEN) -->
+            <mat-form-field *ngIf="isEditMode" class="w-full sm:w-[calc(25%-16px)] min-w-[100px] hidden">
+              <mat-label>ID</mat-label>
+              <input matInput formControlName="id" class="view-mode-bg-grey cursor-not-allowed" readonly>
+            </mat-form-field>
+            <!-- Code -->
+            <mat-form-field class="w-full sm:w-[calc(25%-16px)] min-w-[100px]">
+              <mat-label>Code</mat-label>
+              <input matInput formControlName="intCode" class="view-mode-bg-grey cursor-not-allowed" readonly>
+            </mat-form-field>
+            <!-- Attribute -->
+            <mat-form-field class="w-full sm:w-[calc(75%-16px)] min-w-[200px]">
+              <mat-label>Attribute Name</mat-label>
+              <input matInput formControlName="name" placeholder="Enter Attribute" required>
+              <mat-error *ngIf="isValidate">Required.</mat-error>
+            </mat-form-field>
+            <mat-form-field class="w-full sm:w-[calc(100%-16px)] min-w-[200px] hidden">
+              <mat-label>Attribute Description</mat-label>
+              <input matInput formControlName="description" class="view-mode-bg-grey cursor-not-allowed" readonly>
+            </mat-form-field>
+          </div>
+          <!-- Checkboxes Section -->
+          <div class="flex flex-col w-full" *ngIf="isEditMode">
+            <div class="flex items-center">
+              <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
+              <label class="text-lg">Active</label>
+            </div>
+          </div>
+          <!-- navigation -->
+          <div class="step-navigation">
+            <!-- loader -->
+            <div *ngIf="isLoading" class="loader">
+              <mat-spinner diameter="33"></mat-spinner>
+            </div>
+            <!-- back -->
+            <div>
+              <button mat-button class="bg-primary-700" matStepperPrevious *ngIf="!isEditMode">
+                <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+              </button>
+            </div>
+            <!-- Save Button -->
+            <div matTooltip="Fill&nbsp;the&nbsp;mandatory&nbsp;field" [matTooltipDisabled]="isIAFormValid()">
+              <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" [disabled]="!isIAFormValid()"
+                [ngClass]="{
+                        'invalid-disabled-button': !isIAFormValid()}" (click)="onSubmitInspectionAttributes()">
+                Save
+              </button>
+            </div>
+            <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickInspectionAttributes()">
+              <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+            </button>
+            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateInspectionAttributes()">Update</button>
+          </div>
+        </form>
+      </mat-step>
+      <!-- Inspection Attributes ENDS -->
+
       <!-- Inspection Characteristic STARTS -->
       <mat-step [stepControl]="fourthFormGroup" label="Inspection Characteristic">
         <form [formGroup]="fourthFormGroup">
           <h1 class="custom-heading">Inspection Characteristic</h1>
           <!-- Responsive Flexbox Container -->
           <div style="display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
-            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
-              <mat-label>Inspection Code</mat-label>
+            <!-- Inspection Code -->
+            <mat-form-field class="w-full sm:w-[calc(25%-16px)] min-w-[100px]">
+              <mat-label>Inspection&nbsp;Code</mat-label>
               <input class="view-mode-bg-grey" matInput formControlName="intCode" readonly style="cursor: not-allowed;">
             </mat-form-field>
+            <!-- Attribute -->
+            <mat-form-field class="w-full sm:w-[calc(25%-16px)] min-w-[100px]">
+              <mat-label>Attribute</mat-label>
+              <mat-select formControlName="attributeId">
+                <mat-option *ngFor="let attr of attributes" [value]="attr.id">
+                  {{ attr.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>            
             <!-- Description -->
-            <mat-form-field style="flex: 1 1 calc(70% - 16px); min-width: 200px;">
+            <mat-form-field class="w-full sm:w-[calc(50%-16px)] min-w-[100px]">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="description" required>
               <mat-error *ngIf="isValidate && fourthFormGroup.get('description').invalid">Required.</mat-error>
@@ -146,10 +218,14 @@
                     [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'quantitative'}">
                     Quantitative Inspection
                   </mat-radio-button>
+                  <mat-radio-button class="mb-2" [value]="'both'"
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'both'}">
+                    Both
+                  </mat-radio-button>
                 </mat-radio-group>
               </div>
               <!-- Main Card Section -->
-              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
+              <div class="mt-2 w-full" >
                 <table class="w-full border border-gray-200 border-collapse">
                   <thead class="bg-gray-800 text-white">
                     <tr>
@@ -161,10 +237,28 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
+                    <tr *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="singleCriteria" class="w-full"
+                        <input type="text" placeholder="Enter Qualitative Criteria" formControlName="singleCriteria" class="w-full"
                           [required]="fourthFormGroup.get('type')?.value === 'qualitative'" />
+                      </td>
+                    </tr>
+                    <tr *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'">
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Quantitative Criteria" formControlName="quantitativeCriteria" class="w-full"
+                          [required]="fourthFormGroup.get('type')?.value === 'quantitative'" />
+                      </td>
+                    </tr>
+                    <tr *ngIf="fourthFormGroup.get('type')?.value === 'both'">
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Qualitative Criteria" formControlName="singleCriteria" class="w-full"
+                          [required]="fourthFormGroup.get('type')?.value === 'qualitative'" />
+                      </td>
+                    </tr>
+                    <tr *ngIf="fourthFormGroup.get('type')?.value === 'both'">
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+               <input type="text" placeholder="Enter Quantitative Criteria" formControlName="quantitativeCriteria" class="w-full"
+                          [required]="fourthFormGroup.get('type')?.value === 'quantitative'" />
                       </td>
                     </tr>
                   </tbody>
@@ -775,7 +869,7 @@
           <mat-tab-group class="w-full p-0 h-72 overflow-y-auto" mat-stretch-tabs="true" [animationDuration]="1500"
             (selectedTabChange)="onTabChange($event)"> <!-- class="sm:px-2" -->
             <!-- Qualitative Inspection TAB STARTS -->
-            <mat-tab label="Qualitative Inspection">
+            <mat-tab label="Qualitative Inspection IIC">
               <ng-template matTabContent>
                 <div class="pt-0 lg:ml-9 lg:mr-13">
                   <div class="w-full">

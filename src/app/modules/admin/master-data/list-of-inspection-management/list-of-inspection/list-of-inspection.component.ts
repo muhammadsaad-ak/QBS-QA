@@ -209,14 +209,14 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
     };
     sessionStorage.setItem('stepperDataICH', JSON.stringify(dataToSendIntoStepperICH));
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
-      queryParams: { step: 2 }
+      queryParams: { step: 3 }
     });
   }
 
   openStepperToAddICH(): void {
     sessionStorage.removeItem('stepperDataICH');
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
-      queryParams: { step: 2 }
+      queryParams: { step: 3 }
     });
   }
 }
