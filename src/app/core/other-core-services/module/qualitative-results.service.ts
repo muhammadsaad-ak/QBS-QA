@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from 'environments/environment';
 import {
@@ -11,6 +11,9 @@ import {
     throwError,
 } from 'rxjs';
 
+interface NextIntResponse {
+    nextInt: number;
+}
 
 @Injectable({
     providedIn: 'root',
@@ -21,12 +24,16 @@ export class QualitativeResultsService {
     // BehaviorSubject to hold role data state
     private _listQualitativeResults = new BehaviorSubject<any[]>([]);
     private _qualityResultsCode = new BehaviorSubject<any[]>([]);
+    private _inspectionAttributesNextIntCode = new BehaviorSubject<any[]>([]);
+    private _listinspectionAttributes = new BehaviorSubject<any[]>([]);
 
 
     // Observable to expose role data state
     listQualitativeResults$: Observable<any[]> = this._listQualitativeResults.asObservable();
+    listinspectionAttributes$: Observable<any[]> = this._listinspectionAttributes.asObservable();
 
     qualityResultCode$: Observable<any[]> = this._qualityResultsCode.asObservable(); //For IC Code API
+    inspectionAttributesNextIntCode$: Observable<any[]> = this._inspectionAttributesNextIntCode.asObservable();
 
 
     /**
@@ -128,4 +135,69 @@ export class QualitativeResultsService {
             })
         );
     }
+        //  GET NEXT INT COUNT QUALITATIVE RESULT
+    getInspectionAttributesNextIntCount(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/INextIntCodeFeature/GetNextIntCount?entityName=inspection_attribute`, { headers })
+            .pipe(
+                tap((InspectionAttributesNextInt) => {
+                    const nextIntCodeInspectionAttribute = (InspectionAttributesNextInt as any) ?? [];
+                    this._inspectionAttributesNextIntCode.next(nextIntCodeInspectionAttribute);
+                    // console.log('API RESPONSE', nextIntCodeInspectionAttribute);
+                    console.log('FETCHECD inspection_attribute NextIntCount', nextIntCodeInspectionAttribute.data);
+                }),
+                catchError((error) => {
+                    const errorMessage = error?.error?.message || error?.message || 'Unknown error occurred';
+                    return throwError(() => new Error(`FAILED TO FETCH inspection_attribute NextIntCount: ${errorMessage}`));
+                })
+            );
+    }
+
+        AddInspectionAttributes(data: any): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+        });
+        return this._httpClient.post(
+            `${environment.appApiUrl}/CSAPI/IInspectionAttributeFeature/AddInspectionAttribute`,
+            data,
+            { headers }
+        ).pipe(
+            tap(response => console.log('RESPONSE:', response)),
+            catchError(error => {
+                console.error('ERROR ADDING AddInspectionAttributes', error);
+                return throwError(() => error);
+            })
+        );
+    }
+
+    ListAllInspectionAttributes(): Observable<any> {
+    const headers = new HttpHeaders({
+        Authorization: `Bearer ${this.accessToken}`,
+        Accept: 'application/json',
+    });
+
+    return this._httpClient
+        .get(`${environment.appApiUrl}/CSAPI/IInspectionAttributeFeature/ListAllInspectionAttributes`, {
+            headers,
+        })
+        .pipe(
+            tap((response: any) => {
+                const attributes = response?.data ?? [];
+                this._inspectionAttributesNextIntCode.next(attributes);
+                console.log('Fetched Attributes:', attributes);
+            }),
+            catchError((error) => {
+                console.error('Error fetching inspection attributes', error);
+                return throwError(() => new Error('Error fetching inspection attributes'));
+            })
+        );
+}
+
+
 }
