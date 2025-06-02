@@ -3295,136 +3295,151 @@ export class TestingStepperComponent implements AfterViewInit {
 
 
     // Inspection Card
-    onSubmitInspectionCard(): void {
-        this.isValidate = true;
-        if (!this.fifthFormGroup.valid) {
-            this._snackBar.open('Fill the mandatory Description field.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
-        if (this.fifthFormGroup.valid) { 
-        const formValue = this.fifthFormGroup.value;
+   onSubmitInspectionCard(): void {
+    this.isValidate = true;
 
-        // Validation: At least one qualitative and one quantitative characteristic required
-        const hasQualitative = formValue.qualitativeTableCriteria.length > 0;
-        const hasQuantitative = formValue.quantitativeTableCriteria.length > 0;
+    if (!this.fifthFormGroup.valid) {
+        this._snackBar.open('Fill the mandatory Description field.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+        });
+        return;
+    }
 
-        if (!hasQualitative || !hasQuantitative) {
-            this._snackBar.open('At least one qualitative and one quantitative characteristic is required.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
+    const formValue = this.fifthFormGroup.value;
 
-        this.isLoading = true; 
-        this._inspectionCharateristics.getInspectionCharacteristics()
-            .pipe(
-                switchMap((charResponse) => {
-                    const mappedIds = charResponse.data.map((char: any) => ({
-                        description: char.description,
-                        id: char.id,
-                    }));
+    // Validation: At least one qualitative and one quantitative characteristic required
+    const hasQualitative = formValue.qualitativeTableCriteria.length > 0;
+    const hasQuantitative = formValue.quantitativeTableCriteria.length > 0;
 
-                    // Find matching qualitative IDs
-                    const qualitativeIds = formValue.qualitativeTableCriteria
-                        .map((item) => mappedIds.find((char) => char.description === item.parameter)?.id)
-                        .filter(Boolean);
+    if (!hasQualitative || !hasQuantitative) {
+        this._snackBar.open('At least one qualitative and one quantitative characteristic is required.', 'Close', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+        });
+        return;
+    }
 
-                    // Find matching quantitative IDs
-                    const quantitativeIds = formValue.quantitativeTableCriteria
-                        .map((item) => mappedIds.find((char) => char.description === item.parameterX)?.id)
-                        .filter(Boolean);
+    this.isLoading = true;
 
-                    // Validation: Ensure mapped IDs are not empty
-                    if (qualitativeIds.length === 0 || quantitativeIds.length === 0) {
-                        this._snackBar.open('At least one valid qualitative and one valid quantitative characteristic is required.', 'Close', {
-                            duration: 3000,
-                            panelClass: ['snackbar-error']
-                        });
-                        return of(null); // Return an Observable to stop the chain gracefully
-                    }
+    this._inspectionCharateristics.getInspectionCharacteristics()
+        .pipe(
+            switchMap((charResponse) => {
+                const mappedIds = charResponse.data.map((char: any) => ({
+                    description: char.description,
+                    id: char.id,
+                    type: char.type
+                }));
 
-                    // Final API payload
-                    const apiPayload = {
-                        description: formValue.description,
-                        isActive: formValue.isActive,
-                        characteristicsIds: [...qualitativeIds, ...quantitativeIds],
-                    };
+                console.log('Mapped Characteristics:', mappedIds);
+                console.log('Form qualitativeTableCriteria:', formValue.qualitativeTableCriteria);
+                console.log('Form quantitativeTableCriteria:', formValue.quantitativeTableCriteria);
 
-                    console.log('Final API Payload:', apiPayload);
-                    return this._inspectionCard.AddInspectionCard(apiPayload);
-                }),
-                switchMap((response) => {
-                    if (response === null) {
-                        // Validation failed earlier, stop here
-                        this.isLoading = false;
-                        return of(null);
-                    }
-                    if (response?.isRequestSuccess) {
-                        this.isValidate = false;
-                        console.log('🎉 API RUN SUCCESSFULLY:', response);
-                        this._snackBar.open('Data saved successfully!', 'Close', {
-                            duration: 1500,
-                            panelClass: ['snackbar-success']
-                        });
-                        this.fifthFormGroup.get('description')?.setValue(null);
-                        this.fifthFormGroup.get('intCode')?.setValue(null);
-                        this.fifthFormGroup.get('id')?.setValue(null);
-                        this.qualitativeTableCriteria.clear();
-                        this.quantitativeTableCriteria.clear();
-                        this.initializeTableWithDefaultRow(); 
-                        this.initializeTableWithDefaultRowX(); 
-                        return this._inspectionCardsCode.getInspectionCardCode();
-                    }
-                    throw response; // Throw full response for error handling
-                })
-            )
-            .subscribe(
-                (inspectionCardCode) => {
-                    if (inspectionCardCode === null) {
-                        // Chain stopped due to validation
-                        return;
-                    }
-                    const y = inspectionCardCode.data;
-                    console.log('Fetched Code:', y); // Debugging
-                    if (y) {
-                        const fullCode = `IC-000${y}`;
-                        setTimeout(() => {
-                            this.fifthFormGroup.get('intCode')?.setValue(fullCode);
-                            console.log('New Inspection Card Code:', this.fifthFormGroup.get('intCode')?.value);
-                            this.isLoading = false; 
-                        }, 1500);
-                    } else {
-                        console.error('No code received from API');
-                        this.isLoading = false; 
-                    }
-                },
-                (error) => {
-                    console.error('❌ API REQUEST FAILED:', error);
-                    let errorMessage = "This description is already being used and cannot be duplicated.";
-                    if (error.error) {
-                        if (error.error.exception?.description?.length) {
-                            errorMessage = error.error.exception.description[0];
-                        } else if (error.error.message) {
-                            errorMessage = error.error.message;
-                        } else {
-                            errorMessage = error.error?.message || 'An unknown error occurred.';
-                        }
-                    }
-                    this._snackBar.open(errorMessage, 'Close', {
-                        duration: 1500,
+                const qualitativeIds = formValue.qualitativeTableCriteria
+                    .map((item: any) =>
+                        mappedIds.find(
+                            (char) =>
+                                char.description === item.parameter &&
+                                char.type === 'qualitative'
+                        )?.id
+                    )
+                    .filter(Boolean);
+
+                const quantitativeIds = formValue.quantitativeTableCriteria
+                    .map((item: any) =>
+                        mappedIds.find(
+                            (char) =>
+                                char.description === item.parameterX &&
+                                char.type === 'quantitative'
+                        )?.id
+                    )
+                    .filter(Boolean);
+
+                if (qualitativeIds.length === 0 || quantitativeIds.length === 0) {
+                    this._snackBar.open('At least one valid qualitative and one valid quantitative characteristic is required.', 'Close', {
+                        duration: 3000,
                         panelClass: ['snackbar-error']
                     });
+                    this.isLoading = false;
+                    return of(null);
+                }
+
+                const apiPayload = {
+                    description: formValue.description,
+                    isActive: formValue.isActive,
+                    characteristicsIds: [...new Set([...qualitativeIds, ...quantitativeIds])]
+                };
+
+                console.log('Final API Payload:', apiPayload);
+                return this._inspectionCard.AddInspectionCard(apiPayload);
+            }),
+            switchMap((response) => {
+                if (response === null) {
+                    return of(null);
+                }
+
+                if (response?.isRequestSuccess) {
+                    this.isValidate = false;
+
+                    this._snackBar.open('Data saved successfully!', 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-success']
+                    });
+
+                    this.fifthFormGroup.get('description')?.setValue(null);
+                    this.fifthFormGroup.get('intCode')?.setValue(null);
+                    this.fifthFormGroup.get('id')?.setValue(null);
+
+                    this.qualitativeTableCriteria.clear();
+                    this.quantitativeTableCriteria.clear();
+                    this.initializeTableWithDefaultRow();
+                    this.initializeTableWithDefaultRowX();
+
+                    return this._inspectionCardsCode.getInspectionCardCode();
+                }
+
+                throw response;
+            })
+        )
+        .subscribe(
+            (inspectionCardCode) => {
+                if (inspectionCardCode === null) return;
+
+                const y = inspectionCardCode.data;
+                if (y) {
+                    const fullCode = `IC-000${y}`;
                     setTimeout(() => {
+                        this.fifthFormGroup.get('intCode')?.setValue(fullCode);
                         this.isLoading = false;
                     }, 1500);
+                } else {
+                    console.error('No code received from API');
+                    this.isLoading = false;
                 }
-            );
-        }
-    }
+            },
+            (error) => {
+                console.error('❌ API REQUEST FAILED:', error);
+                let errorMessage = "This description is already being used and cannot be duplicated.";
+                if (error.error) {
+                    if (error.error.exception?.description?.length) {
+                        errorMessage = error.error.exception.description[0];
+                    } else if (error.error.message) {
+                        errorMessage = error.error.message;
+                    } else {
+                        errorMessage = error.error?.message || 'An unknown error occurred.';
+                    }
+                }
+                this._snackBar.open(errorMessage, 'Close', {
+                    duration: 1500,
+                    panelClass: ['snackbar-error']
+                });
+                setTimeout(() => {
+                    this.isLoading = false;
+                }, 1500);
+            }
+        );
+}
+
 
 
 
