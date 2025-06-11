@@ -310,27 +310,73 @@
               <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
                 <table class="w-full border border-gray-200 border-collapse">
                   <thead class="bg-gray-800 text-white">
-                    <tr>
-                      <th class="p-2 text-left w-full">
-                        <div class="flex justify-between">
-                          <span>Criteria</span>
-                        </div>
-                      </th>
-                    </tr>
+                    <tr><th class="p-2 text-left w-full">Qualitative Criteria</th></tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Criteria" formControlName="singleCriteria" class="w-full" />
+                        <input type="text" placeholder="Enter Qualitative Criteria"
+                              formControlName="singleCriteria" class="w-full" />
                       </td>
                     </tr>
                   </tbody>
                 </table>
-                <span>
-                  <mat-error *ngIf="isValidate && fourthFormGroup.get('singleCriteria').invalid 
-                    && fourthFormGroup.get('type')?.value === 'qualitative'">Required.</mat-error>
-                </span>
               </div>
+
+            <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'">
+  <table class="w-full border border-gray-200 border-collapse">
+    <thead class="bg-gray-800 text-white">
+      <tr>
+        <th class="p-2 text-left w-full">
+          <div class="flex justify-between">
+            <span>Criteria</span>
+          </div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="px-4 py-2 text-sm border-b border-r text-center">
+          <input type="text" placeholder="Enter Quantitative Criteria" formControlName="quantitativeCriteria" class="w-full" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <span>
+    <mat-error *ngIf="isValidate && fourthFormGroup.get('quantitativeCriteria').invalid 
+      && fourthFormGroup.get('type')?.value === 'quantitative'">Required.</mat-error>
+  </span>
+</div>
+
+              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'both'">
+                <table class="w-full border border-gray-200 border-collapse">
+                  <thead class="bg-gray-800 text-white">
+                    <tr><th class="p-2 text-left w-full">Qualitative Criteria</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Qualitative Criteria"
+                              formControlName="singleCriteria" class="w-full" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="w-full border border-gray-200 border-collapse mt-2">
+                  <thead class="bg-gray-800 text-white">
+                    <tr><th class="p-2 text-left w-full">Quantitative Criteria</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Quantitative Criteria"
+                              formControlName="quantitativeCriteria" class="w-full" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
               <div class="step-navigation">
                 <button mat-button class="bg-primary-700" matStepperPrevious>
                   <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
@@ -869,7 +915,7 @@
           <mat-tab-group class="w-full p-0 h-72 overflow-y-auto" mat-stretch-tabs="true" [animationDuration]="1500"
             (selectedTabChange)="onTabChange($event)"> <!-- class="sm:px-2" -->
             <!-- Qualitative Inspection TAB STARTS -->
-            <mat-tab label="Qualitative Inspection IIC">
+            <mat-tab label="Qualitative Inspection">
               <ng-template matTabContent>
                 <div class="pt-0 lg:ml-9 lg:mr-13">
                   <div class="w-full">

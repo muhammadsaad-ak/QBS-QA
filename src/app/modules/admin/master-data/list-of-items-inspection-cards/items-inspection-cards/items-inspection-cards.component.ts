@@ -332,7 +332,7 @@ export class ItemsInspectionCardsComponent {
         };
         sessionStorage.setItem('stepperDataIIC', JSON.stringify(dataToSendIntoStepperIIC));
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
-          queryParams: { step: 4 },
+          queryParams: { step: 5 },
         });
       }
     });
@@ -341,7 +341,7 @@ export class ItemsInspectionCardsComponent {
   openStepperToAddIIC(): void {
     sessionStorage.removeItem('stepperDataIIC');
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
-      queryParams: { step: 4 }
+      queryParams: { step: 5 }
     });
   }
 }

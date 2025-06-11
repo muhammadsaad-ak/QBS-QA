@@ -150,14 +150,14 @@ export class ItemsSamplesComponent {
     };
     sessionStorage.setItem('stepperDataIS', JSON.stringify(dataToSendIntoStepperIS));
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
-      queryParams: { step: 5 }
+      queryParams: { step: 6 }
     });
   }
 
   openStepperToAddIS(): void {
     sessionStorage.removeItem('stepperDataIS');
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
-      queryParams: { step: 5 }
+      queryParams: { step: 6 }
     });
   }
 }
