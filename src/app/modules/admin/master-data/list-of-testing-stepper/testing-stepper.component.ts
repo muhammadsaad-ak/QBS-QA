@@ -2379,11 +2379,10 @@ export class TestingStepperComponent implements AfterViewInit {
             this.rowDataICH = storedDataICH ? JSON.parse(storedDataICH) : null;
         }
         if (this.rowDataICH) {
-            this.isEditMode = this.rowDataICH.isEditMode ?? false;
-            console.log('isEditMode:', this.isEditMode);
-            console.log('RECEIVED ICH DATA:', this.rowDataICH);
-            // POPULATE FORM, fourthFormGroup, WITH RECEIVED DATA - rowDataICH
-            this.populateInspectionCharacteristicsData(this.rowDataICH);
+        this.isEditMode = this.rowDataICH.isEditMode ?? false;
+        console.log('isEditMode:', this.isEditMode);
+        console.log('RECEIVED ICH DATA:', this.rowDataICH);
+        this.populateInspectionCharacteristicsData(this.rowDataICH);
         } else {
             console.log('NO ICH DATA RECEIVED');
             // this.isEditMode = false;
@@ -3614,43 +3613,55 @@ export class TestingStepperComponent implements AfterViewInit {
     isDisabled = true;
 
     // POPULATE INSPECTION CHARACTERISTIC STARTS
-    populateInspectionCharacteristicsData(data: any): void {
-        if (!data) {
-            console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
-            return;
-        }
-        // MAPPING RESPONSE
-        console.log(data);
-        const formattedICHintCode =
-            'ICH-' + this.rowDataICH.intCode.toString().padStart(5, '0');
-        this.fourthFormGroup.patchValue({
-            id: this.rowDataICH.id,
-            intCode: formattedICHintCode,
-            description: this.rowDataICH.description,
-            singleCriteria: this.rowDataICH.singleCriteria,
-            isActive: this.rowDataICH.isActive,
-            type: this.rowDataICH.type,
-            attributeId: this.rowDataICH.attributeId,
-        });
-        const criteriaFormArray = this.fourthFormGroup.get(
-            'qualitativeCriteriaObjects'
-        ) as FormArray;
+  populateInspectionCharacteristicsData(data: any): void {
+  if (!data) {
+    console.error('NO DATA RECEIVED TO POPULATE THE FORM FIELDS.');
+    return;
+  }
 
-        // Iterate through `qualitativeCriteriaResultsObjects` and update existing descriptions
-        this.rowDataICH.qualitativeCriteriaResultsObjects.forEach(
-            (criteria: any, index: number) => {
-                // Access each FormGroup inside the FormArray by index
-                const criteriaGroup = criteriaFormArray.at(index) as FormGroup;
+  if (!this.rowDataICH) {
+    console.error('rowDataICH is undefined');
+    return;
+  }
 
-                // Update the description value for each criteria
-                if (criteriaGroup) {
-                    criteriaGroup.patchValue({
-                        description: criteria.description,
-                    });
-                }
-            }
-        );
-    }
+  console.log('POPULATING FORM WITH ICH DATA:', data);
+
+  const formattedICHintCode = 'ICH-' + this.rowDataICH.intCode.toString().padStart(5, '0');
+
+  // Patch basic fields
+  this.fourthFormGroup.patchValue({
+    id: this.rowDataICH.id,
+    intCode: formattedICHintCode,
+    description: this.rowDataICH.description,
+    singleCriteria: this.rowDataICH.singleCriteria,
+    isActive: this.rowDataICH.isActive,
+    type: this.rowDataICH.type,
+    attributeId: this.rowDataICH.attributeId,
+      quantitativeCriteria: data.quantitativeCriteria || '',
+
+  });
+
+  // Qualitative FormArray
+  const criteriaFormArray = this.fourthFormGroup.get('qualitativeCriteriaObjects') as FormArray;
+
+  // Clear existing form controls to avoid mismatch
+  criteriaFormArray.clear();
+
+  // Check and populate qualitative criteria
+  if (Array.isArray(this.rowDataICH.qualitativeCriteriaResultsObjects)) {
+    this.rowDataICH.qualitativeCriteriaResultsObjects.forEach((criteria: any) => {
+      const criteriaGroup = this.fb.group({
+        description: [criteria.description || '', Validators.required],
+        result: [criteria.result || ''],
+        isPass: [criteria.isPass ?? null]
+      });
+      criteriaFormArray.push(criteriaGroup);
+    });
+  } else {
+    console.warn('qualitativeCriteriaResultsObjects not found or invalid');
+  }
+}
+
     // POPULATE INSPECTION CHARACTERISTIC ENDS
 
     // UPDATE INSPECTION CHARACTERISTIC STARTS

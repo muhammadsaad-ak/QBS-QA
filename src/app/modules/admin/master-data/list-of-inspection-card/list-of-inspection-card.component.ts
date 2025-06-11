@@ -209,14 +209,14 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
           };
           sessionStorage.setItem('stepperDataIC', JSON.stringify(dataToSendIntoStepperIC));
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
-          queryParams: { step: 3 }
+          queryParams: { step: 4 }
         });
       }
     
       openStepperToAddIC(): void {
         sessionStorage.removeItem('stepperDataIC');
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
-          queryParams: { step: 3 }
+          queryParams: { step: 4 }
         });
       }
     }
