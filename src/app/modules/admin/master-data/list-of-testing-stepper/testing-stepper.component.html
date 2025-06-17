@@ -177,7 +177,7 @@
       <!-- Inspection Attributes ENDS -->
 
       <!-- Inspection Characteristic STARTS -->
-      <mat-step [stepControl]="fourthFormGroup" label="Inspection Characteristic">
+      <mat-step [stepControl]="fourthFormGroup" label="Inspection Characteristics">
         <form [formGroup]="fourthFormGroup">
           <h1 class="custom-heading">Inspection Characteristic</h1>
           <!-- Responsive Flexbox Container -->
@@ -198,8 +198,8 @@
             </mat-form-field>            
             <!-- Description -->
             <mat-form-field class="w-full sm:w-[calc(50%-16px)] min-w-[100px]">
-              <mat-label>Description</mat-label>
-              <input matInput placeholder="Enter Description" formControlName="description" required>
+              <mat-label>Parameter</mat-label>
+              <input matInput placeholder="Enter Parameter" formControlName="description" required>
               <mat-error *ngIf="isValidate && fourthFormGroup.get('description').invalid">Required.</mat-error>
             </mat-form-field>
             <!-- Active Checkbox -->
@@ -264,8 +264,16 @@
                   </tbody>
                 </table>
                 <span class="text-sm font-medium text-red-500">
-                  <mat-error *ngIf="isValidate && fourthFormGroup.get('singleCriteria').invalid 
-                    && fourthFormGroup.get('type')?.value === 'qualitative'">Required.</mat-error>
+                  <mat-error *ngIf="isValidate && fourthFormGroup.get('singleCriteria').invalid && fourthFormGroup.get('type')?.value === 'qualitative'">
+                  Required.
+                  </mat-error>
+                  <mat-error *ngIf="isValidate && fourthFormGroup.get('quantitativeCriteria').invalid && fourthFormGroup.get('type')?.value === 'quantitative'">
+                    Required.
+                  </mat-error>
+                  <mat-error *ngIf="isValidate && fourthFormGroup.get('type')?.value === 'both' && 
+                  (fourthFormGroup.get('singleCriteria').invalid || fourthFormGroup.get('quantitativeCriteria').invalid)">
+                  Both criteria fields are required.
+                  </mat-error>
                 </span>
               </div>
               <div class="step-navigation">
@@ -402,7 +410,7 @@
                 style=" cursor: not-allowed;">
             </mat-form-field>
             <!-- ID -->
-            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode" class="hidden">
+            <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;" *ngIf="isEditMode && !isCloneIC" class="hidden">
               <mat-label>ID</mat-label>
               <input class="view-mode-bg-grey" matInput formControlName="id" readonly style=" cursor: not-allowed;">
             </mat-form-field>
@@ -645,7 +653,8 @@
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCards()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateInspectionCard()">Update</button>
+            <button mat-button class="next-button" *ngIf="isEditMode && !isCloneIC" (click)="onUpdateInspectionCard()">Update</button>
+            <button mat-button class="next-button" *ngIf="isEditMode && isCloneIC" (click)="onSubmitInspectionCard()">Save</button>
           </div>
         </form>
       </mat-step>

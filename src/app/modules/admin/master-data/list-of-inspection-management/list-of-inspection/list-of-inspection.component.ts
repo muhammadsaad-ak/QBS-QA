@@ -73,7 +73,7 @@ export class ListOfInspectionComponent implements OnInit, OnDestroy {
   //   { inspectionCode: 'T002', description: 'Transparency Level', inspectionType: 'Quantitative', status: 'Inactive' },
   // ];
   
-  displayedColumns: string[] = ['serialId', 'intCode' , 'description', 'type', 'isActive', 'action'];
+  displayedColumns: string[] = ['serialId', 'intCode' , 'description', 'type', 'attribute', 'isActive', 'action'];
   // dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
   dataSource = new MatTableDataSource<any>([]);
   
