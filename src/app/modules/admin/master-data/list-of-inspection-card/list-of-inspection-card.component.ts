@@ -39,6 +39,8 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { InspectionCardService } from 'app/core/other-core-services/module/inspection-card.service';
 import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { debounceTime } from 'rxjs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 
 @Component({
     selector: 'app-list-of-inspection-card',
@@ -72,6 +74,7 @@ import { debounceTime } from 'rxjs';
         NgTemplateOutlet,
         ReactiveFormsModule,
         MatTableModule,
+        MatTooltipModule,
     ],
 })
 export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
@@ -206,14 +209,25 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
         console.log('SENDING DATA:', rowDataIC);
         const dataToSendIntoStepperIC = {
             ...rowDataIC, isEditMode: true // Send isEditMode as true
-          };
-          sessionStorage.setItem('stepperDataIC', JSON.stringify(dataToSendIntoStepperIC));
+        };
+        sessionStorage.setItem('stepperDataIC', JSON.stringify(dataToSendIntoStepperIC));
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
-          queryParams: { step: 4 }
+            queryParams: { step: 4 }
         });
-      }
-    
-      openStepperToAddIC(): void {
+    }
+
+    openStepperToCloneIC(rowDataIC: any): void {
+        console.log('SENDING DATA:', rowDataIC);
+        const dataToSendIntoStepperIC = {
+            ...rowDataIC, isEditMode: true, isCloneIC: true // Send isEditMode as true
+        };
+        sessionStorage.setItem('stepperDataIC', JSON.stringify(dataToSendIntoStepperIC));
+        this._router.navigate(['/master-data/list-of-testing-stepper'], {
+            queryParams: { step: 4 }
+        });
+    }
+
+    openStepperToAddIC(): void {
         sessionStorage.removeItem('stepperDataIC');
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
           queryParams: { step: 4 }

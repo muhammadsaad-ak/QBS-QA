@@ -104,6 +104,7 @@ interface itemSamplingRangeIF {
 })
 
 export class TestingStepperComponent implements AfterViewInit {
+    isCloneIC: boolean = false;
     isIICNewAdd: boolean = false;
     isEditMode: boolean = false;
     isValidate: boolean = false;
@@ -2406,7 +2407,6 @@ export class TestingStepperComponent implements AfterViewInit {
         // UPDATE INSPECTION CHARACTERISTICS ENDS
 
         // UPDATE INSPECTION CARD STARTS
-        //  RETRIEVING rowDataQR
         if (!this.rowDataIC) {
             const storedDataIC = sessionStorage.getItem('stepperDataIC'); // IF rowDataIC IS MISSING, GET FROM sessionStorage
             this.rowDataIC = storedDataIC ? JSON.parse(storedDataIC) : null;
@@ -2414,7 +2414,9 @@ export class TestingStepperComponent implements AfterViewInit {
         if (this.rowDataIC) {
             // this.isEditMode = true;
             this.isEditMode = this.rowDataIC.isEditMode ?? false;
+            this.isCloneIC = this.rowDataIC.isCloneIC ?? false;
             console.log('isEditMode:', this.isEditMode);
+            console.log('isCloneIC:', this.isCloneIC);
             // console.log('RECEIVED IC DATA:', this.rowDataIC);
             // POPULATE FORM, fifthFormGroup, WITH RECEIVED DATA - rowDataIC
             this.populateICData(this.rowDataIC);
@@ -2565,6 +2567,7 @@ export class TestingStepperComponent implements AfterViewInit {
             this._sessionStorageService.clearAll();
         }
         console.log('this.isEditMode', this.isEditMode);
+        console.log('this.isCloneIC', this.isCloneIC);
         console.log('this.isValidate', this.isValidate);
     }
 
@@ -2717,12 +2720,13 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedItemDescription: string = '';
     //
     onRowCheckboxChangeItems(selectedRow: any): void {
-        if (this.dataSourceItems.data) {
-            this.dataSourceItems.data.forEach(
-                (row) => (row.isSelected = false)
-            );
-            selectedRow.isSelected = true;
-        }
+        // if (this.dataSourceItems.data) {
+        //     this.dataSourceItems.data.forEach(
+        //         (row) => (row.isSelected = false)
+        //     );
+        //     selectedRow.isSelected = true;
+        // }
+        selectedRow.isSelected = !selectedRow.isSelected;
     }
 
     applyFilterItems(event: Event) {
@@ -2732,44 +2736,115 @@ export class TestingStepperComponent implements AfterViewInit {
 
     // DUPLICATE VALIDATION
     addSelectedRowItem(): void {
+        // this.dialog.closeAll();
+
+        // const selectedRow = this.dataSourceItems.data.find(
+        //     (row) => row.isSelected
+        // );
+
+        // if (!selectedRow) {
+        //     console.log('NO ROW SELECTED');
+        //     return;
+        // }
+
+        // // CHECK IF CHARACTERISTIC IS ALREADY EXISTS
+        // const isDuplicateCharacteristic = this.qualitativeTableCriteria.controls.some((control) => {
+        //     const formGroup = control as FormGroup;
+        //     return formGroup.get('parameter')?.value === selectedRow.description;
+        // });
+
+        // if (isDuplicateCharacteristic) {
+        //     this._snackBar.open('DUPLICATE ENTRY: SELECTED CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
+        //         duration: 3000,
+        //         panelClass: ['snackbar-error']
+        //     });
+        //     return;
+        // }
+
+        // if (this.selectedControlAccountRowIndex !== -1) {
+        //     const rowFormGroup = this.qualitativeTableCriteria.at(
+        //         this.selectedControlAccountRowIndex
+        //     ) as FormGroup;
+        //     rowFormGroup.get('parameter')?.setValue(selectedRow.description);
+        //     this.selectedInspectionCode = selectedRow.intCode;
+        //     this.selectedItemDescription = selectedRow.description;
+
+        //     console.log('SELECTED ROW:', selectedRow);
+        //     console.log('UPDATED ROW INDEX:', this.selectedControlAccountRowIndex);
+        // }
+
+        // // Reset the index after selection
+        // this.selectedControlAccountRowIndex = -1;
+
+        // MULTIPLE SELECTION
         this.dialog.closeAll();
-
-        const selectedRow = this.dataSourceItems.data.find(
-            (row) => row.isSelected
-        );
-
-        if (!selectedRow) {
+        const selectedRows = this.dataSourceItems.data.filter(row => row.isSelected);
+        if (selectedRows.length === 0) {
             console.log('NO ROW SELECTED');
             return;
         }
 
-        // CHECK IF CHARACTERISTIC IS ALREADY EXISTS
-        const isDuplicateCharacteristic = this.qualitativeTableCriteria.controls.some((control) => {
-            const formGroup = control as FormGroup;
-            return formGroup.get('parameter')?.value === selectedRow.description;
-        });
+        let startIndex = 0;
 
-        if (isDuplicateCharacteristic) {
-            this._snackBar.open('DUPLICATE ENTRY: SELECTED CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
-
+        // CASE 1: Update existing row at index
         if (this.selectedControlAccountRowIndex !== -1) {
-            const rowFormGroup = this.qualitativeTableCriteria.at(
-                this.selectedControlAccountRowIndex
-            ) as FormGroup;
+            const selectedRow = selectedRows[0];
+
+            const isDuplicate = this.qualitativeTableCriteria.controls.some((control, index) => {
+                const formGroup = control as FormGroup;
+                return (
+                    formGroup.get('parameter')?.value === selectedRow.description &&
+                    index !== this.selectedControlAccountRowIndex
+                );
+            });
+
+            if (isDuplicate) {
+                this._snackBar.open(
+                    `DUPLICATE ENTRY: ${selectedRow.description} is already added.`,
+                    'Close',
+                    { duration: 3000, panelClass: ['snackbar-error'] }
+                );
+                return;
+            }
+
+            const rowFormGroup = this.qualitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;
             rowFormGroup.get('parameter')?.setValue(selectedRow.description);
+
             this.selectedInspectionCode = selectedRow.intCode;
             this.selectedItemDescription = selectedRow.description;
 
-            console.log('SELECTED ROW:', selectedRow);
+            console.log('UPDATED ROW:', selectedRow);
             console.log('UPDATED ROW INDEX:', this.selectedControlAccountRowIndex);
+
+            startIndex = 1; // skip first row (already used for update)
         }
 
-        // Reset the index after selection
+        // CASE 2: Add remaining selected rows
+        for (let i = startIndex; i < selectedRows.length; i++) {
+            const selectedRow = selectedRows[i];
+
+            const isDuplicate = this.qualitativeTableCriteria.controls.some((control) => {
+                const formGroup = control as FormGroup;
+                return formGroup.get('parameter')?.value === selectedRow.description;
+            });
+
+            if (isDuplicate) {
+                this._snackBar.open(
+                    `DUPLICATE ENTRY: ${selectedRow.description} is already added.`,
+                    'Close',
+                    { duration: 3000, panelClass: ['snackbar-error'] }
+                );
+                continue;
+            }
+
+            const newRow = this.fb.group({
+                parameter: [selectedRow.description]
+            });
+
+            this.qualitativeTableCriteria.push(newRow);
+        }
+
+        // Clear selected index after operation
         this.selectedControlAccountRowIndex = -1;
     }
 
@@ -2823,8 +2898,9 @@ export class TestingStepperComponent implements AfterViewInit {
     ];
 
     onRowCheckboxChangeItemsX(selectedRow: any): void {
-        this.dataSourceItemsX.data.forEach((row) => (row.isSelected = false));
-        selectedRow.isSelected = true;
+        // this.dataSourceItemsX.data.forEach((row) => (row.isSelected = false));
+        // selectedRow.isSelected = true;
+        selectedRow.isSelected = !selectedRow.isSelected;
     }
 
     applyFilterItemsX(event: Event): void {
@@ -2834,43 +2910,115 @@ export class TestingStepperComponent implements AfterViewInit {
 
     // DUPLICATE VALIDATION
     addSelectedRowItemX(): void {
+        // this.dialog.closeAll();
+
+        // const selectedRow = this.dataSourceItemsX.data.find(
+        //     (row) => row.isSelected
+        // );
+
+        // if (!selectedRow) {
+        //     console.log('NO ROW SELECTED');
+        //     return;
+        // }
+
+        // // CHECK IF CHARACTERISTIC IS ALREADY EXISTS
+        // const isDuplicate = this.quantitativeTableCriteria.controls.some((control) => {
+        //     const formGroup = control as FormGroup;
+        //     return formGroup.get('parameterX')?.value === selectedRow.description;
+        // });
+
+        // if (isDuplicate) {
+        //     this._snackBar.open('DUPLICATE ENTRY: SELECTED CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
+        //         duration: 3000,
+        //         panelClass: ['snackbar-error']
+        //     });
+        //     return;
+        // }
+
+        // if (this.selectedControlAccountRowIndex !== -1) {
+        //     const rowFormGroup = this.quantitativeTableCriteria.at(
+        //         this.selectedControlAccountRowIndex
+        //     ) as FormGroup;
+        //     rowFormGroup.get('parameterX')?.setValue(selectedRow.description);
+        //     rowFormGroup.get('id')?.setValue(selectedRow.id); // Storing the `id` in form
+
+        //     console.log('SELECTED ROW:', selectedRow);
+        // }
+
+        // // Reset the index after selection
+        // this.selectedControlAccountRowIndex = -1;
+
+        // MULTIPLE SELECTION
         this.dialog.closeAll();
 
-        const selectedRow = this.dataSourceItemsX.data.find(
-            (row) => row.isSelected
-        );
+    const selectedRows = this.dataSourceItemsX.data.filter(row => row.isSelected);
 
-        if (!selectedRow) {
-            console.log('NO ROW SELECTED');
+    if (selectedRows.length === 0) {
+        console.log('NO ROW SELECTED');
+        return;
+    }
+
+    let startIndex = 0;
+
+    // CASE 1: Update existing row at index
+    if (this.selectedControlAccountRowIndex !== -1) {
+        const selectedRow = selectedRows[0];
+
+        const isDuplicate = this.quantitativeTableCriteria.controls.some((control, index) => {
+            const formGroup = control as FormGroup;
+            return (
+                formGroup.get('parameterX')?.value === selectedRow.description &&
+                index !== this.selectedControlAccountRowIndex
+            );
+        });
+
+        if (isDuplicate) {
+            this._snackBar.open(
+                `DUPLICATE ENTRY: ${selectedRow.description} is already attached.`,
+                'Close',
+                { duration: 3000, panelClass: ['snackbar-error'] }
+            );
             return;
         }
 
-        // CHECK IF CHARACTERISTIC IS ALREADY EXISTS
+        const rowFormGroup = this.quantitativeTableCriteria.at(this.selectedControlAccountRowIndex) as FormGroup;
+        rowFormGroup.get('parameterX')?.setValue(selectedRow.description);
+        rowFormGroup.get('id')?.setValue(selectedRow.id); // Storing ID if needed
+
+        console.log('UPDATED ROW:', selectedRow);
+        console.log('UPDATED ROW INDEX:', this.selectedControlAccountRowIndex);
+
+        startIndex = 1; // Skip first row in add loop
+    }
+
+    // CASE 2: Add remaining selected rows
+    for (let i = startIndex; i < selectedRows.length; i++) {
+        const selectedRow = selectedRows[i];
+
         const isDuplicate = this.quantitativeTableCriteria.controls.some((control) => {
             const formGroup = control as FormGroup;
             return formGroup.get('parameterX')?.value === selectedRow.description;
         });
 
         if (isDuplicate) {
-            this._snackBar.open('DUPLICATE ENTRY: SELECTED CHARACTERISTIC IS ALREADY ATTACHED.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
+            this._snackBar.open(
+                `DUPLICATE ENTRY: ${selectedRow.description} is already attached.`,
+                'Close',
+                { duration: 3000, panelClass: ['snackbar-error'] }
+            );
+            continue;
         }
 
-        if (this.selectedControlAccountRowIndex !== -1) {
-            const rowFormGroup = this.quantitativeTableCriteria.at(
-                this.selectedControlAccountRowIndex
-            ) as FormGroup;
-            rowFormGroup.get('parameterX')?.setValue(selectedRow.description);
-            rowFormGroup.get('id')?.setValue(selectedRow.id); // Storing the `id` in form
+        const newRow = this.fb.group({
+            parameterX: [selectedRow.description],
+            id: [selectedRow.id]
+        });
 
-            console.log('SELECTED ROW:', selectedRow);
-        }
+        this.quantitativeTableCriteria.push(newRow);
+    }
 
-        // Reset the index after selection
-        this.selectedControlAccountRowIndex = -1;
+    // Reset the index after operation
+    this.selectedControlAccountRowIndex = -1;
     }
 
     onSubmitQualitativeResult(): void {
@@ -3028,17 +3176,40 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
 
+    // updateSingleCriteriaValidation(): void {
+    //     const singleCriteriaControl = this.fourthFormGroup.get('singleCriteria');
+    //     const characteristicType = this.fourthFormGroup.get('type')?.value;
+    //     // if (this.fourthFormGroup.get('type')?.value === 'qualitative') {
+    //     if (characteristicType === 'qualitative') {
+    //         singleCriteriaControl?.setValidators([Validators.required]);
+    //     } else {
+    //         singleCriteriaControl?.clearValidators();
+    //         singleCriteriaControl?.setValue(null);
+    //     }
+    //     singleCriteriaControl?.updateValueAndValidity();
+    // }
+
+    // @IAK
+    //  16062025    
     updateSingleCriteriaValidation(): void {
+        const type = this.fourthFormGroup.get('type')?.value;
         const singleCriteriaControl = this.fourthFormGroup.get('singleCriteria');
-        const characteristicType = this.fourthFormGroup.get('type')?.value;
-        // if (this.fourthFormGroup.get('type')?.value === 'qualitative') {
-            if (characteristicType === 'qualitative') {
+        const quantitativeCriteriaControl = this.fourthFormGroup.get('quantitativeCriteria');
+        // RESET VALIDATORS
+        singleCriteriaControl?.clearValidators();
+        quantitativeCriteriaControl?.clearValidators();
+        // SET VALIDATORS BASED ON TYPE
+        if (type === 'qualitative') {
             singleCriteriaControl?.setValidators([Validators.required]);
-        } else {
-            singleCriteriaControl?.clearValidators();
-            singleCriteriaControl?.setValue(null);
+        } else if (type === 'quantitative') {
+            quantitativeCriteriaControl?.setValidators([Validators.required]);
+        } else if (type === 'both') {
+            singleCriteriaControl?.setValidators([Validators.required]);
+            quantitativeCriteriaControl?.setValidators([Validators.required]);
         }
+        // UPDATE VALIDITY
         singleCriteriaControl?.updateValueAndValidity();
+        quantitativeCriteriaControl?.updateValueAndValidity();
     }
 
     // INSPECTION CHARACTERISTIC STARTS
@@ -3049,6 +3220,23 @@ export class TestingStepperComponent implements AfterViewInit {
         const formValue = this.fourthFormGroup.value;
         if (formValue.type === "qualitative" && (!formValue.singleCriteria || formValue.singleCriteria.trim() === "")) {
             this._snackBar.open('Add mandatory criteria field', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+        if (formValue.type === "quantitative" && (!formValue.quantitativeCriteria || formValue.quantitativeCriteria.trim() === "")) {
+            this._snackBar.open('Add mandatory criteria field', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+        if (formValue.type === "both" && (
+            !formValue.singleCriteria || formValue.singleCriteria.trim() === "" ||
+            !formValue.quantitativeCriteria || formValue.quantitativeCriteria.trim() === ""
+        )) {
+            this._snackBar.open('Add both mandatory criteria fields', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error']
             });
@@ -3384,6 +3572,17 @@ export class TestingStepperComponent implements AfterViewInit {
                         duration: 1500,
                         panelClass: ['snackbar-success']
                     });
+
+                    
+    if (this.rowDataIC?.isCloneIC) {
+        // ✅ If clone mode, navigate just like update
+        setTimeout(() => {
+            this._router.navigate(['/master-data/list-of-inspection-card'], { relativeTo: this._activatedRoute });
+            this.clearingSessionStorage();
+            this.isLoading = false;
+        }, 1500);
+        return of(null); // Prevent further chaining
+    }
 
                     this.fifthFormGroup.get('description')?.setValue(null);
                     this.fifthFormGroup.get('intCode')?.setValue(null);
@@ -3754,14 +3953,46 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         // MAPPING RESPONSE
         console.log(data);
-        const formattedICintCode =
-            'IC-' + this.rowDataIC.intCode.toString().padStart(5, '0');
-        this.fifthFormGroup.patchValue({
-            id: this.rowDataIC.id,
-            intCode: formattedICintCode,
-            description: this.rowDataIC.description,
-            isActive: this.rowDataIC.isActive,
-        });
+        // const formattedICintCode =
+        //     'IC-' + this.rowDataIC.intCode.toString().padStart(5, '0');
+        // this.fifthFormGroup.patchValue({
+        //     id: this.rowDataIC.id,
+        //     intCode: formattedICintCode,
+        //     description: this.rowDataIC.description,
+        //     isActive: this.rowDataIC.isActive,
+        // });
+        console.log(data);
+
+if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
+    // Fetch new code from service
+    this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+        const y = inspectionCardCode.data;
+        console.log('Fetched Code:', y); // Debugging
+
+        if (y) {
+            const fullCode = `IC-000${y}`;
+            this.fifthFormGroup.patchValue({
+                id: null,
+                intCode: fullCode,         // Set new code
+                description: null,         // Clear description
+                isActive: this.rowDataIC.isActive,
+            });
+        } else {
+            console.error('No code received from API');
+        }
+    });
+} else {
+    const formattedICintCode =
+        'IC-' + this.rowDataIC.intCode.toString().padStart(5, '0');
+
+    this.fifthFormGroup.patchValue({
+        id: this.rowDataIC.id,
+        intCode: formattedICintCode,
+        description: this.rowDataIC.description,
+        isActive: this.rowDataIC.isActive,
+    });
+}
+
     }
 
     // UPDATE INSPECTION CARD STARTS
@@ -4583,6 +4814,7 @@ export class TestingStepperComponent implements AfterViewInit {
         sessionStorage.removeItem('stepperDataIIC');
         sessionStorage.removeItem('stepperDataIICNew');
         this.isEditMode = false;
+        this.isCloneIC = false;
         this.isValidate = false;
         console.log('this.isEditMode', this.isEditMode);
         console.log('this.isValidate', this.isValidate);
@@ -4812,10 +5044,18 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // @IAK
     // VALIDATING INSPECTION CHARACTERISTIC FORM
-    isICFormValid(): boolean { 
+    // isICFormValid(): boolean { 
+    //     const descriptionControl = this.fourthFormGroup.get('description');
+    //     return (
+    //         descriptionControl?.valid && !!descriptionControl.value
+    //     );
+    // }
+        isICFormValid(): boolean { 
         const descriptionControl = this.fourthFormGroup.get('description');
+        const attributeControl = this.fourthFormGroup.get('attributeId');
         return (
-            descriptionControl?.valid && !!descriptionControl.value
+            descriptionControl?.valid && !!descriptionControl.value &&
+            attributeControl?.valid && !!attributeControl.value
         );
     }
     // @IAK
