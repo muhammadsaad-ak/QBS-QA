@@ -26,11 +26,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { SAPItemsService } from 'app/core/other-core-services/module/sap-list-all-items.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs'; 
 import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { InspectionAttributesService } from 'app/core/other-core-services/module/inspection-attributes.service';
+import { from } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
+
 
 interface AddInspectionAttributeRequest {
     name: string;
@@ -104,6 +107,9 @@ interface itemSamplingRangeIF {
 })
 
 export class TestingStepperComponent implements AfterViewInit {
+    selectedItemsIS: any[] = []; // TO STORE SELECTED ITEMS FROM ITEM CODE DIALOG - ITEM SAMPLE
+    selectedItemDescriptionsIS: string[] = [];  // TO STORE SELECTED ITEM DESCRIPTIONS FROM ITEM CODE DIALOG - ITEM SAMPLE
+
     isCloneIC: boolean = false;
     isIICNewAdd: boolean = false;
     isEditMode: boolean = false;
@@ -189,28 +195,9 @@ export class TestingStepperComponent implements AfterViewInit {
         tag: [null],
         isActive: [true],
     });
+
     // ITEM SAMPLE
-    itemSamplingForm = this._formBuilder.group({
-        sampleCodeIS: [''],
-        itemCode: ['', Validators.required],
-        itemId: ['', Validators.required],
-        itemDescription: ['', Validators.required],
-        flexibility: [false],
-        isActive: [true],
-        // samplingRangeObjects: this._formBuilder.array([]),
-        samplingRangeObjects: this._formBuilder.array([], [Validators.required]),
-        id: [''],
-    });
-    displayedColumnsItemSamplingRange = [
-        'lotSizeMin',
-        'lotSizeMax',
-        'sampleQty',
-        'criticalDefects',
-        'majorDefects',
-        'minorDefects',
-    ];
-    dataSourceItemSampling = new MatTableDataSource<itemSamplingRangeIF>();
-    selectionItemSampling = new SelectionModel<itemSamplingRangeIF>(true, []);
+
 
     // dataSourceItemSampling = new MatTableDataSource<itemSamplingIF>();
     // get samples(): FormArray {
@@ -221,111 +208,39 @@ export class TestingStepperComponent implements AfterViewInit {
         return this.itemSamplingForm.get('samplingRangeObjects') as FormArray;
     }
 
-    addNewRowItemSampling(): void {
-        const itemSamplingFormGroup = this.fb.group({
-            lotSizeMin: [null, [Validators.required, Validators.min(1)]],
-            lotSizeMax: [null, [Validators.required, Validators.min(1)]],
-            sampleQty: [null, [Validators.required, Validators.min(1)]],
-            criticalDefects: [null],
-            majorDefects: [null],
-            minorDefects: [null],
-        });
-        // this.samples.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
-        // this.dataSourceItemSampling.data = [...this.samples.value]; // Update the table data source
-        this.samplingRangeObjects.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
-        this.dataSourceItemSampling.data = [...this.samplingRangeObjects.value]; // Update the table data source
-    }
 
-    // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
-    @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
-    onItemSampleItemCodeClick() {
-        this.fetchListAllItems();
-        const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
-            width: '75vw',
-            height: '90vh',
-            data: this.dataSourceItemCodeIS,
-        });
-        dialogRef.afterClosed().subscribe((result) => {
-            console.log('DIALOG CLOSED');
-        });
-    }
-    displayedColumnsItemCodeIS: string[] = [
-        'itemCode',
-        'itemDescription',
-        'itemGroup',
-    ];
-    selectedIntCodeIS: number;
-    selectedItemCodeIS: string;
-    selectedItemIdIS: string;
-    selectedItemDescriptionIS: string = '';
-    //
-    onRowCheckboxChangeItemCodeIS(selectedRow: any): void {
-        this.dataSourceItemCodeIS.data.forEach(
-            (row) => (row.isSelected = false)
-        );
-        selectedRow.isSelected = true;
-    }
-    //
-    addSelectedRowItemCodeIS(): void {
-        this.dialog.closeAll();
-        const selectedRow = this.dataSourceItemCodeIS.data.find(
-            (row) => row.isSelected
-        );
-        if (selectedRow) {
-            this.itemSamplingForm.get('itemCode').setValue(selectedRow.itemCode);
-            this.itemSamplingForm.get('itemId').setValue(selectedRow.id);
-            this.itemSamplingForm.get('itemDescription').setValue(selectedRow.name);
 
-            this.selectedIntCodeIS = selectedRow.intCode;
-            this.selectedItemIdIS = selectedRow.id;
-            this.selectedItemCodeIS = selectedRow.itemCode;
-            this.selectedItemDescriptionIS = selectedRow.name;
 
-            // @IAK
-            // VALIDATE DUPLICATE HANDLING - itemSamplingForm
-            this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
-                const isItemAlreadyOpened = items.data.some(
-                    (item) => item.itemCode === this.selectedItemCodeIS
-                );
-                if (isItemAlreadyOpened) {
-                    const snackRefSuccess = this._snackBar.open('This item is already open, and sampling ranges are defined.', 'Close', {
-                        duration: 3000,
-                        horizontalPosition: 'center',
-                        verticalPosition: 'top'
-                    });
-                    snackRefSuccess.afterDismissed().subscribe(() => {
-                        console.log(this.itemSamplingForm.value);
-                        this.selectedIntCodeIS = null;
-                        this.selectedItemIdIS = null;
-                        this.selectedItemCodeIS = null;
-                        this.selectedItemDescriptionIS = null;
-                        this.itemSamplingForm.get('itemCode').setValue(null);
-                        this.itemSamplingForm.get('itemDescription').setValue(null);
-                        this.itemSamplingForm.get('itemId').setValue(null);
-                        this.itemSamplingForm.get('itemCode').setValidators([Validators.required]);
-                        this.itemSamplingForm.get('itemDescription').setValidators([Validators.required]);
-                        this.itemSamplingForm.get('itemCode').updateValueAndValidity();
-                        this.itemSamplingForm.get('itemDescription').updateValueAndValidity();
-                        console.log(this.itemSamplingForm.value);
-                        this.cdr.detectChanges();
-                    });
+
+    fetchListAllItems() {
+        return this._itemSamplesService.getListAllItems().pipe(
+            switchMap((response) => {
+                if (response && response.isRequestSuccess && response.data) {
+                    this.dataSourceItemCodeIS = new MatTableDataSource(response.data);
+                    console.log('FETCHED ITEMS:', this.dataSourceItemCodeIS.data);
+                    return of(this.dataSourceItemCodeIS.data);
+                } else {
+                    console.warn('INVALID API RESPONSE:', response);
+                    this.dataSourceItemCodeIS = new MatTableDataSource([]);
+                    return of([]);
                 }
-            });
-
-            console.log('SELECTED ROW:', selectedRow);
-        } else {
-            console.log('NO ROW SELECTED');
-        }
+            }),
+            // Handle errors gracefully
+            catchError((err) => {
+                console.error('ERROR FETCHING ITEMS:', err);
+                this.dataSourceItemCodeIS = new MatTableDataSource([]);
+                return of([]);
+            })
+        );
     }
 
-    applyFilterItemSampleCode(event: Event) {
-        const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSourceItemCodeIS.filter = filterValue.trim().toLowerCase();
-    }
-    // ITEM SAMPLE ITEM CODE NG TEMPLATE ENDS
+    //
 
-    // ITEM SAMPLE ITEM CODE NG TEMPLATE STARTS
-    @ViewChild('dialogTemplateItemSampleItems') dialogTemplateItemSampleItems;
+
+
+
+
+
     // dataSourceItemSampleCode!: MatTableDataSource<any>;
     dataSourceItemSampleCode = new MatTableDataSource([
         {
@@ -344,55 +259,14 @@ export class TestingStepperComponent implements AfterViewInit {
         },
     ]);
     //
-    onItemSampleItemCodeClickx() {
-        const dialogRef = this.dialog.open(this.dialogTemplateItemSampleItems, {
-            width: '75vw',
-            height: '90vh',
-            data: this.dataSourceItemSampleCode,
-        });
-        dialogRef.afterClosed().subscribe((result) => {
-            console.log('DIALOG CLOSED');
-        });
-    }
-    displayedColumnsItemSampleCode: string[] = [
-        'itemCode',
-        'itemDescription',
-        'itemGroup',
-    ];
-    selectedItemSampleCode: string = '';
-    selectedItemSampleDescription: string = '';
+
+
     //
-    onRowCheckboxChangeItemSampleCode(selectedRow: any): void {
-        this.dataSourceItemSampleCode.data.forEach(
-            (row) => (row.isSelected = false)
-        );
-        selectedRow.isSelected = true;
-    }
+
     //
-    addSelectedRowItemSampleCode(): void {
-        this.dialog.closeAll();
-        const selectedRow = this.dataSourceItemSampleCode.data.find(
-            (row) => row.isSelected
-        );
-        if (selectedRow) {
-            this.itemSamplingForm
-                .get('itemCode')
-                .setValue(selectedRow.itemCode);
-            this.itemSamplingForm
-                .get('itemDescription')
-                .setValue(selectedRow.itemDescription);
-            this.selectedItemSampleCode = selectedRow.itemCode;
-            this.selectedItemSampleDescription = selectedRow.itemDescription;
-            console.log('SELECTED ROW:', selectedRow);
-        } else {
-            console.log('NO ROW SELECTED');
-        }
-    }
+
     //
-    applyFilterItemSampleCodex(event: Event) {
-        const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSourceItemSampleCode.filter = filterValue.trim().toLowerCase();
-    }
+
     // ITEM SAMPLE ITEM CODE NG TEMPLATE ENDS
 
     // Inspection Characteristic
@@ -2591,7 +2465,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     
 
-    fetchListAllItems(): void {
+    XfetchListAllItems(): void {
         this._itemSamplesService.getListAllItems().subscribe({
             next: (response) => {
                 if (response && response.isRequestSuccess && response.data) {
@@ -3335,150 +3209,8 @@ export class TestingStepperComponent implements AfterViewInit {
     //     }
     // }
 
-    onSubmitItemSamplingForm(): void {
-        this.isValidate = true;
-        // Check if samplingRangeObjects is empty
-        if (this.samplingRangeObjects.length === 0) {
-            this._snackBar.open('At least one sampling range is required.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error'],
-            });
-            return;
-        }
-        if (this.itemSamplingForm.valid) {
-            const formValues = this.itemSamplingForm.value;
-            // const payload = { ...formValues, };
-            const { id, itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
-            console.log('SENDING ITEM SAMPLING PAYLOAD:', payload); // Debugging
-            // return;
-            // VALIDATION CHECKS FOR samplingRangeObjects
-            const samplingRanges = payload.samplingRangeObjects as Array<{ sampleQty: number; lotSizeMin: number; lotSizeMax: number }>;
-            for (let i = 0; i < samplingRanges.length; i++) {
-                const range = samplingRanges[i];
-                if (range.lotSizeMin >= range.lotSizeMax) {
-                    const errorMessage = "Lot Size Min must be less than Lot Size Max.";
-                    this._snackBar.open(errorMessage, 'Close', {
-                        duration: 3000,
-                        panelClass: ['snackbar-error']
-                    });
-                    return;
-                }
-                // if (range.sampleQty < range.lotSizeMin || range.sampleQty > range.lotSizeMax) {
-                //     const errorMessage = "Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.";
-                //     this._snackBar.open(errorMessage, 'Close', {
-                //         duration: 3000,
-                //         panelClass: ['snackbar-error']
-                //     });
-                //     return;
-                // }
-                if (range.sampleQty > range.lotSizeMax) {
-                    const errorMessage = "Sample Qty must be less than Lot Size Max.";
-                    this._snackBar.open(errorMessage, 'Close', {
-                        duration: 3000,
-                        panelClass: ['snackbar-error']
-                    });
-                    return;
-                }
-                for (let j = 0; j < i; j++) {
-                    const prevRange = samplingRanges[j];
-                    if (range.lotSizeMin <= prevRange.lotSizeMax) {
-                        const errorMessage = "The defined sampling ranges must not overlap.";
-                        this._snackBar.open(errorMessage, 'Close', {
-                            duration: 3000,
-                            panelClass: ['snackbar-error']
-                        });
-                        return;
-                    }
-                }
-            }
 
-            console.log('FORM SUBMISSION PAYLOAD:', payload);
-            // this.itemSamplingForm.reset();
-            // return;
-            this._itemSamplesService.AddSampleWithRanges(payload).subscribe(
-                (response) => {
-                    if (response.isRequestSuccess) {
-                        this.isValidate = false;
-                        console.log('API RUN SUCCESSFULLY.', payload);
-                        setTimeout(() => {
-                            const snackRefSuccess = this._snackBar.open('Data saved successfully!', 'Close', {
-                                duration: 1550,
-                                panelClass: ['snackbar-success']
-                            });
-                            snackRefSuccess.afterDismissed().subscribe(() => {
-                                // this.itemSamplingForm.get('sampleCodeIS')?.setValue(null);
-                                this.itemSamplingForm.get('id')?.setValue('');
-                                this.itemSamplingForm.get('itemId')?.setValue('');
-                                this.itemSamplingForm.get('itemCode')?.setValue('');
-                                this.itemSamplingForm.get('itemDescription')?.setValue('');
-                                this.itemSamplingForm.get('flexibility')?.setValue(false);
-                                this.itemSamplingForm.get('isActive')?.setValue(true);
-                                this.itemSamplingForm.get('samplingRangeObjects')?.reset(); // Reset the FormArray
-                                // this.itemSamplingForm.get('samplingRangeObjects')?.setValue([]);
-                                // (this.itemSamplingForm.get('samplingRangeObjects') as FormArray)?.clear(); 
-                                console.log(this.itemSamplingForm.value);
-                                this.cdr.detectChanges();
-                            });
-                            this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
-                                const fetchedCodeIS = sampleCodeIS.data;
-                                console.log('FETCHED SAMPLE CODE:', fetchedCodeIS);
-                                if (fetchedCodeIS) {
-                                    const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
-                                    this.itemSamplingForm
-                                        .get('sampleCodeIS')
-                                        ?.setValue(formattedSampleCodeIS);
-                                }
-                                setTimeout(() => {
-                                    this.isLoading = false;
-                                    this.isValidate = false;
-                                    this.isValidate = false;
-                                }, 1500);
-                            });
-                        }, 1500);
-                        // this.stepper.next();
-                    } else {
-                        console.log('API RESPONSE (NON-ERROR):', response);
-                    }
-                },
-                (error) => {
-                        console.error('API REQUEST FAILED:', error);
-                        console.log('API ERROR RESPONSE:', error.error);
-                        let errorMessage = 'Error while adding data.';
-                        if (error.error) {
-                            if (error.error.exception?.itemId?.length) {
-                                errorMessage = "Item cannot be duplicated. This item already opened.";
-                                // EXTRACT error message FROM API RESPONSE
-                                // API RESPONSE 
-                                // errorMessage = error.error.exception.itemId[0];
-                            } else if (error.error.exception?.[`samplingRangeObjects[0]`]?.length) {
-                                errorMessage = error.error.exception[`samplingRangeObjects[0]`][0];
-                            } else if (error.error.message) {
-                                errorMessage = error.error.message;
-                            }
-                        }
-                        const snackRefIS = this._snackBar.open(errorMessage, 'Close', {
-                            duration: 3000,
-                            panelClass: ['snackbar-error']
-                        });
-                        snackRefIS.afterDismissed().subscribe(() => {
-                            console.log(this.itemSamplingForm.value);
-                            this.itemSamplingForm.get('id')?.setValue(null);
-                            this.itemSamplingForm.get('itemId')?.setValue(null);
-                            this.itemSamplingForm.get('itemCode')?.setValue(null);
-                            this.itemSamplingForm.get('itemDescription')?.setValue(null);
-                            this.itemSamplingForm.get('isActive')?.setValue(true);
-                            console.log(this.itemSamplingForm.value);
-                        });
-                    }
-                );
-        } else {
-            this._snackBar.open('FILL ALL THE MANDATORY FIELDS WITH VALID VALUES.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
-    }
+
 
 
     // Inspection Card
@@ -4625,182 +4357,7 @@ if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
         );
     }
 
-    validatingSamplingRange: string = '';
-    onUpdateIS(): void {
-        this.isValidate = true;
-        this.validatingSamplingRange = '';
 
-        if (this.itemSamplingForm.valid) {
-            const formValues = this.itemSamplingForm.value;
-            const { sampleCodeIS, itemCode, itemId, itemDescription, samplingRangeObjects, ...payload } = formValues;
-            const initialSamplingRangeObjects = this.initialSamplingRangeObjects;
-
-            // TRACK INVALID ROWS TO UPDATE
-            let invalidRowFound = false;
-
-            const updatedSamplingRangeObjects = samplingRangeObjects
-                .filter((object: any, index: number) => {
-                    const initialObject = initialSamplingRangeObjects[index];
-
-                    // IF initialObject DOESN'T EXIST, IT'S A NEW ROW.
-                    if (!initialObject) {
-                        return true; // NEW OBJECT 
-                    }
-
-                    // CHECK IF ANY FIELD IS DIFFERENT BETWEEN THE CURRENT AND INITIAL OBJECT
-                    return (
-                        object.lotSizeMin !== initialObject.lotSizeMin ||
-                        object.lotSizeMax !== initialObject.lotSizeMax ||
-                        object.sampleQty !== initialObject.sampleQty ||
-                        object.criticalDefects !== initialObject.criticalDefects ||
-                        object.majorDefects !== initialObject.majorDefects ||
-                        object.minorDefects !== initialObject.minorDefects
-                    );
-                })
-                .map((object: any) => {
-                    // SKIP ROWS WHERE lotSizeMin, lotSizeMax, or sampleQty ARE INVALID OR MISSING
-                    if (
-                        object.lotSizeMin == null || object.lotSizeMin === '' ||
-                        object.lotSizeMax == null || object.lotSizeMax === '' ||
-                        object.sampleQty == null || object.sampleQty === ''
-                    ) {
-                        invalidRowFound = true;
-
-                        // ADD SPECIFIC VALIDATION MESSAGE FOR EACH FIELD
-                        if (object.lotSizeMin == null || object.lotSizeMin === '') {
-                            this.validatingSamplingRange = 'Lot Size Min is required. ';
-                        }
-                        if (object.lotSizeMax == null || object.lotSizeMax === '') {
-                            this.validatingSamplingRange += 'Lot Size Max is required. ';
-                        }
-                        if (object.sampleQty == null || object.sampleQty === '') {
-                            this.validatingSamplingRange += 'Sample Qty is required. ';
-                        }
-                        // this.isValidate = false;
-                        return null; // SKIP INVALID ROWS
-                    }
-
-                    // CONVERT TO NUMBERS FOR VALIDATION
-                    const lotSizeMin = Number(object.lotSizeMin);
-                    const lotSizeMax = Number(object.lotSizeMax);
-                    const sampleQty = Number(object.sampleQty);
-                    // VALIDATION: lotSizeMin < lotSizeMax
-                    if (lotSizeMin >= lotSizeMax) {
-                        this.validatingSamplingRange = 'Lot Size Min must be less than Lot Size Max.';
-                        // this.isValidate = false;
-                        return null;
-                    }
-                    // VALIDATION: sampleQty STRICTLY BETWEEN lotSizeMin & lotSizeMax
-                    // if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
-                    //     this.validatingSamplingRange = 'Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.';
-                    //     this.isValidate = false;
-                    //     return null;
-                    // }
-                    if (sampleQty > lotSizeMax) {
-                        this.validatingSamplingRange = 'Sample Qty must be less than Lot Size Max';
-                        // this.isValidate = false;
-                        return null;
-                    }
-
-                    // RETURN VALID OBJECT
-                    return {
-                        id: object.id || undefined,
-                        lotSizeMin: lotSizeMin,
-                        lotSizeMax: lotSizeMax,
-                        sampleQty: sampleQty,
-                        criticalDefects: object.criticalDefects,
-                        majorDefects: object.majorDefects,
-                        minorDefects: object.minorDefects
-                    };
-                })
-                .filter((object: any) => object !== null); // REMOVE NULL ROWS
-
-            // VALIDATION: OVERLAPPING RANGES
-            for (let i = 0; i < updatedSamplingRangeObjects.length; i++) {
-                const range = updatedSamplingRangeObjects[i];
-                for (let j = 0; j < i; j++) {
-                    const prevRange = updatedSamplingRangeObjects[j];
-                    if (range.lotSizeMin <= prevRange.lotSizeMax) {
-                        this.validatingSamplingRange = 'The defined sampling ranges must not overlap.'; //  'Ranges cannot overlap with existing'
-                        // this.isValidate = false;
-                        this._snackBar.open(this.validatingSamplingRange, 'Close', {
-                            duration: 3000,
-                            panelClass: ['snackbar-error']
-                        });
-                        return;
-                    }
-                }
-            }
-
-            // IF NO VALID ROWS OR VALIDATION FAILED
-            // if (updatedSamplingRangeObjects.length === 0 || !this.isValidate) {
-            //     this.isValidate = false;
-            //     const errorMessage = this.validatingSamplingRange || 'No changes were made in Ranges. Redirecting to the main screen.';
-            //     this._snackBar.open(errorMessage, 'Close', {
-            //         duration: 2050,
-            //         panelClass: ['snackbar-error']
-            //     });
-            //     if (!this.validatingSamplingRange) {
-            //         setTimeout(() => {
-            //             this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-            //         }, 2000);
-            //         this.clearingSessionStorage();
-            //     }
-            //     return;
-            // }
-
-            const sendingPayloadIS = {
-                ...payload,
-                samplingRangeObjects: updatedSamplingRangeObjects,
-                id: formValues.id,
-                flexibility: this.itemSamplingForm.get('flexibility')?.value,
-            };
-            console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
-
-            this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
-                (response) => {
-                    if (response.isRequestSuccess) {
-                        console.log('API run successfully.', sendingPayloadIS);
-                        this._snackBar.open('Record Updated Successfully.', 'Close', {
-                            duration: 1500,
-                            panelClass: ['snackbar-success']
-                        });
-                        setTimeout(() => {
-                            this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-                        }, 1500);
-                        this.clearingSessionStorage();
-                    } else {
-                        console.log('API RESPONSE (NON-ERROR):', response);
-                    }
-                },
-                (error) => {
-                    console.error('API request failed:', error);
-                    console.log('API ERROR RESPONSE:', error.error);
-                    let errorMessage = 'Error while updating data.';
-                    if (error.error) {
-                        if (error.error.exception?.[`samplingRangeObjects[0]`]?.length) {
-                            errorMessage = error.error.exception[`samplingRangeObjects[0]`][0];
-                        } else if (error.error.exception?.samplingRangeObjects?.length) {
-                            errorMessage = error.error.exception.samplingRangeObjects[0];
-                        } else if (error.error.message) {
-                            errorMessage = error.error.message; // "Ranges cannot overlap with existing"
-                        }
-                    }
-                    this._snackBar.open(errorMessage, 'Close', {
-                        duration: 3000,
-                        panelClass: ['snackbar-error']
-                    });
-                }
-            );
-        } else {
-            // this.isValidate = false;
-            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
-    }
     // UPDATE ITEM SAMPLE ENDS
 
     // CLEARING SESSION STORAGE
@@ -4946,55 +4503,8 @@ if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
         console.log('AFTER RESET',this.itemsInspectionCardsForm.value);
         
     }
-    // @IAK
-    // VALIDATE itemSamplingForm ON NEXT
-    resetItemsIS: boolean = false;
-    onNextClickItemSample(): void {
-        this.clearingSessionStorage();
-        const itemCodeValueIS = this.itemSamplingForm.get('itemCode')?.value;
-        const itemDescriptionValueIS = this.itemSamplingForm.get('itemDescription')?.value;
-        const isItemCodeEmpty = !itemCodeValueIS; 
-        const isItemDescriptionEmpty = !itemDescriptionValueIS;
 
-        const flexibility = this.itemSamplingForm.get('flexibility')?.value;
-        // CHECK IF samplingRangeObjects HAS ANY VALIDATE DATA
-        const samplingRangeArray = this.samplingRangeObjects.value;
-        const firstRow = samplingRangeArray[0];
-        const hasSamplingData =
-            firstRow && (
-                firstRow.lotSizeMin != null ||
-                firstRow.lotSizeMax != null ||
-                firstRow.sampleQty != null ||
-                firstRow.criticalDefects != null ||
-                firstRow.majorDefects != null ||
-                firstRow.minorDefects != null
-            );
-        const hasValidSamplingCondition = flexibility === true || hasSamplingData;
-    
-        if (isItemCodeEmpty && isItemDescriptionEmpty && !hasValidSamplingCondition) {
-            // this.stepper.next();
-            this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
-        } else {
-            this.resetItemsIS = true;
-            this._snackBar.open('Save or clear the data before moving to the next.', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-        }
-    }
-    // @IAK
-    // METHOD TO RESET itemSamplingForm IN ITEM SAMPLE FORM
-    onResetItemSampleClick(): void {
-        this.resetItemsIS = false;
-        this.itemSamplingForm.get('id')?.setValue(null);
-        this.itemSamplingForm.get('itemId')?.setValue(null);
-        this.itemSamplingForm.get('itemCode')?.setValue(null);
-        this.itemSamplingForm.get('itemDescription')?.setValue(null);
-        this.itemSamplingForm.get('flexibility')?.setValue(false);
-        this.itemSamplingForm.get('isActive')?.setValue(true);
-        this.itemSamplingForm.get('samplingRangeObjects')?.reset(); // RESET THE FormArray 
-        console.log(this.itemSamplingForm.value);
-    }
+
     // @IAK
     // METHOD TO HANDLE STEP CHANGE AND RESET THE isValidate VALIDATION FLAG
     onStepChange(event: any): void {
@@ -5070,12 +4580,7 @@ if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
             intCodeControl?.valid && !!intCodeControl.value &&
             cardDescriptionControl?.valid && !!cardDescriptionControl.value;
     }
-    // @IAK
-    // VALIDATING itemSamplingForm
-    isItemCodeValid(): boolean {
-        const itemCodeControl = this.itemSamplingForm.get('itemCode');
-        return itemCodeControl?.valid && !!itemCodeControl.value;
-    }
+
     
      onSubmitInspectionAttributes(): void {
         console.log('inspection_attribute nextIntCountIA:', this.nextIntCountIA);
@@ -5287,4 +4792,900 @@ if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
             }
         });
     }
+
+    // @IAK 
+    // itemSamplingForm STARTS
+
+    validatingSamplingRange: string = '';
+
+    // ITEM SAMPLE ITEM CODE NG TEMPLATE    
+    @ViewChild('dialogTemplateItemCodeIS') dialogTemplateItemCodeIS;
+
+    applyFilterItemSampleCode(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceItemCodeIS.filter = filterValue.trim().toLowerCase();
+    }
+
+    onRowCheckboxChangeItemCodeIS(selectedRow: any): void {
+        // this.dataSourceItemCodeIS.data.forEach(
+        //     (row) => (row.isSelected = false)
+        // );
+        // selectedRow.isSelected = true;
+        selectedRow.isSelected = !selectedRow.isSelected;
+    }
+
+    displayedColumnsItemCodeIS: string[] = [
+        'itemCode',
+        'itemDescription',
+        'itemGroup',
+    ];
+    selectedIntCodeIS: number;
+    selectedItemCodeIS: string;
+    selectedItemIdIS: string;
+    selectedItemDescriptionIS: string = '';
+
+    // 17062025 - ORIGINAL
+    XaddSelectedRowItemCodeIS(): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceItemCodeIS.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            this.itemSamplingForm.get('itemCode').setValue(selectedRow.itemCode);
+            this.itemSamplingForm.get('itemId').setValue(selectedRow.id);
+            this.itemSamplingForm.get('itemDescription').setValue(selectedRow.name);
+
+            this.selectedIntCodeIS = selectedRow.intCode;
+            this.selectedItemIdIS = selectedRow.id;
+            this.selectedItemCodeIS = selectedRow.itemCode;
+            this.selectedItemDescriptionIS = selectedRow.name;
+
+            // @IAK
+            // VALIDATE DUPLICATE HANDLING - itemSamplingForm
+            this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
+                const isItemAlreadyOpened = items.data.some(
+                    (item) => item.itemCode === this.selectedItemCodeIS
+                );
+                if (isItemAlreadyOpened) {
+                    const snackRefSuccess = this._snackBar.open('This item is already open, and sampling ranges are defined.', 'Close', {
+                        duration: 3000,
+                        horizontalPosition: 'center',
+                        verticalPosition: 'top'
+                    });
+                    snackRefSuccess.afterDismissed().subscribe(() => {
+                        console.log(this.itemSamplingForm.value);
+                        this.selectedIntCodeIS = null;
+                        this.selectedItemIdIS = null;
+                        this.selectedItemCodeIS = null;
+                        this.selectedItemDescriptionIS = null;
+                        this.itemSamplingForm.get('itemCode').setValue(null);
+                        this.itemSamplingForm.get('itemDescription').setValue(null);
+                        this.itemSamplingForm.get('itemId').setValue(null);
+                        this.itemSamplingForm.get('itemCode').setValidators([Validators.required]);
+                        this.itemSamplingForm.get('itemDescription').setValidators([Validators.required]);
+                        this.itemSamplingForm.get('itemCode').updateValueAndValidity();
+                        this.itemSamplingForm.get('itemDescription').updateValueAndValidity();
+                        console.log(this.itemSamplingForm.value);
+                        this.cdr.detectChanges();
+                    });
+                }
+            });
+
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+
+    addSelectedRowItemCodeIS(): void {
+        this.dialog.closeAll();
+        if (this.selectedItemsIS.length < 2) {
+            const selectedRow = this.dataSourceItemCodeIS.data.find(
+                (row) => row.isSelected
+            );
+            if (selectedRow) {
+                this.itemSamplingForm.get('itemCode').setValue(selectedRow.itemCode);
+                this.itemSamplingForm.get('itemId').setValue(selectedRow.id);
+                this.itemSamplingForm.get('itemDescription').setValue(selectedRow.name);
+
+                this.selectedIntCodeIS = selectedRow.intCode;
+                this.selectedItemIdIS = selectedRow.id;
+                this.selectedItemCodeIS = selectedRow.itemCode;
+                this.selectedItemDescriptionIS = selectedRow.name;
+
+                // @IAK
+                // VALIDATE DUPLICATE HANDLING - itemSamplingForm
+                this._itemSamplesService.ListAllItemSamples().subscribe((items) => {
+                    const isItemAlreadyOpened = items.data.some(
+                        (item) => item.itemCode === this.selectedItemCodeIS
+                    );
+                    // if (isItemAlreadyOpened) {
+                    //     const snackRefSuccess = this._snackBar.open('This item is already open, and sampling ranges are defined.', 'Close', {
+                    //         duration: 3000,
+                    //         horizontalPosition: 'center',
+                    //         verticalPosition: 'top'
+                    //     });
+                    //     snackRefSuccess.afterDismissed().subscribe(() => {
+                    //         console.log(this.itemSamplingForm.value);
+                    //         this.selectedIntCodeIS = null;
+                    //         this.selectedItemIdIS = null;
+                    //         this.selectedItemCodeIS = null;
+                    //         this.selectedItemDescriptionIS = null;
+                    //         this.itemSamplingForm.get('itemCode').setValue(null);
+                    //         this.itemSamplingForm.get('itemDescription').setValue(null);
+                    //         this.itemSamplingForm.get('itemId').setValue(null);
+                    //         this.itemSamplingForm.get('itemCode').setValidators([Validators.required]);
+                    //         this.itemSamplingForm.get('itemDescription').setValidators([Validators.required]);
+                    //         this.itemSamplingForm.get('itemCode').updateValueAndValidity();
+                    //         this.itemSamplingForm.get('itemDescription').updateValueAndValidity();
+                    //         console.log(this.itemSamplingForm.value);
+                    //         this.cdr.detectChanges();
+                    //     });
+                    // }
+                });
+
+                console.log('SELECTED ROW:', selectedRow);
+            }
+
+        }
+
+        // 🔁 Filter all selected rows
+        const selectedRows = this.dataSourceItemCodeIS.data.filter(row => row.isSelected);
+
+        if (!selectedRows.length) {
+            console.warn('❌ No items selected');
+            this.selectedItemsIS = []; // 👈 Reset if user unselected everything
+            return;
+        }
+
+        console.log('✅ Selected Items:', selectedRows);
+
+        // Save selected items in a variable so submit can use it
+        this.selectedItemsIS = selectedRows;
+
+        // (Optional) Show selected names in a list or UI
+        this.selectedItemDescriptionsIS = selectedRows.map(row => row.name);
+    }
+
+    // ITEM SAMPLE ITEM CODE NG TEMPLATE
+    @ViewChild('dialogTemplateItemSampleItems') dialogTemplateItemSampleItems;
+
+    applyFilterItemSampleCodex(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceItemSampleCode.filter = filterValue.trim().toLowerCase();
+    }
+
+    onRowCheckboxChangeItemSampleCode(selectedRow: any): void {
+        // this.dataSourceItemSampleCode.data.forEach(
+        //     (row) => (row.isSelected = false)
+        // );
+        // selectedRow.isSelected = true;
+        selectedRow.isSelected = !selectedRow.isSelected;
+
+    }
+
+    displayedColumnsItemSampleCode: string[] = [
+        'itemCode',
+        'itemDescription',
+        'itemGroup',
+    ];
+    selectedItemSampleCode: string = '';
+    selectedItemSampleDescription: string = '';
+
+    addSelectedRowItemSampleCode(): void {
+        this.dialog.closeAll();
+        const selectedRow = this.dataSourceItemSampleCode.data.find(
+            (row) => row.isSelected
+        );
+        if (selectedRow) {
+            this.itemSamplingForm
+                .get('itemCode')
+                .setValue(selectedRow.itemCode);
+            this.itemSamplingForm
+                .get('itemDescription')
+                .setValue(selectedRow.itemDescription);
+            this.selectedItemSampleCode = selectedRow.itemCode;
+            this.selectedItemSampleDescription = selectedRow.itemDescription;
+            console.log('SELECTED ROW:', selectedRow);
+        } else {
+            console.log('NO ROW SELECTED');
+        }
+    }
+
+    // SAMPLING RANGE
+    itemSamplingForm = this._formBuilder.group({
+        sampleCodeIS: [''],
+        itemCode: ['', Validators.required],
+        itemId: ['', Validators.required],
+        itemDescription: ['', Validators.required],
+        flexibility: [false],
+        isActive: [true],
+        // samplingRangeObjects: this._formBuilder.array([]),
+        samplingRangeObjects: this._formBuilder.array([], [Validators.required]),
+        id: [''],
+    });
+
+    addNewRowItemSampling(): void {
+        const itemSamplingFormGroup = this.fb.group({
+            lotSizeMin: [null, [Validators.required, Validators.min(1)]],
+            lotSizeMax: [null, [Validators.required, Validators.min(1)]],
+            sampleQty: [null, [Validators.required, Validators.min(1)]],
+            criticalDefects: [null],
+            majorDefects: [null],
+            minorDefects: [null],
+        });
+        // this.samples.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
+        // this.dataSourceItemSampling.data = [...this.samples.value]; // UPDATE THE TABLE DATA SOURCE
+
+        this.samplingRangeObjects.push(itemSamplingFormGroup); // Add a new FormGroup to FormArray
+        this.dataSourceItemSampling.data = [...this.samplingRangeObjects.value]; // UPDATE THE TABLE DATA SOURCE dataSourceItemSampling
+    }
+
+    displayedColumnsItemSamplingRange = [
+        'lotSizeMin',
+        'lotSizeMax',
+        'sampleQty',
+        'criticalDefects',
+        'majorDefects',
+        'minorDefects',
+    ];
+
+    dataSourceItemSampling = new MatTableDataSource<itemSamplingRangeIF>();
+    selectionItemSampling = new SelectionModel<itemSamplingRangeIF>(true, []);
+
+    // VALIDATING itemSamplingForm
+    isItemCodeValid(): boolean {
+        const itemCodeControl = this.itemSamplingForm.get('itemCode');
+        return itemCodeControl?.valid && !!itemCodeControl.value;
+    }
+
+    // VALIDATE itemSamplingForm ON NEXT
+    resetItemsIS: boolean = false;
+    onNextClickItemSample(): void {
+        this.clearingSessionStorage();
+        const itemCodeValueIS = this.itemSamplingForm.get('itemCode')?.value;
+        const itemDescriptionValueIS = this.itemSamplingForm.get('itemDescription')?.value;
+        const isItemCodeEmpty = !itemCodeValueIS;
+        const isItemDescriptionEmpty = !itemDescriptionValueIS;
+
+        const flexibility = this.itemSamplingForm.get('flexibility')?.value;
+        // CHECK IF samplingRangeObjects HAS ANY VALIDATE DATA
+        const samplingRangeArray = this.samplingRangeObjects.value;
+        const firstRow = samplingRangeArray[0];
+        const hasSamplingData =
+            firstRow && (
+                firstRow.lotSizeMin != null ||
+                firstRow.lotSizeMax != null ||
+                firstRow.sampleQty != null ||
+                firstRow.criticalDefects != null ||
+                firstRow.majorDefects != null ||
+                firstRow.minorDefects != null
+            );
+        const hasValidSamplingCondition = flexibility === true || hasSamplingData;
+
+        if (isItemCodeEmpty && isItemDescriptionEmpty && !hasValidSamplingCondition) {
+            // this.stepper.next();
+            this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+        } else {
+            this.resetItemsIS = true;
+            this._snackBar.open('Save or clear the data before moving to the next.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
+    }
+
+    // METHOD TO RESET itemSamplingForm IN ITEM SAMPLE FORM
+    onResetItemSampleClick(): void {
+        this.resetItemsIS = false;
+        this.itemSamplingForm.get('id')?.setValue(null);
+        this.itemSamplingForm.get('itemId')?.setValue(null);
+        this.itemSamplingForm.get('itemCode')?.setValue(null);
+        this.itemSamplingForm.get('itemDescription')?.setValue(null);
+        this.itemSamplingForm.get('flexibility')?.setValue(false);
+        this.itemSamplingForm.get('isActive')?.setValue(true);
+        this.itemSamplingForm.get('samplingRangeObjects')?.reset(); // RESET THE FormArray 
+        console.log(this.itemSamplingForm.value);
+    }
+
+    XonItemSampleItemCodeClick() {
+        const dialogRef = this.dialog.open(this.dialogTemplateItemSampleItems, {
+            width: '75vw',
+            height: '90vh',
+            data: this.dataSourceItemSampleCode,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
+
+    onItemSampleItemCodeClick(): void {
+        this.fetchListAllItems().subscribe((items) => {
+            const safeItems = Array.isArray(items) ? items : [];
+            this.dataSourceItemCodeIS.data = safeItems;
+
+            // WHEN OPENING THE MODAL, PRE-CHECK ALREADY SELECTED ITEMS
+            const previouslySelectedCodes = this.selectedItemsIS?.map(item => item.itemCode) || [];
+
+            this.dataSourceItemCodeIS.data.forEach(row => {
+                row.isSelected = previouslySelectedCodes.includes(row.itemCode);
+            });
+
+            const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
+                width: '75vw',
+                height: '90vh',
+                data: this.dataSourceItemCodeIS,
+            });
+
+            dialogRef.afterClosed().subscribe(() => {
+                console.log('DIALOG CLOSED');
+            });
+        });
+    }
+
+    onSubmitItemSamplingForm(): void {
+        this.isValidate = true;
+
+        // Step 1: Validate Sampling Ranges
+        if (this.samplingRangeObjects.length === 0) {
+            this._snackBar.open('At least one sampling range is required.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error'],
+            });
+            return;
+        }
+
+        const formValues = this.itemSamplingForm.value;
+        const samplingRanges = formValues.samplingRangeObjects as Array<{ lotSizeMin: number; lotSizeMax: number; sampleQty: number }>;
+
+        for (let i = 0; i < samplingRanges.length; i++) {
+            const range = samplingRanges[i];
+
+            if (range.lotSizeMin >= range.lotSizeMax) {
+                this._snackBar.open("Lot Size Min must be less than Lot Size Max.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                });
+                return;
+            }
+
+            if (range.sampleQty > range.lotSizeMax) {
+                this._snackBar.open("Sample Qty must be less than Lot Size Max.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                });
+                return;
+            }
+
+            for (let j = 0; j < i; j++) {
+                const prevRange = samplingRanges[j];
+                if (range.lotSizeMin <= prevRange.lotSizeMax) {
+                    this._snackBar.open("The defined sampling ranges must not overlap.", 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    return;
+                }
+            }
+        }
+
+        // Step 2: Get selected items
+        const selectedItems = this.dataSourceItemCodeIS.data.filter(item => item.isSelected);
+        if (!selectedItems.length) {
+            this._snackBar.open('Please select at least one item.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error'],
+            });
+            return;
+        }
+
+        // Step 3: Submit one-by-one using RxJS concatMap (sequentially)
+        from(selectedItems).pipe(
+            concatMap((item) => {
+                const payload = {
+                    itemId: item.id,
+                    itemDescription: item.name,
+                    flexibility: formValues.flexibility,
+                    isActive: true,
+                    samplingRangeObjects: samplingRanges
+                };
+
+                console.log(`📤 Submitting for: ${item.itemCode}`, payload);
+                return this._itemSamplesService.AddSampleWithRanges(payload);
+            })
+        ).subscribe({
+            next: (response) => {
+                console.log('✅ API success:', response);
+            },
+            error: (error) => {
+                console.error('❌ API failed:', error);
+                let errorMessage = 'Error while adding data.';
+                if (error.error) {
+                    if (error.error.exception?.itemId?.length) {
+                        errorMessage = "Item cannot be duplicated. This item already opened.";
+                    } else if (error.error.exception?.['samplingRangeObjects[0]']?.length) {
+                        errorMessage = error.error.exception['samplingRangeObjects[0]'][0];
+                    } else if (error.error.message) {
+                        errorMessage = error.error.message;
+                    }
+                }
+                this._snackBar.open(errorMessage, 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                });
+            },
+            complete: () => {
+                this._snackBar.open('All selected items saved successfully.', 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-success']
+                });
+
+                // Reset form
+                this.itemSamplingForm.get('id')?.setValue('');
+                this.itemSamplingForm.get('itemId')?.setValue('');
+                this.itemSamplingForm.get('itemCode')?.setValue('');
+                this.itemSamplingForm.get('itemDescription')?.setValue('');
+                this.itemSamplingForm.get('flexibility')?.setValue(false);
+                this.itemSamplingForm.get('isActive')?.setValue(true);
+                this.itemSamplingForm.get('samplingRangeObjects')?.reset();
+
+                // Regenerate sample code once after all requests
+                this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
+                    const fetchedCodeIS = sampleCodeIS.data;
+                    if (fetchedCodeIS) {
+                        const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
+                        this.itemSamplingForm.get('sampleCodeIS')?.setValue(formattedSampleCodeIS);
+                    }
+                });
+
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    // 17062025 - ORIGINAL
+    XonSubmitItemSamplingForm(): void {
+        this.isValidate = true;
+        // Check if samplingRangeObjects is empty
+        if (this.samplingRangeObjects.length === 0) {
+            this._snackBar.open('At least one sampling range is required.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error'],
+            });
+            return;
+        }
+        if (this.itemSamplingForm.valid) {
+            const formValues = this.itemSamplingForm.value;
+            // const payload = { ...formValues, };
+            const { id, itemCode, sampleCodeIS, ...payload } = formValues; // EXCLUDING itemCode & sampleCodeIS
+            console.log('SENDING ITEM SAMPLING PAYLOAD:', payload); // Debugging
+            // return;
+            // VALIDATION CHECKS FOR samplingRangeObjects
+            const samplingRanges = payload.samplingRangeObjects as Array<{ sampleQty: number; lotSizeMin: number; lotSizeMax: number }>;
+            for (let i = 0; i < samplingRanges.length; i++) {
+                const range = samplingRanges[i];
+                if (range.lotSizeMin >= range.lotSizeMax) {
+                    const errorMessage = "Lot Size Min must be less than Lot Size Max.";
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    return;
+                }
+                // if (range.sampleQty < range.lotSizeMin || range.sampleQty > range.lotSizeMax) {
+                //     const errorMessage = "Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.";
+                //     this._snackBar.open(errorMessage, 'Close', {
+                //         duration: 3000,
+                //         panelClass: ['snackbar-error']
+                //     });
+                //     return;
+                // }
+                if (range.sampleQty > range.lotSizeMax) {
+                    const errorMessage = "Sample Qty must be less than Lot Size Max.";
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    return;
+                }
+                for (let j = 0; j < i; j++) {
+                    const prevRange = samplingRanges[j];
+                    if (range.lotSizeMin <= prevRange.lotSizeMax) {
+                        const errorMessage = "The defined sampling ranges must not overlap.";
+                        this._snackBar.open(errorMessage, 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        return;
+                    }
+                }
+            }
+
+            console.log('FORM SUBMISSION PAYLOAD:', payload);
+            // this.itemSamplingForm.reset();
+            // return;
+            this._itemSamplesService.AddSampleWithRanges(payload).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        this.isValidate = false;
+                        console.log('API RUN SUCCESSFULLY.', payload);
+                        setTimeout(() => {
+                            const snackRefSuccess = this._snackBar.open('Data saved successfully!', 'Close', {
+                                duration: 1550,
+                                panelClass: ['snackbar-success']
+                            });
+                            snackRefSuccess.afterDismissed().subscribe(() => {
+                                // this.itemSamplingForm.get('sampleCodeIS')?.setValue(null);
+                                this.itemSamplingForm.get('id')?.setValue('');
+                                this.itemSamplingForm.get('itemId')?.setValue('');
+                                this.itemSamplingForm.get('itemCode')?.setValue('');
+                                this.itemSamplingForm.get('itemDescription')?.setValue('');
+                                this.itemSamplingForm.get('flexibility')?.setValue(false);
+                                this.itemSamplingForm.get('isActive')?.setValue(true);
+                                this.itemSamplingForm.get('samplingRangeObjects')?.reset(); // Reset the FormArray
+                                // this.itemSamplingForm.get('samplingRangeObjects')?.setValue([]);
+                                // (this.itemSamplingForm.get('samplingRangeObjects') as FormArray)?.clear(); 
+                                console.log(this.itemSamplingForm.value);
+                                this.cdr.detectChanges();
+                            });
+                            this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
+                                const fetchedCodeIS = sampleCodeIS.data;
+                                console.log('FETCHED SAMPLE CODE:', fetchedCodeIS);
+                                if (fetchedCodeIS) {
+                                    const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
+                                    this.itemSamplingForm
+                                        .get('sampleCodeIS')
+                                        ?.setValue(formattedSampleCodeIS);
+                                }
+                                setTimeout(() => {
+                                    this.isLoading = false;
+                                    this.isValidate = false;
+                                    this.isValidate = false;
+                                }, 1500);
+                            });
+                        }, 1500);
+                        // this.stepper.next();
+                    } else {
+                        console.log('API RESPONSE (NON-ERROR):', response);
+                    }
+                },
+                (error) => {
+                    console.error('API REQUEST FAILED:', error);
+                    console.log('API ERROR RESPONSE:', error.error);
+                    let errorMessage = 'Error while adding data.';
+                    if (error.error) {
+                        if (error.error.exception?.itemId?.length) {
+                            errorMessage = "Item cannot be duplicated. This item already opened.";
+                            // EXTRACT error message FROM API RESPONSE
+                            // API RESPONSE 
+                            // errorMessage = error.error.exception.itemId[0];
+                        } else if (error.error.exception?.[`samplingRangeObjects[0]`]?.length) {
+                            errorMessage = error.error.exception[`samplingRangeObjects[0]`][0];
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message;
+                        }
+                    }
+                    const snackRefIS = this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    snackRefIS.afterDismissed().subscribe(() => {
+                        console.log(this.itemSamplingForm.value);
+                        this.itemSamplingForm.get('id')?.setValue(null);
+                        this.itemSamplingForm.get('itemId')?.setValue(null);
+                        this.itemSamplingForm.get('itemCode')?.setValue(null);
+                        this.itemSamplingForm.get('itemDescription')?.setValue(null);
+                        this.itemSamplingForm.get('isActive')?.setValue(true);
+                        console.log(this.itemSamplingForm.value);
+                    });
+                }
+            );
+        } else {
+            this._snackBar.open('FILL ALL THE MANDATORY FIELDS WITH VALID VALUES.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+    }
+    // 19062025
+    XXonSubmitItemSamplingForm(): void {
+        this.isValidate = true;
+
+        // Step 1: Validate Sampling Ranges
+        if (this.samplingRangeObjects.length === 0) {
+            this._snackBar.open('At least one sampling range is required.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error'],
+            });
+            return;
+        }
+
+        const formValues = this.itemSamplingForm.value;
+        // const samplingRanges = formValues.samplingRangeObjects;
+        const samplingRanges = formValues.samplingRangeObjects as Array<{ lotSizeMin: number; lotSizeMax: number; sampleQty: number }>;
+
+        for (let i = 0; i < samplingRanges.length; i++) {
+            const range = samplingRanges[i];
+
+            if (range.lotSizeMin >= range.lotSizeMax) {
+                this._snackBar.open("Lot Size Min must be less than Lot Size Max.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                });
+                return;
+            }
+
+            if (range.sampleQty > range.lotSizeMax) {
+                this._snackBar.open("Sample Qty must be less than Lot Size Max.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                });
+                return;
+            }
+
+            for (let j = 0; j < i; j++) {
+                const prevRange = samplingRanges[j];
+                if (range.lotSizeMin <= prevRange.lotSizeMax) {
+                    this._snackBar.open("The defined sampling ranges must not overlap.", 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                    return;
+                }
+            }
+        }
+
+        // Step 2: Get selected items
+        const selectedItems = this.dataSourceItemCodeIS.data.filter(item => item.isSelected);
+        if (!selectedItems.length) {
+            this._snackBar.open('Please select at least one item.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error'],
+            });
+            return;
+        }
+
+        // Step 3: Submit one-by-one for each selected item
+        selectedItems.forEach((item, index) => {
+            const payload = {
+                itemId: item.id,
+                itemDescription: item.name,
+                flexibility: formValues.flexibility,
+                isActive: true,
+                samplingRangeObjects: samplingRanges
+            };
+
+            console.log(`📤 Payload for ${item.itemCode}:`, payload);
+
+            this._itemSamplesService.AddSampleWithRanges(payload).subscribe({
+                next: (response) => {
+                    console.log(`✅ Saved item: ${item.itemCode}`, response);
+
+                    // Only on the last item, reset form and show success
+                    if (index === selectedItems.length - 1) {
+                        this._snackBar.open('All selected items saved successfully.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-success']
+                        });
+
+                        // Reset relevant form controls
+                        this.itemSamplingForm.get('id')?.setValue('');
+                        this.itemSamplingForm.get('itemId')?.setValue('');
+                        this.itemSamplingForm.get('itemCode')?.setValue('');
+                        this.itemSamplingForm.get('itemDescription')?.setValue('');
+                        this.itemSamplingForm.get('flexibility')?.setValue(false);
+                        this.itemSamplingForm.get('isActive')?.setValue(true);
+                        this.itemSamplingForm.get('samplingRangeObjects')?.reset();
+                        // this.selectedSamplingItems = []; 
+
+                        // Regenerate sample code
+                        this._itemSamplesService.getSampleCodeIS().subscribe((sampleCodeIS) => {
+                            const fetchedCodeIS = sampleCodeIS.data;
+                            if (fetchedCodeIS) {
+                                const formattedSampleCodeIS = `IS-000${fetchedCodeIS}`;
+                                this.itemSamplingForm.get('sampleCodeIS')?.setValue(formattedSampleCodeIS);
+                            }
+                        });
+
+                        this.cdr.detectChanges();
+                    }
+                },
+                error: (error) => {
+                    console.error(`❌ Error saving item: ${item.itemCode}`, error);
+                    let errorMessage = 'Error while adding data.';
+                    if (error.error) {
+                        if (error.error.exception?.itemId?.length) {
+                            errorMessage = "Item cannot be duplicated. This item already opened.";
+                        } else if (error.error.exception?.['samplingRangeObjects[0]']?.length) {
+                            errorMessage = error.error.exception['samplingRangeObjects[0]'][0];
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message;
+                        }
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                }
+            });
+        });
+    }
+
+    onUpdateIS(): void {
+        this.isValidate = true;
+        this.validatingSamplingRange = '';
+
+        if (this.itemSamplingForm.valid) {
+            const formValues = this.itemSamplingForm.value;
+            const { sampleCodeIS, itemCode, itemId, itemDescription, samplingRangeObjects, ...payload } = formValues;
+            const initialSamplingRangeObjects = this.initialSamplingRangeObjects;
+
+            // TRACK INVALID ROWS TO UPDATE
+            let invalidRowFound = false;
+
+            const updatedSamplingRangeObjects = samplingRangeObjects
+                .filter((object: any, index: number) => {
+                    const initialObject = initialSamplingRangeObjects[index];
+
+                    // IF initialObject DOESN'T EXIST, IT'S A NEW ROW.
+                    if (!initialObject) {
+                        return true; // NEW OBJECT 
+                    }
+
+                    // CHECK IF ANY FIELD IS DIFFERENT BETWEEN THE CURRENT AND INITIAL OBJECT
+                    return (
+                        object.lotSizeMin !== initialObject.lotSizeMin ||
+                        object.lotSizeMax !== initialObject.lotSizeMax ||
+                        object.sampleQty !== initialObject.sampleQty ||
+                        object.criticalDefects !== initialObject.criticalDefects ||
+                        object.majorDefects !== initialObject.majorDefects ||
+                        object.minorDefects !== initialObject.minorDefects
+                    );
+                })
+                .map((object: any) => {
+                    // SKIP ROWS WHERE lotSizeMin, lotSizeMax, or sampleQty ARE INVALID OR MISSING
+                    if (
+                        object.lotSizeMin == null || object.lotSizeMin === '' ||
+                        object.lotSizeMax == null || object.lotSizeMax === '' ||
+                        object.sampleQty == null || object.sampleQty === ''
+                    ) {
+                        invalidRowFound = true;
+
+                        // ADD SPECIFIC VALIDATION MESSAGE FOR EACH FIELD
+                        if (object.lotSizeMin == null || object.lotSizeMin === '') {
+                            this.validatingSamplingRange = 'Lot Size Min is required. ';
+                        }
+                        if (object.lotSizeMax == null || object.lotSizeMax === '') {
+                            this.validatingSamplingRange += 'Lot Size Max is required. ';
+                        }
+                        if (object.sampleQty == null || object.sampleQty === '') {
+                            this.validatingSamplingRange += 'Sample Qty is required. ';
+                        }
+                        // this.isValidate = false;
+                        return null; // SKIP INVALID ROWS
+                    }
+
+                    // CONVERT TO NUMBERS FOR VALIDATION
+                    const lotSizeMin = Number(object.lotSizeMin);
+                    const lotSizeMax = Number(object.lotSizeMax);
+                    const sampleQty = Number(object.sampleQty);
+                    // VALIDATION: lotSizeMin < lotSizeMax
+                    if (lotSizeMin >= lotSizeMax) {
+                        this.validatingSamplingRange = 'Lot Size Min must be less than Lot Size Max.';
+                        // this.isValidate = false;
+                        return null;
+                    }
+                    // VALIDATION: sampleQty STRICTLY BETWEEN lotSizeMin & lotSizeMax
+                    // if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
+                    //     this.validatingSamplingRange = 'Sample Qty must be within the bounds of Lot Size Min and Lot Size Max.';
+                    //     this.isValidate = false;
+                    //     return null;
+                    // }
+                    if (sampleQty > lotSizeMax) {
+                        this.validatingSamplingRange = 'Sample Qty must be less than Lot Size Max';
+                        // this.isValidate = false;
+                        return null;
+                    }
+
+                    // RETURN VALID OBJECT
+                    return {
+                        id: object.id || undefined,
+                        lotSizeMin: lotSizeMin,
+                        lotSizeMax: lotSizeMax,
+                        sampleQty: sampleQty,
+                        criticalDefects: object.criticalDefects,
+                        majorDefects: object.majorDefects,
+                        minorDefects: object.minorDefects
+                    };
+                })
+                .filter((object: any) => object !== null); // REMOVE NULL ROWS
+
+            // VALIDATION: OVERLAPPING RANGES
+            for (let i = 0; i < updatedSamplingRangeObjects.length; i++) {
+                const range = updatedSamplingRangeObjects[i];
+                for (let j = 0; j < i; j++) {
+                    const prevRange = updatedSamplingRangeObjects[j];
+                    if (range.lotSizeMin <= prevRange.lotSizeMax) {
+                        this.validatingSamplingRange = 'The defined sampling ranges must not overlap.'; //  'Ranges cannot overlap with existing'
+                        // this.isValidate = false;
+                        this._snackBar.open(this.validatingSamplingRange, 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        return;
+                    }
+                }
+            }
+
+            // IF NO VALID ROWS OR VALIDATION FAILED
+            // if (updatedSamplingRangeObjects.length === 0 || !this.isValidate) {
+            //     this.isValidate = false;
+            //     const errorMessage = this.validatingSamplingRange || 'No changes were made in Ranges. Redirecting to the main screen.';
+            //     this._snackBar.open(errorMessage, 'Close', {
+            //         duration: 2050,
+            //         panelClass: ['snackbar-error']
+            //     });
+            //     if (!this.validatingSamplingRange) {
+            //         setTimeout(() => {
+            //             this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+            //         }, 2000);
+            //         this.clearingSessionStorage();
+            //     }
+            //     return;
+            // }
+
+            const sendingPayloadIS = {
+                ...payload,
+                samplingRangeObjects: updatedSamplingRangeObjects,
+                id: formValues.id,
+                flexibility: this.itemSamplingForm.get('flexibility')?.value,
+            };
+            console.log('SENDING FINAL PAYLOAD IS:', sendingPayloadIS);
+
+            this._itemSamplesService.updateItemSample(sendingPayloadIS).subscribe(
+                (response) => {
+                    if (response.isRequestSuccess) {
+                        console.log('API run successfully.', sendingPayloadIS);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-success']
+                        });
+                        setTimeout(() => {
+                            this._router.navigate(['/master-data/list-of-items-samples'], { relativeTo: this._activatedRoute });
+                        }, 1500);
+                        this.clearingSessionStorage();
+                    } else {
+                        console.log('API RESPONSE (NON-ERROR):', response);
+                    }
+                },
+                (error) => {
+                    console.error('API request failed:', error);
+                    console.log('API ERROR RESPONSE:', error.error);
+                    let errorMessage = 'Error while updating data.';
+                    if (error.error) {
+                        if (error.error.exception?.[`samplingRangeObjects[0]`]?.length) {
+                            errorMessage = error.error.exception[`samplingRangeObjects[0]`][0];
+                        } else if (error.error.exception?.samplingRangeObjects?.length) {
+                            errorMessage = error.error.exception.samplingRangeObjects[0];
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message; // "Ranges cannot overlap with existing"
+                        }
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                }
+            );
+        } else {
+            // this.isValidate = false;
+            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+    }
+    // itemSamplingForm ENDS
 }

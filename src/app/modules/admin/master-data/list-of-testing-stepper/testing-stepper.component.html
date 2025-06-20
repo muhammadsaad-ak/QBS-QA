@@ -1477,175 +1477,197 @@
       </mat-step>
       <!-- itemsInspectionCardsForm  - Item Inspection Card ENDS -->
 
+
+      <!-- IAK -->
       <!-- ITEM SAMPLE STARTS -->
       <mat-step [stepControl]="itemSamplingForm" label="Item Sample">
         <form [formGroup]="itemSamplingForm">
-          <!-- <h1 class="custom-heading">Item Sample</h1> -->
-           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h3 class="custom-heading">Item Sample</h3>
             <button mat-button class="next-button bg-warn-400 text-white" *ngIf="!isEditMode && resetItemsIS"
-                    (click)="onResetItemSampleClick()" matTooltip="Reset">
-                    <mat-icon svgIcon="heroicons_outline:arrow-path" class="text-white"></mat-icon>
+              (click)="onResetItemSampleClick()" matTooltip="Reset">
+              <mat-icon svgIcon="heroicons_outline:arrow-path" class="text-white"></mat-icon>
             </button>
           </div>
-          <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;" class="py-2"> <!-- margin-top: 10px; -->
+           <!-- SINGLE ITEM SELECTION SECTION -->
+          <div *ngIf="selectedItemsIS.length < 2" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;">
             <!-- Sample Code -->
             <mat-form-field style="flex: 1 1 15%; min-width: 100px;">
               <mat-label>Sample Code</mat-label>
-              <input class="view-mode-bg-grey" matInput formControlName="sampleCodeIS" readonly
-                style="cursor: not-allowed;">
+              <input class="view-mode-bg-grey" matInput formControlName="sampleCodeIS" readonly style="cursor: not-allowed;">
             </mat-form-field>
             <!-- Item Code -->
             <mat-form-field style="flex: 1 1 15%; min-width: 100px;">
               <mat-label>Item Code</mat-label>
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                 (click)="onItemSampleItemCodeClick()" *ngIf="!isEditMode"></mat-icon>
-              <input matInput formControlName="itemCode" required readonly
-                [value]="selectedItemCodeIS ? selectedItemCodeIS : ''">
-                <mat-error *ngIf="isValidate && itemSamplingForm.get('itemCode').invalid">Required.</mat-error>
+              <input matInput formControlName="itemCode" required readonly [value]="selectedItemCodeIS ? selectedItemCodeIS : ''">
+              <mat-error *ngIf="isValidate && itemSamplingForm.get('itemCode').invalid">Required.</mat-error>
             </mat-form-field>
             <!-- Item Description -->
             <mat-form-field style="flex: 1 1 60%; min-width: 100px;">
               <mat-label>Item Description</mat-label>
               <input matInput formControlName="itemDescription" required readonly
                 [value]="selectedItemDescriptionIS ? selectedItemDescriptionIS : ''">
-                <mat-error *ngIf="isValidate && itemSamplingForm.get('itemCode').invalid">Required.</mat-error>
+              <mat-error *ngIf="isValidate && itemSamplingForm.get('itemCode').invalid">Required.</mat-error>
             </mat-form-field>
             <!-- Item ID -->
             <mat-form-field style="flex: 0 1 55%; min-width: 100px;" class="hidden">
               <mat-label>Item ID</mat-label>
-              <input matInput formControlName="itemId" required readonly
-                [value]="selectedItemIdIS ? selectedItemIdIS : ''">
+              <input matInput formControlName="itemId" required readonly [value]="selectedItemIdIS ? selectedItemIdIS : ''">
             </mat-form-field>
             <!-- Sample ID -->
             <mat-form-field style="flex: 0 1 55%; min-width: 100px;" class="hidden">
               <mat-label>Sample ID</mat-label>
               <input matInput formControlName="id" readonly>
             </mat-form-field>
+          </div>          
+          <!-- Flexibility & isActive -->
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;">
             <!-- Flexibility  -->
             <mat-checkbox formControlName="flexibility" class="text-lg">Flexibility</mat-checkbox>
-            <!-- isActive - *ngIf="isEditMode" -->
-            <mat-checkbox formControlName="isActive" class="text-lg hidden">Active</mat-checkbox>
-
-            <!-- ITEM CODE IS NG TEMPLATE DIALOG STARTS -->
-            <ng-template #dialogTemplateItemCodeIS>
-              <div class="dialog-container flex flex-col h-full">
-                <div class="flex justify-between items-center p-4 border-b text-primary">
-                  <!-- List of All Items -->
-                  <h2 class="text-lg font-semibold">List&nbsp;of&nbsp;All&nbsp;Items</h2>
-                  <span (click)="dialog.closeAll()" class="header-close-x">
-                    <mat-icon class="text-primary">close</mat-icon>
-                  </span>
-                </div>
-                <!-- List of All Items Search -->
-                <mat-form-field>
-                  <mat-label>Search</mat-label>
-                  <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
-                </mat-form-field>
-                <div class="table-container flex-grow overflow-auto">
-                  <!-- ITEM CODE NG TABLE STARTS -->
-                  <mat-table [dataSource]="dataSourceItemCodeIS">
-                    <!-- Item Code -->
-                    <ng-container matColumnDef="itemCode">
-                      <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Code</mat-header-cell>
-                      <mat-cell *matCellDef="let row" class="single-line text-sm">
-                        <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemCodeIS(row)"
-                          [matTooltip]="row.name">
-                        </mat-checkbox> {{ row.itemCode }}
-                      </mat-cell>
-                    </ng-container>
-                    <!-- Item Description -->
-                    <ng-container matColumnDef="itemDescription">
-                      <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
-                      <mat-cell *matCellDef="let row" class="single-line text-sm">
-                        {{ row.name }}
-                      </mat-cell>
-                    </ng-container>
-                    <!-- Item Group -->
-                    <ng-container matColumnDef="itemGroup">
-                      <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
-                      <mat-cell *matCellDef="let row" class="single-line text-sm">
-                        {{ row.groupName ?? 'N/A' }}
-                      </mat-cell>
-                    </ng-container>
-
-                    <mat-header-row *matHeaderRowDef="displayedColumnsItemCodeIS; sticky: true"></mat-header-row>
-                    <mat-row *matRowDef="let row; columns: displayedColumnsItemCodeIS;"></mat-row>
-
-                    <tr class="mat-row" *matNoDataRow>
-                      <td class="mat-cell" colspan="4">No data matched with "{{input.value}}"</td>
-                    </tr>
-                  </mat-table>
-                  <!-- ITEM CODE NG TABLE ENDS -->
-                </div>
-                <!-- Save & Close -->
-                <div class="save-close-container flex justify-end mt-auto py-2">
-                  <button mat-flat-button color="primary"
-                    (click)="addSelectedRowItemCodeIS()">Save&nbsp;&amp;&nbsp;Close</button>
-                </div>
+            <!-- isActive -->
+            <mat-checkbox *ngIf="isEditMode" formControlName="isActive" class="text-lg hidden">Active</mat-checkbox>
+          </div>
+          <!-- MULTIPLE ITEMS SELECTION SECTION -->
+          <div *ngIf="selectedItemsIS.length > 1" class="mt-2">
+            <div class="flex justify-between items-center mb-2">
+              <h2 class="text-lg font-bold text-primary">Selected Items</h2>
+            </div>
+            <!-- DISPLAYING SELECTED ITEMS selectedItemsIS IN A GRID FORMAT -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div *ngFor="let item of selectedItemsIS" class="p-4 border rounded-xl shadow-sm border-gray-300 bg-gray-100">
+                <div><strong>Item Code:</strong> {{ item.itemCode }}</div>
+                <div><strong>Description:</strong> {{ item.name }}</div>
               </div>
-            </ng-template>
-            <!-- ITEM CODE IS NG TEMPLATE DIALOG ENDS -->
-
-            <!-- ITEM SAMPLE ITEM CODE DIALOG STARTS -->
-            <ng-template #dialogTemplateItemSampleItems let-data="data">
-              <div class="dialog-container flex flex-col h-full">
-                <div class="flex justify-between items-center p-4 border-b text-primary">
-                  <h2 class="text-lg font-semibold">
-                    ITEMS</h2>
-                  <span (click)="closeDialog()" class="header-close-x">
-                    <mat-icon class="text-primary">close</mat-icon>
-                  </span>
+              <div
+                class="p-4 border rounded-xl shadow-sm border-gray-300 bg-gray-100 add-item-sample flex justify-center items-center"
+                (click)="onItemSampleItemCodeClick()">
+                <div matTooltip="Click to add more items">
+                  <mat-icon class="custom-add-icon">add_circle_outline</mat-icon>
                 </div>
-                <mat-form-field>
-                  <mat-label>Search</mat-label>
-                  <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
-                </mat-form-field>
-                <!-- ITEMS TABLE STARTS -->
-                <mat-table [dataSource]="dataSourceItemSampleCode" class="flex-grow">
-                  <!-- ITEM CODE & CHECKBOX COLUMN -->
+                <div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM CODE NG TEMPLATE DIALOG STARTS -->
+          <ng-template #dialogTemplateItemCodeIS>
+            <div class="dialog-container flex flex-col h-full">
+              <div class="flex justify-between items-center p-4 border-b text-primary">
+                <!-- List of All Items -->
+                <h2 class="text-lg font-semibold">List&nbsp;of&nbsp;All&nbsp;Items</h2>
+                <span (click)="dialog.closeAll()" class="header-close-x">
+                  <mat-icon class="text-primary">close</mat-icon>
+                </span>
+              </div>
+              <!-- List of All Items Search -->
+              <mat-form-field>
+                <mat-label>Search</mat-label>
+                <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
+              </mat-form-field>
+              <div class="table-container flex-grow overflow-auto">
+                <!-- ITEM CODE NG TABLE STARTS -->
+                <mat-table [dataSource]="dataSourceItemCodeIS">
+                  <!-- Item Code -->
                   <ng-container matColumnDef="itemCode">
                     <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Code</mat-header-cell>
                     <mat-cell *matCellDef="let row" class="single-line text-sm">
-                      <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemSampleCode(row)">
-                        <!-- [matTooltip]="row.itemDescription" -->
-                      </mat-checkbox> {{row.itemCode}} </mat-cell>
+                      <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemCodeIS(row)"
+                        [matTooltip]="row.name">
+                      </mat-checkbox> {{ row.itemCode }}
+                    </mat-cell>
                   </ng-container>
-                  <!-- ITEM DESCRIPTION COLUMN -->
+                  <!-- Item Description -->
                   <ng-container matColumnDef="itemDescription">
                     <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
                     <mat-cell *matCellDef="let row" class="single-line text-sm">
-                      {{row.itemDescription}} </mat-cell>
-                  </ng-container>
-                  <!-- ITEM GROUP COLUMN -->
-                  <ng-container matColumnDef="itemGroup">
-                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
-                    <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
-                      {{ row.itemGroup ? row.itemGroup : '-' }}
+                      {{ row.name }}
                     </mat-cell>
                   </ng-container>
-
-                  <mat-header-row *matHeaderRowDef="displayedColumnsItemSampleCode"></mat-header-row>
-                  <mat-row *matRowDef="let row; columns: displayedColumnsItemSampleCode;"></mat-row>
-
+                  <!-- Item Group -->
+                  <ng-container matColumnDef="itemGroup">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      {{ row.groupName ?? 'N/A' }}
+                    </mat-cell>
+                  </ng-container>
+        
+                  <mat-header-row *matHeaderRowDef="displayedColumnsItemCodeIS; sticky: true"></mat-header-row>
+                  <mat-row *matRowDef="let row; columns: displayedColumnsItemCodeIS;"></mat-row>
+        
                   <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell" colspan="4">No data matched with
-                      "{{input.value}}"</td>
+                    <td class="mat-cell" colspan="4">No data matched with "{{input.value}}"</td>
                   </tr>
                 </mat-table>
-                <!-- ITEMS TABLE TABLE ENDS -->
-                <!-- SAVE & CLOSE -->
-                <div class="flex justify-end mt-auto">
-                  <button mat-flat-button color="primary" (click)="addSelectedRowItemSampleCode()">
-                    Save&nbsp;&&nbsp; Close
-                  </button>
-                </div>
+                <!-- ITEM CODE NG TABLE ENDS -->
               </div>
-            </ng-template>
-            <!-- ITEM SAMPLE ITEM CODE DIALOG ENDS -->
-          </div>
-          <!-- SAMPLING RANGE TABLE SECTION STARTS -->
-          <!-- <div class="pt-4 lg:ml-9 lg:mr-13"> -->
+              <!-- Save & Close -->
+              <div class="save-close-container flex justify-end mt-auto py-2">
+                <button mat-flat-button color="primary" (click)="addSelectedRowItemCodeIS()">Save&nbsp;&amp;&nbsp;Close</button>
+              </div>
+            </div>
+          </ng-template>
+          <!-- ITEM CODE NG TEMPLATE DIALOG ENDS -->
+        
+          <!-- ITEM SAMPLE ITEM CODE DIALOG STARTS -->
+          <ng-template #dialogTemplateItemSampleItems let-data="data">
+            <div class="dialog-container flex flex-col h-full">
+              <div class="flex justify-between items-center p-4 border-b text-primary">
+                <h2 class="text-lg font-semibold">
+                  ITEMS</h2>
+                <span (click)="closeDialog()" class="header-close-x">
+                  <mat-icon class="text-primary">close</mat-icon>
+                </span>
+              </div>
+              <mat-form-field>
+                <mat-label>Search</mat-label>
+                <input matInput (keyup)="applyFilterItemSampleCode($event)" #input>
+              </mat-form-field>
+              <!-- ITEMS TABLE STARTS -->
+              <mat-table [dataSource]="dataSourceItemSampleCode" class="flex-grow">
+                <!-- ITEM CODE & CHECKBOX COLUMN -->
+                <ng-container matColumnDef="itemCode">
+                  <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Code</mat-header-cell>
+                  <mat-cell *matCellDef="let row" class="single-line text-sm">
+                    <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemSampleCode(row)">
+                      <!-- [matTooltip]="row.itemDescription" -->
+                    </mat-checkbox> {{row.itemCode}} </mat-cell>
+                </ng-container>
+                <!-- ITEM DESCRIPTION COLUMN -->
+                <ng-container matColumnDef="itemDescription">
+                  <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Description</mat-header-cell>
+                  <mat-cell *matCellDef="let row" class="single-line text-sm">
+                    {{row.itemDescription}} </mat-cell>
+                </ng-container>
+                <!-- ITEM GROUP COLUMN -->
+                <ng-container matColumnDef="itemGroup">
+                  <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
+                  <mat-cell *matCellDef="let row" class="single-line text-sm text-start">
+                    {{ row.itemGroup ? row.itemGroup : '-' }}
+                  </mat-cell>
+                </ng-container>
+        
+                <mat-header-row *matHeaderRowDef="displayedColumnsItemSampleCode"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumnsItemSampleCode;"></mat-row>
+        
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell" colspan="4">No data matched with
+                    "{{input.value}}"</td>
+                </tr>
+              </mat-table>
+              <!-- ITEMS TABLE TABLE ENDS -->
+              <!-- SAVE & CLOSE -->
+              <div class="flex justify-end mt-auto">
+                <button mat-flat-button color="primary" (click)="addSelectedRowItemSampleCode()">
+                  Save&nbsp;&&nbsp; Close
+                </button>
+              </div>
+            </div>
+          </ng-template>
+          <!-- ITEM SAMPLE ITEM CODE DIALOG ENDS -->
+
+          <!-- SAMPLING RANGE DIV STARTS -->
           <div style="display: flex; gap: 16px; margin-top: 5px; flex-wrap: wrap; align-items: flex-start;">
             <div class="w-full">
               <div class="w-full flex justify-between items-center m-0 p-0 py-0">
@@ -1660,7 +1682,7 @@
                   </div>
                 </div>
               </div>
-              <!-- Sampling Range TABLE -->
+              <!-- SAMPLING RANGE TABLE STARTS --> 
               <section class="mt-0 overflow-auto w-full">
                 <table mat-table [dataSource]="dataSourceItemSampling" class="w-full">
                   <!-- Lot Size Min COLUMN -->
@@ -1762,11 +1784,12 @@
               <div matTooltip="Select&nbsp;the&nbsp;mandatory&nbsp;item&nbsp;code" 
               [matTooltipDisabled]="isItemCodeValid()">
                 <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" 
-                [disabled]="!isItemCodeValid()" 
-                [ngClass]="{
-                  'invalid-disabled-button': !isItemCodeValid()}" (click)="onSubmitItemSamplingForm()">
+                 (click)="onSubmitItemSamplingForm()">
                 Save
               </button>
+              <!-- [disabled]="!isItemCodeValid()" 
+                [ngClass]="{
+                  'invalid-disabled-button': !isItemCodeValid()}" -->
             </div>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickItemSample()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
@@ -1775,6 +1798,7 @@
           </div>
         </form>
       </mat-step>
+      <!-- selectedItemDescriptionsIS -->
       <!-- ITEM SAMPLE ENDS -->
       <!-- Done Step -->
       <!-- <mat-step>
