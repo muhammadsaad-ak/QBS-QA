@@ -111,6 +111,7 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedItemDescriptionsIS: string[] = [];  // TO STORE SELECTED ITEM DESCRIPTIONS FROM ITEM CODE DIALOG - ITEM SAMPLE
 
     isCloneIC: boolean = false;
+    isCloneIIC: boolean = false;
     isIICNewAdd: boolean = false;
     isEditMode: boolean = false;
     isValidate: boolean = false;
@@ -2354,15 +2355,15 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         if (this.rowDataIIC) {
             this.isEditMode = this.rowDataIIC.isEditMode ?? false;
+            this.isCloneIIC = this.rowDataIIC.isCloneIIC ?? false;
+            
             console.log('IIC - this.isEditMode:', this.isEditMode);
-            // console.log('RECEIVED IIC DATA:', this.rowDataIIC);
-            // POPULATE FORM, itemsInspectionCardsForm, WITH RECEIVED DATA - rowDataIIC
+            console.log('IIC - this.isCloneIIC:', this.isCloneIIC);
+
+            // POPULATE itemsInspectionCardsForm, WITH RECEIVED DATA - rowDataIIC
             this.populateIICData(this.rowDataIIC);
             this.loadBothCharacteristics(this.rowDataIIC.id);
-            // this._itemInspectionCardService
-            //     .getBothCharacteristicsByItemInspectionCard(this.rowDataIIC.id)
-            //     .subscribe();
-
+            // this._itemInspectionCardService.getBothCharacteristicsByItemInspectionCard(this.rowDataIIC.id).subscribe();
         } else {
             console.log('NO IIC DATA RECEIVED');
             // this.isEditMode = false;
@@ -2391,25 +2392,28 @@ export class TestingStepperComponent implements AfterViewInit {
         }
         // UPDATE ITEM INSPECTION CARD ENDS
         // @IAK
-                // UPDATE ITEM INSPECTION CARD STARTS
+        
+        // UPDATE ITEM INSPECTION CARD STARTS
         //  RETRIEVING rowDataIIC
+        
         if (!this.rowDataIICNew) {
             const storedDataIICNew = sessionStorage.getItem('stepperDataIICNew'); // IF rowDataIIC IS MISSING, GET FROM sessionStorage
             this.rowDataIICNew = storedDataIICNew ? JSON.parse(storedDataIICNew) : null;
         }
+        
         if (this.rowDataIICNew) {
-            this.isEditMode = this.rowDataIICNew.isEditMode ?? false;
-            console.log('IIC - this.isEditMode:', this.isEditMode);
-            this.isIICNewAdd = this.rowDataIICNew.isIICNewAdd ?? false;
-            console.log('IIC - this.isIICNewAdd:', this.isIICNewAdd);
             // console.log('RECEIVED IIC DATA:', this.rowDataIIC);
+            
+            this.isEditMode = this.rowDataIICNew.isEditMode ?? false;
+            this.isIICNewAdd = this.rowDataIICNew.isIICNewAdd ?? false;
+
+            console.log('IIC - this.isEditMode:', this.isEditMode);
+            console.log('IIC - this.isIICNewAdd:', this.isIICNewAdd);
+            
             // POPULATE FORM, itemsInspectionCardsForm, WITH RECEIVED DATA - rowDataIIC
             this.populateIICDataNew(this.rowDataIICNew);
             this.loadBothCharacteristics(this.rowDataIICNew.id);
-            // this._itemInspectionCardService
-            //     .getBothCharacteristicsByItemInspectionCard(this.rowDataIIC.id)
-            //     .subscribe();
-
+            // this._itemInspectionCardService.getBothCharacteristicsByItemInspectionCard(this.rowDataIIC.id).subscribe();
         } else {
             console.log('NO IIC DATA RECEIVED');
             // this.isEditMode = false;
@@ -2437,11 +2441,13 @@ export class TestingStepperComponent implements AfterViewInit {
             // });
         }
         // UPDATE ITEM INSPECTION CARD ENDS
+
         if (this.isEditMode == false) {
             this._sessionStorageService.clearAll();
         }
         console.log('this.isEditMode', this.isEditMode);
         console.log('this.isCloneIC', this.isCloneIC);
+        console.log('this.isCloneIIC', this.isCloneIIC);
         console.log('this.isValidate', this.isValidate);
     }
 
@@ -3695,35 +3701,35 @@ export class TestingStepperComponent implements AfterViewInit {
         // });
         console.log(data);
 
-if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
-    // Fetch new code from service
-    this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
-        const y = inspectionCardCode.data;
-        console.log('Fetched Code:', y); // Debugging
+        if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
+            // Fetch new code from service
+            this._inspectionCardsCode.getInspectionCardCode().subscribe((inspectionCardCode) => {
+                const y = inspectionCardCode.data;
+                console.log('Fetched Code:', y); // Debugging
 
-        if (y) {
-            const fullCode = `IC-000${y}`;
-            this.fifthFormGroup.patchValue({
-                id: null,
-                intCode: fullCode,         // Set new code
-                description: null,         // Clear description
-                isActive: this.rowDataIC.isActive,
+                if (y) {
+                    const fullCode = `IC-000${y}`;
+                    this.fifthFormGroup.patchValue({
+                        id: null,
+                        intCode: fullCode,         // Set new code
+                        description: null,         // Clear description
+                        isActive: this.rowDataIC.isActive,
+                    });
+                } else {
+                    console.error('No code received from API');
+                }
             });
         } else {
-            console.error('No code received from API');
-        }
-    });
-} else {
-    const formattedICintCode =
-        'IC-' + this.rowDataIC.intCode.toString().padStart(5, '0');
+            const formattedICintCode =
+                'IC-' + this.rowDataIC.intCode.toString().padStart(5, '0');
 
-    this.fifthFormGroup.patchValue({
-        id: this.rowDataIC.id,
-        intCode: formattedICintCode,
-        description: this.rowDataIC.description,
-        isActive: this.rowDataIC.isActive,
-    });
-}
+            this.fifthFormGroup.patchValue({
+                id: this.rowDataIC.id,
+                intCode: formattedICintCode,
+                description: this.rowDataIC.description,
+                isActive: this.rowDataIC.isActive,
+            });
+        }
 
     }
 
@@ -3877,18 +3883,40 @@ if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
             console.error('NO DATA RECEIVED TO POPULATE THE IIC FORM FIELDS.');
             return;
         }
+        console.log(data);
         // MAPPING RESPONSE
-        // console.log(data);
         const formattedCardintCode =
             'IC-' + this.rowDataIIC.inspectionCardIntCode.toString().padStart(5, '0');
-        this.itemsInspectionCardsForm.patchValue({
-            id: this.rowDataIIC.id,
-            itemCode: this.rowDataIIC.itemCode,
-            itemDescription: this.rowDataIIC.itemDescription,
-            cardDescription: this.rowDataIIC.cardDescription,
-            inspectionCardId: this.rowDataIIC.inspectionCardId,
-            intCode: formattedCardintCode,
-        });
+        if (this.rowDataIIC.isEditMode && this.rowDataIIC.isCloneIIC) {
+            this.itemsInspectionCardsForm.patchValue({
+                id: null,
+                itemCode: null,
+                itemDescription: null,
+                cardDescription: this.rowDataIIC.cardDescription,
+                inspectionCardId: this.rowDataIIC.inspectionCardId,
+                intCode: formattedCardintCode,
+            });
+        }
+        else {
+            this.itemsInspectionCardsForm.patchValue({
+                id: this.rowDataIIC.id,
+                itemCode: this.rowDataIIC.itemCode,
+                itemDescription: this.rowDataIIC.itemDescription,
+                cardDescription: this.rowDataIIC.cardDescription,
+                inspectionCardId: this.rowDataIIC.inspectionCardId,
+                intCode: formattedCardintCode,
+            });
+        }
+        // const formattedCardintCode =
+        //     'IC-' + this.rowDataIIC.inspectionCardIntCode.toString().padStart(5, '0');
+        // this.itemsInspectionCardsForm.patchValue({
+        //     id: this.rowDataIIC.id,
+        //     itemCode: this.rowDataIIC.itemCode,
+        //     itemDescription: this.rowDataIIC.itemDescription,
+        //     cardDescription: this.rowDataIIC.cardDescription,
+        //     inspectionCardId: this.rowDataIIC.inspectionCardId,
+        //     intCode: formattedCardintCode,
+        // });
     }
     populateIICDataNew(data: any): void {
         if (!data) {
@@ -3915,7 +3943,7 @@ if (this.rowDataIC.isEditMode && this.rowDataIC.isCloneIC) {
         });
     }
 
-    loadBothCharacteristicsx(itemInspectionCardId: string): void {
+    XloadBothCharacteristicsx(itemInspectionCardId: string): void {
         this._itemInspectionCardService
             .getBothCharacteristicsByItemInspectionCard(itemInspectionCardId)
             .subscribe(

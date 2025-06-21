@@ -317,7 +317,7 @@ export class ItemsInspectionCardsComponent {
             };
             sessionStorage.setItem('stepperDataIICNew', JSON.stringify(dataToSendIntoStepperIICNew));
             this._router.navigate(['/master-data/list-of-testing-stepper'], {
-              queryParams: { step: 4 },
+              queryParams: { step: 5 },
             });
           } else {
             console.log('%c✖ User cancelled creation of new IIC', 'color: red; font-weight: bold;');
@@ -335,6 +335,17 @@ export class ItemsInspectionCardsComponent {
           queryParams: { step: 5 },
         });
       }
+    });
+  }
+
+  openStepperToCloneIIC(rowDataIIC: any): void {
+    console.log('SENDING IIC DATA:', rowDataIIC);
+    const dataToSendIntoStepperIIC = {
+      ...rowDataIIC, isEditMode: true, isCloneIIC: true
+    };
+    sessionStorage.setItem('stepperDataIIC', JSON.stringify(dataToSendIntoStepperIIC));
+    this._router.navigate(['/master-data/list-of-testing-stepper'], {
+      queryParams: { step: 5 }
     });
   }
 

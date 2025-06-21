@@ -678,6 +678,8 @@
               <mat-label>Item Code</mat-label>
               <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
                 (click)="onItemCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+                (click)="onItemCodeClickIIC()" *ngIf="isCloneIIC"></mat-icon>
               <input matInput formControlName="itemCode" readonly
                 [value]="selectedItemCodeIIC ? selectedItemCodeIIC : ''">
               <mat-error *ngIf="isValidate && itemsInspectionCardsForm.get('itemCode').invalid">Required.</mat-error>
@@ -928,7 +930,7 @@
               <ng-template matTabContent>
                 <div class="pt-0 lg:ml-9 lg:mr-13">
                   <div class="w-full">
-                    <div class="w-full flex justify-between items-center m-0 p-0 px-0 py-0">
+                    <div *ngIf="!isCloneIIC" class="w-full flex justify-between items-center m-0 p-0 px-0 py-0">
                       <div class="ml-auto flex space-x-2 sm:space-x-4">
                         <div class="icon-size-4">
                           <mat-icon class="mat-icon-primary" style="cursor: pointer;" svgIcon="feather:plus"
@@ -1203,7 +1205,7 @@
               <ng-template matTabContent>
                 <div class="pt-0 lg:ml-9 lg:mr-13">
                   <div class="w-full">
-                    <div class="w-full flex justify-between items-center m-0 p-0 px-0 py-0">
+                    <div *ngIf="!isCloneIIC" class="w-full flex justify-between items-center m-0 p-0 px-0 py-0">
                       <div class="ml-auto flex space-x-2 sm:space-x-4">
                         <div class="icon-size-4">
                           <mat-icon class="mat-icon-primary" style="cursor: pointer;" svgIcon="feather:plus"
@@ -1449,19 +1451,23 @@
             <!-- <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
               (click)="submitItemsInspectionCardsForm()">Save</button> -->
               <!-- &nbsp; -->
-              <div matTooltip="Select&nbsp;the&nbsp;mandatory&nbsp;item&nbsp;code&nbsp;and&nbsp;card&nbsp;code." 
-              [matTooltipDisabled]="isIICFormValid()">
-                <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" 
-                [disabled]="!isIICFormValid()" 
-                [ngClass]="{
-                  'invalid-disabled-button': !isIICFormValid()}" (click)="submitItemsInspectionCardsForm()">
-                Save
-              </button>
+              <div matTooltip="Select&nbsp;the&nbsp;mandatory&nbsp;item&nbsp;code&nbsp;and&nbsp;card&nbsp;code."
+                [matTooltipDisabled]="isIICFormValid()">
+                  <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" 
+                  [disabled]="!isIICFormValid()" [ngClass]="{'invalid-disabled-button': !isIICFormValid()}" 
+                  (click)="submitItemsInspectionCardsForm()">
+                  Save
+                  </button>
+                <button mat-button class="next-button" *ngIf="isCloneIIC && !isLoading" 
+                [disabled]="!isIICFormValid()" [ngClass]="{'invalid-disabled-button': !isIICFormValid()}" 
+                (click)="submitItemsInspectionCardsForm()">
+                  Save
+                </button>
               </div>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickIIC()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="isEditMode && !isIICNewAdd"
+            <button mat-button class="next-button" *ngIf="isEditMode && !isIICNewAdd && !isCloneIIC"
             (click)="onUpdateItemInspectionCard()">Update</button>
             <button mat-button class="next-button" *ngIf="isIICNewAdd"
             (click)="submitItemsInspectionCardsFormNew()">Add</button>
