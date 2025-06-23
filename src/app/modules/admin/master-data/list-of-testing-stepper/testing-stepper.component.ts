@@ -114,6 +114,7 @@ export class TestingStepperComponent implements AfterViewInit {
     isCloneIIC: boolean = false;
     isIICNewAdd: boolean = false;
     isEditMode: boolean = false;
+    isViewMode: boolean = false;
     isValidate: boolean = false;
     isLoading: boolean = false;
     rowDataQR: any; // TO STORE RECEIVED QR DATA FROM NAVIGATION                -   QUALITATIVE RESULTS
@@ -2356,9 +2357,11 @@ export class TestingStepperComponent implements AfterViewInit {
         if (this.rowDataIIC) {
             this.isEditMode = this.rowDataIIC.isEditMode ?? false;
             this.isCloneIIC = this.rowDataIIC.isCloneIIC ?? false;
+            this.isViewMode = this.rowDataIIC.isViewMode ?? false;
             
             console.log('IIC - this.isEditMode:', this.isEditMode);
             console.log('IIC - this.isCloneIIC:', this.isCloneIIC);
+            console.log('IIC - this.isViewMode:', this.isViewMode);
 
             // POPULATE itemsInspectionCardsForm, WITH RECEIVED DATA - rowDataIIC
             this.populateIICData(this.rowDataIIC);
@@ -2441,6 +2444,7 @@ export class TestingStepperComponent implements AfterViewInit {
             // });
         }
         // UPDATE ITEM INSPECTION CARD ENDS
+        
 
         if (this.isEditMode == false) {
             this._sessionStorageService.clearAll();
@@ -2448,6 +2452,7 @@ export class TestingStepperComponent implements AfterViewInit {
         console.log('this.isEditMode', this.isEditMode);
         console.log('this.isCloneIC', this.isCloneIC);
         console.log('this.isCloneIIC', this.isCloneIIC);
+        console.log('this.isViewMode', this.isViewMode);
         console.log('this.isValidate', this.isValidate);
     }
 

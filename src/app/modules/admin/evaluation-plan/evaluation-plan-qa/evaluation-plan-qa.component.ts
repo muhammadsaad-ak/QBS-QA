@@ -367,13 +367,21 @@ export class EvaluationPlanQaComponent implements OnInit {
           .subscribe({
             next: (qualityResponse) => {
               console.log('Quality Response:', qualityResponse);
-              if (qualityResponse?.data?.isClosed !== true) {
+              if (!qualityResponse?.data || qualityResponse.data.isClosed !== true) {
                 this._snackBar.open('QA already open for this item. Cannot submit again.', 'Close', {
                   duration: 3000,
                   panelClass: ['snackbar-error']
                 });
-                return; // ⛔ Stop further execution
+                return;
               }
+
+              // if (qualityResponse?.data?.isClosed !== true) {
+              //   this._snackBar.open('QA already open for this item. Cannot submit again.', 'Close', {
+              //     duration: 3000,
+              //     panelClass: ['snackbar-error']
+              //   });
+              //   return; // ⛔ Stop further execution
+              // }
       
               // ✅ Proceed to add QA
               console.log('Proceeding to call addProductionQA...');

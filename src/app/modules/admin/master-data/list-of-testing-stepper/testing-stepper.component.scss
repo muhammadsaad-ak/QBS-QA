@@ -206,3 +206,7 @@
   background-color: transparent !important;
   cursor: pointer !important;
 }
+
+.view-mode-no-cursor {
+  pointer-events: none !important;
+}

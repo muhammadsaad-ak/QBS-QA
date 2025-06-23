@@ -28,6 +28,7 @@ import { EvaluationPlanQaOrderService } from 'app/core/other-core-services/modul
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { QbsConfirmationIICService } from '@qbs/services/confirmation/confirmation-iic.service';
 
 @Component({
   selector: 'app-items-inspection-cards',
@@ -88,6 +89,7 @@ export class ItemsInspectionCardsComponent {
   constructor(
     private _formBuilder: UntypedFormBuilder,
     private _qbsConfirmationService: QbsConfirmationService,
+    private _qbsConfirmationIICService: QbsConfirmationIICService,
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemInspectionCardService: ItemInspectionCardService,
@@ -299,12 +301,13 @@ export class ItemsInspectionCardsComponent {
       });
       // If matched in any list, show confirmation
       if (matchPurchaseQC || matchProductionQC || matchProductionQA) {
-        const confirmation = this._qbsConfirmationService.open({
+        const confirmation = this._qbsConfirmationIICService.openIIC({
           title: 'Confirmation',
           message: 'QC or QA is already performed on this item inspection card. Do you want to update it by creating a new one?',
           actions: {
             confirm: { label: 'Yes, Create' },
             cancel: { label: 'No, Cancel' },
+            view: { label: 'View Only' },
           },
         });
 
@@ -316,6 +319,16 @@ export class ItemsInspectionCardsComponent {
               isIICNewAdd: true,
             };
             sessionStorage.setItem('stepperDataIICNew', JSON.stringify(dataToSendIntoStepperIICNew));
+            this._router.navigate(['/master-data/list-of-testing-stepper'], {
+              queryParams: { step: 5 },
+            });
+          } else if (result === 'view') {
+            const dataToSendIntoStepperIIC = {
+              ...rowDataIIC,
+              isEditMode: true,
+              isViewMode: true,
+            };
+            sessionStorage.setItem('stepperDataIIC', JSON.stringify(dataToSendIntoStepperIIC));
             this._router.navigate(['/master-data/list-of-testing-stepper'], {
               queryParams: { step: 5 },
             });
