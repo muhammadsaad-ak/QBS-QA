@@ -27,3 +27,29 @@ export interface QbsConfirmationConfig {
     };
     dismissible?: boolean;
 }
+
+export interface QbsConfirmationDialogIIC {
+    title?: string;
+    message?: string;
+    icon?: {
+        show?: boolean;
+        name?: string;
+        color?:'primary' | 'accent' | 'warn' | 'basic' | 'info' | 'success' | 'warning' | 'error';
+    };
+    actions?: {
+        confirm?: {
+            show?: boolean;
+            label?: string;
+        };
+        cancel?: {
+            show?: boolean;
+            label?: string;
+        };
+        view?: {
+            show?: boolean;
+            label?: string;
+            color?:'primary'
+        };
+    };
+    dismissible?: boolean;
+}
