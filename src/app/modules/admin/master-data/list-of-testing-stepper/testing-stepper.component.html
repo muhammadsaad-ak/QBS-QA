@@ -973,15 +973,60 @@
                         <!-- mandatory - Mandatory COLUMN -->
                         <ng-container matColumnDef="mandatory">
                           <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
-                            Mandatory
+                            <!-- Mandatory -->
+                              Quality Control & Assurance Types
                           </th>
-                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6" 
-                            [ngClass]="{'cursor-no-drop': isViewMode}"
+                          <!-- <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6" [ngClass]="{'cursor-no-drop': isViewMode}"
                             [formGroup]="qualitativeInspectionObjects.controls[i]">
-                            <mat-checkbox formControlName="mandatory" 
-                            [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}"></mat-checkbox>
+                            <mat-checkbox formControlName="mandatory"
+                              [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}"></mat-checkbox>
+                          </td> -->
+
+                          <!-- <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6" [ngClass]="{'cursor-no-drop': isViewMode}"
+                            [formGroup]="qualitativeInspectionObjects.controls[i]">
+                            <mat-checkbox formControlName="isQcCritical"
+                              [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                            </mat-checkbox>
+                            <mat-checkbox formControlName="isQcLab" [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                            </mat-checkbox>
+                            <mat-checkbox formControlName="isTrial" [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                            </mat-checkbox>
+                          </td> -->
+
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6" [ngClass]="{'cursor-no-drop': isViewMode}"
+                            [formGroup]="qualitativeInspectionObjects.controls[i]">
+                          
+                            <div class="flex gap-2 items-center">
+                              <!-- isQcCritical CHECKBOX -->
+                              <mat-checkbox formControlName="isQcCritical" [matTooltip]="'QC Critical'"
+                              [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                            </mat-checkbox>
+                            <!-- isQcFloor CHECKBOX -->
+                              <mat-checkbox formControlName="isQcFloor" [matTooltip]="'QC Floor'"
+                                [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                              </mat-checkbox>
+                              <!-- isQcLab CHECKBOX -->
+                              <mat-checkbox formControlName="isQcLab" [matTooltip]="'QC Lab'"
+                                [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                              </mat-checkbox>
+                              <!-- isDispatch CHECKBOX -->
+                              <mat-checkbox formControlName="isDispatch" [matTooltip]="'Dispatch QC'"
+                                [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                              </mat-checkbox>
+                              <!-- isIncoming CHECKBOX -->
+                              <mat-checkbox formControlName="isIncoming" [matTooltip]="'Incoming QC'"
+                                [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                              </mat-checkbox>
+                              <!-- isTrial CHECKBOX:  -->
+                              <mat-checkbox formControlName="isTrial" [matTooltip]="'Trial QC'"
+                                [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                              </mat-checkbox>
+                            </div>
+
                           </td>
-                        </ng-container>
+                          
+                          
+                          </ng-container>
                         <!-- results - Results COLUMN -->
                         <ng-container matColumnDef="results">
                           <th mat-header-cell *matHeaderCellDef class="text-sm">

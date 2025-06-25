@@ -67,6 +67,12 @@ interface RowData {
     parameter: string;
     passCriteria: string;
     mandatory: boolean;
+    isQcCritical: boolean;
+    isQcFloor: boolean;
+    isQcLab: boolean;
+    isDispatch: boolean;
+    isIncoming: boolean;
+    isTrial: boolean;
     pass: string;
     fail: string;
 }
@@ -165,14 +171,16 @@ export class TestingStepperComponent implements AfterViewInit {
         private inspectionAttributesNextIntCode: QualitativeResultsService,
         private inspectionAttributesService: InspectionAttributesService,
     ) { }
-    qualitativeData = [
-        { parameter: 'Sample Parameter 1' }, // Initial row
-        { parameter: 'Sample Parameter 2' },
-    ];
+
+    // qualitativeData = [
+    //     { parameter: 'Sample Parameter 1' }, // Initial row
+    //     { parameter: 'Sample Parameter 2' },
+    // ];
+
     displayedColumns: string[] = ['parameter'];
     firstRowAdded: boolean = false;
 
-    @ViewChild(MatStepper) stepper!: MatStepper; // Correctly reference the MatStepper instance
+    @ViewChild(MatStepper) stepper!: MatStepper; 
 
     // Qualitative Result firstFormGroup
     firstFormGroup = this._formBuilder.group({
@@ -181,6 +189,7 @@ export class TestingStepperComponent implements AfterViewInit {
         resultDescription: ['', Validators.required],
         data: [''],
     });
+
     // Unit Of Measure Form
     secondFormGroup = this._formBuilder.group({
         id: [''],
@@ -188,6 +197,7 @@ export class TestingStepperComponent implements AfterViewInit {
         description: ['', Validators.required],
         isActive: [true],
     });
+
     // Inspection Attributes - inspectionAttributesForm
     inspectionAttributesForm = this._formBuilder.group({
         id: [null],
@@ -200,7 +210,6 @@ export class TestingStepperComponent implements AfterViewInit {
 
     // ITEM SAMPLE
 
-
     // dataSourceItemSampling = new MatTableDataSource<itemSamplingIF>();
     // get samples(): FormArray {
     //     return this.itemSamplingForm.get('samples') as FormArray;
@@ -209,10 +218,6 @@ export class TestingStepperComponent implements AfterViewInit {
     get samplingRangeObjects(): FormArray {
         return this.itemSamplingForm.get('samplingRangeObjects') as FormArray;
     }
-
-
-
-
 
     fetchListAllItems() {
         return this._itemSamplesService.getListAllItems().pipe(
@@ -227,7 +232,6 @@ export class TestingStepperComponent implements AfterViewInit {
                     return of([]);
                 }
             }),
-            // Handle errors gracefully
             catchError((err) => {
                 console.error('ERROR FETCHING ITEMS:', err);
                 this.dataSourceItemCodeIS = new MatTableDataSource([]);
@@ -236,38 +240,23 @@ export class TestingStepperComponent implements AfterViewInit {
         );
     }
 
-    //
-
-
-
-
-
-
     // dataSourceItemSampleCode!: MatTableDataSource<any>;
     dataSourceItemSampleCode = new MatTableDataSource([
         {
             itemId: 1,
-            itemCode: 'ITM0012561',
+            itemCode: 'ITM-00001',
             itemDescription: 'Paint Bucket 3KG',
             itemGroup: 'Item Group A',
             isSelected: false,
         },
         {
-            itemId: 2,
-            itemCode: 'ITM001   2562',
-            itemDescription: 'Paint Bucket 5KG',
-            itemGroup: '',
-            isSelected: false,
+            // itemId: 2,
+            // itemCode: 'ITM001-2562',
+            // itemDescription: 'Paint Bucket 5KG',
+            // itemGroup: '',
+            // isSelected: false,
         },
     ]);
-    //
-
-
-    //
-
-    //
-
-    //
 
     // ITEM SAMPLE ITEM CODE NG TEMPLATE ENDS
 
@@ -320,7 +309,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // FormArray FOR DYNAMIC ROWS
         qualitativeInspectionObjects: this.fb.array([]),
         quantitativeInspectionObjects: this.fb.array([]),
-        id: [''], //  ITEM INSPECTION CARD ID
+        id: [''],
     });
 
     displayedColumnsQualitative = [
@@ -363,6 +352,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     parameter: [qualitativeItem.parameter],
                     passCriteria: [qualitativeItem.passCriteria],
                     mandatory: [qualitativeItem.mandatory],
+                    isQcCritical: [qualitativeItem.isQcCritical || false], // DEFAULT TO false
+                    isQcFloor: [qualitativeItem.isQcFloor || false], // DEFAULT TO false
+                    isQcLab: [qualitativeItem.isQcLab || false], // DEFAULT TO false
+                    isDispatch: [qualitativeItem.isDispatch || false], // DEFAULT TO false
+                    isIncoming: [qualitativeItem.isIncoming || false], // DEFAULT TO false
+                    isTrial: [qualitativeItem.isTrial || false], // DEFAULT TO false
                     // pass: [qualitativeItem.pass],
                     // fail: [qualitativeItem.fail],
                     pass: [qualitativeItem.pass || []], // If pass is not provided, assign an empty array
@@ -399,6 +394,7 @@ export class TestingStepperComponent implements AfterViewInit {
             'qualitativeInspectionObjects'
         ) as FormArray;
     }
+
     // QUANTITATIVE
     get quantitativeInspectionObjects(): FormArray {
         return this.itemsInspectionCardsForm.get(
@@ -416,6 +412,12 @@ export class TestingStepperComponent implements AfterViewInit {
             parameter: [description],
             passCriteria: [criteria],
             mandatory: [false],
+            isQcCritical: [false], // DEFAULT TO false
+            isQcFloor: [false], // DEFAULT TO false
+            isQcLab: [false], // DEFAULT TO false
+            isDispatch: [false], // DEFAULT TO false
+            isIncoming: [false], // DEFAULT TO false
+            isTrial: [false], // DEFAULT TO false
             pass: [], // Multiple pass values in array
             fail: [], // Multiple fail values in array
 
@@ -452,7 +454,7 @@ export class TestingStepperComponent implements AfterViewInit {
         );
     }
 
-    // CUSTOM VALIDATORS
+    // CUSTOM VALIDATORS FOR QUANTITATIVE INSPECTION IIC 
     triggerValidationTarget(index: number): void {
         this.isValidate = false;
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaTarget');
@@ -523,10 +525,8 @@ export class TestingStepperComponent implements AfterViewInit {
         ];
     }
 
-
-
-    // ITEM CODE API
-    // fetchListAllItemsSAP(): void {
+    // ITEM CODE API IIC
+    // XfetchListAllItemsSAP(): void {
     //     this._itemInspectionCardService.getListAllItems().subscribe({
     //         next: (response) => {
     //             if (response && response.isRequestSuccess && response.data) {
@@ -547,10 +547,12 @@ export class TestingStepperComponent implements AfterViewInit {
     //         },
     //     });
     // }
-    // SAP API  - SAP ITEM CODE API
+
+    // SAP ITEM CODE API IIC 
     pageSize = 25;
     pageNumber = 1;
     totalRecords = 0;
+    // isSearchActive = false; 
     fetchListAllItemsSAP(): void {
         this._SAPItemsService.getListAllItemsSAP(this.pageSize, this.pageNumber).subscribe({
             next: (response) => {
@@ -600,7 +602,7 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
 
-    // CARD CODE API
+    // CARD CODE API IIC
     fetchListAllCards(): void {
         this._itemInspectionCardService.ListAllInspectionCards().subscribe({
             next: (response) => {
@@ -643,7 +645,6 @@ export class TestingStepperComponent implements AfterViewInit {
         'itemDescription',
         'itemGroup',
     ];
-
     selectedIntCodeIIC: number;
     selectedItemCodeIIC: string;
     selectedItemDescriptionICC: string = '';
@@ -683,7 +684,6 @@ export class TestingStepperComponent implements AfterViewInit {
             this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
             this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemName);
 
-
             this.selectedIntCodeIIC = selectedRow.intCode;
             // console.log("addSelectedRowItemCodeIIC - this.selectedIntCodeIIC:", this.selectedIntCodeIIC)
             this.selectedItemCodeIIC = selectedRow.itemCode;
@@ -720,6 +720,7 @@ export class TestingStepperComponent implements AfterViewInit {
             console.log('NO ROW SELECTED');
         }
     }
+
 
     isSearchActive = false;
     searchingItem = '';
@@ -773,7 +774,7 @@ export class TestingStepperComponent implements AfterViewInit {
             data: this.dataSourceCardCodeIIC,
         });
         dialogRef.afterClosed().subscribe((result) => {
-            // // console.log('DIALOG CLOSED');
+            // console.log('DIALOG CLOSED');
         });
     }
 
@@ -874,6 +875,13 @@ export class TestingStepperComponent implements AfterViewInit {
                                         parameter: characteristic.description,
                                         passCriteria: characteristic.singleCriteria, // passCriteria: criteria.description,
                                         mandatory: false,
+                                        isQcCritical: false,
+                                        isQcFloor: false,
+                                        isQcLab: false,
+                                        isDispatch: false,
+                                        isIncoming: false,
+                                        isTrial: false,
+                                        // isQcCritical: characteristic.isQcCritical || false, // DEFAULT TO false
                                         pass: [], // Multiple pass values in array
                                         fail: [], // Multiple fail values in array
                                     })
@@ -888,6 +896,12 @@ export class TestingStepperComponent implements AfterViewInit {
                                 parameter: characteristic.description,
                                 passCriteria: characteristic.singleCriteria, // passCriteria: '',
                                 mandatory: false,
+                                isQcCritical: false,
+                                isQcFloor: false,
+                                isQcLab: false,
+                                isDispatch: false,
+                                isIncoming: false,
+                                isTrial: false,
                                 pass: [], // pass: '',
                                 fail: [], // fail: '',
                             })
@@ -957,7 +971,7 @@ export class TestingStepperComponent implements AfterViewInit {
         selectedRow.isSelected = true;
     }
 
-    addSelectedRowUoMIICxx(index: number): void {
+    XaddSelectedRowUoMIIC(index: number): void {
         this.dialog.closeAll();
         const selectedRow = this.dataSourceUoMIIC.data.find(
             (row) => row.isSelected
@@ -1145,7 +1159,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // ADD QUANTITATIVE INSPECTION NG TEMPLATE ENDS
 
-    // QR STARTS
+    // RESULTS - QUALITATIVE RESULTS IIC STARTS
     dataSourceQRIIC = new MatTableDataSource([]);
     @ViewChild('dialogTemplateResultsIIC') dialogTemplateResultsIIC;
 
@@ -1426,7 +1440,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.dataSourceQRIIC.filter = filterValue.trim().toLowerCase();
     }
     
-    // ITEM INSPECTION CARD STARTS
+    // ON SUBMIT ITEM INSPECTION CARD STARTS
     // DOUBLE ARRAY IIC
     XXsubmitItemsInspectionCardsForm(): void {
         if (this.itemsInspectionCardsForm.valid) {
@@ -1445,6 +1459,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     payload.qualitativeInspectionObjects.map((item: any) => ({
                         inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
                         isMandatory: item?.mandatory ?? false, // Ensure it exists
+                        isQcCritical: item?.isQcCritical ?? false, // Ensure it exists
+                        isQcFloor: item?.isQcFloor ?? false, // Ensure it exists
+                        isQcLab: item?.isQcLab ?? false, // Ensure it exists
+                        isDispatch: item?.isDispatch ?? false, // Ensure it exists
+                        isIncoming: item?.isIncoming ?? false, // Ensure it exists
+                        isTrial: item?.isTrial ?? false, // Ensure it exists
                         qualitativeResultPassStatusObjects: Array.isArray(
                             item?.qualitativeResultPassStatusObjects
                         )
@@ -1522,7 +1542,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // SINGLE ARRAY IIC
     // @IAK
-    // 06052025
+    // 06052025 - ORIGINAL
     XsubmitItemsInspectionCardsForm(): void {
         this.isValidate = true;
         if (this.itemsInspectionCardsForm.valid) {
@@ -1571,6 +1591,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     return {
                         inspectionCharacteristicId: item?.id ?? null,
                         isMandatory: item?.mandatory ?? false,
+                        isQcCritical: item?.isQcCritical ?? false,
+                        isQcFloor: item?.isQcFloor ?? false,
+                        isQcLab: item?.isQcLab ?? false,
+                        isDispatch: item?.isDispatch ?? false,
+                        isIncoming: item?.isIncoming ?? false,
+                        isTrial: item?.isTrial ?? false,
                         qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
                         qualitativeResultFailStatusObjects: [],
                     };
@@ -1716,6 +1742,13 @@ export class TestingStepperComponent implements AfterViewInit {
                     return {
                         inspectionCharacteristicId: item?.id ?? null,
                         isMandatory: item?.mandatory ?? false,
+                        isQcCritical: item?.isQcCritical ?? false,
+                        isQcFloor: item?.isQcFloor ?? false,
+                        isQcLab: item?.isQcLab ?? false,
+                        isDispatch: item?.isDispatch ?? false,
+                        isIncoming: item?.isIncoming ?? false,
+                        isTrial: item?.isTrial ?? false,
+                        // isTrial: true,
                         qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
                         qualitativeResultFailStatusObjects: [],
                     };
@@ -1869,6 +1902,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     return {
                         inspectionCharacteristicId: item?.id ?? null,
                         isMandatory: item?.mandatory ?? false,
+                        isQcCritical: item?.isQcCritical ?? false,
+                        isQcFloor: item?.isQcFloor ?? false,
+                        isQcLab: item?.isQcLab ?? false,
+                        isDispatch: item?.isDispatch ?? false,
+                        isIncoming: item?.isIncoming ?? false,
+                        isTrial: item?.isTrial ?? false,
                         qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
                         qualitativeResultFailStatusObjects: [],
                     };
@@ -3970,6 +4009,12 @@ export class TestingStepperComponent implements AfterViewInit {
                                             Validators.required,
                                         ],
                                         isMandatory: [qualitative.isMandatory],
+                                        isQcCritical: [qualitative.isQcCritical],
+                                        isQcFloor: [qualitative.isQcFloor],
+                                        isQcLab: [qualitative.isQcLab],
+                                        isDispatch: [qualitative.isDispatch],
+                                        isIncoming: [qualitative.isIncoming],
+                                        isTrial: [qualitative.isTrial],
                                         qualitativeResultPassStatusObjects:
                                             this.fb.array(
                                                 qualitative.qualitativeResultPassStatusResults.map(
@@ -4093,6 +4138,12 @@ export class TestingStepperComponent implements AfterViewInit {
                                     parameter: [qualitative.inspectionCharacteristicName, Validators.required],
                                     passCriteria: [qualitative.inspectionCharacteristicSingleCriteria, Validators.required],
                                     mandatory: [qualitative.isMandatory],
+                                    isQcCritical: [qualitative.isQcCritical],
+                                    isQcFloor: [qualitative.isQcFloor],
+                                    isQcLab: [qualitative.isQcLab],
+                                    isDispatch: [qualitative.isDispatch],
+                                    isIncoming: [qualitative.isIncoming],
+                                    isTrial: [qualitative.isTrial],
                                     pass: [passDescriptions], // ✅ Extracted from isPassed=true
                                     fail: [failDescriptions], // ✅ Extracted from isPassed=false
                                     qualitativeResultPassStatusObjects: this.fb.array(
@@ -4158,6 +4209,12 @@ export class TestingStepperComponent implements AfterViewInit {
                 qualitativeInspectionId: item.qualitativeInspectionId,
                 isActive: true,
                 isMandatory: item.mandatory,
+                isQcCritical: item.isQcCritical,
+                isQcFloor: item.isQcFloor,
+                isQcLab: item.isQcLab,
+                isDispatch: item.isDispatch,
+                isIncoming: item.isIncoming,
+                isTrial: item.isTrial,
                 qualitativeResultPassStatusResults: item.qualitativeResultPassStatusObjects ? item.qualitativeResultPassStatusObjects.map((result: any) => ({
                     qualitativeResultId: result.qualitativeResultId,
                     isPassed: result.isPassed,
@@ -4251,6 +4308,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     qualitativeInspectionId: item.qualitativeInspectionId ?? null,
                     isActive: true,
                     isMandatory: item.mandatory ?? false,
+                    isQcCritical: item.isQcCritical ?? false,
+                    isQcFloor: item.isQcFloor ?? false,
+                    isQcLab: item.isQcLab ?? false,
+                    isDispatch: item.isDispatch ?? false,
+                    isIncoming: item.isIncoming ?? false,
+                    isTrial: item.isTrial ?? false,
                     qualitativeResultPassStatusResults: qualitativeResultPassStatusResults,
                     qualitativeResultFailStatusResults: item.qualitativeResultFailStatusObjects
                         ? item.qualitativeResultFailStatusObjects.map((result: any) => ({
