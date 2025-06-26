@@ -24,6 +24,12 @@ export interface quantitativeInspectionIF {
     uoMId: string;
     uoMCode: string;
     mandatoryQty: boolean;
+    isQcCritical: boolean;
+    isQcFloor: boolean;
+    isQcLab: boolean;
+    isDispatch: boolean;
+    isIncoming: boolean;
+    isTrial: boolean;
     passCriteriaTarget: string;
     passCriteriaMax: string;
     passCriteriaMin: string;
