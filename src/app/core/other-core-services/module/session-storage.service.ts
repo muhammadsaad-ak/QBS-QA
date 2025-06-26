@@ -9,6 +9,7 @@ export class SessionStorageService {
         const keysToRemove = [
             'stepperDataQR',
             'stepperDataUOM',
+            'stepperDataIA',
             'stepperDataICH',
             'stepperDataIC',
             'stepperDataIS',
