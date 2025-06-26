@@ -56,6 +56,12 @@ interface qrPassStatusObjectIF {
 interface QuantInspObjectIF {
     inspectionCharacteristicId: number | null;
     isMandatory: boolean;
+    isQcCritical: boolean;
+    isQcFloor: boolean;
+    isQcLab: boolean;
+    isDispatch: boolean;
+    isIncoming: boolean;
+    isTrial: boolean;
     uoMId: string;
     target: number | null;
     max: number | null;
@@ -67,12 +73,6 @@ interface RowData {
     parameter: string;
     passCriteria: string;
     mandatory: boolean;
-    isQcCritical: boolean;
-    isQcFloor: boolean;
-    isQcLab: boolean;
-    isDispatch: boolean;
-    isIncoming: boolean;
-    isTrial: boolean;
     pass: string;
     fail: string;
 }
@@ -374,6 +374,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     uoMId: [quantitativeItem.uoMId],
                     uoMCode: [quantitativeItem.uoMCode],
                     mandatoryQty: [quantitativeItem.mandatoryQty],
+                    isQcCritical: [quantitativeItem.isQcCritical || false], // DEFAULT TO false
+                    isQcFloor: [quantitativeItem.isQcFloor || false], // DEFAULT TO false
+                    isQcLab: [quantitativeItem.isQcLab || false], // DEFAULT TO false
+                    isDispatch: [quantitativeItem.isDispatch || false], // DEFAULT TO false
+                    isIncoming: [quantitativeItem.isIncoming || false], // DEFAULT TO false
+                    isTrial: [quantitativeItem.isTrial || false], // DEFAULT TO false
                     passCriteriaTarget: [quantitativeItem.passCriteriaTarget],
                     passCriteriaMax: [quantitativeItem.passCriteriaMax],
                     passCriteriaMin: [quantitativeItem.passCriteriaMin],
@@ -495,6 +501,12 @@ export class TestingStepperComponent implements AfterViewInit {
             uoMId: [''],
             uoMCode: [''],
             mandatoryQty: [false],
+            isQcCritical: [false], // DEFAULT TO false
+            isQcFloor: [false], // DEFAULT TO false
+            isQcLab: [false], // DEFAULT TO false
+            isDispatch: [false], // DEFAULT TO false
+            isIncoming: [false], // DEFAULT TO false
+            isTrial: [false], // DEFAULT TO false
             passCriteriaTarget: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
             passCriteriaMax: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
             passCriteriaMin: [null, [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+$')]]
@@ -916,6 +928,12 @@ export class TestingStepperComponent implements AfterViewInit {
                             uoMId: '',
                             uoMCode: '',
                             mandatoryQty: false,
+                            isQcCritical: false,
+                                isQcFloor: false,
+                                isQcLab: false,
+                                isDispatch: false,
+                                isIncoming: false,
+                                isTrial: false,
                             passCriteriaTarget: '',
                             passCriteriaMax: '',
                             passCriteriaMin: '',
@@ -1498,6 +1516,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     payload.quantitativeInspectionObjects.map((item: any) => ({
                         inspectionCharacteristicId: item?.id ?? null, // Ensure it exists
                         isMandatory: item?.mandatoryQty ?? false, // Ensure it exists
+                        isQcCritical: item?.isQcCritical ?? false,
+                        isQcFloor: item?.isQcFloor ?? false,
+                        isQcLab: item?.isQcLab ?? false,
+                        isDispatch: item?.isDispatch ?? false,
+                        isIncoming: item?.isIncoming ?? false,
+                        isTrial: item?.isTrial ?? false,
                         uoMId: item?.uoMId ?? '', // Ensure UoM ID exists
                         // target: item?.passCriteriaTarget ? Number(item.passCriteriaTarget) : null,
                         // max: item?.passCriteriaMax ? Number(item.passCriteriaMax) : null,
@@ -1616,6 +1640,12 @@ export class TestingStepperComponent implements AfterViewInit {
                 payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
                     inspectionCharacteristicId: item?.id ?? null,
                     isMandatory: item?.mandatoryQty ?? false,
+                    isQcCritical: item?.isQcCritical ?? false,
+                    isQcFloor: item?.isQcFloor ?? false,
+                    isQcLab: item?.isQcLab ?? false,
+                    isDispatch: item?.isDispatch ?? false,
+                    isIncoming: item?.isIncoming ?? false,
+                    isTrial: item?.isTrial ?? false,
                     uoMId: item?.uoMId ?? '',
                     target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
                     max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
@@ -1772,6 +1802,12 @@ export class TestingStepperComponent implements AfterViewInit {
                 payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
                     inspectionCharacteristicId: item?.id ?? null,
                     isMandatory: item?.mandatoryQty ?? false,
+                    isQcCritical: item?.isQcCritical ?? false,
+                    isQcFloor: item?.isQcFloor ?? false,
+                    isQcLab: item?.isQcLab ?? false,
+                    isDispatch: item?.isDispatch ?? false,
+                    isIncoming: item?.isIncoming ?? false,
+                    isTrial: item?.isTrial ?? false,
                     uoMId: item?.uoMId ?? '',
                     target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
                     max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
@@ -1931,6 +1967,12 @@ export class TestingStepperComponent implements AfterViewInit {
                 payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
                     inspectionCharacteristicId: item?.id ?? null,
                     isMandatory: item?.mandatoryQty ?? false,
+                    isQcCritical: item?.isQcCritical ?? false,
+                    isQcFloor: item?.isQcFloor ?? false,
+                    isQcLab: item?.isQcLab ?? false,
+                    isDispatch: item?.isDispatch ?? false,
+                    isIncoming: item?.isIncoming ?? false,
+                    isTrial: item?.isTrial ?? false,
                     uoMId: item?.uoMId ?? '',
                     target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
                     max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
@@ -4062,6 +4104,12 @@ export class TestingStepperComponent implements AfterViewInit {
                                             Validators.required,
                                         ],
                                         isMandatory: [quantitative.isMandatory],
+                                        isQcCritical: [quantitative.isQcCritical],
+                                        isQcFloor: [quantitative.isQcFloor],
+                                        isQcLab: [quantitative.isQcLab],
+                                        isDispatch: [quantitative.isDispatch],
+                                        isIncoming: [quantitative.isIncoming],
+                                        isTrial: [quantitative.isTrial],
                                         uoMId: [
                                             quantitative.uoMId,
                                             Validators.required,
@@ -4169,6 +4217,12 @@ export class TestingStepperComponent implements AfterViewInit {
                                     uoMId: [quantitative.uoMId, Validators.required],
                                     uoMCode: [quantitative.uoMCode],
                                     mandatoryQty: [quantitative.isMandatory],
+                                    isQcCritical: [quantitative.isQcCritical],
+                                    isQcFloor: [quantitative.isQcFloor],
+                                    isQcLab: [quantitative.isQcLab],
+                                    isDispatch: [quantitative.isDispatch],
+                                    isIncoming: [quantitative.isIncoming],
+                                    isTrial: [quantitative.isTrial],
                                     passCriteriaTarget: [quantitative.target, Validators.required],
                                     passCriteriaMax: [quantitative.max, Validators.required],
                                     passCriteriaMin: [quantitative.min, Validators.required],
@@ -4233,6 +4287,12 @@ export class TestingStepperComponent implements AfterViewInit {
                 quantitiveInspectionId: item.characteristicId ?? null,
                 isActive: true,
                 isMandatory: item.mandatoryQty,
+                isQcCritical: [item.isQcCritical],
+                isQcFloor: [item.isQcFloor],
+                isQcLab: [item.isQcLab],
+                isDispatch: [item.isDispatch],
+                isIncoming: [item.isIncoming],
+                isTrial: [item.isTrial],
                 uoMId: item.uoMId,
                 uoMCode: item.uoMCode,
                 target: item.passCriteriaTarget ? parseFloat(item.passCriteriaTarget) : null,
@@ -4334,6 +4394,12 @@ export class TestingStepperComponent implements AfterViewInit {
                 quantitiveInspectionId: item.characteristicId ?? null,
                 isActive: true,
                 isMandatory: item.mandatoryQty ?? false,
+                isQcCritical: item.isQcCritical ?? false,
+                isQcFloor: item.isQcFloor ?? false,
+                isQcLab: item.isQcLab ?? false,
+                isDispatch: item.isDispatch ?? false,
+                isIncoming: item.isIncoming ?? false,
+                isTrial: item.isTrial ?? false,
                 uoMId: item.uoMId ?? '',
                 uoMCode: item.uoMCode ?? '',
                 target: item.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
