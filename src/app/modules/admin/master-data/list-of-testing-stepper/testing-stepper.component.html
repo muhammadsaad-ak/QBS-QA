@@ -1533,7 +1533,7 @@
               <!-- &nbsp; -->
               <div matTooltip="Select&nbsp;the&nbsp;mandatory&nbsp;item&nbsp;code&nbsp;and&nbsp;card&nbsp;code."
                 [matTooltipDisabled]="isIICFormValid()">
-                  <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" 
+                  <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading && !isCloneIIC" 
                   [disabled]="!isIICFormValid()" [ngClass]="{'invalid-disabled-button': !isIICFormValid()}" 
                   (click)="submitItemsInspectionCardsForm()">
                   Save

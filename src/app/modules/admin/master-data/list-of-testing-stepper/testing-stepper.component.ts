@@ -1830,6 +1830,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 .subscribe({
                     next: (response) => {
                         if (response.isRequestSuccess) {
+                            this.isEditMode = false;
                             console.log('✅ API RUN SUCCESSFULLY.', payload);
                             this._snackBar.open('Inspection Card created successfully!', 'Close', {
                                 duration: 1500,
@@ -4534,6 +4535,7 @@ export class TestingStepperComponent implements AfterViewInit {
         sessionStorage.removeItem('stepperDataIICNew');
         this.isEditMode = false;
         this.isCloneIC = false;
+        this.isCloneIIC = false;
         this.isValidate = false;
         console.log('this.isEditMode', this.isEditMode);
         console.log('this.isValidate', this.isValidate);
@@ -5285,7 +5287,15 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
 
+    formSubmitting: boolean = false;
     onSubmitItemSamplingForm(): void {
+        // Prevent double submission
+        if (this.formSubmitting) {
+            console.warn('⚠️ Form is already submitting. Ignored.');
+            return;
+        }
+        this.formSubmitting = true;
+
         this.isValidate = true;
 
         // Step 1: Validate Sampling Ranges
@@ -5294,6 +5304,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 duration: 3000,
                 panelClass: ['snackbar-error'],
             });
+            this.formSubmitting = false;
             return;
         }
 
@@ -5308,6 +5319,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     duration: 3000,
                     panelClass: ['snackbar-error']
                 });
+                this.formSubmitting = false;
                 return;
             }
 
@@ -5316,6 +5328,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     duration: 3000,
                     panelClass: ['snackbar-error']
                 });
+                this.formSubmitting = false;
                 return;
             }
 
@@ -5326,6 +5339,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         duration: 3000,
                         panelClass: ['snackbar-error']
                     });
+                    this.formSubmitting = false;
                     return;
                 }
             }
@@ -5333,11 +5347,13 @@ export class TestingStepperComponent implements AfterViewInit {
 
         // Step 2: Get selected items
         const selectedItems = this.dataSourceItemCodeIS.data.filter(item => item.isSelected);
+        console.log('✅ Selected Items:', selectedItems);
         if (!selectedItems.length) {
             this._snackBar.open('Please select at least one item.', 'Close', {
                 duration: 3000,
                 panelClass: ['snackbar-error'],
             });
+            this.formSubmitting = false;
             return;
         }
 
@@ -5382,6 +5398,8 @@ export class TestingStepperComponent implements AfterViewInit {
                     panelClass: ['snackbar-success']
                 });
 
+                this.selectedItemsIS = [];
+
                 // Reset form
                 this.itemSamplingForm.get('id')?.setValue('');
                 this.itemSamplingForm.get('itemId')?.setValue('');
@@ -5399,6 +5417,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         this.itemSamplingForm.get('sampleCodeIS')?.setValue(formattedSampleCodeIS);
                     }
                 });
+                this.formSubmitting = false;
 
                 this.cdr.detectChanges();
             }
