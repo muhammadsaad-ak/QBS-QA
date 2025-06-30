@@ -465,6 +465,15 @@ export class TestingStepperComponent implements AfterViewInit {
         this.isValidate = false;
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaTarget');
         if (control) {
+            const value = control.value;
+            if (value < 0) {
+                this._snackBar.open('Value cannot be negative', 'Close', {
+                    duration: 3000,
+                    verticalPosition: 'bottom',
+                });
+                control.setValue(null);
+                return;
+            }
             control.markAsTouched();
             control.updateValueAndValidity();
         }
@@ -473,6 +482,15 @@ export class TestingStepperComponent implements AfterViewInit {
         this.isValidate = false;
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaMax');
         if (control) {
+            const value = control.value;
+            if (value < 0) {
+                this._snackBar.open('Value cannot be negative', 'Close', {
+                    duration: 3000,
+                    verticalPosition: 'bottom',
+                });
+                control.setValue(null);
+                return;
+            }
             control.markAsTouched();
             control.updateValueAndValidity();
         }
@@ -481,6 +499,15 @@ export class TestingStepperComponent implements AfterViewInit {
         this.isValidate = false;
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaMin');
         if (control) {
+            const value = control.value;
+            if (value < 0) {
+                this._snackBar.open('Value cannot be negative', 'Close', {
+                    duration: 3000,
+                    verticalPosition: 'bottom',
+                });
+                control.setValue(null);
+                return;
+            }
             control.markAsTouched();
             control.updateValueAndValidity();
         }
@@ -5868,5 +5895,17 @@ export class TestingStepperComponent implements AfterViewInit {
             return;
         }
     }
+    // @ ALI RIAZ
+    validateNonNegative(index: number, fieldName: 'criticalDefects' | 'majorDefects' | 'minorDefects'): void {
+        const control = this.samplingRangeObjects.at(index).get(fieldName);
+        if (control && control.value < 0) {
+            control.setValue(null);
+            this._snackBar.open('Value cannot be negative', 'Close', {
+                duration: 3000,
+                verticalPosition: 'bottom',
+            });
+        }
+    }
     // itemSamplingForm ENDS
+
 }
