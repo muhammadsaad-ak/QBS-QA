@@ -5,6 +5,7 @@ import {
     BehaviorSubject,
     Observable,
     catchError,
+    map,
     of,
     switchMap,
     tap,
@@ -71,7 +72,7 @@ export class ItemInspectionCardService {
     }
 
     // GET ALL ITEM INSPECTION CARDS API
-    ListAllItemsInspectionCards(): Observable<any> {
+    XListAllItemsInspectionCards(): Observable<any> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
             Accept: 'text/plain',
@@ -88,6 +89,31 @@ export class ItemInspectionCardService {
                 }),
                 catchError((error) => {
                     console.error('ERROR WHILE FETCHING Item Inspection Card', error);
+                    return throwError(error);
+                })
+            );
+    }
+    ListAllItemsInspectionCards(): Observable<any> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'text/plain',
+        });
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IItemInspectionCardFeature/ListAllCardsWithBothCharacteristics`, {
+                headers,
+            })
+            .pipe(
+                map((results: any) => {
+                    const allItemInspectionCards = results.data ?? [];
+                    const activeItemInspectionCards = allItemInspectionCards.filter((item: any) => item.isActive === true);
+                    return activeItemInspectionCards;
+                }),
+                tap((activeItemInspectionCards) => {
+                    this._listItemsInspectionCardsIIC.next(activeItemInspectionCards);
+                    console.log('FETCHED ACTIVE ITEM INSPECTION CARDS', activeItemInspectionCards);
+                }),
+                catchError((error) => {
+                    console.error('ERROR WHILE FETCHING ITEM INSPECTION CARDS', error);
                     return throwError(error);
                 })
             );

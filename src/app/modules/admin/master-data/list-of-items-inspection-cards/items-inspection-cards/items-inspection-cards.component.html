@@ -58,8 +58,17 @@
                                 <td mat-cell *matCellDef="let element">
                                     {{element.itemDescription ? element.itemDescription : '-' }} </td>
                             </ng-container>
-                            <!-- cardDescription - Card Description	COLUMN -->
+                            <!-- cardCode - Card Code COLUMN -->
                             <ng-container matColumnDef="cardCode">
+                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
+                                    Card&nbsp;Code </th>
+                                <td mat-cell *matCellDef="let element">
+                                    <!-- IC-00000 -->
+                                    <!-- IC-{{ element.inspectionCardIntCode ? element.inspectionCardIntCode : '-' }} -->
+                                  IC-{{ element.inspectionCardIntCode ? (element.inspectionCardIntCode.toString().padStart(5, '0')) : '-' }} </td>
+                            </ng-container>
+                            <!-- cardDescription - Card Description	COLUMN -->
+                            <ng-container matColumnDef="cardDescription">
                                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                                     Card&nbsp;Description </th>
                                 <td mat-cell *matCellDef="let element">
@@ -72,6 +81,17 @@
                                     Batch&nbsp;Managed </th>
                                 <td mat-cell *matCellDef="let element" class="text-center">
                                     {{element.isBatch ? 'Yes' : 'No'}} </td>
+                            </ng-container>
+                            <!-- isActive - status COLUMN -->
+                            <ng-container matColumnDef="status">
+                                <th mat-header-cell *matHeaderCellDef
+                                    style="background-color: #e2e8f0 !important; ">
+                                    Status </th>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{
+                                  'text-green-500': element.isActive,
+                                  'text-amber-500': !element.isActive
+                                }">
+                                    {{element.isActive ? 'Active' : 'Inactive'}} </td>
                             </ng-container>
                             <!-- Action COLUMN -->
                             <ng-container matColumnDef="action">
