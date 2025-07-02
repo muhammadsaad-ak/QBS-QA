@@ -52,7 +52,8 @@
                   Inspection&nbsp;Code
                 </th>
                 <td mat-cell *matCellDef="let element" >
-                  ICH-000{{ element.intCode ? element.intCode : '-' }}
+                  <!-- ICH-000{{ element.intCode ? element.intCode : '-' }} -->
+                  ICH-{{ element.intCode ? (element.intCode.toString().padStart(5, '0')) : '-' }}
                 </td>
               </ng-container>
               <!-- Description Column -->
@@ -87,7 +88,7 @@
                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                   Status
                 </th>
-                <td mat-cell *matCellDef="let element"[ngClass]="{
+                <td mat-cell *matCellDef="let element" [ngClass]="{
                                   'text-green-500': element.isActive,
                                   'text-amber-500': !element.isActive
                                 }">

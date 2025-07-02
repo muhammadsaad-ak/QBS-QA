@@ -76,7 +76,7 @@ export class ItemsInspectionCardsComponent {
 
   ListIAlltemsInspectionCards = [];
 
-  displayedColumnsItemsInspectionCards: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'isBatch', 'action'];
+  displayedColumnsItemsInspectionCards: string[] = ['serialId', 'itemCode', 'itemDescription', 'cardCode', 'cardDescription', 'isBatch', 'status', 'action'];
   dataSourceItemsInspectionCards = new MatTableDataSource<any>(this.ListIAlltemsInspectionCards);
   // dataSource = new MatTableDataSource<any>([]);
 
@@ -161,7 +161,11 @@ export class ItemsInspectionCardsComponent {
       // Map itemId to itemCode in the inspectionCards response
       
       // @IAK
-      this.ListIAlltemsInspectionCards = inspectionCards.data.filter(card => card.isActive).map(card => ({
+      // this.ListIAlltemsInspectionCards = inspectionCards.data.filter(card => card.isActive).map(card => ({
+      //   ...card,
+      // this.ListIAlltemsInspectionCards = inspectionCards.filter(card => card.isActive).map(card => ({
+      //   ...card,
+      this.ListIAlltemsInspectionCards = inspectionCards.data.map(card => ({
         ...card,
         itemCode: itemMap.get(card.itemId)?.itemCode || 'N/A',
         isBatch: itemMap.get(card.itemId)?.isBatch || false,

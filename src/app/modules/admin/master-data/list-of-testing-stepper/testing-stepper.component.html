@@ -207,9 +207,8 @@
             <!-- Qualitative and Quantitative Section -->
             <!-- IF !isEditMode - ADD MODE -->
             <div class="w-full" *ngIf="!isEditMode">
-              <div class="mt-2">
-                <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"
-                  (change)="updateSingleCriteriaValidation()">
+              <div> <!-- class="mt-2" -->
+                <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'"> <!-- (change)="updateSingleCriteriaValidation()" -->
                   <mat-radio-button class="mb-2" [value]="'qualitative'"
                     [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}">
                     Qualitative Inspection
@@ -224,8 +223,8 @@
                   </mat-radio-button>
                 </mat-radio-group>
               </div>
-              <!-- Main Card Section -->
-              <div class="mt-2 w-full" >
+              <!-- Criteria Section -->
+              <div class="mt-2 w-full hidden">
                 <table class="w-full border border-gray-200 border-collapse">
                   <thead class="bg-gray-800 text-white">
                     <tr>
@@ -257,13 +256,13 @@
                     </tr>
                     <tr *ngIf="fourthFormGroup.get('type')?.value === 'both'">
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-               <input type="text" placeholder="Enter Quantitative Criteria" formControlName="quantitativeCriteria" class="w-full"
+                        <input type="text" placeholder="Enter Quantitative Criteria" formControlName="quantitativeCriteria" class="w-full"
                           [required]="fourthFormGroup.get('type')?.value === 'quantitative'" />
                       </td>
                     </tr>
                   </tbody>
                 </table>
-                <span class="text-sm font-medium text-red-500">
+                <!-- <span class="text-sm font-medium text-red-500 hidden">
                   <mat-error *ngIf="isValidate && fourthFormGroup.get('singleCriteria').invalid && fourthFormGroup.get('type')?.value === 'qualitative'">
                   Required.
                   </mat-error>
@@ -274,7 +273,7 @@
                   (fourthFormGroup.get('singleCriteria').invalid || fourthFormGroup.get('quantitativeCriteria').invalid)">
                   Both criteria fields are required.
                   </mat-error>
-                </span>
+                </span> -->
               </div>
               <div class="step-navigation">
                 <div *ngIf="isLoading" class="loader">
@@ -303,8 +302,7 @@
                 <mat-radio-group class="flex flex-row items-center gap-4" formControlName="type" [color]="'primary'">
                   <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'" class="mb-2"
                     [value]="'qualitative'"
-                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}"
-                    (change)="updateSingleCriteriaValidation()">
+                    [ngClass]="{'text-blue-500 font-bold': fourthFormGroup.get('type')?.value === 'qualitative'}"> <!-- (change)="updateSingleCriteriaValidation()" -->
                     Qualitative Inspection
                   </mat-radio-button>
                   <mat-radio-button *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'" class="mb-2"
@@ -314,47 +312,44 @@
                   </mat-radio-button>
                 </mat-radio-group>
               </div>
-              <!-- Main Card Section -->
-              <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
+
+              <!-- Criteria Section -->
+              <div class="mt-2 w-full hidden" *ngIf="fourthFormGroup.get('type')?.value === 'qualitative'">
                 <table class="w-full border border-gray-200 border-collapse">
                   <thead class="bg-gray-800 text-white">
-                    <tr><th class="p-2 text-left w-full">Qualitative Criteria</th></tr>
+                    <tr>
+                      <th class="p-2 text-left w-full">Qualitative Criteria</th>
+                    </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Qualitative Criteria"
-                              formControlName="singleCriteria" class="w-full" />
+                        <input type="text" placeholder="Enter Qualitative Criteria" formControlName="singleCriteria" class="w-full" />
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-
-            <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'">
-  <table class="w-full border border-gray-200 border-collapse">
-    <thead class="bg-gray-800 text-white">
-      <tr>
-        <th class="p-2 text-left w-full">
-          <div class="flex justify-between">
-            <span>Criteria</span>
-          </div>
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="px-4 py-2 text-sm border-b border-r text-center">
-          <input type="text" placeholder="Enter Quantitative Criteria" formControlName="quantitativeCriteria" class="w-full" />
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <span>
-    <mat-error *ngIf="isValidate && fourthFormGroup.get('quantitativeCriteria').invalid 
-      && fourthFormGroup.get('type')?.value === 'quantitative'">Required.</mat-error>
-  </span>
-</div>
+              <div class="mt-2 w-full hidden" *ngIf="fourthFormGroup.get('type')?.value === 'quantitative'">
+                <table class="w-full border border-gray-200 border-collapse">
+                  <thead class="bg-gray-800 text-white">
+                    <tr>
+                      <th class="p-2 text-left w-full">
+                        <div class="flex justify-between">
+                          <span>Criteria</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="px-4 py-2 text-sm border-b border-r text-center">
+                        <input type="text" placeholder="Enter Quantitative Criteria" formControlName="quantitativeCriteria" class="w-full" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
               <div class="mt-2 w-full" *ngIf="fourthFormGroup.get('type')?.value === 'both'">
                 <table class="w-full border border-gray-200 border-collapse">
@@ -364,8 +359,7 @@
                   <tbody>
                     <tr>
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Qualitative Criteria"
-                              formControlName="singleCriteria" class="w-full" />
+                        <input type="text" placeholder="Enter Qualitative Criteria" formControlName="singleCriteria" class="w-full" />
                       </td>
                     </tr>
                   </tbody>
@@ -377,14 +371,12 @@
                   <tbody>
                     <tr>
                       <td class="px-4 py-2 text-sm border-b border-r text-center">
-                        <input type="text" placeholder="Enter Quantitative Criteria"
-                              formControlName="quantitativeCriteria" class="w-full" />
+                        <input type="text" placeholder="Enter Quantitative Criteria" formControlName="quantitativeCriteria" class="w-full" />
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-
               <div class="step-navigation">
                 <button mat-button class="bg-primary-700" matStepperPrevious>
                   <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
@@ -1522,6 +1514,13 @@
           </mat-tab-group>
 
           <div class="step-navigation">
+            <!-- Checkboxes Section -->
+            <div class="flex flex-col w-full" *ngIf="isEditMode">
+              <div class="flex items-center">
+                <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
+                <label class="text-lg">Active</label>
+              </div>
+            </div>
             <div *ngIf="isLoading" class="loader">
               <mat-spinner diameter="33"></mat-spinner>
             </div>
