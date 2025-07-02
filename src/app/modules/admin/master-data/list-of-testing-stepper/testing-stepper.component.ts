@@ -310,6 +310,7 @@ export class TestingStepperComponent implements AfterViewInit {
         qualitativeInspectionObjects: this.fb.array([]),
         quantitativeInspectionObjects: this.fb.array([]),
         id: [''],
+        isActive: [true],
     });
 
     displayedColumnsQualitative = [
@@ -3212,30 +3213,30 @@ export class TestingStepperComponent implements AfterViewInit {
         this.isValidate = true;
         // console.log(this.fourthFormGroup.value);
         const formValue = this.fourthFormGroup.value;
-        if (formValue.type === "qualitative" && (!formValue.singleCriteria || formValue.singleCriteria.trim() === "")) {
-            this._snackBar.open('Add mandatory criteria field', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
-        if (formValue.type === "quantitative" && (!formValue.quantitativeCriteria || formValue.quantitativeCriteria.trim() === "")) {
-            this._snackBar.open('Add mandatory criteria field', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
-        if (formValue.type === "both" && (
-            !formValue.singleCriteria || formValue.singleCriteria.trim() === "" ||
-            !formValue.quantitativeCriteria || formValue.quantitativeCriteria.trim() === ""
-        )) {
-            this._snackBar.open('Add both mandatory criteria fields', 'Close', {
-                duration: 3000,
-                panelClass: ['snackbar-error']
-            });
-            return;
-        }
+        // if (formValue.type === "qualitative" && (!formValue.singleCriteria || formValue.singleCriteria.trim() === "")) {
+        //     this._snackBar.open('Add mandatory criteria field', 'Close', {
+        //         duration: 3000,
+        //         panelClass: ['snackbar-error']
+        //     });
+        //     return;
+        // }
+        // if (formValue.type === "quantitative" && (!formValue.quantitativeCriteria || formValue.quantitativeCriteria.trim() === "")) {
+        //     this._snackBar.open('Add mandatory criteria field', 'Close', {
+        //         duration: 3000,
+        //         panelClass: ['snackbar-error']
+        //     });
+        //     return;
+        // }
+        // if (formValue.type === "both" && (
+        //     !formValue.singleCriteria || formValue.singleCriteria.trim() === "" ||
+        //     !formValue.quantitativeCriteria || formValue.quantitativeCriteria.trim() === ""
+        // )) {
+        //     this._snackBar.open('Add both mandatory criteria fields', 'Close', {
+        //         duration: 3000,
+        //         panelClass: ['snackbar-error']
+        //     });
+        //     return;
+        // }
         // if (!this.fourthFormGroup.valid) {
         //     this._snackBar.open('Fill all the mandatory fields.', 'Close', {
         //         duration: 3000,
@@ -3723,15 +3724,15 @@ export class TestingStepperComponent implements AfterViewInit {
             const formValues = this.fourthFormGroup.value;
             const { intCode, qualitativeCriteriaObjects, ...payload } = formValues; // EXCLUDING intCode, qualitativeCriteriaObjects
             // CHECKING VALIDATION FOR singleCriteria
-            if (payload.type === 'qualitative' && !payload.singleCriteria?.trim()) {
-                this.fourthFormGroup.get('singleCriteria')?.setErrors({ required: true });
-                this.fourthFormGroup.get('singleCriteria')?.markAsTouched();
-                this._snackBar.open('Criteria is required.', 'Close', {
-                    duration: 1500,
-                    panelClass: ['snackbar-error']
-                });
-                return;
-            }
+            // if (payload.type === 'qualitative' && !payload.singleCriteria?.trim()) {
+            //     this.fourthFormGroup.get('singleCriteria')?.setErrors({ required: true });
+            //     this.fourthFormGroup.get('singleCriteria')?.markAsTouched();
+            //     this._snackBar.open('Criteria is required.', 'Close', {
+            //         duration: 1500,
+            //         panelClass: ['snackbar-error']
+            //     });
+            //     return;
+            // }
             if (payload.type === 'quantitative') {
                 payload.singleCriteria = null;
             }
@@ -4018,6 +4019,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 itemDescription: this.rowDataIIC.itemDescription,
                 cardDescription: this.rowDataIIC.cardDescription,
                 inspectionCardId: this.rowDataIIC.inspectionCardId,
+                isActive: this.rowDataIIC.isActive,
                 intCode: formattedCardintCode,
             });
         }
@@ -4394,7 +4396,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 return {
                     id: item.id ?? null,
                     qualitativeInspectionId: item.qualitativeInspectionId ?? null,
-                    isActive: true,
+                    isActive: item.isActive ?? false,
                     isMandatory: item.mandatory ?? false,
                     isQcCritical: item.isQcCritical ?? false,
                     isQcFloor: item.isQcFloor ?? false,
@@ -4420,7 +4422,7 @@ export class TestingStepperComponent implements AfterViewInit {
             ? formValue.quantitativeInspectionObjects.map((item: any) => ({
                 id: item.id ?? null,
                 quantitiveInspectionId: item.characteristicId ?? null,
-                isActive: true,
+                isActive: item.isActive ?? false,
                 isMandatory: item.mandatoryQty ?? false,
                 isQcCritical: item.isQcCritical ?? false,
                 isQcFloor: item.isQcFloor ?? false,
@@ -4441,7 +4443,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // CREATING THE REQUEST BODY FOR THE PUT (UpdateItemInspectionCard) API
         const putRequestBodyIIC = {
             id: formValue.id ?? null,
-            isActive: true,
+            isActive: formValue.isActive ?? false,
             qualitativeInspectionResults: qualitativeInspectionObjects,
             quantitativeInspectionResults: quantitativeInspectionObjects,
         };

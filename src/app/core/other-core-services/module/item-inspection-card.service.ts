@@ -72,7 +72,7 @@ export class ItemInspectionCardService {
     }
 
     // GET ALL ITEM INSPECTION CARDS API
-    XListAllItemsInspectionCards(): Observable<any> {
+    ListAllItemsInspectionCards(): Observable<any> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
             Accept: 'text/plain',
@@ -93,7 +93,7 @@ export class ItemInspectionCardService {
                 })
             );
     }
-    ListAllItemsInspectionCards(): Observable<any> {
+    ListAllItemsInspectionCardsActive(): Observable<any> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
             Accept: 'text/plain',

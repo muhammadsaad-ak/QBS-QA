@@ -163,7 +163,9 @@ export class ItemsInspectionCardsComponent {
       // @IAK
       // this.ListIAlltemsInspectionCards = inspectionCards.data.filter(card => card.isActive).map(card => ({
       //   ...card,
-      this.ListIAlltemsInspectionCards = inspectionCards.filter(card => card.isActive).map(card => ({
+      // this.ListIAlltemsInspectionCards = inspectionCards.filter(card => card.isActive).map(card => ({
+      //   ...card,
+      this.ListIAlltemsInspectionCards = inspectionCards.data.map(card => ({
         ...card,
         itemCode: itemMap.get(card.itemId)?.itemCode || 'N/A',
         isBatch: itemMap.get(card.itemId)?.isBatch || false,
