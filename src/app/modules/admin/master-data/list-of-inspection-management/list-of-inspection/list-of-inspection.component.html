@@ -49,7 +49,7 @@
               <!-- Inspection Code Column -->
               <ng-container matColumnDef="intCode">
                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                  Inspection&nbsp;Code
+                  Characteristic&nbsp;Code
                 </th>
                 <td mat-cell *matCellDef="let element" >
                   <!-- ICH-000{{ element.intCode ? element.intCode : '-' }} -->
@@ -68,15 +68,16 @@
               <!-- Inspection Type Column -->
               <ng-container matColumnDef="type">
                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                  Inspection&nbsp;Type
+                  Characteristic&nbsp;Type
                 </th>
-                <td mat-cell *matCellDef="let element">
+                <td mat-cell *matCellDef="let element" class="capitalize">
                   {{ element.type ? element.type : '-' }}
                 </td>
               </ng-container>
               <!-- Attribute Column -->
               <ng-container matColumnDef="attribute">
-                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">Attribute
+                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
+                  Attribute&nbsp;Type
                 </th>
                 <td mat-cell *matCellDef="let element">
                   {{ element.attributeDescription ? element.attributeDescription : '-' }}
@@ -88,10 +89,8 @@
                 <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
                   Status
                 </th>
-                <td mat-cell *matCellDef="let element" [ngClass]="{
-                                  'text-green-500': element.isActive,
-                                  'text-amber-500': !element.isActive
-                                }">
+                <td mat-cell *matCellDef="let element"
+                  [ngClass]="{'text-green-500': element.isActive,'text-amber-500': !element.isActive}">
                   {{ element.isActive ? 'Active' : 'Inactive' }}
                 </td>
               </ng-container>

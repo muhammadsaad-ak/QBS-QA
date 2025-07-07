@@ -9,8 +9,9 @@ export interface qualitativeInspectionIF {
     isDispatch: boolean;
     isIncoming: boolean;
     isTrial: boolean;
-    pass: string[];  // Array of strings
-    fail: string[];  // Array of strings
+    isCoA: boolean;
+    pass: string[];
+    fail: string[];
 }
 export interface qualitativeResultsInspectionIF {
     id: string;
@@ -21,6 +22,7 @@ export interface qualitativeResultsInspectionIF {
 }
 export interface quantitativeInspectionIF {
     parameterQty: string;
+    passCriteria: string;
     uoMId: string;
     uoMCode: string;
     mandatoryQty: boolean;
@@ -30,7 +32,10 @@ export interface quantitativeInspectionIF {
     isDispatch: boolean;
     isIncoming: boolean;
     isTrial: boolean;
-    passCriteriaTarget: string;
-    passCriteriaMax: string;
+    isCoA: boolean;
     passCriteriaMin: string;
+    passCriteriaMax: string;
+    passCriteriaTarget: string;
+    passCriteriaLowerLimit: string;
+    passCriteriaUpperLimit: string;
 }

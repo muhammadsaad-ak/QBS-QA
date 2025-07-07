@@ -33,13 +33,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { InspectionAttributesService } from 'app/core/other-core-services/module/inspection-attributes.service';
 import { from } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 
 
 interface AddInspectionAttributeRequest {
     name: string;
     description: string;
     tag: string | null;
-    // intCode?: string; // OPTIONAL, IF REQUIRED BY API
+    // intCode?: string;
 }
 
 interface UpdateInspectionAttributeRequest {
@@ -62,6 +63,7 @@ interface QuantInspObjectIF {
     isDispatch: boolean;
     isIncoming: boolean;
     isTrial: boolean;
+    isCoA: boolean;
     uoMId: string;
     target: number | null;
     max: number | null;
@@ -93,19 +95,20 @@ interface itemSamplingRangeIF {
         [
             CommonModule,
             FormsModule,
-            ReactiveFormsModule,
             MatButtonModule,
             MatCheckboxModule,
             MatFormFieldModule,
             MatIconModule,
             MatInputModule,
+            MatPaginatorModule,
+            MatProgressSpinnerModule,
             MatRadioModule,
+            MatSelectModule,
             MatStepperModule,
             MatTableModule,
             MatTabsModule,
-            MatSelectModule,
-            MatProgressSpinnerModule,
             MatTooltipModule,
+            ReactiveFormsModule,
         ],
     animations: qbsAnimations,
     templateUrl: './testing-stepper.component.html',
@@ -318,18 +321,23 @@ export class TestingStepperComponent implements AfterViewInit {
         'parameter',
         'passCriteria',
         'mandatory',
+        'certificateofAnalysis',
         'results',
         'pass',
         'fail',
     ];
-    displayedColumnsQuantitative = [
+    displayedColumnsQuantitativeIIC = [
         'serialId',
         'parameterQty',
+        'passCriteria',
         'uoMId',
         'mandatoryQty',
-        'passCriteriaTarget',
-        'passCriteriaMax',
+        'certificateofAnalysis',
         'passCriteriaMin',
+        'passCriteriaMax',
+        'passCriteriaTarget',
+        'passCriteriaLowerLimit',
+        'passCriteriaUpperLimit',
     ];
 
     qualitativeInspectionItems: qualitativeInspectionIF[] = [];
@@ -359,6 +367,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     isDispatch: [qualitativeItem.isDispatch || false], // DEFAULT TO false
                     isIncoming: [qualitativeItem.isIncoming || false], // DEFAULT TO false
                     isTrial: [qualitativeItem.isTrial || false], // DEFAULT TO false
+                    isCoA: [qualitativeItem.isCoA || false], // DEFAULT TO false
                     // pass: [qualitativeItem.pass],
                     // fail: [qualitativeItem.fail],
                     pass: [qualitativeItem.pass || []], // If pass is not provided, assign an empty array
@@ -372,6 +381,7 @@ export class TestingStepperComponent implements AfterViewInit {
             formArrayQuantitative.push(
                 this.fb.group({
                     parameterQty: [quantitativeItem.parameterQty],
+                    passCriteria: [quantitativeItem.passCriteria],
                     uoMId: [quantitativeItem.uoMId],
                     uoMCode: [quantitativeItem.uoMCode],
                     mandatoryQty: [quantitativeItem.mandatoryQty],
@@ -381,9 +391,12 @@ export class TestingStepperComponent implements AfterViewInit {
                     isDispatch: [quantitativeItem.isDispatch || false], // DEFAULT TO false
                     isIncoming: [quantitativeItem.isIncoming || false], // DEFAULT TO false
                     isTrial: [quantitativeItem.isTrial || false], // DEFAULT TO false
-                    passCriteriaTarget: [quantitativeItem.passCriteriaTarget],
-                    passCriteriaMax: [quantitativeItem.passCriteriaMax],
+                    isCoA: [quantitativeItem.isCoA || false], // DEFAULT TO false
                     passCriteriaMin: [quantitativeItem.passCriteriaMin],
+                    passCriteriaMax: [quantitativeItem.passCriteriaMax],
+                    passCriteriaTarget: [quantitativeItem.passCriteriaTarget],
+                    passCriteriaLowerLimit: [quantitativeItem.passCriteriaLowerLimit],
+                    passCriteriaUpperLimit: [quantitativeItem.passCriteriaUpperLimit],
                 })
             );
         });
@@ -417,7 +430,7 @@ export class TestingStepperComponent implements AfterViewInit {
         const qualitativeFormGroup = this.fb.group({
             id: [id],
             parameter: [description],
-            passCriteria: [criteria],
+            passCriteria: [null],
             mandatory: [false],
             isQcCritical: [false], // DEFAULT TO false
             isQcFloor: [false], // DEFAULT TO false
@@ -425,6 +438,7 @@ export class TestingStepperComponent implements AfterViewInit {
             isDispatch: [false], // DEFAULT TO false
             isIncoming: [false], // DEFAULT TO false
             isTrial: [false], // DEFAULT TO false
+            isCoA: [false], // DEFAULT TO false
             pass: [], // Multiple pass values in array
             fail: [], // Multiple fail values in array
 
@@ -526,6 +540,7 @@ export class TestingStepperComponent implements AfterViewInit {
         const quantitativeInspectionFormGroup = this.fb.group({
             id: [id],
             parameterQty: [description],
+            passCriteria: [null],
             uoMId: [''],
             uoMCode: [''],
             mandatoryQty: [false],
@@ -535,9 +550,12 @@ export class TestingStepperComponent implements AfterViewInit {
             isDispatch: [false], // DEFAULT TO false
             isIncoming: [false], // DEFAULT TO false
             isTrial: [false], // DEFAULT TO false
-            passCriteriaTarget: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
+            isCoA: [false], // DEFAULT TO false
+            passCriteriaMin: [null, [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+$')]],
             passCriteriaMax: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
-            passCriteriaMin: [null, [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+$')]]
+            passCriteriaTarget: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
+            passCriteriaLowerLimit: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
+            passCriteriaUpperLimit: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
         });
 
         this.quantitativeInspectionObjects.push(
@@ -647,9 +665,11 @@ export class TestingStepperComponent implements AfterViewInit {
         this._itemInspectionCardService.ListAllInspectionCards().subscribe({
             next: (response) => {
                 if (response && response.isRequestSuccess && response.data) {
-                    this.dataSourceCardCodeIIC = new MatTableDataSource(
-                        response.data
-                    );
+                    // this.dataSourceCardCodeIIC = new MatTableDataSource(
+                    //     response.data
+                    // );
+                this.dataSourceCardCodeIIC = new MatTableDataSource(response.data);
+                this.dataSourceCardCodeIIC.paginator = this.paginator;
                     // console.log('FETCHED CARDS:', this.dataSourceCardCodeIIC.data);
                 } else {
                     console.warn('INVALID API RESPONSE:', response);
@@ -672,7 +692,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.fetchListAllItemsSAP();
         const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIIC, {
             width: '75vw',
-            height: '90vh',
+            height: '99vh',
             data: this.dataSourceItemCodeIIC,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -681,6 +701,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     displayedColumnsItemCodeICC: string[] = [
+        'rowCount',
         'itemCode',
         'itemDescription',
         'itemGroup',
@@ -689,11 +710,14 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedItemCodeIIC: string;
     selectedItemDescriptionICC: string = '';
 
+    isItemSelectedIIC = false;
     onRowChangeItemCodeIIC(selectedRow: any): void {
         this.dataSourceItemCodeIIC.data.forEach(
             (row) => (row.isSelected = false)
         );
         selectedRow.isSelected = true;
+        this.isItemSelectedIIC = true;
+
     }
 
     addSelectedRowItemCodeIIC(): void {
@@ -756,6 +780,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     });
                 }
               });
+              this.isItemSelectedIIC = false;
         } else {
             console.log('NO ROW SELECTED');
         }
@@ -801,6 +826,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     ListIAllCardsItemInspectionCard = [];
     // CARD CODE - ITEM INSPECTION CARD  NG TEMPLATE STARTS
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild('dialogTemplateCardCodeIIC') dialogTemplateCardCodeIIC;
 
     // dataSourceCardCodeIIC = new MatTableDataSource<any>(this.ListIAllCardsItemInspectionCard);
@@ -810,7 +836,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.fetchListAllCards();
         const dialogRef = this.dialog.open(this.dialogTemplateCardCodeIIC, {
             width: '75vw',
-            height: '90vh',
+            height: '99vh',
             data: this.dataSourceCardCodeIIC,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -826,11 +852,13 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedCardCode: string = '';
     selectedCardDescription: string = '';
 
+    isCardSelectedIIC = false;
     onRowChangeCardCodeIIC(selectedRow: any): void {
         this.dataSourceCardCodeIIC.data.forEach(
             (row) => (row.isSelected = false)
         );
         selectedRow.isSelected = true;
+        this.isCardSelectedIIC = true;
     }
 
     addSelectedRowCardCodeIIC(): void {
@@ -874,15 +902,30 @@ export class TestingStepperComponent implements AfterViewInit {
             this._itemInspectionCardService.ListAllQualitativeResultsIIC().subscribe((items) => {
                 this.dataSourceQRIIC.data = items.data;
             });
+            this.isCardSelectedIIC = false
         } else {
-            // console.log('NO ROW SELECTED');
+            console.log('NO ROW SELECTED');
         }
     }
+
+    // applyFilterCardCodeIIC(event: Event) {
+    //     const filterValue = (event.target as HTMLInputElement).value;
+    //     this.dataSourceCardCodeIIC.filter = filterValue.trim().toLowerCase();
+
+    //     if (this.dataSourceCardCodeIIC.paginator) {
+    //         this.dataSourceCardCodeIIC.paginator.firstPage(); // Reset to first page on filter
+    //     }
+    // }
 
     applyFilterCardCodeIIC(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSourceCardCodeIIC.filter = filterValue.trim().toLowerCase();
+
+        if (this.dataSourceCardCodeIIC.paginator) {
+            this.dataSourceCardCodeIIC.paginator.firstPage();
+        }
     }
+
 
     fetcheCardCharacteristicsByCardId(characteristicsData: any): void {
         if (
@@ -921,6 +964,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                         isDispatch: false,
                                         isIncoming: false,
                                         isTrial: false,
+                                        isCoA: false,
                                         // isQcCritical: characteristic.isQcCritical || false, // DEFAULT TO false
                                         pass: [], // Multiple pass values in array
                                         fail: [], // Multiple fail values in array
@@ -934,7 +978,7 @@ export class TestingStepperComponent implements AfterViewInit {
                             this.fb.group({
                                 id: characteristic.id, // Assigning qualitative ID
                                 parameter: characteristic.description,
-                                passCriteria: characteristic.singleCriteria, // passCriteria: '',
+                                passCriteria: null, // passCriteria: '',
                                 mandatory: false,
                                 isQcCritical: false,
                                 isQcFloor: false,
@@ -942,6 +986,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                 isDispatch: false,
                                 isIncoming: false,
                                 isTrial: false,
+                                isCoA: false,
                                 pass: [], // pass: '',
                                 fail: [], // fail: '',
                             })
@@ -953,6 +998,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         this.fb.group({
                             id: characteristic.id, // Assigning quantitative ID
                             parameterQty: characteristic.description,
+                            passCriteria: null, // passCriteria: '',
                             uoMId: '',
                             uoMCode: '',
                             mandatoryQty: false,
@@ -962,9 +1008,12 @@ export class TestingStepperComponent implements AfterViewInit {
                                 isDispatch: false,
                                 isIncoming: false,
                                 isTrial: false,
-                            passCriteriaTarget: '',
-                            passCriteriaMax: '',
-                            passCriteriaMin: '',
+                                isCoA: false,
+                                passCriteriaMin: '',
+                                passCriteriaMax: '',
+                                passCriteriaTarget: '',
+                            passCriteriaLowerLimit: '',
+                            passCriteriaUpperLimit: '',
                         })
                     );
                 }
@@ -1000,7 +1049,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.selectedRowIndexUoM = index; //  Save index
         const dialogRef = this.dialog.open(this.dialogTemplateUoMIIC, {
             width: '75vw',
-            height: '90vh',
+            height: '99vh',
             data: this.dataSourceUoMIIC,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -1081,32 +1130,38 @@ export class TestingStepperComponent implements AfterViewInit {
     dataSourceAddQualitativeIIC = new MatTableDataSource([]);
 
     onAddQualitativeClickIIC() {
+        this.dataSourceAddQualitativeIIC.data.forEach(row => row.isSelected = false);
+        this.isQualitativeCharacteristicSelectedIIC = false;
+
         const dialogRef = this.dialog.open(
             this.dialogTemplateAddQualitativeIIC,
             {
                 width: '75vw',
-                height: '90vh',
+                height: '99vh',
                 data: this.dataSourceAddQualitativeIIC,
             }
         );
         dialogRef.afterClosed().subscribe((result) => {
-            // console.log('DIALOG CLOSED');
+            console.log('DIALOG CLOSED');
         });
     }
 
     displayedColumnsAddQualitativeIIC: string[] = [
-        'inspectionCode',
-        'inspectionDescription',
-        'inspectionCriteria',
+        'characteristicCode',
+        'characteristicDescription',
+        'attributeType',
+        'characteristicStatus',
     ];
     selectedQualitativeDescriptionIIC: string = '';
     selectedQualitativeCriteriaIIC: string = '';
 
+    isQualitativeCharacteristicSelectedIIC = false;
     onRowChangeAddQualitativeIIC(selectedRow: any): void {
         this.dataSourceAddQualitativeIIC.data.forEach(
             (row) => (row.isSelected = false)
         );
         selectedRow.isSelected = true;
+        this.isQualitativeCharacteristicSelectedIIC = true;
     }
 
     addSelectedRowQualitativeIIC(): void {
@@ -1131,8 +1186,9 @@ export class TestingStepperComponent implements AfterViewInit {
                 selectedRow.description,
                 selectedRow.singleCriteria // criteriaDescription
             );
+            this.isQualitativeCharacteristicSelectedIIC = false;
         } else {
-            // console.log('NO ROW SELECTED');
+            console.log('NO ROW SELECTED');
         }
     }
 
@@ -1150,11 +1206,14 @@ export class TestingStepperComponent implements AfterViewInit {
     dataSourceAddQuantitativeIIC = new MatTableDataSource([]);
 
     onAddQuantitativeClickIIC() {
+        this.dataSourceAddQuantitativeIIC.data.forEach(row => row.isSelected = false);
+        this.isQuantitativeCharacteristicSelectedIIC = false;
+
         const dialogRef = this.dialog.open(
             this.dialogTemplateAddQuantitativeIIC,
             {
                 width: '75vw',
-                height: '90vh',
+                height: '99vh',
                 data: this.dataSourceAddQuantitativeIIC,
             }
         );
@@ -1164,16 +1223,20 @@ export class TestingStepperComponent implements AfterViewInit {
     }
 
     displayedColumnsAddQuantitativeIIC: string[] = [
-        'inspectionCode',
-        'inspectionDescription',
+        'characteristicCode',
+        'characteristicDescription',
+        'attributeType',
+        'characteristicStatus',
     ];
     selectedQuantitativeDescriptionIIC: string = '';
 
+    isQuantitativeCharacteristicSelectedIIC
     onRowChangeAddQuantitativeIIC(selectedRow: any): void {
         this.dataSourceAddQuantitativeIIC.data.forEach(
             (row) => (row.isSelected = false)
         );
         selectedRow.isSelected = true;
+        this.isQuantitativeCharacteristicSelectedIIC = true;
     }
 
     addSelectedRowQuantitativeIIC(): void {
@@ -1231,7 +1294,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
         const dialogRef = this.dialog.open(this.dialogTemplateResultsIIC, {
             width: '75vw',
-            height: '90vh',
+            height: '99vh',
             data: { paramID, clickedRowParameter, clickedRowPassCriteria },
             // data: this.dataSourceQRIIC,
         });
@@ -1511,6 +1574,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         isDispatch: item?.isDispatch ?? false, // Ensure it exists
                         isIncoming: item?.isIncoming ?? false, // Ensure it exists
                         isTrial: item?.isTrial ?? false, // Ensure it exists
+                        isCoA: item?.isCoA ?? false, // Ensure it exists
                         qualitativeResultPassStatusObjects: Array.isArray(
                             item?.qualitativeResultPassStatusObjects
                         )
@@ -1550,21 +1614,30 @@ export class TestingStepperComponent implements AfterViewInit {
                         isDispatch: item?.isDispatch ?? false,
                         isIncoming: item?.isIncoming ?? false,
                         isTrial: item?.isTrial ?? false,
+                        isCoA: item?.isCoA ?? false,
                         uoMId: item?.uoMId ?? '', // Ensure UoM ID exists
                         // target: item?.passCriteriaTarget ? Number(item.passCriteriaTarget) : null,
                         // max: item?.passCriteriaMax ? Number(item.passCriteriaMax) : null,
                         // min: item?.passCriteriaMin ? Number(item.passCriteriaMin) : null,
-                        target:
-                            item?.passCriteriaTarget !== undefined
-                                ? parseFloat(item.passCriteriaTarget)
-                                : null,
-                        max:
-                            item?.passCriteriaMax !== undefined
-                                ? parseFloat(item.passCriteriaMax)
-                                : null,
                         min:
-                            item?.passCriteriaMin !== undefined
-                                ? parseFloat(item.passCriteriaMin)
+                        item?.passCriteriaMin !== undefined
+                        ? parseFloat(item.passCriteriaMin)
+                        : null,
+                        max:
+                        item?.passCriteriaMax !== undefined
+                        ? parseFloat(item.passCriteriaMax)
+                        : null,
+                        target:
+                        item?.passCriteriaTarget !== undefined
+                        ? parseFloat(item.passCriteriaTarget)
+                        : null,
+                        lowerLimit:
+                            item?.passCriteriaLowerLimit !== undefined
+                                ? parseFloat(item.passCriteriaLowerLimit)
+                                : null,
+                        upperLimit:
+                            item?.passCriteriaUpperLimit !== undefined
+                                ? parseFloat(item.passCriteriaUpperLimit)
                                 : null,
                     }));
             } else {
@@ -1649,6 +1722,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         isDispatch: item?.isDispatch ?? false,
                         isIncoming: item?.isIncoming ?? false,
                         isTrial: item?.isTrial ?? false,
+                        isCoA: item?.isCoA ?? false,
                         qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
                         qualitativeResultFailStatusObjects: [],
                     };
@@ -1674,10 +1748,13 @@ export class TestingStepperComponent implements AfterViewInit {
                     isDispatch: item?.isDispatch ?? false,
                     isIncoming: item?.isIncoming ?? false,
                     isTrial: item?.isTrial ?? false,
+                    isCoA: item?.isCoA ?? false,
                     uoMId: item?.uoMId ?? '',
-                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
-                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
                     min: isNaN(parseFloat(item?.passCriteriaMin)) ? null : parseFloat(item.passCriteriaMin),
+                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
+                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
+                    lowerLimit: isNaN(parseFloat(item?.passCriteriaLowerLimit)) ? null : parseFloat(item.passCriteriaLowerLimit),
+                    upperLimit: isNaN(parseFloat(item?.passCriteriaUpperLimit)) ? null : parseFloat(item.passCriteriaUpperLimit),
                 }));
             } else {
                 console.warn("⚠️ quantitativeInspectionObjects is not an array, setting empty array.");
@@ -1799,6 +1876,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
                     return {
                         inspectionCharacteristicId: item?.id ?? null,
+                        qualitativeSpec: item?.passCriteria ?? null,
                         isMandatory: item?.mandatory ?? false,
                         isQcCritical: item?.isQcCritical ?? false,
                         isQcFloor: item?.isQcFloor ?? false,
@@ -1806,6 +1884,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         isDispatch: item?.isDispatch ?? false,
                         isIncoming: item?.isIncoming ?? false,
                         isTrial: item?.isTrial ?? false,
+                        isCoA: item?.isCoA ?? false,
                         // isTrial: true,
                         qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
                         qualitativeResultFailStatusObjects: [],
@@ -1829,6 +1908,7 @@ export class TestingStepperComponent implements AfterViewInit {
             if (Array.isArray(payload.quantitativeInspectionObjects)) {
                 payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
                     inspectionCharacteristicId: item?.id ?? null,
+                    quantitativeSpec: item?.passCriteria ?? null,
                     isMandatory: item?.mandatoryQty ?? false,
                     isQcCritical: item?.isQcCritical ?? false,
                     isQcFloor: item?.isQcFloor ?? false,
@@ -1836,10 +1916,13 @@ export class TestingStepperComponent implements AfterViewInit {
                     isDispatch: item?.isDispatch ?? false,
                     isIncoming: item?.isIncoming ?? false,
                     isTrial: item?.isTrial ?? false,
+                    isCoA: item?.isCoA ?? false,
                     uoMId: item?.uoMId ?? '',
-                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
-                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
                     min: isNaN(parseFloat(item?.passCriteriaMin)) ? null : parseFloat(item.passCriteriaMin),
+                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
+                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
+                    lowerLimit: isNaN(parseFloat(item?.passCriteriaLowerLimit)) ? null : parseFloat(item.passCriteriaLowerLimit),
+                    upperLimit: isNaN(parseFloat(item?.passCriteriaUpperLimit)) ? null : parseFloat(item.passCriteriaUpperLimit),
                 }));
             } else {
                 console.warn("⚠️ quantitativeInspectionObjects is not an array, setting empty array.");
@@ -1848,6 +1931,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
             // ✅ FINAL PAYLOAD CHECK
             console.log('🚀 IIC FINAL PAYLOAD TO API:', payload);
+            // return;
             this.isValidate = false;
 
             console.log('🚨 FINAL qualitativeInspectionObjects before API:', payload.qualitativeInspectionObjects);
@@ -1973,6 +2057,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         isDispatch: item?.isDispatch ?? false,
                         isIncoming: item?.isIncoming ?? false,
                         isTrial: item?.isTrial ?? false,
+                        isCoA: item?.isCoA ?? false,
                         qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
                         qualitativeResultFailStatusObjects: [],
                     };
@@ -2002,10 +2087,13 @@ export class TestingStepperComponent implements AfterViewInit {
                     isDispatch: item?.isDispatch ?? false,
                     isIncoming: item?.isIncoming ?? false,
                     isTrial: item?.isTrial ?? false,
+                    isCoA: item?.isCoA ?? false,
                     uoMId: item?.uoMId ?? '',
-                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
-                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
                     min: isNaN(parseFloat(item?.passCriteriaMin)) ? null : parseFloat(item.passCriteriaMin),
+                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
+                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
+                    lowerLimit: isNaN(parseFloat(item?.passCriteriaLowerLimit)) ? null : parseFloat(item.passCriteriaLowerLimit),
+                    upperLimit: isNaN(parseFloat(item?.passCriteriaUpperLimit)) ? null : parseFloat(item.passCriteriaUpperLimit),
                 }));
             } else {
                 console.warn("⚠️ quantitativeInspectionObjects is not an array, setting empty array.");
@@ -2242,10 +2330,12 @@ export class TestingStepperComponent implements AfterViewInit {
             .getInspectionCharacteristicsWithCriteria()
             .subscribe((inspectionCardModal) => {
                 const qualitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'qualitative'
+                    // (item: any) => item.type === 'qualitative'
+                    (item: any) => item.type?.toLowerCase() !== 'quantitative'
                 );
                 const quantitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type === 'quantitative'
+                    // (item: any) => item.type === 'quantitative'
+                    (item: any) => item.type?.toLowerCase() !== 'qualitative'
                 );
 
                 qualitativeData.forEach((item: any) => {
@@ -2583,6 +2673,10 @@ export class TestingStepperComponent implements AfterViewInit {
             //     console.log('Stepper initialized with index:', this.stepper.selectedIndex);
             // });
         });
+
+        if (this.dataSourceCardCodeIIC) {
+            this.dataSourceCardCodeIIC.paginator = this.paginator;
+        }
     }
     
 
@@ -2688,7 +2782,7 @@ export class TestingStepperComponent implements AfterViewInit {
             .getInspectionCardModal()
             .subscribe((inspectionCardModal) => {
                 const qualitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type !== 'quantitative' && item.isActive
+                    (item: any) => item.type?.toLowerCase() !== 'quantitative'
                 );
                 this.dataSourceItems = new MatTableDataSource(qualitativeData); // Qualitative data
             });
@@ -2698,7 +2792,7 @@ export class TestingStepperComponent implements AfterViewInit {
         console.log(this.selectedControlAccountRowIndex);
         const dialogRef = this.dialog.open(this.dialogTemplateItems, {
             width: '75vw',
-            height: '90vh',
+            height: '99vh',
             data: this.dataSourceItems,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -2714,6 +2808,7 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedInspectionCode: string = '';
     selectedItemDescription: string = '';
     //
+    isQualitativeInspectionSelectedIC = false;
     onRowCheckboxChangeItems(selectedRow: any): void {
         // if (this.dataSourceItems.data) {
         //     this.dataSourceItems.data.forEach(
@@ -2722,6 +2817,7 @@ export class TestingStepperComponent implements AfterViewInit {
         //     selectedRow.isSelected = true;
         // }
         selectedRow.isSelected = !selectedRow.isSelected;
+        this.isQualitativeInspectionSelectedIC = true;
     }
 
     applyFilterItems(event: Event) {
@@ -2841,6 +2937,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
         // Clear selected index after operation
         this.selectedControlAccountRowIndex = -1;
+        this.isQualitativeInspectionSelectedIC = false;
     }
 
     //Quantitative Column
@@ -2861,7 +2958,8 @@ export class TestingStepperComponent implements AfterViewInit {
 
     onItemCodeClickX(rowIndex: number): void {
         const quantitativeData = this.inspectionCardModalList.filter(
-            (item: any) => item.type === 'quantitative' && item.isActive
+            // (item: any) => item.type === 'quantitative' && item.isActive
+            (item: any) => item.type?.toLowerCase() !== 'qualitative'
         );
 
         this.dataSourceItemsX = new MatTableDataSource(quantitativeData);
@@ -2869,14 +2967,14 @@ export class TestingStepperComponent implements AfterViewInit {
             .getInspectionCardModal()
             .subscribe((inspectionCardModal) => {
                 const quantitativeData = inspectionCardModal.data.filter(
-                    (item: any) => item.type !== 'qualitative' && item.isActive
+                    (item: any) => item.type?.toLowerCase() !== 'qualitative'
                 );
                 this.dataSourceItemsX = new MatTableDataSource(quantitativeData); // Quantitative data
             });
         this.selectedControlAccountRowIndex = rowIndex;
         const dialogRef = this.dialog.open(this.dialogTemplateItemsX, {
             width: '75vw',
-            height: '90vh',
+            height: '99vh',
             data: this.dataSourceItemsX,
         });
         dialogRef.afterClosed().subscribe(() => {
@@ -2892,10 +2990,12 @@ export class TestingStepperComponent implements AfterViewInit {
         'isActive',
     ];
 
+    isQuantitativeInspectionSelectedIC = false;
     onRowCheckboxChangeItemsX(selectedRow: any): void {
         // this.dataSourceItemsX.data.forEach((row) => (row.isSelected = false));
         // selectedRow.isSelected = true;
         selectedRow.isSelected = !selectedRow.isSelected;
+        this.isQuantitativeInspectionSelectedIC = true;
     }
 
     applyFilterItemsX(event: Event): void {
@@ -3014,6 +3114,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
     // Reset the index after operation
     this.selectedControlAccountRowIndex = -1;
+    this.isQuantitativeInspectionSelectedIC = false;
     }
 
     onSubmitQualitativeResult(): void {
@@ -4087,6 +4188,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                         isDispatch: [qualitative.isDispatch],
                                         isIncoming: [qualitative.isIncoming],
                                         isTrial: [qualitative.isTrial],
+                                        isCoA: [qualitative.isCoA],
                                         qualitativeResultPassStatusObjects:
                                             this.fb.array(
                                                 qualitative.qualitativeResultPassStatusResults.map(
@@ -4140,6 +4242,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                         isDispatch: [quantitative.isDispatch],
                                         isIncoming: [quantitative.isIncoming],
                                         isTrial: [quantitative.isTrial],
+                                        isCoA: [quantitative.isCoA],
                                         uoMId: [
                                             quantitative.uoMId,
                                             Validators.required,
@@ -4214,7 +4317,8 @@ export class TestingStepperComponent implements AfterViewInit {
                                     id: [qualitative.id, Validators.required],
                                     qualitativeInspectionId: [qualitative.qualitativeInspectionId ?? null], // ✅ FIXED: Save characteristicId
                                     parameter: [qualitative.inspectionCharacteristicName, Validators.required],
-                                    passCriteria: [qualitative.inspectionCharacteristicSingleCriteria, Validators.required],
+                                    // passCriteria: [qualitative.inspectionCharacteristicSingleCriteria, Validators.required],
+                                    passCriteria: [qualitative.qualitativeSpec, Validators.required],
                                     mandatory: [qualitative.isMandatory],
                                     isQcCritical: [qualitative.isQcCritical],
                                     isQcFloor: [qualitative.isQcFloor],
@@ -4222,6 +4326,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                     isDispatch: [qualitative.isDispatch],
                                     isIncoming: [qualitative.isIncoming],
                                     isTrial: [qualitative.isTrial],
+                                    isCoA: [qualitative.isCoA],
                                     pass: [passDescriptions], // ✅ Extracted from isPassed=true
                                     fail: [failDescriptions], // ✅ Extracted from isPassed=false
                                     qualitativeResultPassStatusObjects: this.fb.array(
@@ -4244,6 +4349,7 @@ export class TestingStepperComponent implements AfterViewInit {
                                     id: [quantitative.id, Validators.required],
                                     characteristicId: [quantitative.quantitativeInspectionId ?? null], // ✅ FIXED: Save characteristicId
                                     parameterQty: [quantitative.inspectionCharacteristicName, Validators.required],
+                                    passCriteria: [quantitative.quantitativeSpec, Validators.required],
                                     uoMId: [quantitative.uoMId, Validators.required],
                                     uoMCode: [quantitative.uoMCode],
                                     mandatoryQty: [quantitative.isMandatory],
@@ -4253,9 +4359,12 @@ export class TestingStepperComponent implements AfterViewInit {
                                     isDispatch: [quantitative.isDispatch],
                                     isIncoming: [quantitative.isIncoming],
                                     isTrial: [quantitative.isTrial],
-                                    passCriteriaTarget: [quantitative.target, Validators.required],
-                                    passCriteriaMax: [quantitative.max, Validators.required],
+                                    isCoA: [quantitative.isCoA],
                                     passCriteriaMin: [quantitative.min, Validators.required],
+                                    passCriteriaMax: [quantitative.max, Validators.required],
+                                    passCriteriaTarget: [quantitative.target, Validators.required],
+                                    passCriteriaLowerLimit: [quantitative.lowerLimit, Validators.required],
+                                    passCriteriaUpperLimit: [quantitative.upperLimit, Validators.required],
                                 })
                             );
                         });
@@ -4299,6 +4408,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 isDispatch: item.isDispatch,
                 isIncoming: item.isIncoming,
                 isTrial: item.isTrial,
+                isCoA: item.isCoA,
                 qualitativeResultPassStatusResults: item.qualitativeResultPassStatusObjects ? item.qualitativeResultPassStatusObjects.map((result: any) => ({
                     qualitativeResultId: result.qualitativeResultId,
                     isPassed: result.isPassed,
@@ -4323,11 +4433,14 @@ export class TestingStepperComponent implements AfterViewInit {
                 isDispatch: [item.isDispatch],
                 isIncoming: [item.isIncoming],
                 isTrial: [item.isTrial],
+                isCoA: [item.isCoA],
                 uoMId: item.uoMId,
                 uoMCode: item.uoMCode,
-                target: item.passCriteriaTarget ? parseFloat(item.passCriteriaTarget) : null,
-                max: item.passCriteriaMax ? parseFloat(item.passCriteriaMax) : null,
                 min: item.passCriteriaMin ? parseFloat(item.passCriteriaMin) : null,
+                max: item.passCriteriaMax ? parseFloat(item.passCriteriaMax) : null,
+                target: item.passCriteriaTarget ? parseFloat(item.passCriteriaTarget) : null,
+                lowerLimit: item.passCriteriaLowerLimit ? parseFloat(item.passCriteriaLowerLimit) : null,
+                upperLimit: item.passCriteriaUpperLimit ? parseFloat(item.passCriteriaUpperLimit) : null,
             }))
             : [];
 
@@ -4396,7 +4509,9 @@ export class TestingStepperComponent implements AfterViewInit {
                 return {
                     id: item.id ?? null,
                     qualitativeInspectionId: item.qualitativeInspectionId ?? null,
-                    isActive: item.isActive ?? false,
+                    qualitativeSpec: item.passCriteria ?? null,
+                    // isActive: item.isActive ?? false,
+                    isActive: true,
                     isMandatory: item.mandatory ?? false,
                     isQcCritical: item.isQcCritical ?? false,
                     isQcFloor: item.isQcFloor ?? false,
@@ -4404,6 +4519,7 @@ export class TestingStepperComponent implements AfterViewInit {
                     isDispatch: item.isDispatch ?? false,
                     isIncoming: item.isIncoming ?? false,
                     isTrial: item.isTrial ?? false,
+                    isCoA: item.isCoA ?? false,
                     qualitativeResultPassStatusResults: qualitativeResultPassStatusResults,
                     qualitativeResultFailStatusResults: item.qualitativeResultFailStatusObjects
                         ? item.qualitativeResultFailStatusObjects.map((result: any) => ({
@@ -4422,7 +4538,9 @@ export class TestingStepperComponent implements AfterViewInit {
             ? formValue.quantitativeInspectionObjects.map((item: any) => ({
                 id: item.id ?? null,
                 quantitiveInspectionId: item.characteristicId ?? null,
-                isActive: item.isActive ?? false,
+                quantitativeSpec: item.passCriteria ?? null,
+                // isActive: item.isActive ?? false,
+                isActive: true,
                 isMandatory: item.mandatoryQty ?? false,
                 isQcCritical: item.isQcCritical ?? false,
                 isQcFloor: item.isQcFloor ?? false,
@@ -4430,15 +4548,19 @@ export class TestingStepperComponent implements AfterViewInit {
                 isDispatch: item.isDispatch ?? false,
                 isIncoming: item.isIncoming ?? false,
                 isTrial: item.isTrial ?? false,
+                isCoA: item.isCoA ?? false,
                 uoMId: item.uoMId ?? '',
                 uoMCode: item.uoMCode ?? '',
-                target: item.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
-                max: item.passCriteriaMax !== undefined ? parseFloat(item.passCriteriaMax) : null,
                 min: item.passCriteriaMin !== undefined ? parseFloat(item.passCriteriaMin) : null,
+                max: item.passCriteriaMax !== undefined ? parseFloat(item.passCriteriaMax) : null,
+                target: item.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
+                lowerLimit: item.passCriteriaLowerLimit !== undefined ? parseFloat(item.passCriteriaLowerLimit) : null,
+                upperLimit: item.passCriteriaUpperLimit !== undefined ? parseFloat(item.passCriteriaUpperLimit) : null,
             }))
             : [];
 
         console.log("✅ FINAL quantitativeInspectionObjects:", quantitativeInspectionObjects);
+        // return;
 
         // CREATING THE REQUEST BODY FOR THE PUT (UpdateItemInspectionCard) API
         const putRequestBodyIIC = {
@@ -4878,7 +5000,7 @@ export class TestingStepperComponent implements AfterViewInit {
     //     { id: '16eaea79-8f12-43b6-9a74-496af1ab075d', name: 'Dimensional' },
     //     { id: '5df8cf9b-5b38-4964-b24d-02c35d934d65', name: 'Functional' }
     // ];
-    onNextClickInspectionAttributes(): void {
+    XonNextClickInspectionAttributes(): void {
         this._qualitativeResultsService.ListAllInspectionAttributes().subscribe({
             next: () => {
                 // Go to next step after data is fetched
@@ -4889,6 +5011,26 @@ export class TestingStepperComponent implements AfterViewInit {
                 console.error('Failed to load inspection attributes:', err);
             }
         });
+    }
+    onNextClickInspectionAttributes(): void {
+        const attributeNameValue = this.inspectionAttributesForm.get('name')?.value;
+        const isAttributeNameEmpty = !attributeNameValue;
+        if (isAttributeNameEmpty) {
+            this._qualitativeResultsService.ListAllInspectionAttributes().subscribe({
+                next: () => {
+                    this.clearingSessionStorage();
+                    this.stepper.next();
+                },
+                error: (err) => {
+                    console.error('Failed to load inspection attributes:', err);
+                }
+            });
+        } else {
+            this._snackBar.open('Save or clear the data before moving to the next step.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+        }
     }
     onUpdateInspectionAttributes(): void {
         this.isValidate = true;
@@ -5284,7 +5426,7 @@ export class TestingStepperComponent implements AfterViewInit {
     XonItemSampleItemCodeClick() {
         const dialogRef = this.dialog.open(this.dialogTemplateItemSampleItems, {
             width: '75vw',
-            height: '90vh',
+            height: '99vh',
             data: this.dataSourceItemSampleCode,
         });
         dialogRef.afterClosed().subscribe((result) => {
@@ -5306,7 +5448,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
             const dialogRef = this.dialog.open(this.dialogTemplateItemCodeIS, {
                 width: '75vw',
-                height: '90vh',
+                height: '99vh',
                 data: this.dataSourceItemCodeIS,
             });
 
@@ -5909,5 +6051,17 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     // itemSamplingForm ENDS
+
+    get itemRangeText(): string {
+        const start = (this.pageNumber - 1) * this.pageSize + 1;
+        const end = Math.min(start + this.pageSize - 1, this.totalRecords);
+        return `Showing ${start}–${end} of ${this.totalRecords}`;
+    }
+
+    get isLastPage(): boolean {
+        const maxPages = Math.ceil(this.totalRecords / this.pageSize);
+        return this.pageNumber >= maxPages;
+    }
+
 
 }
