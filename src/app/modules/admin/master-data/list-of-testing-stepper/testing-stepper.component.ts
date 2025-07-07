@@ -5356,6 +5356,11 @@ export class TestingStepperComponent implements AfterViewInit {
         this.dataSourceItemSampling.data = [...this.samplingRangeObjects.value]; // UPDATE THE TABLE DATA SOURCE dataSourceItemSampling
     }
 
+    deleteRowItemSampling(index: number): void {
+        this.samplingRangeObjects.removeAt(index);
+        this.dataSourceItemSampling.data = [...this.samplingRangeObjects.value];
+    }
+
     displayedColumnsItemSamplingRange = [
         'lotSizeMin',
         'lotSizeMax',
