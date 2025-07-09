@@ -6241,7 +6241,7 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     // @ ALI RIAZ
-    validateNonNegative(index: number, fieldName: 'criticalDefects' | 'majorDefects' | 'minorDefects'): void {
+    XvalidateNonNegative(index: number, fieldName: 'criticalDefects' | 'majorDefects' | 'minorDefects'): void {
         const control = this.samplingRangeObjects.at(index).get(fieldName);
         if (control && control.value < 0) {
             control.setValue(null);
@@ -6250,6 +6250,89 @@ export class TestingStepperComponent implements AfterViewInit {
                 verticalPosition: 'bottom',
             });
         }
+    }
+
+    validateNonNegative(index: number, fieldName: 'lotSizeMin' | 'lotSizeMax' | 'sampleQty'): void {
+        const group = this.samplingRangeObjects.at(index);
+        const control = group.get(fieldName);
+
+        if (control && control.value < 1) {
+            control.setValue(null);
+            this._snackBar.open('Only positive values are allowed.', 'Close', {
+                duration: 3000,
+                verticalPosition: 'bottom',
+            });
+            return;
+        }
+
+        const lotSizeMin = +group.get('lotSizeMin')?.value;
+        const lotSizeMax = +group.get('lotSizeMax')?.value;
+
+        if (fieldName === 'lotSizeMax') {
+            if (!isNaN(lotSizeMin) && !isNaN(lotSizeMax) && lotSizeMax <= lotSizeMin) {
+                control?.setValue(null);
+                this._snackBar.open("Lot Size Max must be greater than Lot Size Min.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+        }
+
+        if (fieldName === 'sampleQty') {
+            const sampleQty = +control?.value;
+            if (
+                !isNaN(lotSizeMin) &&
+                !isNaN(lotSizeMax) &&
+                (!isFinite(sampleQty) || sampleQty < lotSizeMin || sampleQty > lotSizeMax)
+            ) {
+                control?.setValue(null);
+                this._snackBar.open(`Sample Qty must be between ${lotSizeMin} and ${lotSizeMax}.`, 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+        }
+    }
+    isItemSampleFormValid(): boolean {
+        const itemCodeControl = this.itemSamplingForm.get('itemCode');
+        const itemDescriptionControl = this.itemSamplingForm.get('itemDescription');
+
+        const basicValid = itemCodeControl?.valid && !!itemCodeControl.value &&
+            itemDescriptionControl?.valid && !!itemDescriptionControl.value;
+
+        // SAMPLING RANGE VALIDATION
+        let samplingValid = true;
+        for (let i = 0; i < this.samplingRangeObjects.length; i++) {
+            const group = this.samplingRangeObjects.at(i);
+            const lotSizeMin = +group.get('lotSizeMin')?.value;
+            const lotSizeMax = +group.get('lotSizeMax')?.value;
+            const sampleQty = +group.get('sampleQty')?.value;
+
+            // IF <= 0
+            if (
+                !lotSizeMin || !lotSizeMax || !sampleQty ||
+                lotSizeMin < 1 || lotSizeMax < 1 || sampleQty < 1
+            ) {
+                samplingValid = false;
+                break;
+            }
+
+            // lotSizeMax MUST BE GREATER THAN lotSizeMin
+            if (lotSizeMax <= lotSizeMin) {
+                samplingValid = false;
+                break;
+            }
+
+            // sampleQty MUST BE BETWEEN lotSizeMin && lotSizeMax
+            if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
+                samplingValid = false;
+                break;
+            }
+        }
+
+        return basicValid && samplingValid;
     }
     // itemSamplingForm ENDS
 
