@@ -2985,6 +2985,7 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedItemDescription: string = '';
     //
     isQualitativeInspectionSelectedIC = false;
+    selectedQualitativeRowsIC: any[] = [];
     onRowCheckboxChangeItems(selectedRow: any): void {
         // if (this.dataSourceItems.data) {
         //     this.dataSourceItems.data.forEach(
@@ -2993,7 +2994,16 @@ export class TestingStepperComponent implements AfterViewInit {
         //     selectedRow.isSelected = true;
         // }
         selectedRow.isSelected = !selectedRow.isSelected;
-        this.isQualitativeInspectionSelectedIC = true;
+        if (selectedRow.isSelected) {
+            this.selectedQualitativeRowsIC.push(selectedRow);
+        } else {
+            this.selectedQualitativeRowsIC = this.selectedQualitativeRowsIC.filter(
+                row => row.id !== selectedRow.id
+            );
+        }
+        console.log('Selected Row:', selectedRow);
+        console.log("Selected Rows:", this.selectedQualitativeRowsIC);
+        this.isQualitativeInspectionSelectedIC = this.selectedQualitativeRowsIC.length > 0;
     }
 
     applyFilterItems(event: Event) {
@@ -3167,11 +3177,19 @@ export class TestingStepperComponent implements AfterViewInit {
     ];
 
     isQuantitativeInspectionSelectedIC = false;
+    selectedQuantitativeRowsIC: any[] = [];
     onRowCheckboxChangeItemsX(selectedRow: any): void {
-        // this.dataSourceItemsX.data.forEach((row) => (row.isSelected = false));
-        // selectedRow.isSelected = true;
         selectedRow.isSelected = !selectedRow.isSelected;
-        this.isQuantitativeInspectionSelectedIC = true;
+        if (selectedRow.isSelected) {
+            this.selectedQuantitativeRowsIC.push(selectedRow);
+        } else {
+            this.selectedQuantitativeRowsIC = this.selectedQuantitativeRowsIC.filter(
+                row => row.id !== selectedRow.id
+            );
+        }
+        console.log('Selected Row:', selectedRow);
+        console.log("Selected Rows:", this.selectedQuantitativeRowsIC);
+        this.isQuantitativeInspectionSelectedIC = this.selectedQuantitativeRowsIC.length > 0;
     }
 
     applyFilterItemsX(event: Event): void {
