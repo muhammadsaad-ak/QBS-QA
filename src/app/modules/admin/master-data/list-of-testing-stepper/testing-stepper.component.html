@@ -465,12 +465,12 @@
                       </div>
                       <mat-form-field>
                         <mat-label>Search</mat-label>
-                        <input matInput (keyup)="applyFilterItems($event)" #input placeholder="Search by Characteristics Description">
+                        <input matInput (keyup)="applyFilterItems($event)" #input placeholder="Search by Characteristics Description or Attribute Type">
                       </mat-form-field>
                       <div class="table-container flex-grow overflow-auto p-0 m-0">
                         <!-- TABLE STARTS -->
                         <mat-table [dataSource]="dataSourceItems">
-                          <!-- ITEM CODE & CHECKBOX COLUMN -->
+
                           <ng-container matColumnDef="intCode">
                             <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Code</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm"
@@ -478,25 +478,25 @@
                               <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItems(row)"
                                 [disabled]="!row.isActive">
                               </mat-checkbox>
-                              ICH-000{{row.intCode}}
+                              ICH-{{ row.intCode ? (row.intCode.toString().padStart(5, '0')) : '-' }}
                             </mat-cell>
                           </ng-container>
-                          <!-- ITEM DESCRIPTION COLUMN -->
+
                           <ng-container matColumnDef="description">
                             <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm"
                               [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
                               {{row.description}} </mat-cell>
                           </ng-container>
-                          <!-- ITEM GROUP COLUMN -->
+
                           <ng-container matColumnDef="type">
-                            <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Type</mat-header-cell>
-                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
-                              [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
-                              {{ row.type ? row.type : '-' }}
-                            </mat-cell>
+                              <mat-header-cell *matHeaderCellDef class="single-line">Attribute&nbsp;Type</mat-header-cell>
+                              <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
+                                [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                                {{ row.attribute ? row.attribute.name : '-' }}
+                              </mat-cell>
                           </ng-container>
-                          <!-- STATUS COLUMN  -->
+
                           <ng-container matColumnDef="isActive">
                             <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm text-start"
@@ -574,39 +574,38 @@
                       </div>
                       <mat-form-field>
                         <mat-label>Search</mat-label>
-                        <input matInput (keyup)="applyFilterItemsX($event)" #input placeholder="Search by Characteristics Description">
+                        <input matInput (keyup)="applyFilterItemsX($event)" #input placeholder="Search by Characteristics Description or Attribute Type">
                       </mat-form-field>
                       <!-- TABLE STARTS -->
                       <div class="table-container flex-grow overflow-auto p-0 m-0">
                         <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
-                          <!-- ITEM CODE COLUMN -->
+
                           <ng-container matColumnDef="intCode">
                             <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Code</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm" [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
                               <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemsX(row)" [disabled]="!row.isActive"></mat-checkbox>
-                              ICH-000{{ row.intCode }}
+                              ICH-{{ row.intCode ? (row.intCode.toString().padStart(5, '0')) : '-' }}
                             </mat-cell>
                           </ng-container>
-                          <!-- ITEM DESCRIPTION COLUMN -->
+
                           <ng-container matColumnDef="description">
                             <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm" [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">{{ row.description
                               }}</mat-cell>
                           </ng-container>
-                          <!-- ITEM GROUP COLUMN -->
+
                           <ng-container matColumnDef="type">
-                            <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Type</mat-header-cell>
-                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize" [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
-                              {{ row.type ? row.type : '-' }}
-                            </mat-cell>
+                            <mat-header-cell *matHeaderCellDef class="single-line">Attribute&nbsp;Type</mat-header-cell>
+                              <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
+                                [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                                {{ row.attribute ? row.attribute.name : '-' }}
+                              </mat-cell>
                           </ng-container>
-                          <!-- STATUS COLUMN -->
+
                           <ng-container matColumnDef="isActive">
                             <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
-                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start" [ngClass]="{
-                              'text-green-500': row.isActive, 
-                              'text-amber-500': !row.isActive
-                            }">
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start"
+                              [ngClass]="{'cursor-no-drop': !row.isActive, 'text-green-500': row.isActive, 'text-amber-500': !row.isActive}">
                               {{ row.isActive ? 'Active' : 'Inactive' }}
                             </mat-cell>
                           </ng-container>
@@ -618,8 +617,8 @@
                             <td class="mat-cell" colspan="4">No data matched with "{{input.value}}"</td>
                           </tr>
                         </mat-table>
+                        <!-- TABLE ENDS -->
                       </div>
-                      <!-- TABLE ENDS -->
                       <!-- SAVE & CLOSE -->
                       <div class="flex justify-end mt-auto">
                         <button mat-flat-button color="primary"
@@ -1113,7 +1112,7 @@
                             </ng-container>
                     
                             <ng-container matColumnDef="characteristicDescription">
-                              <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Description</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm"
                                 [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
                                 {{row.description}}
@@ -1129,7 +1128,7 @@
                             </ng-container>
                     
                             <ng-container matColumnDef="characteristicStatus">
-                              <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Status</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm"
                                 [ngClass]="{'cursor-no-drop': !row.isActive, 'text-green-500': row.isActive, 'text-amber-500': !row.isActive}">
                                 {{ row.isActive ? 'Active' : 'Inactive' }}
@@ -1547,7 +1546,7 @@
                             </ng-container>
                     
                             <ng-container matColumnDef="characteristicDescription">
-                              <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Description</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm"
                                 [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
                                 {{row.description}}
@@ -1563,7 +1562,7 @@
                             </ng-container>
                     
                             <ng-container matColumnDef="characteristicStatus">
-                              <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Status</mat-header-cell>
+                              <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm"
                                 [ngClass]="{'cursor-no-drop': !row.isActive, 'text-green-500': row.isActive, 'text-amber-500': !row.isActive}">
                                 {{ row.isActive ? 'Active' : 'Inactive' }}
