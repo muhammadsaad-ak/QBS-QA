@@ -427,6 +427,61 @@ export class TestingStepperComponent implements AfterViewInit {
         description: string,
         criteria: string
     ): void {
+        // Check if a row with the same ID already exists in the FormArray
+        const isCharacteristicAlreadyOnCard = this.qualitativeInspectionObjects.controls.some(
+            (group) => group.get('id')?.value === id
+        );
+
+        if (isCharacteristicAlreadyOnCard) {
+            console.warn(`DUPLICATE ENTRY: Selected characteristic(s) are already attached to the card.`);
+        }
+
+        const qualitativeFormGroup = this.fb.group({
+            id: [id],
+            parameter: [description],
+            passCriteria: [null],
+            mandatory: [false],
+            isQcCritical: [false], // DEFAULT TO false
+            isQcFloor: [false], // DEFAULT TO false
+            isQcLab: [false], // DEFAULT TO false
+            isDispatch: [false], // DEFAULT TO false
+            isIncoming: [false], // DEFAULT TO false
+            isTrial: [false], // DEFAULT TO false
+            isCoA: [false], // DEFAULT TO false
+            pass: [], // Multiple pass values in array
+            fail: [], // Multiple fail values in array
+        });
+
+        // Push the new form group into the FormArray
+        this.qualitativeInspectionObjects.push(qualitativeFormGroup);
+
+        // Ensure the data source is properly initialized
+        if (!this.dataSourceQualitativeInspection) {
+            this.dataSourceQualitativeInspection = new MatTableDataSource<qualitativeInspectionIF>([]);
+        }
+
+        if (!(this.dataSourceQualitativeInspection instanceof MatTableDataSource)) {
+            this.dataSourceQualitativeInspection = new MatTableDataSource(
+                this.dataSourceQualitativeInspection
+            );
+        }
+
+        // Update the dataSource with the latest FormArray values
+        this.dataSourceQualitativeInspection.data = [
+            ...this.qualitativeInspectionObjects.value,
+        ];
+
+        console.log(
+            'Updated Qualitative DataSource:',
+            this.dataSourceQualitativeInspection.data
+        );
+    }
+
+    XaddQualitativeInspectionRow(
+        id: string,
+        description: string,
+        criteria: string
+    ): void {
         const qualitativeFormGroup = this.fb.group({
             id: [id],
             parameter: [description],
@@ -541,8 +596,8 @@ export class TestingStepperComponent implements AfterViewInit {
             id: [id],
             parameterQty: [description],
             passCriteria: [null],
-            uoMId: [''],
-            uoMCode: [''],
+            uoMId: [null],
+            uoMCode: [null],
             mandatoryQty: [false],
             isQcCritical: [false], // DEFAULT TO false
             isQcFloor: [false], // DEFAULT TO false
@@ -551,11 +606,12 @@ export class TestingStepperComponent implements AfterViewInit {
             isIncoming: [false], // DEFAULT TO false
             isTrial: [false], // DEFAULT TO false
             isCoA: [false], // DEFAULT TO false
-            passCriteriaMin: [null, [Validators.required, Validators.min(1), Validators.pattern('^[0-9]+$')]],
-            passCriteriaMax: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
-            passCriteriaTarget: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
-            passCriteriaLowerLimit: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
-            passCriteriaUpperLimit: [null, [Validators.required, Validators.min(1), Validators.pattern('^[1-9]+$')],],
+            // passCriteriaMin: [null, [Validators.required, Validators.min(1), Validators.pattern('^[-9]+$')]],
+            passCriteriaMin: [null],
+            passCriteriaMax: [null],
+            passCriteriaTarget: [null],
+            passCriteriaLowerLimit: [null],
+            passCriteriaUpperLimit: [null],
         });
 
         this.quantitativeInspectionObjects.push(
@@ -1061,9 +1117,11 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedUoMCode: string = '';
     selectedUoMDescription: string = '';
 
+    isUOMSelectedIIC = false;
     onRowChangeUoMIIC(selectedRow: any): void {
         this.dataSourceUoMIIC.data.forEach((row) => (row.isSelected = false));
         selectedRow.isSelected = true;
+        this.isUOMSelectedIIC = true;
     }
 
     XaddSelectedRowUoMIIC(index: number): void {
@@ -1114,6 +1172,7 @@ export class TestingStepperComponent implements AfterViewInit {
 
             // Reset after update
             this.selectedRowIndexUoM = -1;
+            this.isUOMSelectedIIC = false;
         } else {
             console.log('NO ROW SELECTED');
         }
@@ -1131,6 +1190,16 @@ export class TestingStepperComponent implements AfterViewInit {
 
     onAddQualitativeClickIIC() {
         this.dataSourceAddQualitativeIIC.data.forEach(row => row.isSelected = false);
+
+        // this.dataSourceAddQualitativeIIC.data.forEach(row => {
+        //     const isAlreadyAttached = this.qualitativeInspectionObjects.controls.some(
+        //         group => group.get('id')?.value === row.id
+        //     );
+        //     if (isAlreadyAttached) {
+        //         row.isSelected = true;
+        //     }
+        // });
+
         this.isQualitativeCharacteristicSelectedIIC = false;
 
         const dialogRef = this.dialog.open(
@@ -1156,15 +1225,81 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedQualitativeCriteriaIIC: string = '';
 
     isQualitativeCharacteristicSelectedIIC = false;
-    onRowChangeAddQualitativeIIC(selectedRow: any): void {
-        this.dataSourceAddQualitativeIIC.data.forEach(
-            (row) => (row.isSelected = false)
-        );
-        selectedRow.isSelected = true;
+    XonRowChangeAddQualitativeIIC(selectedRow: any): void {
+        // this.dataSourceAddQualitativeIIC.data.forEach(
+        //     (row) => (row.isSelected = false)
+        // );
+        // selectedRow.isSelected = true;
+        selectedRow.isSelected = !selectedRow.isSelected;
         this.isQualitativeCharacteristicSelectedIIC = true;
     }
+    
+    selectedQualitativeRowsIIC: any[] = [];
+    onRowChangeAddQualitativeIIC(selectedRow: any): void {
+        selectedRow.isSelected = !selectedRow.isSelected;
 
+        if (selectedRow.isSelected) {
+            this.selectedQualitativeRowsIIC.push(selectedRow);
+        } else {
+            this.selectedQualitativeRowsIIC = this.selectedQualitativeRowsIIC.filter(
+                row => row.id !== selectedRow.id
+            );
+        }
+        console.log('Selected Row:', selectedRow);
+        console.log("Selected Rows:", this.selectedQualitativeRowsIIC);
+
+        this.isQualitativeCharacteristicSelectedIIC = this.selectedQualitativeRowsIIC.length > 0;
+    }
+    
     addSelectedRowQualitativeIIC(): void {
+        this.dialog.closeAll();
+
+        if (this.selectedQualitativeRowsIIC.length === 0) {
+            console.log('NO ROWS SELECTED');
+            return;
+        }
+
+        const duplicateRows: string[] = [];
+
+        for (const selectedRow of this.selectedQualitativeRowsIIC) {
+            const isAlreadyAdded = this.qualitativeInspectionObjects.controls.some(
+                (group) => group.get('id')?.value === selectedRow.id
+            );
+
+            if (isAlreadyAdded) {
+                duplicateRows.push(selectedRow.description); // can also push full row if needed
+                continue; // skip this row if it's already added
+            }
+
+            // set selected values
+            this.selectedQualitativeDescriptionIIC = selectedRow.description;
+            this.selectedQualitativeCriteriaIIC = selectedRow.singleCriteria;
+
+            this.addQualitativeInspectionRow(
+                selectedRow.id,
+                selectedRow.description,
+                selectedRow.singleCriteria // selectedRow.criteriaDescription
+            );
+        }
+
+        // show snackbar if any duplicates were found and skipped
+        if (duplicateRows.length > 0) {
+            const messageSnackbar = duplicateRows.length === this.selectedQualitativeRowsIIC.length
+                ? 'All selected characteristics are already attached to the card.'
+                : 'Skipping characteristics that are already attached to the card.';
+            this._snackBar.open(messageSnackbar, 'Close', {
+                duration: 4000,
+                horizontalPosition: 'center',
+                verticalPosition: 'top',
+                panelClass: ['bg-red-500', 'text-white']
+            });
+        }
+        
+        this.selectedQualitativeRowsIIC = [];
+        this.isQualitativeCharacteristicSelectedIIC = false;
+    }
+
+    XaddSelectedRowQualitativeIIC(): void {
         this.dialog.closeAll();
         const selectedRow = this.dataSourceAddQualitativeIIC.data.find(
             (row) => row.isSelected
@@ -1218,7 +1353,7 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         );
         dialogRef.afterClosed().subscribe((result) => {
-            // console.log('DIALOG CLOSED');
+            console.log('DIALOG CLOSED');
         });
     }
 
@@ -1230,35 +1365,76 @@ export class TestingStepperComponent implements AfterViewInit {
     ];
     selectedQuantitativeDescriptionIIC: string = '';
 
-    isQuantitativeCharacteristicSelectedIIC
+    isQuantitativeCharacteristicSelectedIIC = false;
+    selectedQuantitativeRowsIIC: any[] = [];
     onRowChangeAddQuantitativeIIC(selectedRow: any): void {
-        this.dataSourceAddQuantitativeIIC.data.forEach(
-            (row) => (row.isSelected = false)
-        );
-        selectedRow.isSelected = true;
-        this.isQuantitativeCharacteristicSelectedIIC = true;
+        selectedRow.isSelected = !selectedRow.isSelected;
+        if (selectedRow.isSelected) {
+            this.selectedQuantitativeRowsIIC.push(selectedRow);
+        } else {
+            this.selectedQuantitativeRowsIIC = this.selectedQuantitativeRowsIIC.filter(
+                row => row.id !== selectedRow.id
+            );
+        }
+        console.log('Selected Row:', selectedRow);
+        console.log("Selected Rows:", this.selectedQuantitativeRowsIIC);
+        this.isQuantitativeCharacteristicSelectedIIC = this.selectedQuantitativeRowsIIC.length > 0;
+
+        // this.dataSourceAddQuantitativeIIC.data.forEach(
+        //     (row) => (row.isSelected = false)
+        // );
+        // selectedRow.isSelected = true;
+        // this.isQuantitativeCharacteristicSelectedIIC = true;
     }
 
     addSelectedRowQuantitativeIIC(): void {
         this.dialog.closeAll();
-        const selectedRow = this.dataSourceAddQuantitativeIIC.data.find(
-            (row) => row.isSelected
-        );
-        if (selectedRow) {
-            // console.log('SELECTED ROW:', selectedRow);
-            // Set the selected values
+
+        if (this.selectedQuantitativeRowsIIC.length === 0) {
+            console.log('NO ROWS SELECTED');
+            return;
+        }
+
+        const duplicateRows: string[] = [];
+
+        for (const selectedRow of this.selectedQuantitativeRowsIIC) {
+            const isAlreadyAttached = this.quantitativeInspectionObjects.controls.some(
+                (group) => group.get('id')?.value === selectedRow.id
+            );
+
+            if (isAlreadyAttached) {
+                duplicateRows.push(selectedRow.description); // can also push full row if needed
+                continue; // skip this row if it's already added
+            }
+
+            // set selected values
             this.selectedQuantitativeDescriptionIIC = selectedRow.description;
 
-            // Call addQuantitativeInspectionRow and pass the selected values
-            // this.addQuantitativeInspectionRow(this.selectedQuantitativeDescriptionIIC);
+            // Add to form array
             this.addQuantitativeInspectionRow(
                 selectedRow.id,
                 selectedRow.description
             );
-        } else {
-            console.log('NO ROW SELECTED');
         }
+
+        // show snackbar if any duplicates were found and skipped
+        if (duplicateRows.length > 0) {
+            const messageSnackbar =
+                duplicateRows.length === this.selectedQuantitativeRowsIIC.length
+                    ? 'All selected characteristics are already attached to the card.'
+                    : 'Skipping characteristics that are already attached to the card.';
+            this._snackBar.open(messageSnackbar, 'Close', {
+                duration: 4000,
+                horizontalPosition: 'center',
+                verticalPosition: 'top',
+                panelClass: ['bg-red-500', 'text-white'],
+            });
+        }
+        
+        this.selectedQuantitativeRowsIIC = [];
+        this.isQuantitativeCharacteristicSelectedIIC = false;
     }
+
 
     applyFilterAddQuantitativeIIC(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
@@ -4610,6 +4786,8 @@ export class TestingStepperComponent implements AfterViewInit {
     //Close The Dialog Box
 
     closeDialog(): void {
+        this.selectedQualitativeRowsIIC = [];
+        this.selectedQuantitativeRowsIIC = [];
         this.dialog.closeAll();
     }
     // UPDATE IC - INSPECTION CARD ENDS
