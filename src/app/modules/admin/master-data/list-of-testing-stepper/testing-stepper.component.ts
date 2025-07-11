@@ -334,8 +334,8 @@ export class TestingStepperComponent implements AfterViewInit {
         'mandatoryQty',
         'certificateofAnalysis',
         'passCriteriaMin',
-        'passCriteriaMax',
         'passCriteriaTarget',
+        'passCriteriaMax',
         'passCriteriaLowerLimit',
         'passCriteriaUpperLimit',
     ];
@@ -536,8 +536,8 @@ export class TestingStepperComponent implements AfterViewInit {
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaTarget');
         if (control) {
             const value = control.value;
-            if (value < 0) {
-                this._snackBar.open('Value cannot be negative', 'Close', {
+            if (value < 1) {
+                this._snackBar.open('Only positive values are allowed.', 'Close', {
                     duration: 3000,
                     verticalPosition: 'bottom',
                 });
@@ -553,8 +553,8 @@ export class TestingStepperComponent implements AfterViewInit {
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaMax');
         if (control) {
             const value = control.value;
-            if (value < 0) {
-                this._snackBar.open('Value cannot be negative', 'Close', {
+            if (value < 1) {
+                this._snackBar.open('Only positive values are allowed.', 'Close', {
                     duration: 3000,
                     verticalPosition: 'bottom',
                 });
@@ -570,8 +570,8 @@ export class TestingStepperComponent implements AfterViewInit {
         const control = this.quantitativeInspectionObjects.controls[index].get('passCriteriaMin');
         if (control) {
             const value = control.value;
-            if (value < 0) {
-                this._snackBar.open('Value cannot be negative', 'Close', {
+            if (value < 1) {
+                this._snackBar.open('Only positive values are allowed.', 'Close', {
                     duration: 3000,
                     verticalPosition: 'bottom',
                 });
@@ -5081,7 +5081,7 @@ export class TestingStepperComponent implements AfterViewInit {
     }
     // @IAK
     // VALIDATING itemsInspectionCardsForm
-    isIICFormValid(): boolean {
+    XisIICFormValid(): boolean {
         const itemCodeControl = this.itemsInspectionCardsForm.get('itemCode');
         const itemDescriptionControl = this.itemsInspectionCardsForm.get('itemDescription');
         const intCodeControl = this.itemsInspectionCardsForm.get('intCode');
@@ -5092,8 +5092,62 @@ export class TestingStepperComponent implements AfterViewInit {
             cardDescriptionControl?.valid && !!cardDescriptionControl.value;
     }
 
-    
-     onSubmitInspectionAttributes(): void {
+    isIICFormValid(): boolean {
+        const itemCodeControl = this.itemsInspectionCardsForm.get('itemCode');
+        const itemDescriptionControl = this.itemsInspectionCardsForm.get('itemDescription');
+        const intCodeControl = this.itemsInspectionCardsForm.get('intCode');
+        const cardDescriptionControl = this.itemsInspectionCardsForm.get('cardDescription');
+
+        const basicValid = itemCodeControl?.valid && !!itemCodeControl.value &&
+            itemDescriptionControl?.valid && !!itemDescriptionControl.value &&
+            intCodeControl?.valid && !!intCodeControl.value &&
+            cardDescriptionControl?.valid && !!cardDescriptionControl.value;
+
+        // QUANTITATIVE INSPECTION VALIDATION
+        let quantitativeValid = true;
+        for (let i = 0; i < this.quantitativeInspectionObjects.length; i++) {
+            const group = this.quantitativeInspectionObjects.at(i);
+
+            const min = +group.get('passCriteriaMin')?.value;
+            const lower = +group.get('passCriteriaLowerLimit')?.value;
+            const target = +group.get('passCriteriaTarget')?.value;
+            const upper = +group.get('passCriteriaUpperLimit')?.value;
+            const max = +group.get('passCriteriaMax')?.value;
+
+            // SKIP EMPTY ROWS
+            if (!min && !lower && !target && !upper && !max) continue;
+
+            // VALIDATE POSITIVE VALUES
+            if ([min, target, max].some(val => isNaN(val) || val <= 0)) {
+                quantitativeValid = false;
+                break;
+            }
+
+            // VALIDATION CASES
+            if (
+                target <= min ||
+                target >= max ||
+                max <= min ||
+                max <= target
+            ) {
+                quantitativeValid = false;
+                break;
+            }
+            // if (
+            //     target <= min || target <= lower ||
+            //     lower >= target || lower >= max || lower >= upper ||
+            //     min >= max || min >= target || min >= lower || min >= upper ||
+            //     !(upper < max || (upper > min && upper > target && upper > lower)) ||
+            //     max <= min || max <= target || max <= lower || max <= upper
+            // ) 
+        }
+
+        return basicValid && quantitativeValid;
+    }
+
+
+
+    onSubmitInspectionAttributes(): void {
         console.log('inspection_attribute nextIntCountIA:', this.nextIntCountIA);
         this.isValidate = true;
 
@@ -6279,21 +6333,21 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         }
 
-        if (fieldName === 'sampleQty') {
-            const sampleQty = +control?.value;
-            if (
-                !isNaN(lotSizeMin) &&
-                !isNaN(lotSizeMax) &&
-                (!isFinite(sampleQty) || sampleQty < lotSizeMin || sampleQty > lotSizeMax)
-            ) {
-                control?.setValue(null);
-                this._snackBar.open(`Sample Qty must be between ${lotSizeMin} and ${lotSizeMax}.`, 'Close', {
-                    duration: 3000,
-                    panelClass: ['snackbar-error'],
-                });
-                return;
-            }
-        }
+        // if (fieldName === 'sampleQty') {
+        //     const sampleQty = +control?.value;
+        //     if (
+        //         !isNaN(lotSizeMin) &&
+        //         !isNaN(lotSizeMax) &&
+        //         (!isFinite(sampleQty) || sampleQty < lotSizeMin || sampleQty > lotSizeMax)
+        //     ) {
+        //         control?.setValue(null);
+        //         this._snackBar.open(`Sample Qty must be between ${lotSizeMin} and ${lotSizeMax}.`, 'Close', {
+        //             duration: 3000,
+        //             panelClass: ['snackbar-error'],
+        //         });
+        //         return;
+        //     }
+        // }
     }
     isItemSampleFormValid(): boolean {
         const itemCodeControl = this.itemSamplingForm.get('itemCode');
@@ -6326,10 +6380,10 @@ export class TestingStepperComponent implements AfterViewInit {
             }
 
             // sampleQty MUST BE BETWEEN lotSizeMin && lotSizeMax
-            if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
-                samplingValid = false;
-                break;
-            }
+            // if (sampleQty < lotSizeMin || sampleQty > lotSizeMax) {
+            //     samplingValid = false;
+            //     break;
+            // }
         }
 
         return basicValid && samplingValid;
@@ -6347,5 +6401,111 @@ export class TestingStepperComponent implements AfterViewInit {
         return this.pageNumber >= maxPages;
     }
 
+    validatePositiveValuesIIC(index: number, fieldName: 'passCriteriaMin' | 'passCriteriaTarget' | 'passCriteriaMax' | 'passCriteriaLowerLimit' | 'passCriteriaUpperLimit'): void {
+        const group = this.quantitativeInspectionObjects.at(index);
+        const control = group.get(fieldName);
 
+        if (control && control.value < 1) {
+            control.setValue(null);
+            this._snackBar.open('Only positive values are allowed.', 'Close', {
+                duration: 3000,
+                verticalPosition: 'bottom',
+            });
+            return;
+        }
+    }
+
+    validateQuantitativeInspectionObjectsIIC(index: number, fieldName: string): void {
+        const group = this.quantitativeInspectionObjects.at(index);
+        const control = group.get(fieldName);
+
+        const passCriteriaMin = +group.get('passCriteriaMin')?.value;
+        const passCriteriaLowerLimit = +group.get('passCriteriaLowerLimit')?.value;
+        const passCriteriaTarget = +group.get('passCriteriaTarget')?.value;
+        const passCriteriaUpperLimit = +group.get('passCriteriaUpperLimit')?.value;
+        const passCriteriaMax = +group.get('passCriteriaMax')?.value;
+
+        if (fieldName === 'passCriteriaTarget') {
+            if (
+                !isNaN(passCriteriaTarget) &&
+                !isNaN(passCriteriaMin) &&
+                passCriteriaTarget <= passCriteriaMin
+            ) {
+                control?.setValue(null);
+                this._snackBar.open("Target must be greater than Min value.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+        }
+        if (fieldName === 'passCriteriaMax') {
+            if (
+                !isNaN(passCriteriaMax) &&
+                !isNaN(passCriteriaTarget) &&
+                passCriteriaMax <= passCriteriaTarget
+            ) {
+                control?.setValue(null);
+                this._snackBar.open("Max value must be greater than Target value.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+
+            if (
+                !isNaN(passCriteriaMax) &&
+                !isNaN(passCriteriaMin) &&
+                passCriteriaMax <= passCriteriaMin
+            ) {
+                control?.setValue(null);
+                this._snackBar.open("Max value must be greater than Min value.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+        }
+        if (fieldName === 'passCriteriaLowerLimit') {
+            if (!isNaN(passCriteriaLowerLimit) && !isNaN(passCriteriaMin) && passCriteriaLowerLimit <= passCriteriaMin) {
+                control?.setValue(null);
+                this._snackBar.open("Lower Control Limit must be greater than Min value.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+            }
+            if (
+                (!isNaN(passCriteriaTarget) && passCriteriaLowerLimit >= passCriteriaTarget)
+            ) {
+                control?.setValue(null);
+                this._snackBar.open("Lower Control Limit must be beteen Min and Target values.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+        }
+        if (fieldName === 'passCriteriaUpperLimit') {
+            if (!isNaN(passCriteriaUpperLimit) && !isNaN(passCriteriaMax) && passCriteriaUpperLimit >= passCriteriaMax) {
+                control?.setValue(null);
+                this._snackBar.open("Upper Control Limit must be less than Max value.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+            if (
+                (!isNaN(passCriteriaMin) && passCriteriaUpperLimit <= passCriteriaMin) ||
+                (!isNaN(passCriteriaLowerLimit) && passCriteriaUpperLimit <= passCriteriaLowerLimit) ||
+                (!isNaN(passCriteriaTarget) && passCriteriaUpperLimit <= passCriteriaTarget)
+            ) {
+                control?.setValue(null);
+                this._snackBar.open("Upper Control Limit must be between Target and Max values.", 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error'],
+                });
+                return;
+            }
+        }
+    }
 }
