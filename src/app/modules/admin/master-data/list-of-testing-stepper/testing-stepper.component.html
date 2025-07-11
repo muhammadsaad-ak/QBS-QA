@@ -1272,8 +1272,7 @@
                       <div class="ml-auto flex space-x-2 sm:space-x-4">
                         <div class="icon-size-4">
                           <mat-icon *ngIf="!isViewMode" class="mat-icon-primary" style="cursor: pointer;" svgIcon="feather:plus"
-                            (click)="onAddQuantitativeClickIIC()" matTooltip="Add Inspection"
-                            aria-label="Add Inspection">
+                            (click)="onAddQuantitativeClickIIC()" matTooltip="Add Inspection" aria-label="Add Inspection">
                           </mat-icon>
                         </div>
                       </div>
@@ -1315,9 +1314,8 @@
                             [formGroup]="quantitativeInspectionObjects.controls[i]">
                             <input matInput type="text" class="text-sm w-full" readonly formControlName="uoMCode">
                             <input matInput type="text" class="text-sm w-full hidden" readonly formControlName="uoMId">
-                            <mat-icon [ngClass]="{'cursor-no-drop': isViewMode}" matSuffix svgIcon="heroicons_outline:bars-3" 
-                              class="mat-icon-primary"
-                              (click)="!isViewMode && onUoMQtyClickIIC(i)">
+                            <mat-icon [ngClass]="{'cursor-no-drop': isViewMode}" matSuffix svgIcon="heroicons_outline:bars-3"
+                              class="mat-icon-primary" (click)="!isViewMode && onUoMQtyClickIIC(i)">
                             </mat-icon>
                             <mat-error *ngIf="isValidate">
                               Required.
@@ -1327,16 +1325,16 @@
                         <!-- mandatoryQty - Mandatory COLUMN -->
                         <ng-container matColumnDef="mandatoryQty">
                           <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
-                            Quality Control & Assurance Types	
+                            Quality Control & Assurance Types
                           </th>
                           <!-- <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6" 
-                            [ngClass]="{'cursor-no-drop': isViewMode}" 
-                            [formGroup]="quantitativeInspectionObjects.controls[i]">
-                            <mat-checkbox formControlName="mandatoryQty" 
-                            [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}"></mat-checkbox>
-                          </td> -->
-                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6" [ngClass]="{'cursor-no-drop': isViewMode}"
-                            [formGroup]="quantitativeInspectionObjects.controls[i]">
+                                        [ngClass]="{'cursor-no-drop': isViewMode}" 
+                                        [formGroup]="quantitativeInspectionObjects.controls[i]">
+                                        <mat-checkbox formControlName="mandatoryQty" 
+                                        [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}"></mat-checkbox>
+                                      </td> -->
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6"
+                            [ngClass]="{'cursor-no-drop': isViewMode}" [formGroup]="quantitativeInspectionObjects.controls[i]">
                             <div class="flex gap-2 items-center">
                               <!-- isQcCritical CHECKBOX -->
                               <mat-checkbox formControlName="isQcCritical" [matTooltip]="'QC Critical'"
@@ -1364,24 +1362,23 @@
                               </mat-checkbox>
                             </div>
                           </td>
-                          </ng-container>
-                          
-                          <!-- isCoA CHECKBOX - certificateofAnalysis - Certificate of Analysis -->
-                          <ng-container matColumnDef="certificateofAnalysis">
-                            <th mat-header-cell *matHeaderCellDef class="text-sm text-center">
-                              Certificate&nbsp;of&nbsp;Analysis
-                            </th>
-                            <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 text-center"
-                              [ngClass]="{'cursor-no-drop': isViewMode}" [formGroup]="quantitativeInspectionObjects.controls[i]">
-                              <div class="flex justify-center items-center">
-                                <mat-checkbox formControlName="isCoA" [matTooltip]="'Certificate of Analysis'"
-                                  [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
-                                </mat-checkbox>
-                              </div>
-                            </td>
-                          </ng-container>
-
-                        <!-- passCriteriaMin - Min COLUMN -->
+                        </ng-container>
+            
+                        <!-- isCoA CHECKBOX - certificateofAnalysis - Certificate of Analysis -->
+                        <ng-container matColumnDef="certificateofAnalysis">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm text-center">
+                            Certificate&nbsp;of&nbsp;Analysis
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 text-center"
+                            [ngClass]="{'cursor-no-drop': isViewMode}" [formGroup]="quantitativeInspectionObjects.controls[i]">
+                            <div class="flex justify-center items-center">
+                              <mat-checkbox formControlName="isCoA" [matTooltip]="'Certificate of Analysis'"
+                                [ngClass]="{'cursor-no-drop': isViewMode, 'view-mode-no-cursor': isViewMode}">
+                              </mat-checkbox>
+                            </div>
+                          </td>
+                        </ng-container>
+            
                         <ng-container matColumnDef="passCriteriaMin">
                           <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                             Min
@@ -1389,13 +1386,28 @@
                           <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
                             [formGroup]="quantitativeInspectionObjects.controls[i]">
                             <input matInput type="number" min="1" formControlName="passCriteriaMin" placeholder="Enter Min value"
-                              (input)="triggerValidationMin(i)">
-                            <mat-error *ngIf="isValidate">
+                              (input)="validatePositiveValuesIIC(i, 'passCriteriaMin')">
+                            <!-- <mat-error *ngIf="isValidate">
                               Must be greater than or equal to 1.
-                            </mat-error>
+                            </mat-error> -->
                           </td>
                         </ng-container>
-                        <!-- passCriteriaMax - Max COLUMN -->
+            
+                        <ng-container matColumnDef="passCriteriaTarget">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Target
+                          </th>
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
+                            [formGroup]="quantitativeInspectionObjects.controls[i]">
+                            <input matInput type="number" min="1" formControlName="passCriteriaTarget"
+                              placeholder="Enter Target value" (input)="validatePositiveValuesIIC(i, 'passCriteriaTarget')"
+                              (blur)="validateQuantitativeInspectionObjectsIIC(i, 'passCriteriaTarget')">
+                            <!-- <mat-error *ngIf="isValidate">
+                              Must be greater than or equal to 1.
+                            </mat-error> -->
+                          </td>
+                        </ng-container>
+            
                         <ng-container matColumnDef="passCriteriaMax">
                           <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                             Max
@@ -1403,48 +1415,38 @@
                           <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
                             [formGroup]="quantitativeInspectionObjects.controls[i]">
                             <input matInput type="number" min="1" formControlName="passCriteriaMax" placeholder="Enter Max value"
-                              (input)="triggerValidationMax(i)">
-                            <mat-error *ngIf="isValidate">
+                              (input)="validatePositiveValuesIIC(i, 'passCriteriaMax')"
+                              (blur)="validateQuantitativeInspectionObjectsIIC(i, 'passCriteriaMax')">
+                            <!-- <mat-error *ngIf="isValidate">
                               Must be greater than or equal to 1.
-                            </mat-error>
+                            </mat-error> -->
                           </td>
                         </ng-container>
-                        <!-- passCriteriaTarget - Target COLUMN -->
-                        <ng-container matColumnDef="passCriteriaTarget">
-                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
-                            Target
-                          </th>
-                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
-                            [formGroup]="quantitativeInspectionObjects.controls[i]">
-                            <input matInput type="number" min="1" formControlName="passCriteriaTarget" placeholder="Enter Target value"
-                              (input)="triggerValidationTarget(i)">
-                            <mat-error *ngIf="isValidate">
-                              Must be greater than or equal to 1.
-                            </mat-error>
-                          </td>
-                        </ng-container>
-
-                        <!-- passCriteriaLowerLimit - Lower Limit COLUMN -->
+            
                         <ng-container matColumnDef="passCriteriaLowerLimit">
                           <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                             Lower&nbsp;Control&nbsp;Limit
                           </th>
                           <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
                             [formGroup]="quantitativeInspectionObjects.controls[i]">
-                            <input matInput type="number" min="1" formControlName="passCriteriaLowerLimit" placeholder="Enter Lower Limit value">
+                            <input matInput type="number" min="1" formControlName="passCriteriaLowerLimit"
+                              placeholder="Enter Lower Limit value" (input)="validatePositiveValuesIIC(i, 'passCriteriaLowerLimit')"
+                              (blur)="validateQuantitativeInspectionObjectsIIC(i, 'passCriteriaLowerLimit')">
                           </td>
                         </ng-container>
-                        <!-- passCriteriaUpperLimit - Upper Limit COLUMN -->
+                         
                         <ng-container matColumnDef="passCriteriaUpperLimit">
                           <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
                             Upper&nbsp;Control&nbsp;Limit
                           </th>
                           <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
                             [formGroup]="quantitativeInspectionObjects.controls[i]">
-                            <input matInput type="number" min="1" formControlName="passCriteriaUpperLimit" placeholder="Enter Upper Limit value">
+                            <input matInput type="number" min="1" formControlName="passCriteriaUpperLimit"
+                              placeholder="Enter Upper Limit value" (input)="validatePositiveValuesIIC(i, 'passCriteriaUpperLimit')"
+                              (blur)="validateQuantitativeInspectionObjectsIIC(i, 'passCriteriaUpperLimit')">
                           </td>
                         </ng-container>
-                        
+            
                         <!-- Table Rows -->
                         <tr mat-header-row *matHeaderRowDef="displayedColumnsQuantitativeIIC"></tr>
                         <tr mat-row *matRowDef="let row; columns: displayedColumnsQuantitativeIIC;">
@@ -1453,7 +1455,7 @@
                       <!-- Quantitative Inspection TABLE ENDS -->
                     </section>
                     <!-- Quantitative Inspection SECTION ENDS -->
-
+            
                     <!-- UOM NG TEMPLATE DIALOG STARTS -->
                     <ng-template #dialogTemplateUoMIIC let-data="data">
                       <div class="dialog-container flex flex-col h-full">
@@ -1474,7 +1476,8 @@
                               <mat-header-cell *matHeaderCellDef class="single-line">UOM&nbsp;Code</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm"
                                 [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
-                                <mat-radio-button [checked]="row.isSelected" (change)="onRowChangeUoMIIC(row)" [disabled]="!row.isActive">
+                                <mat-radio-button [checked]="row.isSelected" (change)="onRowChangeUoMIIC(row)"
+                                  [disabled]="!row.isActive">
                                 </mat-radio-button> {{row.uoMCode}} </mat-cell>
                             </ng-container>
                             <ng-container matColumnDef="description">
@@ -1490,10 +1493,10 @@
                                 {{ row.isActive ? 'Active' : 'Inactive' }}
                               </mat-cell>
                             </ng-container>
-
+            
                             <mat-header-row *matHeaderRowDef="displayedColumnsUoMIIC; sticky: true"></mat-header-row>
                             <mat-row *matRowDef="let row; columns: displayedColumnsUoMIIC;"></mat-row>
-
+            
                             <tr class="mat-row" *matNoDataRow>
                               <td class="mat-cell" colspan="4">No data matched with
                                 "{{input.value}}"</td>
@@ -1503,18 +1506,19 @@
                         <!-- UoM TABLE ENDS -->
                         <!-- Save & Close -->
                         <div class="save-close-container flex justify-end mt-auto py-2">
-                          <button mat-flat-button color="primary" (click)="addSelectedRowUoMIIC(selectedRowIndexUoM)" [disabled]="!isUOMSelectedIIC">
+                          <button mat-flat-button color="primary" (click)="addSelectedRowUoMIIC(selectedRowIndexUoM)"
+                            [disabled]="!isUOMSelectedIIC">
                             Save&nbsp;&&nbsp;Close
                           </button>
                         </div>
                       </div>
                     </ng-template>
                     <!-- UOM NG TEMPLATE DIALOG ENDS -->
-
+            
                     <!-- ADD QUANTITATIVE INSPECTION CHARACTERISTICS NG TEMPLATE DIALOG STARTS -->
                     <ng-template #dialogTemplateAddQuantitativeIIC let-data="data">
                       <div class="dialog-container flex flex-col h-full">
-                    
+            
                         <div class="flex justify-between items-center border-b text-primary">
                           <!-- Quantitative Inspection Characteristics -->
                           <h2 class="text-lg font-semibold">
@@ -1524,16 +1528,16 @@
                             <mat-icon class="text-primary">close</mat-icon>
                           </span>
                         </div>
-                    
+            
                         <mat-form-field>
                           <mat-label>Search</mat-label>
                           <input matInput (keyup)="applyFilterAddQuantitativeIIC($event)" #input
                             placeholder="Search by Characteristic Description or Attribute Type">
                         </mat-form-field>
-                    
+            
                         <div class="table-container flex-grow overflow-auto p-0 m-0">
                           <mat-table [dataSource]="dataSourceAddQuantitativeIIC" class="flex-grow">
-                    
+            
                             <ng-container matColumnDef="characteristicCode">
                               <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Code</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm"
@@ -1544,7 +1548,7 @@
                                 ICH-000{{row.intCode}}
                               </mat-cell>
                             </ng-container>
-                    
+            
                             <ng-container matColumnDef="characteristicDescription">
                               <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm"
@@ -1552,7 +1556,7 @@
                                 {{row.description}}
                               </mat-cell>
                             </ng-container>
-                    
+            
                             <ng-container matColumnDef="attributeType">
                               <mat-header-cell *matHeaderCellDef class="single-line">Attribute&nbsp;Type</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
@@ -1560,7 +1564,7 @@
                                 {{ row.attribute ? row.attribute.name : '-' }}
                               </mat-cell>
                             </ng-container>
-                    
+            
                             <ng-container matColumnDef="characteristicStatus">
                               <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                               <mat-cell *matCellDef="let row" class="single-line text-sm"
@@ -1568,17 +1572,17 @@
                                 {{ row.isActive ? 'Active' : 'Inactive' }}
                               </mat-cell>
                             </ng-container>
-                    
+            
                             <mat-header-row *matHeaderRowDef="displayedColumnsAddQuantitativeIIC; sticky: true"></mat-header-row>
                             <mat-row *matRowDef="let row; columns: displayedColumnsAddQuantitativeIIC;"></mat-row>
-                    
+            
                             <tr class="mat-row" *matNoDataRow>
                               <td class="mat-cell" colspan="4">No data matched with
                                 "{{input.value}}"</td>
                             </tr>
                           </mat-table>
                         </div>
-                    
+            
                         <div class="save-close-container flex justify-end mt-auto py-2">
                           <button mat-flat-button color="primary" (click)="addSelectedRowQuantitativeIIC()"
                             [disabled]="!isQuantitativeCharacteristicSelectedIIC">
