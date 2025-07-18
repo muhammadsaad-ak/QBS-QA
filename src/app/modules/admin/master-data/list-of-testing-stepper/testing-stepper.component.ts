@@ -325,6 +325,7 @@ export class TestingStepperComponent implements AfterViewInit {
         'results',
         'pass',
         'fail',
+        'actions',
     ];
     displayedColumnsQuantitativeIIC = [
         'serialId',
@@ -338,6 +339,7 @@ export class TestingStepperComponent implements AfterViewInit {
         'passCriteriaMax',
         'passCriteriaLowerLimit',
         'passCriteriaUpperLimit',
+        'actions',
     ];
 
     qualitativeInspectionItems: qualitativeInspectionIF[] = [];
@@ -368,10 +370,10 @@ export class TestingStepperComponent implements AfterViewInit {
                     isIncoming: [qualitativeItem.isIncoming || false], // DEFAULT TO false
                     isTrial: [qualitativeItem.isTrial || false], // DEFAULT TO false
                     isCoA: [qualitativeItem.isCoA || false], // DEFAULT TO false
-                    // pass: [qualitativeItem.pass],
-                    // fail: [qualitativeItem.fail],
-                    pass: [qualitativeItem.pass || []], // If pass is not provided, assign an empty array
-                    fail: [qualitativeItem.fail || []], // If fail is not provided, assign an empty array
+                    pass: ['Okay'],
+                    fail: ['Not Okay'],
+                    // pass: [qualitativeItem.pass || []], // If pass is not provided, assign an empty array
+                    // fail: [qualitativeItem.fail || []], // If fail is not provided, assign an empty array
                 })
             );
         });
@@ -448,8 +450,10 @@ export class TestingStepperComponent implements AfterViewInit {
             isIncoming: [false], // DEFAULT TO false
             isTrial: [false], // DEFAULT TO false
             isCoA: [false], // DEFAULT TO false
-            pass: [], // Multiple pass values in array
-            fail: [], // Multiple fail values in array
+            // pass: [], // Multiple pass values in array
+            // fail: [], // Multiple fail values in array
+            pass: ['Okay'],
+            fail: ['Not Okay'],
         });
 
         // Push the new form group into the FormArray
@@ -1022,8 +1026,10 @@ export class TestingStepperComponent implements AfterViewInit {
                                         isTrial: false,
                                         isCoA: false,
                                         // isQcCritical: characteristic.isQcCritical || false, // DEFAULT TO false
-                                        pass: [], // Multiple pass values in array
-                                        fail: [], // Multiple fail values in array
+                                        // pass: [], // Multiple pass values in array
+                                        // fail: [], // Multiple fail values in array
+                                        pass: ['Okay'],
+                                        fail: ['Not Okay'],
                                     })
                                 );
                             }
@@ -1043,8 +1049,10 @@ export class TestingStepperComponent implements AfterViewInit {
                                 isIncoming: false,
                                 isTrial: false,
                                 isCoA: false,
-                                pass: [], // pass: '',
-                                fail: [], // fail: '',
+                                // pass: [], // pass: '',
+                                // fail: [], // fail: '',
+                                pass: ['Okay'],
+                                fail: ['Not Okay'],
                             })
                         );
                     }
@@ -2062,7 +2070,17 @@ export class TestingStepperComponent implements AfterViewInit {
                         isTrial: item?.isTrial ?? false,
                         isCoA: item?.isCoA ?? false,
                         // isTrial: true,
-                        qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
+                        // qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
+                        "qualitativeResultPassStatusObjects": [
+                            {
+                                "qualitativeResultId": "41227f60-a3de-45f9-8bdd-94504d151dff",
+                                "isPassed": false
+                            },
+                            {
+                                "qualitativeResultId": "271b5929-6ece-41a5-8308-c5854332ccd1",
+                                "isPassed": true
+                            }
+                        ],
                         qualitativeResultFailStatusObjects: [],
                     };
                 });
@@ -4354,7 +4372,7 @@ export class TestingStepperComponent implements AfterViewInit {
         });
     }
 
-    XloadBothCharacteristicsx(itemInspectionCardId: string): void {
+    XloadBothCharacteristics(itemInspectionCardId: string): void {
         this._itemInspectionCardService
             .getBothCharacteristicsByItemInspectionCard(itemInspectionCardId)
             .subscribe(
@@ -4493,8 +4511,16 @@ export class TestingStepperComponent implements AfterViewInit {
                         this.qualitativeInspectionObjects.clear();
                         this.quantitativeInspectionObjects.clear();
 
+                        // FILTER ONLY ACTIVE QUALITATIVE ROWS
+                        const activeQualitativeObjects = data.qualitativeInspectionObjects
+                            ?.filter((q: any) => q.isActive === true) || [];
+                        // FILTER ONLY ACTIVE QUANTITATIVE ROWS
+                        const activeQuantitativeObjects = data.quantitativeInspectionResults
+                            ?.filter((q: any) => q.isActive === true) || [];
+
                         // Populate QUALITATIVE FormArray
-                        data.qualitativeInspectionObjects.forEach((qualitative) => {
+                        // data.qualitativeInspectionObjects.forEach((qualitative) => {
+                        activeQualitativeObjects.forEach((qualitative) => {
                             // Get pass and fail descriptions from the single array
                             const passDescriptions = qualitative.qualitativeResultPassStatusResults
                                 .filter((item) => item.isPassed)
@@ -4521,8 +4547,10 @@ export class TestingStepperComponent implements AfterViewInit {
                                     isIncoming: [qualitative.isIncoming],
                                     isTrial: [qualitative.isTrial],
                                     isCoA: [qualitative.isCoA],
-                                    pass: [passDescriptions], // ✅ Extracted from isPassed=true
-                                    fail: [failDescriptions], // ✅ Extracted from isPassed=false
+                                    // pass: [passDescriptions], // ✅ Extracted from isPassed=true
+                                    // fail: [failDescriptions], // ✅ Extracted from isPassed=false
+                                    pass: ['Okay'],
+                                    fail: ['Not Okay'],
                                     qualitativeResultPassStatusObjects: this.fb.array(
                                         qualitative.qualitativeResultPassStatusResults.map((status) =>
                                             this.fb.group({
@@ -4537,7 +4565,8 @@ export class TestingStepperComponent implements AfterViewInit {
                         });
 
                         // Populate QUANTITATIVE FormArray
-                        data.quantitativeInspectionResults.forEach((quantitative) => {
+                        // data.quantitativeInspectionResults.forEach((quantitative) => {
+                        activeQuantitativeObjects.forEach((quantitative) => {
                             this.quantitativeInspectionObjects.push(
                                 this.fb.group({
                                     id: [quantitative.id, Validators.required],
@@ -4673,7 +4702,7 @@ export class TestingStepperComponent implements AfterViewInit {
                 }
             );
     }
-    onUpdateItemInspectionCard(): void {
+    XXonUpdateItemInspectionCard(): void {
         console.log('✅ FORM RAW VALUES:', this.itemsInspectionCardsForm.value);
 
         const formValue = this.itemsInspectionCardsForm.value;
@@ -6505,6 +6534,217 @@ export class TestingStepperComponent implements AfterViewInit {
                     panelClass: ['snackbar-error'],
                 });
                 return;
+            }
+        }
+    }
+
+    onUpdateItemInspectionCard(): void {
+        console.log('FORM VALUES:', this.itemsInspectionCardsForm.value);
+        const formValue = this.itemsInspectionCardsForm.value;
+        // QUALITATIVE
+        let qualitativeInspectionObjects = formValue.qualitativeInspectionObjects && Array.isArray(formValue.qualitativeInspectionObjects)
+            ? formValue.qualitativeInspectionObjects.map((item: any) => {
+                console.log("PROCESSING QUALITATIVE ITEM:", item);
+                const qualitativeResultPassStatusResults = item.qualitativeResultPassStatusObjects
+                    ? item.qualitativeResultPassStatusObjects.map((result: any) => {
+                        const transformedResult = {
+                            qualitativeResultId: result.qualitativeResultId ?? null,
+                            isPassed: result.isPassed ?? false,
+                        };
+                        return transformedResult;
+                    })
+                    : [];
+                return {
+                    id: item.id ?? null,
+                    qualitativeInspectionId: item.qualitativeInspectionId ?? null,
+                    qualitativeSpec: item.passCriteria ?? null,
+                    isActive: true,
+                    isMandatory: item.mandatory ?? false,
+                    isQcCritical: item.isQcCritical ?? false,
+                    isQcFloor: item.isQcFloor ?? false,
+                    isQcLab: item.isQcLab ?? false,
+                    isDispatch: item.isDispatch ?? false,
+                    isIncoming: item.isIncoming ?? false,
+                    isTrial: item.isTrial ?? false,
+                    isCoA: item.isCoA ?? false,
+                    qualitativeResultPassStatusResults: qualitativeResultPassStatusResults,
+                    qualitativeResultFailStatusResults: item.qualitativeResultFailStatusObjects
+                        ? item.qualitativeResultFailStatusObjects.map((result: any) => ({
+                            qualitativeResultId: result.qualitativeResultId ?? null,
+                            isPassed: result.isPassed ?? false,
+                        }))
+                        : [],
+                };
+            })
+            : [];
+        // UPDATE qualitativeInspectionObjects WITH DELETED ROWS
+        if (this.isEditMode && this.deletedQualitativeRows.length > 0) {
+            qualitativeInspectionObjects = [
+                ...qualitativeInspectionObjects,
+                ...this.deletedQualitativeRows
+            ];
+        }
+        console.log("FINAL qualitativeInspectionObjects:", qualitativeInspectionObjects);
+        // QUANTITATIVE
+        let quantitativeInspectionObjects = formValue.quantitativeInspectionObjects && Array.isArray(formValue.quantitativeInspectionObjects)
+            ? formValue.quantitativeInspectionObjects.map((item: any) => ({
+                id: item.id ?? null,
+                quantitiveInspectionId: item.characteristicId ?? null,
+                quantitativeSpec: item.passCriteria ?? null,
+                isActive: true,
+                isMandatory: item.mandatoryQty ?? false,
+                isQcCritical: item.isQcCritical ?? false,
+                isQcFloor: item.isQcFloor ?? false,
+                isQcLab: item.isQcLab ?? false,
+                isDispatch: item.isDispatch ?? false,
+                isIncoming: item.isIncoming ?? false,
+                isTrial: item.isTrial ?? false,
+                isCoA: item.isCoA ?? false,
+                uoMId: item.uoMId ?? '',
+                uoMCode: item.uoMCode ?? '',
+                min: item.passCriteriaMin !== undefined ? parseFloat(item.passCriteriaMin) : null,
+                max: item.passCriteriaMax !== undefined ? parseFloat(item.passCriteriaMax) : null,
+                target: item.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
+                lowerLimit: item.passCriteriaLowerLimit !== undefined ? parseFloat(item.passCriteriaLowerLimit) : null,
+                upperLimit: item.passCriteriaUpperLimit !== undefined ? parseFloat(item.passCriteriaUpperLimit) : null,
+            }))
+            : [];
+
+        // UPDATE quantitativeInspectionObjects WITH DELETED ROWS
+        if (this.isEditMode && this.deletedQuantitativeRows.length > 0) {
+            quantitativeInspectionObjects = [
+                ...quantitativeInspectionObjects,
+                ...this.deletedQuantitativeRows.map((item: any) => ({
+                    id: item.id ?? null,
+                    quantitiveInspectionId: item.characteristicId ?? null,
+                    quantitativeSpec: item.parameterQty ?? null,
+                    isActive: false,
+                    isMandatory: item.mandatoryQty ?? false,
+                    isQcCritical: item.isQcCritical ?? false,
+                    isQcFloor: item.isQcFloor ?? false,
+                    isQcLab: item.isQcLab ?? false,
+                    isDispatch: item.isDispatch ?? false,
+                    isIncoming: item.isIncoming ?? false,
+                    isTrial: item.isTrial ?? false,
+                    isCoA: item.isCoA ?? false,
+                    uoMId: item.uoMId ?? '',
+                    uoMCode: item.uoMCode ?? '',
+                    min: item.passCriteriaMin !== undefined ? parseFloat(item.passCriteriaMin) : null,
+                    max: item.passCriteriaMax !== undefined ? parseFloat(item.passCriteriaMax) : null,
+                    target: item.passCriteriaTarget !== undefined ? parseFloat(item.passCriteriaTarget) : null,
+                    lowerLimit: item.passCriteriaLowerLimit !== undefined ? parseFloat(item.passCriteriaLowerLimit) : null,
+                    upperLimit: item.passCriteriaUpperLimit !== undefined ? parseFloat(item.passCriteriaUpperLimit) : null,
+                }))
+            ];
+        }
+        console.log("FINAL quantitativeInspectionObjects:", quantitativeInspectionObjects);
+        // FINAL API PAYLOAD
+        const putRequestBodyIIC = {
+            id: formValue.id ?? null,
+            isActive: formValue.isActive ?? false,
+            qualitativeInspectionResults: qualitativeInspectionObjects,
+            quantitativeInspectionResults: quantitativeInspectionObjects,
+        };
+        console.log("FINAL API REQUEST BODY:", putRequestBodyIIC);
+        this._itemInspectionCardService
+            .onUpdateItemInspectionCardBothCharacteristics(putRequestBodyIIC)
+            .subscribe(
+                (response) => {
+                    console.log('API RESPONSE:', response);
+                    if (response.isRequestSuccess) {
+                        console.log('API RUN SUCCESSFULLY.', putRequestBodyIIC);
+                        this._snackBar.open('Record Updated Successfully.', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-error']
+                        });
+                        this.deletedQualitativeRows = [];
+                        this.deletedQuantitativeRows = [];
+                        setTimeout(() => {
+                            this._router.navigate(['/master-data/list-of-items-inspection-cards'], {
+                                relativeTo: this._activatedRoute
+                            });
+                        }, 1400);
+                        setTimeout(() => {
+                            this.clearingSessionStorage();
+                            console.log('this.isEditMode.', this.isEditMode);
+                        }, 1500);
+                    } else {
+                        console.error('❌ ERROR WHILE UPDATING ITEM INSPECTION CARD:', response.message);
+                    }
+                },
+                (error) => {
+                    console.error('❌ API REQUEST FAILED:', error);
+                }
+            );
+    }
+
+    deletedQualitativeRows: any[] = [];
+    deleteQualitativeRow(index: number): void {
+        if (index >= 0 && index < this.qualitativeInspectionObjects.length) {
+            const group = this.qualitativeInspectionObjects.at(index) as FormGroup;
+
+            if (group) {
+                const deletedRowData = {
+                    ...group.getRawValue(),
+                    isActive: false
+                };
+
+                // DELETED ROW (WITH isActive=false) FOR API SUBMISSION
+                // this.deletedQualitativeRows.push(deletedRowData);
+
+                // PUSH IF NOT ALREADY PRESENT
+                if (!this.deletedQualitativeRows.find(r => r.id === deletedRowData.id)) {
+                    this.deletedQualitativeRows.push(deletedRowData);
+                }
+
+                // REMOVE FROM UI
+                this.qualitativeInspectionObjects.removeAt(index);
+
+                // UPDATE DATA SOURCE
+                this.dataSourceQualitativeInspection.data = [
+                    ...this.qualitativeInspectionObjects.value
+                ];
+
+                console.log(`Row with isActive=${deletedRowData.isActive} at index ${index} has been marked as inactive.`);
+                console.log(`Removed from UI & isActive=false set for qualitative row at index ${index}`);
+            }
+        }
+        else {
+            console.warn(`Invalid index /  Row not found at index: ${index}`);
+        }
+    }
+
+    deletedQuantitativeRows: any[] = [];
+    deleteQuantitativeRow(index: number): void {
+        if (index >= 0 && index < this.quantitativeInspectionObjects.length) {
+            const group = this.quantitativeInspectionObjects.at(index) as FormGroup;
+
+            if (group) {
+                const deletedRowData = {
+                    ...group.getRawValue(),
+                    isActive: false
+                };
+
+                // DELETED ROW (WITH isActive=false) FOR API SUBMISSION
+                // this.deletedQuantitativeRows.push(deletedRowData);
+
+                // PUSH IF NOT ALREADY PRESENT
+                if (!this.deletedQuantitativeRows.find(r => r.id === deletedRowData.id)) {
+                    this.deletedQuantitativeRows.push(deletedRowData);
+                }
+
+                // REMOVE FROM UI
+                this.quantitativeInspectionObjects.removeAt(index);
+
+                // UPDATE DATA SOURCE
+                this.dataSourceQuantitativeInspection.data = [
+                    ...this.quantitativeInspectionObjects.value
+                ];
+
+                console.log(`Row with isActive=${deletedRowData.isActive} at index ${index} has been marked as inactive.`);
+                console.log(`Removed from UI & isActive=false set for quantitative row at index ${index}`);
+            } else {
+                console.warn(`Invalid index /  Row not found at index:`);
             }
         }
     }

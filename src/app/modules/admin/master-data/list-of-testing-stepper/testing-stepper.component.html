@@ -678,9 +678,9 @@
             <!-- ITEM CODE -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>Item Code</mat-label>
-              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="text-primary-500 cursor-pointer"
                 (click)="onItemCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
-              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="text-primary-500 cursor-pointer"
                 (click)="onItemCodeClickIIC()" *ngIf="isCloneIIC"></mat-icon>
               <input matInput formControlName="itemCode" readonly
                 [value]="selectedItemCodeIIC ? selectedItemCodeIIC : ''">
@@ -696,7 +696,7 @@
             <!-- CARD CODE -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 200px;">
               <mat-label>Card Code</mat-label>
-              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="mat-icon-primary"
+              <mat-icon matSuffix svgIcon="heroicons_outline:bars-3" class="text-primary-500 cursor-pointer"
                 (click)="onCardCodeClickIIC()" *ngIf="!isEditMode"></mat-icon>
               <input matInput formControlName="intCode" readonly [value]="selectedCardCode ? selectedCardCode : ''">
               <mat-error *ngIf="isValidate && itemsInspectionCardsForm.get('intCode').invalid">Required.</mat-error>
@@ -922,7 +922,7 @@
                     <div *ngIf="!isCloneIIC" class="w-full flex justify-between items-center m-0 p-0 px-0 py-0">
                       <div class="ml-auto flex space-x-2 sm:space-x-4">
                         <div class="icon-size-4">
-                          <mat-icon *ngIf="!isViewMode" class="mat-icon-primary" style="cursor: pointer;" svgIcon="feather:plus"
+                          <mat-icon *ngIf="!isViewMode" class="text-primary-500 cursor-pointer" style="cursor: pointer;" svgIcon="feather:plus"
                             (click)="onAddQualitativeClickIIC()" matTooltip="Add Inspection"
                             aria-label="Add Inspection">
                           </mat-icon>
@@ -1032,9 +1032,9 @@
                         
                         <!-- results - Results COLUMN -->
                         <ng-container matColumnDef="results">
-                          <th mat-header-cell *matHeaderCellDef class="text-sm">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm hidden">
                             Results</th>
-                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6">
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 hidden">
                             <input matInput type="text" class="text-sm w-full" readonly>
                             <!-- Error for both Pass and Fail being empty -->
                             <mat-error *ngIf="isValidate">
@@ -1048,21 +1048,21 @@
                         </ng-container>
                         <!-- pass - Pass COLUMN -->
                         <ng-container matColumnDef="pass">
-                          <th mat-header-cell *matHeaderCellDef class="text-sm">Pass</th>
+                          <th mat-header-cell *matHeaderCellDef class="text-sm hidden">Pass</th>
                           <!-- <td mat-cell *matCellDef="let element; let i = index"
                                                         class="text-sm w-1/6 whitespace-nowrap"
                                                         [formGroup]="qualitativeInspectionObjects.controls[i]">
                                                         <input matInput formControlName="pass" readonly>
                                                     </td> -->
-                          <td mat-cell *matCellDef="let element" class="text-sm text-start" title="{{element.pass}}">
+                          <td mat-cell *matCellDef="let element" class="text-sm text-start hidden" title="{{element.pass}}">
                             <input matInput [value]="element.pass | slice:0:25" readonly>
                           </td>
                         </ng-container>
                         <!-- fail - Fail COLUMN -->
                         <ng-container matColumnDef="fail">
-                          <th mat-header-cell *matHeaderCellDef class="text-sm">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm hidden">
                             Fail</th>
-                          <td mat-cell *matCellDef="let element" title="{{element.fail}}">
+                          <td mat-cell *matCellDef="let element" class="text-sm text-start hidden" title="{{element.fail}}">
                             <input matInput [value]="element.fail | slice:0:25" readonly>
                           </td>
                           <!-- <td mat-cell *matCellDef="let element; let i = index"
@@ -1071,8 +1071,27 @@
                                                             <input matInput formControlName="fail" readonly>
                                                         </td> -->
                         </ng-container>
+                        
+                        <ng-container matColumnDef="actions">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Actions
+                          </th>
+                          <td mat-cell *matCellDef="let index = index" style="text-align: center;">
+                            <div style="display: flex; justify-content: center; gap: 2px;">
+                              <mat-icon class="text-red-500 cursor-pointer" svgIcon="feather:trash-2"
+                                (click)="!(isViewMode || isCloneIIC) && deleteQualitativeRow(index)" matTooltip="Delete Row"
+                                [ngClass]="{'cursor-not-allowed': isViewMode || isCloneIIC, 'cursor-pointer': !(isViewMode || isCloneIIC)}">
+                              </mat-icon>
+                              <mat-icon class="text-primary-500 cursor-pointer" svgIcon="feather:plus"
+                                (click)="!(isViewMode || isCloneIIC) && onAddQualitativeClickIIC()" matTooltip="Add Row"
+                                [ngClass]="{'cursor-not-allowed': isViewMode || isCloneIIC, 'cursor-pointer': !(isViewMode || isCloneIIC)}">
+                              </mat-icon>
+                            </div>
+                          </td>
+                        </ng-container>
+                        
                         <!-- Table Rows -->
-                        <tr mat-header-row *matHeaderRowDef="displayedColumnsQualitative"></tr>
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsQualitative; sticky: true"></tr>
                         <tr mat-row *matRowDef="let row; columns: displayedColumnsQualitative;">
                         </tr>
                       </table>
@@ -1271,7 +1290,7 @@
                     <div *ngIf="!isCloneIIC" class="w-full flex justify-between items-center m-0 p-0 px-0 py-0">
                       <div class="ml-auto flex space-x-2 sm:space-x-4">
                         <div class="icon-size-4">
-                          <mat-icon *ngIf="!isViewMode" class="mat-icon-primary" style="cursor: pointer;" svgIcon="feather:plus"
+                          <mat-icon *ngIf="!isViewMode" class="text-primary-500 cursor-pointer" style="cursor: pointer;" svgIcon="feather:plus"
                             (click)="onAddQuantitativeClickIIC()" matTooltip="Add Inspection" aria-label="Add Inspection">
                           </mat-icon>
                         </div>
@@ -1300,9 +1319,9 @@
                         </ng-container>
                         <!-- passCriteria - Pass Criteria COLUMN -->
                         <ng-container matColumnDef="passCriteria">
-                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap hidden">
                             Pass&nbsp;Criteria</th>
-                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap"
+                          <td mat-cell *matCellDef="let element; let i = index" class="text-sm w-1/6 whitespace-nowrap hidden"
                             [formGroup]="quantitativeInspectionObjects.controls[i]">
                             <input matInput formControlName="passCriteria" placeholder="Enter Quantitative Criteria">
                           </td>
@@ -1446,9 +1465,26 @@
                               (blur)="validateQuantitativeInspectionObjectsIIC(i, 'passCriteriaUpperLimit')">
                           </td>
                         </ng-container>
+                        <ng-container matColumnDef="actions">
+                          <th mat-header-cell *matHeaderCellDef class="text-sm whitespace-nowrap">
+                            Actions
+                          </th>
+                          <td mat-cell *matCellDef="let index = index" style="text-align: center;">
+                            <div style="display: flex; justify-content: center; gap: 2px;">
+                              <mat-icon class="text-red-500 cursor-pointer" svgIcon="feather:trash-2"
+                                (click)="!(isViewMode || isCloneIIC) && deleteQuantitativeRow(index)" matTooltip="Delete Row"
+                                [ngClass]="{'cursor-not-allowed': isViewMode || isCloneIIC, 'cursor-pointer': !(isViewMode || isCloneIIC)}">
+                              </mat-icon>
+                              <mat-icon class="text-primary-500 cursor-pointer" svgIcon="feather:plus"
+                                (click)="!(isViewMode || isCloneIIC) && onAddQuantitativeClickIIC()" matTooltip="Add Row"
+                                [ngClass]="{'cursor-not-allowed': isViewMode || isCloneIIC, 'cursor-pointer': !(isViewMode || isCloneIIC)}">
+                              </mat-icon>
+                            </div>
+                          </td>
+                        </ng-container>
             
                         <!-- Table Rows -->
-                        <tr mat-header-row *matHeaderRowDef="displayedColumnsQuantitativeIIC"></tr>
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsQuantitativeIIC; sticky: true"></tr>
                         <tr mat-row *matRowDef="let row; columns: displayedColumnsQuantitativeIIC;">
                         </tr>
                       </table>
@@ -1601,7 +1637,7 @@
 
           <div class="step-navigation">
             <!-- Checkboxes Section -->
-            <div class="flex flex-col w-full" *ngIf="isEditMode">
+            <div class="flex flex-col w-full" *ngIf="isEditMode && !isViewMode && !isCloneIIC ">
               <div class="flex items-center">
                 <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
                 <label class="text-lg">Active</label>

@@ -210,8 +210,18 @@
 
 .view-mode-no-cursor {
   pointer-events: none !important;
+    cursor: not-allowed !important;
+
 }
 
 .capitalize {
   text-transform: capitalize;
+}
+
+.header-close-x mat-icon:hover {
+  color: red !important;
+}
+
+.header-close-x mat-icon {
+  transition: color 0.3s;
 }
