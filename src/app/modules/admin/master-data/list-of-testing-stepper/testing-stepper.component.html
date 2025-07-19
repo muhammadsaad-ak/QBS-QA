@@ -410,19 +410,121 @@
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
               <input matInput placeholder="Enter Description" formControlName="description" required>
-              <!-- <mat-error
-                *ngIf="fifthFormGroup.get('description').invalid && (isValidate || fifthFormGroup.get('description').touched)">Required.</mat-error> -->
-                <mat-error *ngIf="isValidate && fifthFormGroup.get('description').invalid">Required.</mat-error>
+              <mat-error *ngIf="isValidate && fifthFormGroup.get('description').invalid">Required.</mat-error>
             </mat-form-field>
-            <!-- Checkboxes Section -->
-            <div class="flex flex-col w-full" *ngIf="isEditMode">
-              <div class="flex items-center">
-                <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
-                <label class="text-lg">Active</label>
-              </div>
+      
+            <!-- @IAK -->
+            <div *ngIf="!isEditMode" class="w-full overflow-x-auto">
+              <table class="w-full border-collapse border border-gray-300 mt-2">
+                <thead class="bg-gray-800 text-white">
+                  <tr>
+                    <th class="p-2 text-left w-full">
+                      <div class="flex justify-between">
+                        <span>Parameters</span>
+                        <mat-icon class="text-white cursor-pointer" svgIcon="feather:plus" (click)="addTableRowClone()"
+                          matTooltip="Add Row"></mat-icon>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="qualitativeTableCriteriaClone">
+                  <tr *ngFor="let control of qualitativeTableCriteriaClone.controls; let i = index" [formGroupName]="i">
+                    <td class="p-2 border border-gray-300">
+                      <div class="flex justify-between items-center">
+                        <input matInput formControlName="parameter" readonly class="w-full" />
+                        <input matInput formControlName="type" readonly class="w-full" />
+                        <input matInput formControlName="attributeType" readonly class="w-full ml-2" />
+                        <input formControlName="id" type="hidden" />
+                        <mat-icon class="text-primary-500 cursor-pointer"
+                          *ngIf="!qualitativeTableCriteriaClone.controls[i].get('parameter')?.value" matSuffix style="margin-left: 8px;"
+                          (click)="onItemCodeClickClone(i)" svgIcon="heroicons_outline:bars-3" matTooltip="Add Characteristics">
+                        </mat-icon>
+                        <mat-icon class="text-red-500 cursor-pointer ml-2" svgIcon="feather:trash-2" (click)="removeRowClone(i)"
+                          matTooltip="Delete Row"></mat-icon>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <ng-template #dialogTemplateItemsClone let-data="data">
+                <div class="dialog-container flex flex-col h-full">
+                  <div class="flex justify-between items-center border-b text-primary">
+                    <!-- List All Inspection Characteristics -->
+                    <h2 class="text-lg font-semibold">List&nbsp;All&nbsp;Inspection&nbsp;Characteristics</h2>
+                    <span (click)="closeDialog()" class="header-close-x">
+                      <mat-icon class="text-primary-500">close</mat-icon>
+                    </span>
+                  </div>
+                  <mat-form-field>
+                    <mat-label>Search</mat-label>
+                    <input matInput (keyup)="applyFilterItemsClone($event)" #input
+                      placeholder="Search by Characteristics Description or Type">
+                  </mat-form-field>
+                  <div class="table-container flex-grow overflow-auto p-0 m-0">
+                    <mat-table [dataSource]="dataSourceItemsClone">
+                  
+                      <ng-container matColumnDef="intCode">
+                        <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Code</mat-header-cell>
+                        <mat-cell *matCellDef="let row" class="single-line text-sm"
+                          [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                          <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemsClone(row)"
+                            [disabled]="!row.isActive">
+                          </mat-checkbox>
+                          ICH-{{ row.intCode ? (row.intCode.toString().padStart(5, '0')) : '-' }}
+                        </mat-cell>
+                      </ng-container>
+                  
+                      <ng-container matColumnDef="description">
+                        <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
+                        <mat-cell *matCellDef="let row" class="single-line text-sm"
+                          [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                          {{row.description}} </mat-cell>
+                      </ng-container>
+                  
+                      <ng-container matColumnDef="typeAttribute">
+                        <mat-header-cell *matHeaderCellDef class="single-line">Attribute&nbsp;Type</mat-header-cell>
+                        <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
+                          [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                          {{ row.attribute ? row.attribute.name : '-' }}
+                        </mat-cell>
+                      </ng-container>
+                  
+                      <ng-container matColumnDef="typeCharacteristic">
+                        <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Type</mat-header-cell>
+                        <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
+                          [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                          {{ row.type }}
+                        </mat-cell>
+                      </ng-container>
+                  
+                      <ng-container matColumnDef="isActive">
+                        <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
+                        <mat-cell *matCellDef="let row" class="single-line text-sm text-start"
+                          [ngClass]="{'cursor-no-drop': !row.isActive, 'text-green-500': row.isActive, 'text-amber-500': !row.isActive}">
+                          {{ row.isActive ? 'Active' : 'Inactive' }}
+                        </mat-cell>
+                      </ng-container>
+                  
+                      <mat-header-row *matHeaderRowDef="displayedColumnsItemsClone;  sticky: true"></mat-header-row>
+                      <mat-row *matRowDef="let row; columns: displayedColumnsItemsClone;"></mat-row>
+                  
+                      <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" colspan="4">No data matched with "{{input.value}}"</td>
+                      </tr>
+                    </mat-table>
+                  </div>
+                  <div class="flex justify-end mt-auto">
+                    <button mat-flat-button color="primary" (click)="addSelectedRowItemClone()"
+                      [disabled]="!isQualitativeInspectionSelectedICClone">
+                      Add
+                    </button>
+                  </div>
+                  </div>
+              </ng-template>
             </div>
+      
             <!-- Inspection Card mat-tab-group STARTS -->
-            <mat-tab-group class="w-full">
+            <mat-tab-group *ngIf="isEditMode" class="w-full">
               <!-- Qualitative Inspection Tab STARTS -->
               <mat-tab label="Qualitative Inspection">
                 <div class="w-full overflow-x-auto">
@@ -444,10 +546,11 @@
                           <div class="flex justify-between items-center">
                             <input matInput formControlName="parameter" readonly class="w-full" />
                             <mat-icon *ngIf="!qualitativeTableCriteria.controls[i].get('parameter')?.value" matSuffix
-                              style="margin-left: 8px;" (click)="onItemCodeClick(i)" svgIcon="heroicons_outline:bars-3">
+                              class="text-primary-500 cursor-pointer ml-2" (click)="onItemCodeClick(i)"
+                              svgIcon="heroicons_outline:bars-3" matTooltip="Add Characteristics">
                             </mat-icon>
-                            <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
-                              (click)="removeRow(i)">delete</mat-icon>
+                            <mat-icon class="text-red-500 cursor-pointer ml-2" svgIcon="feather:trash-2"
+                              (click)="removeRow(i)" matTooltip="Delete Row"></mat-icon>
                           </div>
                         </td>
                       </tr>
@@ -465,12 +568,13 @@
                       </div>
                       <mat-form-field>
                         <mat-label>Search</mat-label>
-                        <input matInput (keyup)="applyFilterItems($event)" #input placeholder="Search by Characteristics Description or Attribute Type">
+                        <input matInput (keyup)="applyFilterItems($event)" #input
+                          placeholder="Search by Characteristics Description or Type">
                       </mat-form-field>
                       <div class="table-container flex-grow overflow-auto p-0 m-0">
                         <!-- TABLE STARTS -->
                         <mat-table [dataSource]="dataSourceItems">
-
+      
                           <ng-container matColumnDef="intCode">
                             <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Code</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm"
@@ -481,22 +585,22 @@
                               ICH-{{ row.intCode ? (row.intCode.toString().padStart(5, '0')) : '-' }}
                             </mat-cell>
                           </ng-container>
-
+      
                           <ng-container matColumnDef="description">
                             <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm"
                               [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
                               {{row.description}} </mat-cell>
                           </ng-container>
-
+      
                           <ng-container matColumnDef="type">
-                              <mat-header-cell *matHeaderCellDef class="single-line">Attribute&nbsp;Type</mat-header-cell>
-                              <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
-                                [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
-                                {{ row.attribute ? row.attribute.name : '-' }}
-                              </mat-cell>
+                            <mat-header-cell *matHeaderCellDef class="single-line">Attribute&nbsp;Type</mat-header-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
+                              [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                              {{ row.attribute ? row.attribute.name : '-' }}
+                            </mat-cell>
                           </ng-container>
-
+      
                           <ng-container matColumnDef="isActive">
                             <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm text-start"
@@ -504,10 +608,10 @@
                               {{ row.isActive ? 'Active' : 'Inactive' }}
                             </mat-cell>
                           </ng-container>
-                  
+      
                           <mat-header-row *matHeaderRowDef="displayedColumnsItems;  sticky: true"></mat-header-row>
                           <mat-row *matRowDef="let row; columns: displayedColumnsItems;"></mat-row>
-                  
+      
                           <tr class="mat-row" *matNoDataRow>
                             <td class="mat-cell" colspan="4">No data matched with "{{input.value}}"</td>
                           </tr>
@@ -527,7 +631,7 @@
                 </div>
               </mat-tab>
               <!-- Qualitative Inspection Tab ENDS -->
-
+      
               <!-- Quantitative Inspection Tab STARTS -->
               <mat-tab label="Quantitative Inspection">
                 <div class="w-full overflow-x-auto">
@@ -548,15 +652,12 @@
                         <td class="p-2 border border-gray-300">
                           <div class="flex justify-between items-center">
                             <input matInput formControlName="parameterX" readonly class="w-full" />
-                            <!-- <mat-icon matSuffix style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
-                              svgIcon="heroicons_outline:bars-3">
-                            </mat-icon> -->
                             <mat-icon *ngIf="!quantitativeTableCriteria.controls[i].get('parameterX')?.value" matSuffix
-                              style="margin-left: 8px;" (click)="onItemCodeClickX(i)"
-                              svgIcon="heroicons_outline:bars-3">
+                              class="text-primary-500 cursor-pointer ml-2" (click)="onItemCodeClickX(i)"
+                              svgIcon="heroicons_outline:bars-3" matTooltip="Add Characteristics">
                             </mat-icon>
-                            <mat-icon class="mat-icon-primary cursor-pointer ml-2" color="warn"
-                              (click)="removeRowX(i)">delete</mat-icon>
+                            <mat-icon class="text-red-500 cursor-pointer ml-2" svgIcon="feather:trash-2"
+                              (click)="removeRowX(i)" matTooltip="Delete Row"></mat-icon>
                           </div>
                         </td>
                       </tr>
@@ -574,34 +675,39 @@
                       </div>
                       <mat-form-field>
                         <mat-label>Search</mat-label>
-                        <input matInput (keyup)="applyFilterItemsX($event)" #input placeholder="Search by Characteristics Description or Attribute Type">
+                        <input matInput (keyup)="applyFilterItemsX($event)" #input
+                          placeholder="Search by Characteristics Description or Type">
                       </mat-form-field>
                       <!-- TABLE STARTS -->
                       <div class="table-container flex-grow overflow-auto p-0 m-0">
                         <mat-table [dataSource]="dataSourceItemsX" class="flex-grow">
-
+      
                           <ng-container matColumnDef="intCode">
                             <mat-header-cell *matHeaderCellDef class="single-line">Characteristic&nbsp;Code</mat-header-cell>
-                            <mat-cell *matCellDef="let row" class="single-line text-sm" [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
-                              <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemsX(row)" [disabled]="!row.isActive"></mat-checkbox>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm"
+                              [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                              <mat-checkbox [checked]="row.isSelected" (change)="onRowCheckboxChangeItemsX(row)"
+                                [disabled]="!row.isActive"></mat-checkbox>
                               ICH-{{ row.intCode ? (row.intCode.toString().padStart(5, '0')) : '-' }}
                             </mat-cell>
                           </ng-container>
-
+      
                           <ng-container matColumnDef="description">
                             <mat-header-cell *matHeaderCellDef class="single-line">Description</mat-header-cell>
-                            <mat-cell *matCellDef="let row" class="single-line text-sm" [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">{{ row.description
+                            <mat-cell *matCellDef="let row" class="single-line text-sm"
+                              [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">{{
+                              row.description
                               }}</mat-cell>
                           </ng-container>
-
+      
                           <ng-container matColumnDef="type">
                             <mat-header-cell *matHeaderCellDef class="single-line">Attribute&nbsp;Type</mat-header-cell>
-                              <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
-                                [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
-                                {{ row.attribute ? row.attribute.name : '-' }}
-                              </mat-cell>
+                            <mat-cell *matCellDef="let row" class="single-line text-sm text-start capitalize"
+                              [ngClass]="{'cursor-no-drop': !row.isActive, 'text-amber-500': !row.isActive}">
+                              {{ row.attribute ? row.attribute.name : '-' }}
+                            </mat-cell>
                           </ng-container>
-
+      
                           <ng-container matColumnDef="isActive">
                             <mat-header-cell *matHeaderCellDef class="single-line">Status</mat-header-cell>
                             <mat-cell *matCellDef="let row" class="single-line text-sm text-start"
@@ -609,10 +715,10 @@
                               {{ row.isActive ? 'Active' : 'Inactive' }}
                             </mat-cell>
                           </ng-container>
-
+      
                           <mat-header-row *matHeaderRowDef="displayedColumnsItemsX; sticky: true"></mat-header-row>
                           <mat-row *matRowDef="let row; columns: displayedColumnsItemsX;"></mat-row>
-
+      
                           <tr class="mat-row" *matNoDataRow>
                             <td class="mat-cell" colspan="4">No data matched with "{{input.value}}"</td>
                           </tr>
@@ -621,12 +727,12 @@
                       </div>
                       <!-- SAVE & CLOSE -->
                       <div class="flex justify-end mt-auto">
-                        <button mat-flat-button color="primary"
-                          (click)="addSelectedRowItemX()" [disabled]="!isQuantitativeInspectionSelectedIC">Save&nbsp;&&nbsp;Close</button>
+                        <button mat-flat-button color="primary" (click)="addSelectedRowItemX()"
+                          [disabled]="!isQuantitativeInspectionSelectedIC">Save&nbsp;&&nbsp;Close</button>
                       </div>
                     </div>
                   </ng-template>
-                   <!-- Quantitative Inspection Characteristics ENDS -->
+                  <!-- Quantitative Inspection Characteristics ENDS -->
                 </div>
               </mat-tab>
               <!-- Quantitative Inspection Tab ENDS -->
@@ -634,29 +740,69 @@
             <!-- Inspection Card mat-tab-group ENDS -->
           </div>
           <div class="step-navigation">
-            <div *ngIf="isLoading" class="loader">
+            <div *ngIf="isLoading" class="loader hidden">
               <mat-spinner diameter="33"></mat-spinner>
             </div>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" matStepperPrevious>
               <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
             </button>
             <!-- VALIDATE SAVE INSPECTION CARD -->
-            <div matTooltip="Fill the mandatory field and add both characteristics."
-                 [matTooltipDisabled]="hasQualitativeCriteriaData() && hasQuantitativeCriteriaData()">
-              <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading"
-                      [disabled]="!hasQualitativeCriteriaData() || !hasQuantitativeCriteriaData()"
-                      [ngClass]="{ 
-                        'invalid-disabled-button': !hasQualitativeCriteriaData() || !hasQuantitativeCriteriaData() 
-                      }"
-                      (click)="onSubmitInspectionCard()">
+            <div matTooltip="Fill the mandatory field and add characteristics." [matTooltipDisabled]="hasValidCriteriaData()">
+              <button mat-button *ngIf="!isEditMode && !isLoading" class="next-button hidden"
+                [ngClass]="{'invalid-disabled-button': !hasQualitativeCriteriaData() || !hasQuantitativeCriteriaData()}"
+                [disabled]="!hasQualitativeCriteriaData() || !hasQuantitativeCriteriaData()"
+                (click)="onSubmitInspectionCard()">
+                Save
+              </button>
+              <button mat-button *ngIf="!isEditMode && !isLoading" class="next-button"
+                [ngClass]="{'invalid-disabled-button': !hasValidCriteriaData()}" [disabled]="!hasValidCriteriaData()"
+                (click)="onSubmitInspectionCardClone()">
                 Save
               </button>
             </div>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCards()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="isEditMode && !isCloneIC" (click)="onUpdateInspectionCard()">Update</button>
-            <button mat-button class="next-button" *ngIf="isEditMode && isCloneIC" (click)="onSubmitInspectionCard()">Save</button>
+            <button mat-button class="next-button hidden" *ngIf="isEditMode && !isCloneIC"
+              (click)="onUpdateInspectionCard()">Update</button>
+            <button mat-button class="next-button hidden" *ngIf="isEditMode && isCloneIC"
+              (click)="onSubmitInspectionCard()">Save</button>
+          </div>
+          <div class="flex flex-row w-full items-center" *ngIf="isEditMode">
+            <div class="flex items-center flex-1" *ngIf="!isCloneIC">
+              <mat-checkbox formControlName="isActive" class="mr-2"></mat-checkbox>
+              <label class="text-lg">Active</label>
+            </div>
+            <div class="step-navigation ml-auto flex items-center">
+              <div *ngIf="isLoading" class="loader">
+                <mat-spinner diameter="33"></mat-spinner>
+              </div>
+              <button mat-button class="bg-primary-700" *ngIf="!isEditMode" matStepperPrevious>
+                <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
+              </button>
+              <!-- VALIDATE SAVE INSPECTION CARD -->
+              <div matTooltip="Fill the mandatory field and add both characteristics."
+                [matTooltipDisabled]="hasQualitativeCriteriaData() && hasQuantitativeCriteriaData()">
+                <button mat-button *ngIf="!isEditMode && !isLoading" class="next-button hidden"
+                  [ngClass]="{ 'invalid-disabled-button': !hasQualitativeCriteriaData() || !hasQuantitativeCriteriaData() }"
+                  [disabled]="!hasQualitativeCriteriaData() || !hasQuantitativeCriteriaData()"
+                  (click)="onSubmitInspectionCard()">
+                  Save
+                </button>
+                <button mat-button *ngIf="!isEditMode && !isLoading" class="next-button"
+                  [ngClass]="{ 'invalid-disabled-button': !hasValidCriteriaData() }" [disabled]="!hasValidCriteriaData()"
+                  (click)="onSubmitInspectionCardClone()">
+                  Save
+                </button>
+              </div>
+              <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickCards()">
+                <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
+              </button>
+              <button mat-button class="next-button" *ngIf="isEditMode && !isCloneIC"
+                (click)="onUpdateInspectionCard()">Update</button>
+              <button mat-button class="next-button" *ngIf="isEditMode && isCloneIC"
+                (click)="onSubmitInspectionCard()">Save</button>
+            </div>
           </div>
         </form>
       </mat-step>

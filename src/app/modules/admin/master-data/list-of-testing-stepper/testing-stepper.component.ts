@@ -279,12 +279,15 @@ export class TestingStepperComponent implements AfterViewInit {
     // Inspection Card
     fifthFormGroup = this._formBuilder.group({
         id: [''],
-        intCode: ['', Validators.required],
+        intCode: [''],
         description: ['', Validators.required],
         isActive: [true],
         // type: ['', Validators.required],
         qualitativeTableCriteria: this._formBuilder.array(
             [] as { parameter: string }[]
+        ),
+        qualitativeTableCriteriaClone: this._formBuilder.array(
+            [] as { parameter: string, type: string, id: string, attributeType: [''] }[]
         ),
         quantitativeTableCriteria: this._formBuilder.array(
             [] as { parameterX: string }[]
@@ -2505,8 +2508,9 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         });
 
-        this.initializeTableWithDefaultRow(); // Initialize table with one row on load
-        this.initializeTableWithDefaultRowX(); // Initialize table with one row on load
+        this.initializeTableWithDefaultRowClone(); // Initialize table with one row on load
+        // this.initializeTableWithDefaultRow(); // Initialize table with one row on load
+        // this.initializeTableWithDefaultRowX(); // Initialize table with one row on load
 
         // Item Inspection Card
         this.initializeTableDataItemInspectionCard();
@@ -2927,6 +2931,9 @@ export class TestingStepperComponent implements AfterViewInit {
     get qualitativeTableCriteria(): FormArray {
         return this.fifthFormGroup.get('qualitativeTableCriteria') as FormArray;
     }
+    get qualitativeTableCriteriaClone(): FormArray {
+        return this.fifthFormGroup.get('qualitativeTableCriteriaClone') as FormArray;
+    }
 
     get quantitativeTableCriteria(): FormArray {
         return this.fifthFormGroup.get(
@@ -2938,6 +2945,11 @@ export class TestingStepperComponent implements AfterViewInit {
     initializeTableWithDefaultRow(): void {
         if (this.qualitativeTableCriteria.length === 0) {
             this.addTableRow();
+        }
+    }
+    initializeTableWithDefaultRowClone(): void {
+        if (this.qualitativeTableCriteriaClone.length === 0) {
+            this.addTableRowClone();
         }
     }
 
@@ -2955,16 +2967,55 @@ export class TestingStepperComponent implements AfterViewInit {
         });
         this.qualitativeTableCriteria.push(row);
     }
+    addTableRowClone(): void {
+        const row = this._formBuilder.group({
+            parameter: [''],
+            type: [''],
+            id: [''],
+            attributeType: ['']
+        });
+        this.qualitativeTableCriteriaClone.push(row);
+    }
 
     /** Remove a specific row by index */
     removeRow(index: number): void {
         this.qualitativeTableCriteria.removeAt(index);
     }
+    removeRowClone(index: number): void {
+        this.qualitativeTableCriteriaClone.removeAt(index);
+    }
 
     @ViewChild('dialogTemplateItems') dialogTemplateItems;
+    @ViewChild('dialogTemplateItemsClone') dialogTemplateItemsClone;
     dataSourceItems = new MatTableDataSource([]);
+    dataSourceItemsClone = new MatTableDataSource([]);
     //
     selectedControlAccountRowIndex: number = -1;
+    selectedControlAccountRowIndexClone: number = -1;
+    onItemCodeClickClone(rowIndex: number): void {
+        const qualitativeDataClone = this.inspectionCardModalList.filter(
+            (item: any) => item.isActive
+        );
+        // const qualitativeDataClone = this.inspectionCardModalList;
+        this.dataSourceItemsClone = new MatTableDataSource(qualitativeDataClone);
+        this._inspectionCardModal
+            .getInspectionCardModal()
+            .subscribe((inspectionCardModal) => {
+                const qualitativeDataClone = inspectionCardModal.data
+                this.dataSourceItemsClone = new MatTableDataSource(qualitativeDataClone); // Qualitative data
+            });
+        console.log('ROW INDEX:', rowIndex);
+        this.selectedControlAccountRowIndexClone = rowIndex;
+        console.log(this.selectedControlAccountRowIndexClone);
+        const dialogRef = this.dialog.open(this.dialogTemplateItemsClone, {
+            width: '75vw',
+            height: '99vh',
+            data: this.dataSourceItemsClone,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            console.log('DIALOG CLOSED');
+        });
+    }
     onItemCodeClick(rowIndex: number): void {
         const qualitativeData = this.inspectionCardModalList.filter(
             (item: any) => item.type === 'qualitative' && item.isActive
@@ -2993,6 +3044,13 @@ export class TestingStepperComponent implements AfterViewInit {
             console.log('DIALOG CLOSED');
         });
     }
+    displayedColumnsItemsClone: string[] = [
+         'intCode',
+        'description',
+        'typeAttribute',
+        'typeCharacteristic',
+        'isActive',
+    ];
     displayedColumnsItems: string[] = [
         'intCode',
         'description',
@@ -3003,7 +3061,9 @@ export class TestingStepperComponent implements AfterViewInit {
     selectedItemDescription: string = '';
     //
     isQualitativeInspectionSelectedIC = false;
+    isQualitativeInspectionSelectedICClone = false;
     selectedQualitativeRowsIC: any[] = [];
+    selectedQualitativeRowsICClone: any[] = [];
     onRowCheckboxChangeItems(selectedRow: any): void {
         // if (this.dataSourceItems.data) {
         //     this.dataSourceItems.data.forEach(
@@ -3023,10 +3083,27 @@ export class TestingStepperComponent implements AfterViewInit {
         console.log("Selected Rows:", this.selectedQualitativeRowsIC);
         this.isQualitativeInspectionSelectedIC = this.selectedQualitativeRowsIC.length > 0;
     }
+    onRowCheckboxChangeItemsClone(selectedRow: any): void {
+        selectedRow.isSelected = !selectedRow.isSelected;
+        if (selectedRow.isSelected) {
+            this.selectedQualitativeRowsICClone.push(selectedRow);
+        } else {
+            this.selectedQualitativeRowsICClone = this.selectedQualitativeRowsICClone.filter(
+                row => row.id !== selectedRow.id
+            );
+        }
+        console.log('SELECTED ROW:', selectedRow);
+        console.log("SELECTED ROWS:", this.selectedQualitativeRowsICClone);
+        this.isQualitativeInspectionSelectedICClone = this.selectedQualitativeRowsICClone.length > 0;
+    }
 
     applyFilterItems(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSourceItems.filter = filterValue.trim().toLowerCase();
+    }
+    applyFilterItemsClone(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSourceItemsClone.filter = filterValue.trim().toLowerCase();
     }
 
     // DUPLICATE VALIDATION
@@ -3143,7 +3220,84 @@ export class TestingStepperComponent implements AfterViewInit {
         this.selectedControlAccountRowIndex = -1;
         this.isQualitativeInspectionSelectedIC = false;
     }
-
+    
+    addSelectedRowItemClone(): void {
+        this.dialog.closeAll();
+        const selectedRows = this.dataSourceItemsClone.data.filter(row => row.isSelected);
+        if (selectedRows.length === 0) {
+            console.log('NO ROW SELECTED');
+            return;
+        }
+        let startIndex = 0;
+        // CASE 1: UPDATE EXISTING ROW AT INDEX
+        if (this.selectedControlAccountRowIndexClone !== -1) {
+            const selectedRow = selectedRows[0];
+            console.log('SELECTED ROW:', selectedRow);
+            console.log('FormArray BEFORE UPDATE:', this.qualitativeTableCriteriaClone.value);
+            const isDuplicate = this.qualitativeTableCriteriaClone.controls.some((control, index) => {
+                const controlValue = control.value;
+                return (
+                    controlValue.parameter &&
+                    controlValue.parameter === selectedRow.description &&
+                    (controlValue.type || '').trim().toLowerCase() === (selectedRow.type || '').trim().toLowerCase() &&
+                    (controlValue.attributeType || '').trim().toLowerCase() === (selectedRow.attribute?.name || '').trim().toLowerCase() &&
+                    index !== this.selectedControlAccountRowIndexClone
+                );
+            });
+            if (isDuplicate) {
+                this._snackBar.open(
+                    `DUPLICATE ENTRY: Skipping characteristics that are already attached to the card.`,
+                    'Close',
+                    { duration: 3000, panelClass: ['snackbar-error'] }
+                );
+                return;
+            }
+            const rowFormGroup = this.qualitativeTableCriteriaClone.at(this.selectedControlAccountRowIndexClone) as FormGroup;
+            rowFormGroup.patchValue({
+                parameter: selectedRow.description || '',
+                type: selectedRow.type || '',
+                id: selectedRow.id || '',
+                attributeType: selectedRow.attribute?.name || ''
+            });
+            this.selectedInspectionCode = selectedRow.intCode;
+            this.selectedItemDescription = selectedRow.description;
+            console.log('UPDATED ROW:', selectedRow);
+            console.log('UPDATED ROW INDEX:', this.selectedControlAccountRowIndexClone);
+            startIndex = 1;
+        }
+        // CASE 2: ADD REMAINING SELECTED ROWS
+        for (let i = startIndex; i < selectedRows.length; i++) {
+            const selectedRow = selectedRows[i];
+            const isDuplicate = this.qualitativeTableCriteriaClone.controls.some(control => {
+                const controlValue = control.value;
+                return (
+                    controlValue.parameter &&
+                    controlValue.parameter === selectedRow.description &&
+                    (controlValue.type || '').trim().toLowerCase() === (selectedRow.type || '').trim().toLowerCase() &&
+                    (controlValue.attributeType || '').trim().toLowerCase() === (selectedRow.attribute?.name || '').trim().toLowerCase()
+                );
+            });
+            if (isDuplicate) {
+                this._snackBar.open(
+                    `DUPLICATE ENTRY: Skipping characteristics that are already attached to the card.`,
+                    'Close',
+                    { duration: 3000, panelClass: ['snackbar-error'] }
+                );
+                continue;
+            }
+            const newRow = this.fb.group({
+                parameter: [selectedRow.description || ''],
+                type: [selectedRow.type || ''],
+                id: [selectedRow.id || ''],
+                attributeType: [selectedRow.attribute?.name || '']
+            });
+            this.qualitativeTableCriteriaClone.push(newRow);
+        }
+        // Clear selected index after operation
+        this.selectedControlAccountRowIndexClone = -1;
+        this.isQualitativeInspectionSelectedICClone = false;
+        console.log('FormArray AFTER UPDATE:', this.qualitativeTableCriteriaClone.value);
+    }
     //Quantitative Column
 
     addTableRowX(): void {
@@ -3803,6 +3957,165 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         );
 }
+
+    onSubmitInspectionCardClone(): void {
+        this.isValidate = true;
+        if (!this.fifthFormGroup.valid) {
+            this._snackBar.open('Fill the mandatory Description field.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+        const formValue = this.fifthFormGroup.value;
+        console.log(formValue);
+        if (!formValue.description || formValue.description.trim() === '') {
+            this._snackBar.open('Description is required.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+
+        this.isLoading = true;
+
+        // Get the inspection characteristics from the API
+        this._inspectionCharateristics.getInspectionCharacteristics()
+            .pipe(
+                switchMap((charResponse) => {
+                    const mappedIds = charResponse.data.map((char: any) => ({
+                        description: char.description,
+                        id: char.id,
+                        type: char.type
+                    }));
+                    console.log('Mapped Characteristics:', mappedIds);
+                    console.log('Form qualitativeTableCriteria:', formValue.qualitativeTableCriteriaClone);
+                    console.log('Form quantitativeTableCriteria:', formValue.qualitativeTableCriteriaClone);
+
+                    // Mapping qualitative and quantitative criteria to their IDs
+                    const XcombinedIds = [
+                        ...formValue.qualitativeTableCriteriaClone.map((item: any) =>
+                            mappedIds.find(
+                                (char) => char.description === item.parameter && char.type == 'qualitative'
+                            )?.id
+                        )
+                            .filter(Boolean),
+                        ...formValue.qualitativeTableCriteriaClone.map((item: any) =>
+                            mappedIds.find(
+                                (char) => char.description === item.parameter && char.type == 'quantitative'
+                            )?.id
+                        )
+                            .filter(Boolean)
+                    ];
+                    const combinedIds = [
+                        ...formValue.qualitativeTableCriteriaClone
+                            .map((item: any) =>
+                                mappedIds.find(
+                                    (char) =>
+                                        (char.description.toLowerCase() === item.parameter.toLowerCase() && char.type.toLowerCase() === 'qualitative') ||
+                                        (char.description.toLowerCase() === item.parameter.toLowerCase() && char.type.toLowerCase() === 'quantitative')
+                                )?.id
+                            )
+                            .filter(Boolean)
+                    ];
+                    // Check if there are any valid combined IDs
+                    if (combinedIds.length === 0) {
+                        this._snackBar.open('No valid characteristics selected.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                        this.isLoading = false;
+                        return of(null); // Exit early, return an observable that completes.
+                    }
+
+                    // Creating the payload
+                    const apiPayload = {
+                        description: formValue.description,
+                        isActive: formValue.isActive,
+                        characteristicsIds: [...new Set(combinedIds)]  // Removing duplicates using Set
+                    };
+
+                    console.log('Final API Payload:', apiPayload);
+                    // return;
+                    // Call the API to add the inspection card
+                    return this._inspectionCard.AddInspectionCard(apiPayload);
+                }),
+                switchMap((response) => {
+                    if (response === null) {
+                        return of(null);
+                    }
+
+                    if (response?.isRequestSuccess) {
+                        this.isValidate = false;
+                        this._snackBar.open('Data saved successfully!', 'Close', {
+                            duration: 1500,
+                            panelClass: ['snackbar-success']
+                        });
+
+                        if (this.rowDataIC?.isCloneIC) {
+                            // Navigate to the list page if in clone mode
+                            setTimeout(() => {
+                                this._router.navigate(['/master-data/list-of-inspection-card'], { relativeTo: this._activatedRoute });
+                                this.clearingSessionStorage();
+                                this.isLoading = false;
+                            }, 1500);
+                            return of(null);
+                        }
+
+                        // Reset the form and tables after success
+                        this.fifthFormGroup.get('description')?.setValue(null);
+                        this.fifthFormGroup.get('intCode')?.setValue(null);
+                        this.fifthFormGroup.get('id')?.setValue(null);
+                        this.qualitativeTableCriteria.clear();
+                        this.quantitativeTableCriteria.clear();
+                        this.initializeTableWithDefaultRow();
+                        this.initializeTableWithDefaultRowX();
+                        this.qualitativeTableCriteriaClone.clear();
+                        this.initializeTableWithDefaultRowClone();
+
+                        return this._inspectionCardsCode.getInspectionCardCode();
+                    }
+
+                    throw response;
+                })
+            )
+            .subscribe(
+                (inspectionCardCode) => {
+                    if (inspectionCardCode === null) return;
+                    const y = inspectionCardCode.data;
+                    if (y) {
+                        const fullCode = `IC-000${y}`;
+                        setTimeout(() => {
+                            this.fifthFormGroup.get('intCode')?.setValue(fullCode);
+                            this.isLoading = false;
+                        }, 1500);
+                    } else {
+                        console.error('No code received from API');
+                        this.isLoading = false;
+                    }
+                },
+                (error) => {
+                    console.error('❌ API REQUEST FAILED:', error);
+                    let errorMessage = "This description is already being used and cannot be duplicated.";
+                    if (error.error) {
+                        if (error.error.exception?.description?.length) {
+                            errorMessage = error.error.exception.description[0];
+                        } else if (error.error.message) {
+                            errorMessage = error.error.message;
+                        } else {
+                            errorMessage = error.error?.message || 'An unknown error occurred.';
+                        }
+                    }
+                    this._snackBar.open(errorMessage, 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-error']
+                    });
+                    setTimeout(() => {
+                        this.isLoading = false;
+                    }, 1500);
+                }
+            );
+    }
 
 
 
@@ -5072,6 +5385,14 @@ export class TestingStepperComponent implements AfterViewInit {
             return !!value;
         });
     }
+    
+    hasValidCriteriaData(): boolean {
+        return this.qualitativeTableCriteriaClone.controls.some(control => {
+            const value = control.value?.parameter?.trim();
+            return !!value;
+        });
+    }
+    
     // @IAK
     // VALIDATING IA FORM
     isIAFormValid(): boolean {
@@ -6748,4 +7069,8 @@ export class TestingStepperComponent implements AfterViewInit {
             }
         }
     }
+    // xxxxxxxxxxxxxx
+
+
+    // xxxxxxxxxxxxxx
 }
