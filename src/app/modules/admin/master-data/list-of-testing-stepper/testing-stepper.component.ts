@@ -2357,6 +2357,113 @@ export class TestingStepperComponent implements AfterViewInit {
             return;
         }
     }
+    // @IAK
+    submitItemsInspectionCardClone(): void {
+        this.itemsInspectionCardsForm.get('id').setValue('');
+        const formValues = this.itemsInspectionCardsForm.value;
+        const { intCode, id, ...payload } = formValues;
+
+        const itemCodeForQA = formValues.itemCode;
+        formValues.itemU_QACard = formValues.itemU_QACard || null;
+
+        if (Array.isArray(payload.qualitativeInspectionObjects)) {
+            payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map((item: any) => {
+                return {
+                    inspectionCharacteristicId: item?.id ?? null,
+                    isMandatory: item?.mandatory ?? false,
+                    isQcCritical: item?.isQcCritical ?? false,
+                    isQcFloor: item?.isQcFloor ?? false,
+                    isQcLab: item?.isQcLab ?? false,
+                    isDispatch: item?.isDispatch ?? false,
+                    isIncoming: item?.isIncoming ?? false,
+                    isTrial: item?.isTrial ?? false,
+                    isCoA: item?.isCoA ?? false,
+                    "qualitativeResultPassStatusObjects": [
+                        {
+                            "qualitativeResultId": "41227f60-a3de-45f9-8bdd-94504d151dff",
+                            "isPassed": false
+                        },
+                        {
+                            "qualitativeResultId": "271b5929-6ece-41a5-8308-c5854332ccd1",
+                            "isPassed": true
+                        }
+                    ],
+                    qualitativeResultFailStatusObjects: [],
+                    qualitativeSpec: item?.passCriteria || null
+                };
+            });
+        } else {
+            payload.qualitativeInspectionObjects = [];
+        }
+
+        if (Array.isArray(payload.quantitativeInspectionObjects)) {
+            payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
+                inspectionCharacteristicId: item?.id ?? null,
+                quantitativeSpec: item?.passCriteria ?? null,
+                isMandatory: item?.mandatoryQty ?? false,
+                isQcCritical: item?.isQcCritical ?? false,
+                isQcFloor: item?.isQcFloor ?? false,
+                isQcLab: item?.isQcLab ?? false,
+                isDispatch: item?.isDispatch ?? false,
+                isIncoming: item?.isIncoming ?? false,
+                isTrial: item?.isTrial ?? false,
+                isCoA: item?.isCoA ?? false,
+                uoMId: item?.uoMId ?? '',
+                min: isNaN(parseFloat(item?.passCriteriaMin)) ? null : parseFloat(item.passCriteriaMin),
+                max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
+                target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
+                lowerLimit: isNaN(parseFloat(item?.passCriteriaLowerLimit)) ? null : parseFloat(item.passCriteriaLowerLimit),
+                upperLimit: isNaN(parseFloat(item?.passCriteriaUpperLimit)) ? null : parseFloat(item.passCriteriaUpperLimit),
+            }));
+        } else {
+            payload.quantitativeInspectionObjects = [];
+        }
+        console.log('CLONE FINAL PAYLOAD FOR API:', payload);
+        // return;
+        // this.isValidate = false;
+        this._itemInspectionCardService.AddItemInspectionCard(payload).subscribe({
+            next: (response) => {
+                if (response.isRequestSuccess) {
+                    this._snackBar.open('Inspection Card created successfully!', 'Close', {
+                        duration: 1500,
+                        panelClass: ['snackbar-success']
+                    });
+                    this._SAPItemsService.enableItemForQA(itemCodeForQA).subscribe({
+                        next: (sapResponse) => {
+                            if (!sapResponse.succeeded) {
+                                console.warn('⚠️ SAP API failed:', sapResponse.message);
+                            }
+                        },
+                        error: (sapError) => {
+                            console.error('❌ SAP API error:', sapError);
+                        }
+                    });
+                    setTimeout(() => {
+                        this._router.navigate(['/master-data/list-of-items-inspection-cards'], {
+                            relativeTo: this._activatedRoute
+                        });
+                    }, 1400);
+                    setTimeout(() => {
+                        this.clearingSessionStorage();
+                        console.log('this.isEditMode.', this.isEditMode);
+                    }, 1500);
+                } else {
+                    console.warn('⚠️ API response failed:', response);
+                    this._snackBar.open('Error creating inspection card.', 'Close', {
+                        duration: 3000,
+                        panelClass: ['snackbar-error']
+                    });
+                }
+            },
+            error: (error) => {
+                console.error('❌ AddItemInspectionCard API error:', error);
+                this._snackBar.open('Error creating inspection card.', 'Close', {
+                    duration: 3000,
+                    panelClass: ['snackbar-error']
+                });
+            }
+        });
+    }
     // ITEM INSPECTION CARD ENDS
 
 
@@ -5228,6 +5335,7 @@ export class TestingStepperComponent implements AfterViewInit {
         this.isValidate = false;
         console.log('this.isEditMode', this.isEditMode);
         console.log('this.isValidate', this.isValidate);
+        console.log('this.isCloneIIC', this.isCloneIIC);
     }
 
     onNextClickQR(): void {
