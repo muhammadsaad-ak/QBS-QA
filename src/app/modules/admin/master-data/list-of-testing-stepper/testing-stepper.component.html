@@ -18,7 +18,7 @@
             </mat-form-field>
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>Description</mat-label>
-              <input matInput placeholder="Enter Description" formControlName="resultDescription" required>
+              <input matInput placeholder="Enter Description" formControlName="resultDescription" required (keyup)="normalizeSpacesOnType('resultDescription')">
               <!-- <mat-error
               *ngIf="firstFormGroup.get('resultDescription').invalid && (isValidate || firstFormGroup.get('resultDescription').touched)">
               Required.
@@ -51,8 +51,8 @@
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickQR()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="isEditMode"
-              (click)="onUpdateQualitativeResult()">Update</button>
+            <button mat-button class="next-button" *ngIf="isEditMode" [disabled]="!isQRFormValid()"
+              [ngClass]="{'invalid-disabled-button': !isQRFormValid()}" (click)="onUpdateQualitativeResult()">Update</button>
           </div>
         </form>
       </mat-step>
@@ -70,13 +70,13 @@
             <!-- UOM Code Field -->
             <mat-form-field style="flex: 1 1 calc(25% - 16px); min-width: 100px;">
               <mat-label>UOM&nbsp;Code</mat-label>
-              <input matInput formControlName="uoMCode" placeholder="Enter UOM Code" required>
+              <input matInput formControlName="uoMCode" placeholder="Enter UOM Code" required (keyup)="normalizeSpacesOnType('uoMCode')">
               <mat-error *ngIf="isValidate && secondFormGroup.get('uoMCode').invalid">Required.</mat-error>
             </mat-form-field>
             <!-- UOM Name Field -->
             <mat-form-field style="flex: 1 1 calc(75% - 16px); min-width: 200px;">
               <mat-label>UOM&nbsp;Name</mat-label>
-              <input matInput formControlName="description" placeholder="Enter UOM Name" required>
+              <input matInput formControlName="description" placeholder="Enter UOM Name" required (keyup)="normalizeSpacesOnType('description')">
               <mat-error *ngIf="isValidate && secondFormGroup.get('description').invalid">Required.</mat-error>
             </mat-form-field>
           </div>
@@ -108,10 +108,11 @@
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickUOM()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateUoM()">Update</button>
-          </div>
-        </form>
-      </mat-step>
+            <button mat-button class="next-button" *ngIf="isEditMode" [disabled]="!isUOMFormValid()"
+              [ngClass]="{'invalid-disabled-button': !isUOMFormValid()}" (click)="onUpdateUoM()">Update</button>
+            </div>
+            </form>
+            </mat-step>
       <!-- Unit Of Measure ENDS -->
 
       <!-- Inspection Attributes STARTS -->
@@ -132,7 +133,7 @@
             <!-- Attribute -->
             <mat-form-field class="w-full sm:w-[calc(75%-16px)] min-w-[200px]">
               <mat-label>Attribute Name</mat-label>
-              <input matInput formControlName="name" placeholder="Enter Attribute" required>
+              <input matInput formControlName="name" placeholder="Enter Attribute" required (keyup)="normalizeSpacesOnType('name')">
               <mat-error *ngIf="isValidate">Required.</mat-error>
             </mat-form-field>
             <mat-form-field class="w-full sm:w-[calc(100%-16px)] min-w-[200px] hidden">
@@ -162,16 +163,18 @@
             <!-- Save Button -->
             <div matTooltip="Fill&nbsp;the&nbsp;mandatory&nbsp;field" [matTooltipDisabled]="isIAFormValid()">
               <button mat-button class="next-button" *ngIf="!isEditMode && !isLoading" [disabled]="!isIAFormValid()"
-                [ngClass]="{
-                        'invalid-disabled-button': !isIAFormValid()}" (click)="onSubmitInspectionAttributes()">
+                [ngClass]="{'invalid-disabled-button': !isIAFormValid()}" (click)="onSubmitInspectionAttributes()">
                 Save
               </button>
             </div>
             <button mat-button class="bg-primary-700" *ngIf="!isEditMode" (click)="onNextClickInspectionAttributes()">
               <mat-icon svgIcon="heroicons_solid:arrow-right" class="text-white"></mat-icon>
             </button>
-            <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateInspectionAttributes()">Update</button>
-          </div>
+            <button mat-button class="next-button" *ngIf="isEditMode" [disabled]="!isIAFormValid()"
+              [ngClass]="{'invalid-disabled-button': !isIAFormValid()}" (click)="onUpdateInspectionAttributes()">
+              Update
+            </button>
+            </div>
         </form>
       </mat-step>
       <!-- Inspection Attributes ENDS -->
@@ -199,7 +202,7 @@
             <!-- Description -->
             <mat-form-field class="w-full sm:w-[calc(50%-16px)] min-w-[100px]">
               <mat-label>Parameter</mat-label>
-              <input matInput placeholder="Enter Parameter" formControlName="description" required>
+              <input matInput placeholder="Enter Parameter" formControlName="description" required (keyup)="normalizeSpacesInFourthForm()"> 
               <mat-error *ngIf="isValidate && fourthFormGroup.get('description').invalid">Required.</mat-error>
             </mat-form-field>
             <!-- Active Checkbox -->
@@ -381,7 +384,8 @@
                 <button mat-button class="bg-primary-700" matStepperPrevious>
                   <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-white"></mat-icon>
                 </button>
-                <button mat-button class="next-button" *ngIf="isEditMode" (click)="onUpdateICH()">Update</button>
+                <button mat-button *ngIf="isEditMode" class="next-button" [disabled]="!isICFormValid()"
+                  [ngClass]="{'invalid-disabled-button': !isICFormValid()}" (click)="onUpdateICH()">Update</button>
               </div>
             </div>
           </div>
@@ -766,7 +770,7 @@
             <button mat-button class="next-button hidden" *ngIf="isEditMode && !isCloneIC"
               (click)="onUpdateInspectionCard()">Update</button>
             <button mat-button class="next-button hidden" *ngIf="isEditMode && isCloneIC"
-              (click)="onSubmitInspectionCard()">Save</button>
+              (click)="onSubmitInspectionCard()">SaveXX</button>
           </div>
           <div class="flex flex-row w-full items-center" *ngIf="isEditMode">
             <div class="flex items-center flex-1" *ngIf="!isCloneIC">
@@ -1991,7 +1995,7 @@
             <div class="w-full">
               <div class="w-full flex justify-between items-center m-0 p-0 py-0">
                 <div class="flex-1">
-                  <h1 class="text-xl font-semibold">Sampling Range</h1>
+                  <h1 class="text-xl font-semibold">Sampling&nbsp;Range&nbsp;of&nbsp;Incoming&nbsp;&&nbsp;Dispatch&nbsp;QC</h1>
                 </div>
                 <div class="ml-auto flex space-x-2 sm:space-x-4">
                   <div class="icon-size-4">

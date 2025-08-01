@@ -66,7 +66,7 @@ export class QualitativeResultsService {
         );
     }
     // GET ALL QUALITATIVE RESULTS
-    ListAllQualitativeResults(): Observable<any> {
+    XListAllQualitativeResults(): Observable<any> {
         // Set up the headers with the Authorization token
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
@@ -135,7 +135,7 @@ export class QualitativeResultsService {
             })
         );
     }
-        //  GET NEXT INT COUNT QUALITATIVE RESULT
+    //  GET NEXT INT COUNT QUALITATIVE RESULT
     getInspectionAttributesNextIntCount(): Observable<any> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
@@ -158,7 +158,7 @@ export class QualitativeResultsService {
             );
     }
 
-        AddInspectionAttributes(data: any): Observable<any> {
+    AddInspectionAttributes(data: any): Observable<any> {
         const headers = new HttpHeaders({
             Authorization: `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json',
@@ -177,27 +177,52 @@ export class QualitativeResultsService {
     }
 
     ListAllInspectionAttributes(): Observable<any> {
-    const headers = new HttpHeaders({
-        Authorization: `Bearer ${this.accessToken}`,
-        Accept: 'application/json',
-    });
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'application/json',
+        });
 
-    return this._httpClient
-        .get(`${environment.appApiUrl}/CSAPI/IInspectionAttributeFeature/ListAllInspectionAttributes`, {
-            headers,
-        })
-        .pipe(
-            tap((response: any) => {
-                const attributes = response?.data ?? [];
-                this._inspectionAttributesNextIntCode.next(attributes);
-                console.log('Fetched Attributes:', attributes);
-            }),
-            catchError((error) => {
-                console.error('Error fetching inspection attributes', error);
-                return throwError(() => new Error('Error fetching inspection attributes'));
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IInspectionAttributeFeature/ListAllInspectionAttributes`, {
+                headers,
             })
-        );
-}
+            .pipe(
+                tap((response: any) => {
+                    const attributes = response?.data ?? [];
+                    this._inspectionAttributesNextIntCode.next(attributes);
+                    console.log('Fetched Attributes:', attributes);
+                }),
+                catchError((error) => {
+                    console.error('Error fetching inspection attributes', error);
+                    return throwError(() => new Error('Error fetching inspection attributes'));
+                })
+            );
+    }
 
+    ListAllQualitativeResults(): Observable<any[]> {
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${this.accessToken}`,
+            Accept: 'application/json',
+        });
 
+        return this._httpClient
+            .get(`${environment.appApiUrl}/CSAPI/IQualitativeResultFeature/ListAllQualitativeResults`, { headers })
+            .pipe(
+                switchMap((res: any) => {
+                    if (res?.isRequestSuccess && Array.isArray(res.data)) {
+                        this._listQualitativeResults.next(res.data);
+                        return of(res.data);
+                    } else {
+                        console.warn('ListAllQualitativeResults: No data found or request failed', res?.message || '');
+                        this._listQualitativeResults.next([]);
+                        return of([]);
+                    }
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    console.error('ListAllQualitativeResults: HTTP error', error);
+                    this._listQualitativeResults.next([]);
+                    return of([]);
+                })
+            );
+    }
 }

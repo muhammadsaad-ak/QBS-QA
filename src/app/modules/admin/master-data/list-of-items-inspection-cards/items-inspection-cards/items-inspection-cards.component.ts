@@ -68,6 +68,7 @@ export class ItemsInspectionCardsComponent {
   configForm: UntypedFormGroup;
   searchInputControl: UntypedFormControl = new UntypedFormControl();
 
+  title = "List of Item Inspection Cards";
   addBtnTitle = "Add";
 
 
@@ -83,7 +84,7 @@ export class ItemsInspectionCardsComponent {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   ngAfterViewInit() {
-    this.dataSourceItemsInspectionCards.paginator = this.paginator;
+    // this.dataSourceItemsInspectionCards.paginator = this.paginator;
   }
 
   constructor(
@@ -215,6 +216,12 @@ export class ItemsInspectionCardsComponent {
   }
   
   ngOnDestroy(): void { }
+
+      ngAfterViewChecked() {
+        if (this.dataSourceItemsInspectionCards && this.paginator && this.dataSourceItemsInspectionCards.paginator !== this.paginator) {
+            this.dataSourceItemsInspectionCards.paginator = this.paginator;
+        }
+    }
 
   applyFilter(searchTerm: string): void {
     searchTerm = searchTerm.trim().toLowerCase();

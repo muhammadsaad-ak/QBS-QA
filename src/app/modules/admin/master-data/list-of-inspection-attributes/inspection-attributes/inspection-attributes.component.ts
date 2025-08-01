@@ -24,7 +24,7 @@ import { QualitativeResultsService } from 'app/core/other-core-services/module/q
 import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { debounceTime } from 'rxjs';
 import { InspectionAttributesService } from 'app/core/other-core-services/module/inspection-attributes.service';
-import { Location } from '@angular/common'; 
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-inspection-attributes',
@@ -75,7 +75,13 @@ export class InspectionAttributesComponent {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   ngAfterViewInit() {
-    this.dataSourcensInspectionAttributes.paginator = this.paginator;
+    // this.dataSourcensInspectionAttributes.paginator = this.paginator;
+  }
+
+  ngAfterViewChecked() {
+    if (this.dataSourcensInspectionAttributes && this.paginator && this.dataSourcensInspectionAttributes.paginator !== this.paginator) {
+      this.dataSourcensInspectionAttributes.paginator = this.paginator;
+    }
   }
 
   constructor(
@@ -121,9 +127,9 @@ export class InspectionAttributesComponent {
     this.dataSourcensInspectionAttributes.filter = searchTerm;
   }
 
-onBackArrowClick(): void {
-  this._location.back(); 
-}
+  onBackArrowClick(): void {
+    this._location.back();
+  }
 
   openAddQualitativeResultDrawer(type: 'visitprofile'): void {
     this.matDrawer.open();

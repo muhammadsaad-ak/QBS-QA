@@ -1,23 +1,6 @@
-import {
-    AsyncPipe,
-    CommonModule,
-    NgClass,
-    NgTemplateOutlet,
-} from '@angular/common';
-import {
-    Component,
-    OnDestroy,
-    OnInit,
-    ViewChild,
-    ViewEncapsulation,
-} from '@angular/core';
-import {
-    FormsModule,
-    ReactiveFormsModule,
-    UntypedFormBuilder,
-    UntypedFormControl,
-    UntypedFormGroup,
-} from '@angular/forms';
+import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
+import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -40,7 +23,7 @@ import { InspectionCardService } from 'app/core/other-core-services/module/inspe
 import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { debounceTime } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
+import { Location } from '@angular/common';
 
 @Component({
     selector: 'app-list-of-inspection-card',
@@ -49,15 +32,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     styleUrl: './list-of-inspection-card.component.scss',
     encapsulation: ViewEncapsulation.None,
     imports: [
-        RouterOutlet,
-        MatDrawer,
-        MatSidenavModule,
         AsyncPipe,
         CommonModule,
         FormsModule,
         MatButtonModule,
         MatButtonToggleModule,
         MatCheckboxModule,
+        MatDrawer,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
@@ -67,26 +48,28 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         MatProgressBarModule,
         MatRippleModule,
         MatSelectModule,
+        MatSidenavModule,
         MatSlideToggleModule,
         MatSortModule,
+        MatTableModule,
         MatTabsModule,
+        MatTooltipModule,
         NgClass,
         NgTemplateOutlet,
         ReactiveFormsModule,
-        MatTableModule,
-        MatTooltipModule,
+        RouterOutlet,
     ],
 })
 export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
+    searchInputControl = new FormControl('');
     configForm: UntypedFormGroup;
-    searchInputControl: UntypedFormControl = new UntypedFormControl();
 
+    title = 'List Of Inspection Cards';
+    addBtnTitle = 'Add';
     addUserBtn = 'Add';
 
     @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
     drawerMode: 'side' | 'over';
-
-   
 
     displayedColumns: string[] = [
         'serialId',
@@ -95,14 +78,9 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
         'isActive',
         'action',
     ];
-    // dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
     dataSource = new MatTableDataSource<any>([]);
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
-
-    ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
-    }
 
     constructor(
         private _formBuilder: UntypedFormBuilder,
@@ -111,8 +89,8 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
         private _activatedRoute: ActivatedRoute,
         private _inspectionCard: InspectionCardService,
         private _sessionStorageService: SessionStorageService,
-        
-    ) {}
+        private _location: Location,
+    ) { }
 
     ngOnInit(): void {
         // this._inspectionCard.getInspectionCard().subscribe((inspectionCharacteristic) => {
@@ -121,10 +99,10 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
 
         this._inspectionCard.getInspectionCard().subscribe((response) => {
             this.dataSource = new MatTableDataSource(response.data);
-            this.dataSource.paginator = this.paginator;
+            // this.dataSource.paginator = this.paginator;
         });
 
-        // Custom filter for better search
+        // CUSTOM FILTER FOR SEARCH
         this.dataSource.filterPredicate = (data: any, filter: string) => {
             const searchText = filter.toLowerCase();
             return data.intCode?.toString().toLowerCase().includes(searchText) ||
@@ -133,63 +111,50 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
                 (data.isActive ? 'active' : 'inactive').includes(searchText);
         };
 
-        // Build the config form
-        this.configForm = this._formBuilder.group({
-            title: 'Remove User',
-            message:
-                'Are you sure you want to remove this user permanently? <span class="font-medium">This action cannot be undone!</span>',
-            icon: this._formBuilder.group({
-                show: true,
-                name: 'heroicons_outline:exclamation-triangle',
-                color: 'warn',
-            }),
-            actions: this._formBuilder.group({
-                confirm: this._formBuilder.group({
-                    show: true,
-                    label: 'Remove',
-                    color: 'warn',
-                }),
-                cancel: this._formBuilder.group({
-                    show: true,
-                    label: 'Cancel',
-                }),
-            }),
-            dismissible: true,
-        });
-
-        //Search with complete payload values
-        // Subscribe to search input field value changes to filter the table data
+        // SEARCH WITH COMPLETE PAYLOAD VALUES
         this.searchInputControl.valueChanges
             .pipe(debounceTime(300))
             .subscribe((searchTerm: string) => {
                 this.applyFilter(searchTerm);
             });
 
-        //Search with the specific payload values
+        // SEARCH WITH THE SPECIFIC PAYLOAD VALUES
         // Override the default filterPredicate
         // this.dataSource.filterPredicate = (data: User, filter: string) => {
-        //   const transformedFilter = filter.trim().toLowerCase();
-        //   // You can add more fields for filtering by expanding the condition below
-        //   return (
-        //     // data.name.toLowerCase().includes(transformedFilter) ||
-        //     data.email.toLowerCase().includes(transformedFilter) ||
-        //     data.phone.toLowerCase().includes(transformedFilter) ||
-        //     data.department.toLowerCase().includes(transformedFilter)
-        //   );
+        //     const transformedFilter = filter.trim().toLowerCase();
+        //     // You can add more fields for filtering by expanding the condition below
+        //     return (
+        //         // data.name.toLowerCase().includes(transformedFilter) ||
+        //         data.email.toLowerCase().includes(transformedFilter) ||
+        //         data.phone.toLowerCase().includes(transformedFilter) ||
+        //         data.department.toLowerCase().includes(transformedFilter)
+        //     );
         // };
 
         // Subscribe to search input field value changes to filter the table data
         // this.searchInputControl.valueChanges.pipe(debounceTime(300)).subscribe((searchTerm: string) => {
-        //   this.applyFilter(searchTerm);
+        //     this.applyFilter(searchTerm);
         // });
         this._sessionStorageService.clearAll();
     }
-    ngOnDestroy(): void {}
 
-    // Method to apply filter on the dataSource
+    ngOnDestroy(): void {
+        // this._sessionStorageService.clearAll();
+    }
+
+    ngAfterViewInit() {
+        // this.dataSource.paginator = this.paginator;
+    }
+
+    ngAfterViewChecked() {
+        if (this.dataSource && this.paginator && this.dataSource.paginator !== this.paginator) {
+            this.dataSource.paginator = this.paginator;
+        }
+    }
+
     applyFilter(searchTerm: string): void {
-        searchTerm = searchTerm.trim().toLowerCase(); // Remove whitespace and make lowercase
-        this.dataSource.filter = searchTerm; // Apply filter (MatTableDataSource handles filtering)
+        searchTerm = searchTerm.trim().toLowerCase();
+        this.dataSource.filter = searchTerm;
     }
 
     onBackdropClicked(): void {
@@ -208,7 +173,7 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
     openStepperToUpdateIC(rowDataIC: any): void {
         console.log('SENDING DATA:', rowDataIC);
         const dataToSendIntoStepperIC = {
-            ...rowDataIC, isEditMode: true // Send isEditMode as true
+            ...rowDataIC, isEditMode: true
         };
         sessionStorage.setItem('stepperDataIC', JSON.stringify(dataToSendIntoStepperIC));
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
@@ -219,7 +184,7 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
     openStepperToCloneIC(rowDataIC: any): void {
         console.log('SENDING DATA:', rowDataIC);
         const dataToSendIntoStepperIC = {
-            ...rowDataIC, isEditMode: true, isCloneIC: true // Send isEditMode as true
+            ...rowDataIC, isEditMode: true, isCloneIC: true
         };
         sessionStorage.setItem('stepperDataIC', JSON.stringify(dataToSendIntoStepperIC));
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
@@ -230,40 +195,28 @@ export class ListOfInspectionCardComponent implements OnInit, OnDestroy {
     openStepperToAddIC(): void {
         sessionStorage.removeItem('stepperDataIC');
         this._router.navigate(['/master-data/list-of-testing-stepper'], {
-          queryParams: { step: 4 }
+            queryParams: { step: 4 }
         });
-      }
     }
 
-    // openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
-    //   console.log(element)
-    //   this.matDrawer.open();
-    //   this._router.navigate(['edit-inspection-card', element], { relativeTo: this._activatedRoute,state: { element} });
-    // }
+    onBackArrowClick(): void {
+        this._location.back();
+    }
+}
 
-    // openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
-    //     this.matDrawer.open();
-    //     // console.log(element.cardCode);
-    //     // console.log(element);
-    //     this._router.navigate(['edit-inspection-card', element.cardCode], {
-    //         relativeTo: this._activatedRoute,
-    //         state: { element },
-    //     });
-    //     return;
-    // }
+// openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
+//     console.log(element)
+//     this.matDrawer.open();
+//     this._router.navigate(['edit-inspection-card', element], { relativeTo: this._activatedRoute, state: { element } });
+// }
 
-    /**
-     * Open confirmation dialog
-     */
-    //   deleteUser(type: 'visitprofile'): void {
-    //     // Open the dialog and save the reference of it
-    //     const dialogRef = this._qbsConfirmationService.open(
-    //         this.configForm.value
-    //     );
-
-    //     // Subscribe to afterClosed from the dialog reference
-    //     dialogRef.afterClosed().subscribe((result) => {
-    //         console.log(result);
-    //     });
-    // }
-
+// openUpdateInspectionDrawer(type: 'visitprofile', element: any): void {
+//     this.matDrawer.open();
+//     // console.log(element.cardCode);
+//     // console.log(element);
+//     this._router.navigate(['edit-inspection-card', element.cardCode], {
+//         relativeTo: this._activatedRoute,
+//         state: { element },
+//     });
+//     return;
+// }

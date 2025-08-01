@@ -1,103 +1,76 @@
-<!-- <p>inspection-attributes works!</p> -->
 <div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
-    <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent">
-        <mat-drawer-content>
-            <!-- Header STARTS -->
-            <div class="relative flex-0 flex-col px-2 py-2 ">
-                <div class="flex items-center text-3xl font-extrabold tracking-tight">
-                    <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-primary-700 mr-2" (click)="onBackArrowClick()"></mat-icon>
-                    <!-- Title - Inspection Attributes -->
-                    <span>{{ title }}</span>
-                </div>
-            </div>
-            
-            <!-- Search & Add button -->
-            <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between w-full px-4">
-                <!-- Search Input Field -->
-                <mat-form-field class="icon-border-color qbs-mat-dense qbs-mat-rounded w-full sm:w-2/3 md:w-1/2">
-                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
-                    <input matInput [autocomplete]="'off'" placeholder="Search..." [formControl]="searchInputControl" />
-                </mat-form-field>
-                <!-- Add Button -->
-                <button class="mb-3 sm:mt-0 sm:ml-auto" mat-flat-button [color]="'primary'"
-                    (click)="openStepperToAddIA()">
-                    <span class="flex items-center">
-                        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                        <span class="ml-1">{{ addBtnTitle }}</span>
-                    </span>
-                </button>
-            </div>
-            <!-- Header ENDS -->
+    <div class="relative flex-0 flex-col py-1 md:px-2">
+        <div class="text-3xl font-extrabold tracking-tight px-4">
+            <mat-icon svgIcon="heroicons_solid:arrow-left" class="text-primary-700 mr-2 cursor-pointer hidden"
+                (click)="onBackArrowClick()"></mat-icon>
+            {{title}}
+        </div>
+        <div class="py-0.5 flex flex-col sm:flex-row sm:justify-between">
+            <mat-form-field class="icon-border-color qbs-mat-dense qbs-mat-rounded sm:w-2/3 md:w-1/4 px-2">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput autocomplete="off" placeholder="Search..." [formControl]="searchInputControl" />
+            </mat-form-field>
+            <button class="mb-3 sm:mt-0 sm:ml-auto icon-border-color" mat-flat-button color="primary"
+                (click)="openStepperToAddIA()">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-1">{{ addBtnTitle }}</span>
+            </button>
+        </div>
+    </div>
+    <div *ngIf="dataSourcensInspectionAttributes.data.length < 1 ; else showTable"
+        class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+        No records to show...
+    </div>
+    <ng-template #showTable>
+        <div class="example-container shadow-xl shadow-gray-300">
+            <table mat-table [dataSource]="dataSourcensInspectionAttributes" class="table-border-color py-0">
+                <ng-container matColumnDef="serialNo">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100">
+                        S.No
+                    </th>
+                    <td mat-cell *matCellDef="let index = index" class="single-line font-medium">
+                        {{index + 1}}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="intCode">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100">
+                        Code
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="single-line font-medium">
+                        IA-{{ element.intCode ? element.intCode.toString().padStart(5, '0') : '-' }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100">
+                        Attribute
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="single-line font-medium">
+                        {{element.name ? element.name : '-' }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100">
+                        Status
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="single-line font-medium"
+                        [ngClass]="['single-line', 'font-medium', element.isActive ? 'text-green-500' : 'text-amber-500']">
+                        {{ element.isActive ? 'Active' : 'Inactive' }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100">
+                        Action </th>
+                    <td mat-cell *matCellDef="let element">
+                        <mat-icon svgIcon="heroicons_outline:pencil" class="mat-icon-primary cursor-pointer py-0.5"
+                            (click)="openStepperToUpdateIA(element)"></mat-icon>
+                    </td>
+                </ng-container>
 
-            <!-- Main Content STARTS -->
-            <div class="-mt-px flex flex-auto border-t pt-4 sm:pt-2 overflow-hidden"
-                style="padding-top: 0px !important;">
-                <div class="flex flex-auto flex-col overflow-hidden sm:mb-18 sm:overflow-y-auto">
-                    <div class=""> <!-- mat-elevation-z8  -->
-                        <table class="table-border-color" mat-table [dataSource]="dataSourcensInspectionAttributes">
-                            <!-- Serial No COLUMN -->
-                            <ng-container matColumnDef="serialNo">
-                                <th mat-header-cell *matHeaderCellDef
-                                    style="background-color: #e2e8f0 !important;  text-align: center;">
-                                    S.No </th>
-                                <td mat-cell *matCellDef="let index = index" style="text-align: center;"> {{index + 1}}
-                                </td>
-                            </ng-container>
-                            <!-- Code COLUMN -->
-                            <ng-container matColumnDef="intCode">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Code
-                                </th>
-                                <td mat-cell *matCellDef="let element"> {{element.intCode ? 'IA-000' + element.intCode :
-                                    '-'}}
-                                </td>
-                            </ng-container>
-                            <!-- Attribute name COLUMN -->
-                            <ng-container matColumnDef="name">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Attribute </th>
-                                <td mat-cell *matCellDef="let element"> {{element.name ?
-                                    element.name :
-                                    '-' }} </td>
-                            </ng-container>
-                            <!-- Status COLUMN -->
-                            <ng-container matColumnDef="status">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Status
-                                </th>
-                                <td mat-cell *matCellDef="let element" [ngClass]="{
-                                'text-green-500': element.isActive,
-                                'text-amber-500': !element.isActive 
-                                }">
-                                    {{ element.isActive ? 'Active' : 'Inactive' }}
-                                </td>
-                            </ng-container>
-
-                            <!-- Action COLUMN -->
-                            <ng-container matColumnDef="action">
-                                <th mat-header-cell *matHeaderCellDef style="background-color: #e2e8f0 !important;">
-                                    Action </th>
-                                <td mat-cell *matCellDef="let element">
-                                    <mat-icon svgIcon="heroicons_outline:pencil" class="mat-icon-primary cursor-pointer"
-                                        (click)="openStepperToUpdateIA(element)"></mat-icon>
-                                </td>
-                            </ng-container>
-
-                            <tr mat-header-row *matHeaderRowDef="displayedColumnsInspectionAttributes"></tr>
-                            <tr mat-row *matRowDef="let row; columns: displayedColumnsInspectionAttributes;"></tr>
-                        </table>
-                        <mat-paginator class="border-pagination" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
-                            aria-label="Select page of periodic elements" style="background-color: #e2e8f0 !important;">
-                        </mat-paginator>
-                        <!-- @IAK -->
-                        <div *ngIf="dataSourcensInspectionAttributes.data.length === 0"
-                            class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                            No records to show!
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Main Content ENDS -->
-        </mat-drawer-content>
-    </mat-drawer-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumnsInspectionAttributes"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumnsInspectionAttributes;"></tr>
+            </table>
+        </div>
+        <mat-paginator class="border-pagination bg-gray-100" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons>
+        </mat-paginator>
+    </ng-template>
 </div>
