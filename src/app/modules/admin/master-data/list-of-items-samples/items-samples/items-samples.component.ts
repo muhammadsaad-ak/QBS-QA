@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
 import { OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -22,6 +22,7 @@ import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { debounceTime } from 'rxjs';
 import { ItemSamplesService } from 'app/core/other-core-services/module/item-sample.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-items-samples',
@@ -58,11 +59,11 @@ import { ItemSamplesService } from 'app/core/other-core-services/module/item-sam
   encapsulation: ViewEncapsulation.None,
 })
 export class ItemsSamplesComponent {
-
+  searchInputControl = new FormControl('');
   configForm: UntypedFormGroup;
-  searchInputControl: UntypedFormControl = new UntypedFormControl();
 
-  addUserBtn = "Add Qualitative";
+  title = "List of Item Sample";
+  addUserBtn = "Add";
   addBtnTitle = "Add";
 
   @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
@@ -70,15 +71,21 @@ export class ItemsSamplesComponent {
 
   List_Of_Inspection_Data = [];
 
-  displayedColumnsItemSamples: string[] = ['serialId', 'sampleCode', 'itemCode', 'itemDescription', 'isBatch','flexibility', 'isActive', 'action'];
+  displayedColumnsItemSamples: string[] = [
+    'serialId',
+    'sampleCode',
+    'itemCode',
+    'itemDescription',
+    'isBatch',
+    'flexibility',
+    'isActive',
+    'action'
+  ];
+
   // dataSource = new MatTableDataSource<any>([]);
   dataSource = new MatTableDataSource<any>(this.List_Of_Inspection_Data);
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
-
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-  }
 
   constructor(
     private _formBuilder: UntypedFormBuilder,
@@ -86,6 +93,7 @@ export class ItemsSamplesComponent {
     private _router: Router,
     private _activatedRoute: ActivatedRoute,
     private _itemSamplesService: ItemSamplesService,
+    private _location: Location,
   ) { }
 
   ngOnInit(): void {
@@ -116,6 +124,17 @@ export class ItemsSamplesComponent {
   }
 
   ngOnDestroy(): void { }
+
+    ngAfterViewInit() {
+    // this.dataSource.paginator = this.paginator;
+  }
+
+  
+    ngAfterViewChecked() {
+        if (this.dataSource && this.paginator && this.dataSource.paginator !== this.paginator) {
+            this.dataSource.paginator = this.paginator;
+        }
+    }
 
   // Method to apply filter on the dataSource
   applyFilter(searchTerm: string): void {
@@ -159,5 +178,9 @@ export class ItemsSamplesComponent {
     this._router.navigate(['/master-data/list-of-testing-stepper'], {
       queryParams: { step: 6 }
     });
+  }
+
+  onBackArrowClick(): void {
+    this._location.back();
   }
 }

@@ -60,7 +60,7 @@ export class InspectionCharacteristicsService {
       tap(response => console.log('RESPONSE:', response)),
       catchError(error => {
         console.error('Error Adding Inspection Characteristics', error);
-        return throwError(() => new Error('Error Adding Inspection Characteristics'));
+        return throwError(() => error);
       })
     );
   }
