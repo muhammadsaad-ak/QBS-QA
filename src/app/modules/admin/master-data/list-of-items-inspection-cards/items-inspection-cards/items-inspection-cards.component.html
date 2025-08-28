@@ -24,9 +24,9 @@
         <div class="example-container shadow-xl shadow-gray-300">
             <table mat-table [dataSource]="dataSourceItemsInspectionCards" class="table-border-color py-0">
                 <ng-container matColumnDef="serialId">
-                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100 hidden">
                         S.No </th>
-                    <td mat-cell *matCellDef="let index = index" class="single-line font-medium"> {{index + 1}}
+                    <td mat-cell *matCellDef="let index = index" class="single-line font-medium hidden"> {{index + 1}}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="itemCode">
@@ -58,7 +58,7 @@
                 <ng-container matColumnDef="isBatch">
                     <th mat-header-cell *matHeaderCellDef class="bg-gray-100">
                         Batch&nbsp;Managed </th>
-                    <td mat-cell *matCellDef="let element" class="single-line font-medium text-center">
+                    <td mat-cell *matCellDef="let element" class="single-line font-medium px-16">
                         {{element.isBatch ? 'Yes' : 'No'}} </td>
                 </ng-container>
                 <ng-container matColumnDef="status">
