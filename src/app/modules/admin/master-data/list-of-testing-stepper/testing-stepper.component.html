@@ -860,67 +860,75 @@
             </mat-form-field>
           </div>
           <!-- HIDDEN FIELDS -->
-          <!-- itemName,itemType,itemGroupCode,itemU_QACard,itemUoMGroupEntry,inspectionCardId,id -->
+          <!-- itemName,groupName,isBatch,itemType,itemGroupCode,itemU_QACard,itemUoMGroupEntry,categoryName,categoryCode,inspectionCardId,id -->
           <div class="w-full hidden">
-            <div class="px-6 flex space-x-10">
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>itemName</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="itemName" readonly>
-                </mat-form-field>
-              </div>
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>groupName</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="groupName" readonly>
-                </mat-form-field>
-              </div>
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>isBatch</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="isBatch" readonly>
-                </mat-form-field>
-              </div>
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>itemType</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="itemType" readonly>
-                </mat-form-field>
-              </div>
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>itemGroupCode</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="itemGroupCode" readonly>
-                </mat-form-field>
-              </div>
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>itemU_QACard</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="itemU_QACard" readonly>
-                </mat-form-field>
-              </div>
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>itemUoMGroupEntry</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="itemUoMGroupEntry" readonly>
-                </mat-form-field>
-              </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>itemName</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="itemName" readonly>
+              </mat-form-field>
             </div>
-            <div class="px-6 flex space-x-10">
-              <!-- CARD ID -->
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>Card ID</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="inspectionCardId" readonly>
-                </mat-form-field>
-              </div>
-              <!-- ITEM INSPECTION CARD ID -->
-              <div class="w-full">
-                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
-                  <mat-label>ITEM INSPECTION CARD ID</mat-label>
-                  <input matInput type="text" class="text-sm" formControlName="id" readonly>
-                </mat-form-field>
-              </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>groupName</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="groupName" readonly>
+              </mat-form-field>
+            </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>isBatch</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="isBatch" readonly>
+              </mat-form-field>
+            </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>itemType</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="itemType" readonly>
+              </mat-form-field>
+            </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>itemGroupCode</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="itemGroupCode" readonly>
+              </mat-form-field>
+            </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>itemU_QACard</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="itemU_QACard" readonly>
+              </mat-form-field>
+            </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>itemUoMGroupEntry</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="itemUoMGroupEntry" readonly>
+              </mat-form-field>
+            </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>categoryName</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="itemCategory" readonly>
+              </mat-form-field>
+            </div>
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>categoryCode</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="itemCategoryCode" readonly>
+              </mat-form-field>
+            </div>
+            <!-- CARD ID -->
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>Card ID</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="inspectionCardId" readonly>
+              </mat-form-field>
+            </div>
+            <!-- ITEM INSPECTION CARD ID -->
+            <div class="w-full">
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'" style="padding: 0.2rem !important;">
+                <mat-label>ITEM INSPECTION CARD ID</mat-label>
+                <input matInput type="text" class="text-sm" formControlName="id" readonly>
+              </mat-form-field>
             </div>
           </div>
           <!-- UPPER FIELDS SECTION ENDS -->
@@ -966,6 +974,12 @@
                     <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Group</mat-header-cell>
                     <mat-cell *matCellDef="let row" class="single-line text-sm">
                       {{ row.itemGroups?.groupName ?? 'N/A' }}
+                    </mat-cell>
+                  </ng-container>
+                  <ng-container matColumnDef="itemCategory">
+                    <mat-header-cell *matHeaderCellDef class="single-line">Item&nbsp;Category</mat-header-cell>
+                    <mat-cell *matCellDef="let row" class="single-line text-sm">
+                      {{ row.categoryName ?? 'N/A' }}
                     </mat-cell>
                   </ng-container>
           
@@ -1062,7 +1076,7 @@
           <!-- CARD CODE NG TEMPLATE DIALOG ENDS -->
 
           <!-- TABS SECTION STARTS -->
-          <mat-tab-group class="w-full p-0 h-72 overflow-y-auto" mat-stretch-tabs="true" [animationDuration]="1500"
+          <mat-tab-group class="w-full p-0 h-75 overflow-y-auto" mat-stretch-tabs="true" [animationDuration]="1500"
             (selectedTabChange)="onTabChange($event)"> <!-- class="sm:px-2" -->
             <!-- Qualitative Inspection TAB STARTS -->
             <mat-tab label="Qualitative Inspection">
