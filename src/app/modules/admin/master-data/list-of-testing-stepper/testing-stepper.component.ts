@@ -307,6 +307,8 @@ export class TestingStepperComponent implements AfterViewInit {
         itemUoMGroupEntry: ['', Validators.required],
         itemCode: ['', Validators.required],
         itemDescription: ['', Validators.required],
+        itemCategory: [null],
+        itemCategoryCode: [null],
         // CARDS
         intCode: ['', Validators.required], // CARD CODE
         cardDescription: ['', Validators.required], //  CARD DESCRIPTION
@@ -315,7 +317,7 @@ export class TestingStepperComponent implements AfterViewInit {
         // FormArray FOR DYNAMIC ROWS
         qualitativeInspectionObjects: this.fb.array([]),
         quantitativeInspectionObjects: this.fb.array([]),
-        id: [''],
+        id: [null],
         isActive: [true],
     });
 
@@ -768,6 +770,7 @@ export class TestingStepperComponent implements AfterViewInit {
         'itemCode',
         'itemDescription',
         'itemGroup',
+        'itemCategory',
     ];
     selectedIntCodeIIC: number;
     selectedItemCodeIIC: string;
@@ -810,6 +813,8 @@ export class TestingStepperComponent implements AfterViewInit {
             this.itemsInspectionCardsForm.get('itemUoMGroupEntry').setValue(String(selectedRow.uoMGroupEntry));
             this.itemsInspectionCardsForm.get('itemCode').setValue(selectedRow.itemCode);
             this.itemsInspectionCardsForm.get('itemDescription').setValue(selectedRow.itemName);
+            this.itemsInspectionCardsForm.get('itemCategory').setValue(selectedRow.categoryName);
+            this.itemsInspectionCardsForm.get('itemCategoryCode').setValue(selectedRow.categoryCode);
 
             this.selectedIntCodeIIC = selectedRow.intCode;
             // console.log("addSelectedRowItemCodeIIC - this.selectedIntCodeIIC:", this.selectedIntCodeIIC)
@@ -2013,52 +2018,77 @@ export class TestingStepperComponent implements AfterViewInit {
         this.isValidate = true;
         if (this.itemsInspectionCardsForm.valid) {
             const formValues = this.itemsInspectionCardsForm.value;
+            formValues.itemCategoryCode = String(formValues.itemCategoryCode);
             console.log('IIC FORM VALUES:', formValues);
 
             const itemCodeForQA = formValues.itemCode;
-            console.log('Item Code for QA:', itemCodeForQA);
+            console.log('itemCode for QA:', itemCodeForQA);
 
-            // Handle null values for itemU_QACard
+            // Handle null values for itemU_QACard, itemCategory, itemCategoryCode
             formValues.itemU_QACard = formValues.itemU_QACard || null;
+            formValues.itemCategory = formValues.itemCategory || null;
+            formValues.itemCategoryCode = formValues.itemCategoryCode || null;
 
-            const { intCode, ...payload } = formValues; // EXCLUDING intCode
+            const { intCode, id, ...payload } = formValues; // EXCLUDING intCode, id
 
-            // ✅ DEBUG: Checking qualitativeInspectionObjects before processing
-            console.log("🔍 Before Processing - qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
+            // DEBUG: qualitativeInspectionObjects BEFORE PROCESSING
+            console.log("🔍 qualitativeInspectionObjects BEFORE PROCESSING:", payload.qualitativeInspectionObjects);
 
-            // ✅ Ensure qualitativeInspectionObjects EXISTS BEFORE USING map
+            // ENSURE qualitativeInspectionObjects EXISTS BEFORE USING map
             if (Array.isArray(payload.qualitativeInspectionObjects)) {
                 payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map((item: any) => {
-                    console.log("🛠️ Processing qualitative item:", item);
-                    console.log("📌 qualitativeResultPassStatusObjects Before Processing:", item?.qualitativeResultPassStatusObjects);
+                    console.log(`🔍 PROCESSING ROW PARAMETER: ${item.parameter}`, item);
+                    item.qualitativeResultPassStatusObjects = item.qualitativeResultPassStatusObjects || [];
+
+                    // IF qualitativeResultPassStatusObjects IS EMPTY
+                    if (item.qualitativeResultPassStatusObjects.length === 0) {
+                        item.qualitativeResultPassStatusObjects = [
+                            {
+                                qualitativeResultId: "41227f60-a3de-45f9-8bdd-94504d151dff",
+                                isPassed: false
+                            },
+                            {
+                                qualitativeResultId: "271b5929-6ece-41a5-8308-c5854332ccd1",
+                                isPassed: true
+                            }
+                        ];
+                    }
+
+                    console.log("🔍 qualitativeResultPassStatusObjects BEFORE PROCESSING:", item?.qualitativeResultPassStatusObjects);
 
                     // const qualitativeResultPassStatusObjects = [];
-
-                    // ✅ SAFER APPROACH TO PREVENT EMPTY ARRAYS
-                    // const qualitativeResultPassStatusObjects = [...(item?.qualitativeResultPassStatusObjects || [])];
-                    // const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
-                    //     ? [...item.qualitativeResultPassStatusObjects]
-                    //     : [];
-
-                    // safer deep copy to prevent mutation
-                    // const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
-                    //     ? item.qualitativeResultPassStatusObjects.map((res: any) => ({ ...res }))
-                    //     : [];
+                    // SET DEFAULTS IF NOT PROVIDED
                     const qualitativeResultPassStatusObjects = Array.isArray(item?.qualitativeResultPassStatusObjects)
                         ? item.qualitativeResultPassStatusObjects.map((res: any) => ({
                             qualitativeResultId: res.qualitativeResultId ?? null,
                             isPassed: res.isPassed ?? false
                         }))
-                        : [];
-
-
-
-
+                        : [
+                            {
+                                qualitativeResultId: "41227f60-a3de-45f9-8bdd-94504d151dff",
+                                isPassed: false
+                            },
+                            {
+                                qualitativeResultId: "271b5929-6ece-41a5-8308-c5854332ccd1",
+                                isPassed: true
+                            }
+                        ];
 
                     if (qualitativeResultPassStatusObjects.length > 0) {
-                        console.log("✅ qualitativeResultPassStatusObjects found:", qualitativeResultPassStatusObjects);
+                        console.log("✅ qualitativeResultPassStatusObjects FOUND:", qualitativeResultPassStatusObjects);
                     } else {
-                        console.warn("⚠️ qualitativeResultPassStatusObjects is missing or empty for item:", item);
+                        console.warn("⚠️ qualitativeResultPassStatusObjects IS MISSING OR EMPTY FOR PARAMETER:", item.parameter);
+                        let qualitativeResultPassStatusObjects = [
+                            {
+                                qualitativeResultId: "41227f60-a3de-45f9-8bdd-94504d151dff",
+                                isPassed: false
+                            },
+                            {
+                                qualitativeResultId: "271b5929-6ece-41a5-8308-c5854332ccd1",
+                                isPassed: true
+                            }
+                        ];
+                        console.log(`SET qualitativeResultPassStatusObjects FOR PARAMETER: ${item.parameter}`, qualitativeResultPassStatusObjects);
                     }
 
                     return {
@@ -2072,8 +2102,7 @@ export class TestingStepperComponent implements AfterViewInit {
                         isIncoming: item?.isIncoming ?? false,
                         isTrial: item?.isTrial ?? false,
                         isCoA: item?.isCoA ?? false,
-                        // isTrial: true,
-                        // qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects, // ✅ FINAL CHECK
+                        // qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects,
                         "qualitativeResultPassStatusObjects": [
                             {
                                 "qualitativeResultId": "41227f60-a3de-45f9-8bdd-94504d151dff",
@@ -2086,22 +2115,20 @@ export class TestingStepperComponent implements AfterViewInit {
                         ],
                         qualitativeResultFailStatusObjects: [],
                     };
-                });
+                });      
 
-                // 🔐 HIGHLIGHTED CHANGE: Freeze each object to prevent accidental mutation
-                // This is a more robust way to ensure immutability.
+                // 🔐 FREEZE EACH OBJECT TO PREVENT ACCIDENTAL MUTATION
                 payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map(obj => Object.freeze(obj));
-
-                console.log("✅ After Processing - qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
+                console.log("✅ AFTER PROCESSING - qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
             } else {
                 console.warn("⚠️ qualitativeInspectionObjects is not an array, setting empty array.");
                 payload.qualitativeInspectionObjects = [];
             }
 
-            // ✅ DEBUG: Checking quantitativeInspectionObjects before processing
-            console.log("🔍 Raw quantitativeInspectionObjects:", payload.quantitativeInspectionObjects);
+            // DEBUG: quantitativeInspectionObjects BEFORE PROCESSING
+            console.log("🔍 quantitativeInspectionObjects BEFORE PROCESSING:", payload.quantitativeInspectionObjects);
 
-            // ✅ Ensure quantitativeInspectionObjects EXISTS BEFORE USING map
+            // ENSURE quantitativeInspectionObjects EXISTS BEFORE USING map
             if (Array.isArray(payload.quantitativeInspectionObjects)) {
                 payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
                     inspectionCharacteristicId: item?.id ?? null,
@@ -2122,17 +2149,17 @@ export class TestingStepperComponent implements AfterViewInit {
                     upperLimit: isNaN(parseFloat(item?.passCriteriaUpperLimit)) ? null : parseFloat(item.passCriteriaUpperLimit),
                 }));
             } else {
-                console.warn("⚠️ quantitativeInspectionObjects is not an array, setting empty array.");
+                console.warn("⚠️ quantitativeInspectionObjects IS NOT AN ARRAY, SETTING EMPTY ARRAY.");
                 payload.quantitativeInspectionObjects = [];
             }
 
-            // ✅ FINAL PAYLOAD CHECK
-            console.log('🚀 IIC FINAL PAYLOAD TO API:', payload);
+            // FINAL PAYLOAD CHECK
+            console.log('✅ IIC FINAL PAYLOAD TO API:', payload);
             // return;
             this.isValidate = false;
 
-            console.log('🚨 FINAL qualitativeInspectionObjects before API:', payload.qualitativeInspectionObjects);
-            console.log('🚨 FINAL quantitativeInspectionObjects before API:', payload.quantitativeInspectionObjects);
+            console.log('✅ FINAL qualitativeInspectionObjects before API:', payload.qualitativeInspectionObjects);
+            console.log('✅ FINAL quantitativeInspectionObjects before API:', payload.quantitativeInspectionObjects);
             // return;
             this._itemInspectionCardService
                 .AddItemInspectionCard(payload)
