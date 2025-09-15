@@ -1,0 +1,167 @@
+<!-- <p>perform-incoming-materials-qc works!</p> -->
+<div class="flex flex-col flex-auto min-w-0 bg-card dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <div class="h-auto p-5 mt-4 overflow-y-auto">
+        <form [formGroup]="incomingMaterialQCFormGroup">
+            <h1 class="custom-heading">Evaluation Plan Purchase Order</h1>
+            <div style="display: flex; gap: 2px 8px; margin-top: 10px; flex-wrap: wrap; align-items: flex-start;">
+                <!-- QC-ID -->
+                <mat-form-field *ngIf="isEditMode" class="hidden form-field-quarter">
+                    <mat-label>QC-ID</mat-label>
+                    <input matInput formControlName="id" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Q-Code -->
+                <mat-form-field *ngIf="isEditMode" class="form-field-quarter">
+                    <mat-label>Q-Code</mat-label>
+                    <input matInput formControlName="intCode" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- GRN Status -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>GRN&nbsp;Status</mat-label>
+                    <input matInput formControlName="documentStatus" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- docEntry -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>docEntry</mat-label>
+                    <input matInput formControlName="docEntry" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Doc No -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Doc&nbsp;No</mat-label>
+                    <input matInput formControlName="docNo" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- itemId -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>itemId</mat-label>
+                    <input matInput formControlName="itemId" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Item Code -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Item&nbsp;Code</mat-label>
+                    <input matInput formControlName="itemCode" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Item Name -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Item&nbsp;Name</mat-label>
+                    <input matInput formControlName="itemDescription" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- GRN Date -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>GRN&nbsp;Date</mat-label>
+                    <input matInput readonly class="view-mode-bg-grey"
+                        [value]="formatDateTime(incomingMaterialQCFormGroup.get('docDate')?.value)" />
+                </mat-form-field>
+                <!-- GRN Date FOR BE -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>GRN&nbsp;Date</mat-label>
+                    <input matInput formControlName="docDate" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Vendor -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Vendor</mat-label>
+                    <input matInput formControlName="vendor" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Vendor Code -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>Vendor&nbsp;Code</mat-label>
+                    <input matInput formControlName="vendorCode" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Quantity -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Quantity</mat-label>
+                    <input matInput type="number" formControlName="quantity" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- sapQuantity -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>sapQuantity</mat-label>
+                    <input matInput type="number" formControlName="sapQuantity" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- QC Lot No -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>QC&nbsp;Lot&nbsp;No</mat-label>
+                    <input matInput formControlName="qcLotNo" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Inspection Date -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Inspection&nbsp;Date</mat-label>
+                    <input matInput
+                        [value]="formatDateTime(incomingMaterialQCFormGroup.get('inspectionDateTime')?.value)" readonly
+                        class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- inspectionDateTime FOR BE -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>inspectionDateTime</mat-label>
+                    <input matInput formControlName="inspectionDateTime" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Inspection Time -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Inspection&nbsp;Time</mat-label>
+                    <input matInput formControlName="inspectionTime" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Warehouse -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Warehouse</mat-label>
+                    <input matInput formControlName="warehouse" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Analyzed By -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Analyzed&nbsp;By</mat-label>
+                    <input matInput formControlName="analyzedBy" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Received Quantity -->
+                <mat-form-field class="form-field-quarter">
+                    <mat-label>Received&nbsp;Quantity</mat-label>
+                    <input matInput type="number" formControlName="receiveQuantity"
+                        [ngClass]="{ 'view-mode-bg-grey': isEditMode }" [readonly]="isEditMode" />
+                </mat-form-field>
+                <!-- Inspection Quantity -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>Inspection&nbsp;Quantity</mat-label>
+                    <input matInput type="number" formControlName="inspectionQuantity" readonly
+                        class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- lineNum -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>lineNum</mat-label>
+                    <input matInput formControlName="lineNum" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Price -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>Price</mat-label>
+                    <input matInput formControlName="price" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Line Status -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>Line&nbsp;Status</mat-label>
+                    <input matInput formControlName="lineStatus" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- remainingOpenQuantity -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>remainingOpenQuantity</mat-label>
+                    <input matInput formControlName="remainingOpenQuantity" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- Vat Group -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>VAT&nbsp;Group</mat-label>
+                    <input matInput formControlName="vatGroup" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+                <!-- UoM -->
+                <mat-form-field class="hidden form-field-quarter">
+                    <mat-label>uoM</mat-label>
+                    <input matInput formControlName="uoM" readonly class="view-mode-bg-grey" />
+                </mat-form-field>
+            </div>
+            <div class="display: flex; justify-content: flex-end;" style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                <!-- Save -->
+                <button *ngIf="!isEditMode" type="button" mat-flat-button color="primary"
+                    class="px-4 py-2 mr-6 font-medium tracking-wide text-white rounded-full bg-primary"
+                    (click)="onSaveIncomingQC()">Generate</button>
+                <!-- Update -->
+                <button *ngIf="isEditMode" type="button" mat-flat-button color="primary"
+                    class="hidden px-8 py-2 font-medium tracking-wide text-white rounded-md bg-primary"
+                    (click)="onUpdateIncomingQC()">
+                    Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

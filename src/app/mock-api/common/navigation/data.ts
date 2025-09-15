@@ -39,10 +39,12 @@ export const compactNavigation: QbsNavigationItem[] = [
     //     ],
     // },
 
+    // Master Data
     {
-        id: 'list-of-inspection',
-        title: '',
-        subtitle: 'Unique dashboard designs',
+        // id: 'list-of-inspection',
+        id: 'master-data',
+        title: 'Master Data',
+        subtitle: 'Setup Master Data',
         type: 'aside',
         icon: 'feather:database',
         children: [
@@ -178,6 +180,30 @@ export const compactNavigation: QbsNavigationItem[] = [
     //     ],
     // },
 
+    // SAP Documents (New Aside Section)
+    {
+        id: 'sap-documents',
+        title: 'SAP Documents',
+        subtitle: 'Incoming Material Records',
+        type: 'aside',
+        icon: 'heroicons_outline:clipboard-document-check',
+        children: [
+            {
+                id: 'sap-documents.list-of-incoming-materials',
+                title: 'List of Incoming Materials',
+                type: 'basic',
+                icon: 'heroicons_outline:document-text',
+                link: '/sap-documents/list-of-incoming-materials',
+            },
+            // {
+            //     id: 'sap-documents.list-of-incoming-materials',
+            //     title: 'List of Evaluation Plan - Incoming QC',
+            //     type: 'basic',
+            //     icon: 'heroicons_outline:document-text',
+            //     link: '/sap-documents/list-of-evaluation-plan-incoming-qc',
+            // }
+        ]
+    }
 ];
 export const futuristicNavigation: QbsNavigationItem[] = [
     {

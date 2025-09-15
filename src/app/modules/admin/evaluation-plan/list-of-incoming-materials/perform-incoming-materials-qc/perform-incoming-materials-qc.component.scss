@@ -1,0 +1,227 @@
+.custom-heading {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+}
+
+.section-heading {
+  font-size: 1.125rem; // 18px
+  font-weight: 600;
+  color: #333;
+  margin: 24px 0 12px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.form-field-quarter {
+  width: calc(25% - 12px);
+}
+
+.custom-input-quality {
+  width: 25%;
+}
+
+.custom-input input {
+  height: 50px;
+  font-size: 18px;
+  padding: 10px;
+}
+
+.custom-input mat-label {
+  font-size: 16px;
+}
+
+.mat-mdc-form-field input[disabled] {
+  background-color: #f9f9f9 !important;
+  color: #555 !important;
+  cursor: not-allowed;
+}
+
+.mat-form-field {
+  margin-bottom: 2px !important;
+}
+
+.custom-divider {
+  border: none;
+  height: 2px;
+  background-color: #ddd;
+  margin: 20px 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.mat-step-header .mat-step-icon {
+  display: none; // Remove numbers
+}
+
+.custom-stepper .mat-step-header {
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s ease;
+  height: 40px;
+}
+
+.custom-stepper .mat-step-header[aria-selected="true"] {
+  border-bottom: 3px solid #5046E5;
+  color: wheat;
+}
+
+.mat-step-header.completed-step .mat-step-label,
+.mat-step-header[aria-selected="true"] .mat-step-label {
+  color: #5046E5 !important;
+}
+
+.mat-step-header:not(.completed-step):not([aria-selected="true"]) .mat-step-label {
+  color: #ABB7C2 !important;
+}
+
+.mat-horizontal-stepper-header-container {
+  margin-bottom: 10px;
+}
+
+.mat-mdc-tab-group .mat-mdc-tab-body-content {
+  padding: 0;
+}
+
+.step-navigation {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+
+  button {
+    width: 140px;
+
+    &.back-button {
+      border: 1px solid #5046E5;
+      color: #5046E5;
+    }
+
+    &.next-button {
+      background-color: #5046E5;
+      color: #fff;
+
+      &:hover {
+        background-color: #3e38b8;
+      }
+    }
+  }
+}
+
+.add-sample-card,
+.sample-card {
+  min-width: 306px;
+  height: 100px;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+}
+
+.add-sample-card {
+  border: 2px solid #5046E5;
+  font-weight: 500;
+  color: #5046E5;
+  gap: 8px;
+  cursor: pointer;
+  padding: 16px;
+
+  &:hover {
+    background-color: rgba(63, 81, 181, 0.1);
+  }
+}
+
+.sample-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+}
+
+.custom-add-icon {
+  color: #5046E5;
+}
+
+.custom-button-container {
+  position: relative;
+  display: inline-block;
+}
+
+.custom-button {
+  position: relative;
+  padding-right: 36px;
+  border-bottom-right-radius: 0;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 66px;
+    height: 40px;
+    background-color: rgb(0, 0, 0);
+    clip-path: polygon(100% 0, 0 132%, 100% 101%);
+    border-radius: 25px;
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 180px;
+  z-index: 1000;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+
+  button {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.3s, color 0.3s;
+
+    &:hover {
+      background-color: #5046E5;
+      color: #fff;
+    }
+
+    &:first-child {
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+
+    &:last-child {
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+  }
+}
+
+.no-cursor,
+.cursor-not-allowed {
+  cursor: not-allowed !important;
+}
+
+.disabled {
+  pointer-events: none !important;
+  opacity: 0.6;
+}

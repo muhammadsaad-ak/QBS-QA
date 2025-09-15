@@ -1,0 +1,173 @@
+.mat-icon-primary {
+    color: #4f46e5 !important;
+}
+
+.icon-border-color .mat-mdc-form-field-flex {
+    border: 1px solid transparent !important;
+}
+
+.table-border-color th {
+    border-top: 1px solid #a1a1a1 !important;
+    border-bottom: 1px solid #a1a1a1 !important;
+}
+
+.border-pagination {
+    border-bottom: 1px solid #a1a1a1 !important;
+}
+
+.custom-border-button {
+    border: 2px solid #4f46e5 !important;
+}
+
+.ml-2,
+.mr-1 {
+    display: inline-flex;
+    align-items: center;
+}
+
+.mat-icon {
+    margin-right: 4px;
+    font-size: 16px;
+}
+
+.example-container {
+    height: 100vh;
+    max-height: calc(100vh - 200px);
+    width: 100%;
+    max-width: 100vw;
+    overflow: auto;
+}
+
+.mat-mdc-row {
+    height: 30px !important;
+    font-size: 12px !important;
+}
+
+.single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.loader-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(240, 240, 240, 0.85));
+    backdrop-filter: blur(1.5px);
+    animation: fadeIn 0.1s ease-in-out;
+    z-index: 100;
+
+    .loader-content {
+        text-align: center;
+
+        .loading-text {
+            margin-top: 8px;
+        }
+    }
+}
+
+.loader-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.loading-text {
+    font-size: 1rem;
+    color: #3f51b5;
+    font-weight: 500;
+    animation: pulse 1.5s infinite;
+}
+
+// ANIMATIONS
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes floatUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.item-null-or-undefined {
+    color: red !important;
+    text-align: center !important;
+}
+
+
+.search-field {
+    width: 320px;
+    max-width: 40vw;
+}
+
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    font-size: 1.5rem;
+    color: #555;
+}
+
+
+
+.null-value {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.passed {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.failed {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.paginator-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 0;
+}
+
+@media (max-width: 900px) {
+    .search-field {
+        width: 100%;
+    }
+
+    table.table td.mat-cell,
+    table.table th.mat-header-cell {
+        padding: 8px;
+        font-size: 12px;
+    }
+}
