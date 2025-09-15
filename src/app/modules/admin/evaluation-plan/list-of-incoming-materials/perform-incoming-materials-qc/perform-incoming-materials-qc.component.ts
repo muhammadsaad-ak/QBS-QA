@@ -199,6 +199,7 @@ export class PerformIncomingMaterialsQcComponent implements OnInit, OnDestroy {
         lineNo: this.materialData.lineNum,
         sapQuantity: this.materialData.quantity,
       });
+      // console.log('materialData AFTERpatchFormValues',this.materialData);
 
     } else {
       console.warn('⚠️ NO INCOMING QC DATA FOUND.');
@@ -244,8 +245,7 @@ export class PerformIncomingMaterialsQcComponent implements OnInit, OnDestroy {
       batchCode: batchCode
     });
     // intCode
-    const intCode = this.materialData?.intCode ?? '-';
-    const formattedIntCode = `IQC-${intCode.toString().padStart(5, '0')}`;
+    const formattedIntCode = this.formatIntCode(this.materialData?.intCode);
     this.incomingMaterialQCFormGroup.get('intCode')?.setValue(formattedIntCode);
 
     // analyzedBy
@@ -254,8 +254,9 @@ export class PerformIncomingMaterialsQcComponent implements OnInit, OnDestroy {
 
     // SET sapQuantity this.isEditMode
     if (this.isEditMode) {
+      const { intCode, ...rest } = this.materialData;
       this.incomingMaterialQCFormGroup.patchValue({
-        ...this.materialData,
+        ...rest,
         sapQuantity: this.materialData.sapQuantity,
         quantity: this.materialData.sapQuantity,
       });
@@ -528,5 +529,12 @@ export class PerformIncomingMaterialsQcComponent implements OnInit, OnDestroy {
       duration: 3000,
       panelClass: ['snackbar-error'],
     });
+  }
+
+  private formatIntCode(code: number | string | null | undefined): string {
+    if (code === null || code === undefined || code === '') {
+      return 'IQC-00000'; // fallback when no code is available
+    }
+    return `IQC-${code.toString().padStart(5, '0')}`;
   }
 }

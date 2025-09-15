@@ -178,14 +178,10 @@
                 <!-- Q-Status -->
                 <ng-container matColumnDef="qStatus">
                     <th mat-header-cell *matHeaderCellDef class="bg-gray-100 single-line">Q-Status</th>
-                    <!-- <td mat-cell *matCellDef="let element" class="text-sm font-semibold single-line"
-                        [ngClass]="element.qStatus === 'InProgress' ? 'text-amber-500' : 'text-green-500'">
-                        {{ element.qStatus || 'Pending' }}
-                    </td> -->
                     <td mat-cell *matCellDef="let element" class="text-sm font-semibold single-line" [ngClass]="{
-                          'text-amber-500': element.isPerformed,
-                          'text-green-500': !element.isPerformed}">
-                        {{ element.isPerformed ? 'InProgress' : 'Pending' }}
+                        'text-amber-500': element.qStatus === 'InProgress',
+                        'text-green-500': element.qStatus === 'Pending'}">
+                        {{ element.qStatus ? element.qStatus : 'N/A' }}
                     </td>
                 </ng-container>
                 <!-- Q-Code -->
