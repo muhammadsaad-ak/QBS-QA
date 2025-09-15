@@ -1,0 +1,228 @@
+<!-- <p>list-of-incoming-materials works!</p> -->
+<div *ngIf="isLoading" class="loader-overlay">
+    <div class="loader-content">
+        <mat-spinner diameter="50" color="primary"></mat-spinner>
+        <div class="loading-text">Loading data... Just a moment.</div>
+    </div>
+</div>
+<div class="flex flex-col flex-auto min-w-0 bg-card dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <div class="relative flex-col py-2 pb-0 space-y-2 flex-0 md:px-2">
+        <div class="flex items-start justify-between px-4 py-1">
+            <div class="flex flex-col">
+                <div class="text-3xl font-extrabold leading-tight tracking-tight">
+                    {{ title }}
+                </div>
+            </div>
+            <div>
+                <button class="pill-button" (click)="navigateEvaluationPlanIncomingQC()">
+                    {{ switchButtonTitle }}
+                </button>
+            </div>
+        </div>
+        <div class="flex items-start justify-between px-2 py-0 pb-0 mb-0">
+            <div>
+                <button class="px-4 py-2 text-2xl font-semibold bg-gray-300 rounded-full">
+                    {{ subTitle }}
+                </button>
+            </div>
+            <div class="px-2">
+                <mat-form-field class="m-0 search-field qbs-mat-dense qbs-mat-rounded">
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                    <input matInput autocomplete="off" placeholder="Search..." [formControl]="searchInputControl" />
+                </mat-form-field>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="dataSourceIncomingMaterials.data.length < 1 ; else showTable"
+        class="p-8 text-4xl font-semibold tracking-tight text-center border-t sm:p-16">
+        No records to show...
+    </div>
+    <ng-template #showTable>
+        <div class="shadow-xl example-container shadow-gray-300">
+            <table mat-table [dataSource]="dataSourceIncomingMaterials" class="py-0 table-border-color">
+                <!-- S.No -->
+                <ng-container matColumnDef="serialNo">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100">S.No</th>
+                    <td mat-cell *matCellDef="let element; let i = index" class="text-sm font-semibold single-line">
+                        {{element.serialNo}}
+                    </td>
+                </ng-container>
+                <!-- docEntry -->
+                <ng-container matColumnDef="docEntry">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">docEntry</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.docEntry ? element.docEntry : '-' }}
+                    </td>
+                </ng-container>
+                <!-- Doc / GR No -->
+                <ng-container matColumnDef="docGRNo">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">
+                        Doc&nbsp;/&nbsp;GR&nbsp;No
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.docNum ? element.docNum : '-' }}
+                    </td>
+                </ng-container>
+                <!-- Item Name -->
+                <ng-container matColumnDef="itemName">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100 single-line">Item&nbsp;Name
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="text-sm font-semibold single-line">
+                        {{ element.itemDescription ? element.itemDescription : '-' }}
+                    </td>
+                </ng-container>
+                <!-- Item Code -->
+                <ng-container matColumnDef="itemCode">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">Item&nbsp;Code</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.itemCode ? element.itemCode : '-' }}
+                    </td>
+                </ng-container>
+                <!-- Vendor Name -->
+                <ng-container matColumnDef="vendorName">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100 single-line">
+                        Vendor&nbsp;Name</th>
+                    <td mat-cell *matCellDef="let element" class="text-sm font-semibold single-line">
+                        {{ element.vendor ? element.vendor : '-' }}
+                    </td>
+                </ng-container>
+                <!-- Vendor Code -->
+                <ng-container matColumnDef="vendorCode">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">Vendor&nbsp;Code</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.vendorCode ? element.vendorCode : '-' }}
+                    </td>
+                </ng-container>
+                <!-- GRN Date -->
+                <ng-container matColumnDef="materialIncomingDate">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100 single-line">
+                        GRN&nbsp;Date</th>
+                    <td mat-cell *matCellDef="let element" class="px-4 text-sm font-semibold single-line">
+                        {{ element.docDate ? (element.docDate | date:'d/M/y') : '-' }}
+                    </td>
+                </ng-container>
+                <!-- Incoming Quantity -->
+                <ng-container matColumnDef="incomingQty">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100 single-line">Incoming&nbsp;Quantity</th>
+                    <td mat-cell *matCellDef="let element"
+                        class="w-10 px-16 text-sm font-semibold text-center single-line">
+                        {{ element.quantity ? element.quantity : '-' }}
+                    </td>
+                </ng-container>
+                <!-- remainingOpenQuantity -->
+                <ng-container matColumnDef="remainingOpenQuantity">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">remainingOpenQuantity
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.remainingOpenQuantity ? element.remainingOpenQuantity : '-' }}
+                    </td>
+                </ng-container>
+                <!-- lineNum -->
+                <ng-container matColumnDef="lineNum">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">lineNum</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.lineNum !== null && element.lineNum !== undefined ? element.lineNum : '-' }}
+                    </td>
+                </ng-container>
+                <!-- price -->
+                <ng-container matColumnDef="price">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">price</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.price !== null && element.price !== undefined ? element.price : '-' }}
+                    </td>
+                </ng-container>
+                <!-- vatGroup -->
+                <ng-container matColumnDef="vatGroup">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">vatGroup</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.vatGroup ? element.vatGroup : '-' }}
+                    </td>
+                </ng-container>
+                <!-- warehouse -->
+                <ng-container matColumnDef="warehouse">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">warehouse</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.warehouse ? element.warehouse : '-' }}
+                    </td>
+                </ng-container>
+                <!-- uoM -->
+                <ng-container matColumnDef="uoM">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">uoM</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-sm font-semibold single-line">
+                        {{ element.uoM ? element.uoM : '-' }}
+                    </td>
+                </ng-container>
+                <!-- lineStatus -->
+                <ng-container matColumnDef="lineStatus">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">lineStatus</th>
+                    <td mat-cell *matCellDef="let element" class="hidden px-10 text-sm font-semibold text-center">
+                        <span *ngIf="element.lineStatus === 'bost_Open'">Open</span>
+                        <span *ngIf="element.lineStatus === 'boposReleased'">Released</span>
+                        <span *ngIf="element.lineStatus !== 'bost_Open' && element.lineStatus !== 'boposReleased'">
+                            {{ element.lineStatus ? element.lineStatus : '-' }}
+                        </span>
+                    </td>
+                </ng-container>
+                <!-- GRN Status -->
+                <ng-container matColumnDef="grnStatus">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">GRN&nbsp;Status</th>
+                    <td mat-cell *matCellDef="let element" class="hidden px-10 text-sm font-semibold text-center">
+                        <span *ngIf="element.documentStatus === 'bost_Open'">Open</span>
+                        <span *ngIf="element.documentStatus === 'boposReleased'">Released</span>
+                        <span
+                            *ngIf="element.documentStatus !== 'bost_Open' && element.documentStatus !== 'boposReleased'">
+                            {{ element.documentStatus ? element.documentStatus : '-' }}
+                        </span>
+                    </td>
+                </ng-container>
+                <!-- Q-Status -->
+                <ng-container matColumnDef="qStatus">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100 single-line">Q-Status</th>
+                    <!-- <td mat-cell *matCellDef="let element" class="text-sm font-semibold single-line"
+                        [ngClass]="element.qStatus === 'InProgress' ? 'text-amber-500' : 'text-green-500'">
+                        {{ element.qStatus || 'Pending' }}
+                    </td> -->
+                    <td mat-cell *matCellDef="let element" class="text-sm font-semibold single-line" [ngClass]="{
+                          'text-amber-500': element.isPerformed,
+                          'text-green-500': !element.isPerformed}">
+                        {{ element.isPerformed ? 'InProgress' : 'Pending' }}
+                    </td>
+                </ng-container>
+                <!-- Q-Code -->
+                <ng-container matColumnDef="qCode">
+                    <th mat-header-cell *matHeaderCellDef class="hidden bg-gray-100 single-line">Q-Code</th>
+                    <td mat-cell *matCellDef="let element" class="hidden text-center"
+                        [ngClass]="['single-line', 'text-sm font-semibold', (element.qCode && element.qCode === 'null') ? 'text-green-500' : 'text-amber-500']">
+                        {{ (element.qCode && element.qCode !== 'null') ? element.qCode : '-' }}
+                    </td>
+                </ng-container>
+                <!-- Action COLUMN -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-100 single-line">Action</th>
+                    <td mat-cell *matCellDef="let row" class="text-center single-line">
+                        <button mat-icon-button [matMenuTriggerFor]="menu">
+                            <mat-icon class="icon-size-5 text-primary-700"
+                                [svgIcon]="'heroicons_solid:ellipsis-vertical'"></mat-icon>
+                        </button>
+                        <mat-menu #menu="matMenu">
+                            <!-- Perform Incoming QC" -->
+                            <button mat-menu-item class="text-sm font-semibold text-red-500"
+                                (click)="performIncomingQC(row)">
+                                Perform&nbsp;Incoming&nbsp;QC
+                            </button>
+                        </mat-menu>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumnsIncomingMaterials; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumnsIncomingMaterials;"
+                    [matRowDefTrackBy]="trackByDocLine">
+                </tr>
+            </table>
+        </div>
+        <mat-paginator class="bg-gray-100 border-pagination" [length]="totalRecords" [pageSize]="pageSize"
+            [pageIndex]="currentPage - 1" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons
+            (page)="onPageChange($event)">
+        </mat-paginator>
+    </ng-template>
+</div>

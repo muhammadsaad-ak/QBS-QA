@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from 'environments/environment';
-import { BehaviorSubject, Observable, catchError, of, switchMap, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
 
 // Interface FOR GRN PAYLOAD (CreateGRN)
 interface GRNPayload {
@@ -105,6 +105,20 @@ interface ProductionOrderResponse {
         pageSize: number;
         pageNumber: number;
         values: GRNPayloadProduction[]; // 
+    };
+}
+// ListAllGRN RESPONSE
+interface ListAllGRNResponse {
+    statusCode: number;
+    succeeded: boolean;
+    message: string;
+    errors: any[] | null;
+    count: number;
+    data: {
+        totalRecords: number;
+        pageSize: number;
+        pageNumber: number;
+        values: GRNPayload[];
     };
 }
 
@@ -302,6 +316,65 @@ export class SAPAllServices {
                 }),
                 catchError((error) => {
                     console.error('HTTP ERROR WHILE FETCHING PRODUCTION ORDER', error);
+                    return throwError(() => error);
+                })
+            );
+    }
+    // @IAK
+    // ListAllGRNS
+    getAllGRNs(pageNumber: number, pageSize: number): Observable<ListAllGRNResponse> {
+        const headers = new HttpHeaders({
+            Accept: 'text/plain',
+            'X-API-KEY': environment.xApiKey,
+        });
+
+        return this._httpClient
+            .get(`${environment.SAPitemsApiUrl}/api/B1GoodReceiptNotes/ListAllGRNS?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
+                headers,
+                responseType: 'text',
+            })
+            .pipe(
+                map((res: string) => JSON.parse(res) as ListAllGRNResponse),
+                tap((res) => {
+                    if (res.succeeded) console.log('✅ GRNs FETCHED SUCCESSFULLY:', res);
+                    else console.warn('⚠️ GRN FETCH FAILED:', res.message);
+                }),
+                catchError((error) => {
+                    console.error('❌ HTTP ERROR WHILE FETCHING GRNs', error);
+                    return throwError(() => error);
+                })
+            );
+    }
+    XgetAllGRNs(pageNumber: number, pageSize: number): Observable<any> {
+        const headers = new HttpHeaders({
+            Accept: 'text/plain',
+            'X-API-KEY': 'super',
+        });
+
+        return this._httpClient
+            .get(
+                `${environment.SAPitemsApiUrl}/api/B1GoodReceiptNotes/ListAllGRNS?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+                { headers, responseType: 'text' }
+            )
+            .pipe(
+                switchMap((response) => {
+                    try {
+                        const parsedResponse = JSON.parse(response);
+                        return of(parsedResponse);
+                    } catch (error) {
+                        console.error('ERROR PARSING GRN LIST RESPONSE', error);
+                        return throwError(() => error);
+                    }
+                }),
+                tap((response: any) => {
+                    if (response.succeeded) {
+                        console.log('GRNs FETCHED SUCCESSFULLY:', response);
+                    } else {
+                        console.warn('GRN FETCH FAILED:', response.message);
+                    }
+                }),
+                catchError((error) => {
+                    console.error('HTTP ERROR WHILE FETCHING GRNs', error);
                     return throwError(() => error);
                 })
             );

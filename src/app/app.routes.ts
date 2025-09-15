@@ -101,6 +101,14 @@ export const appRoutes: Route[] = [
                     { path: 'new-evaluation-stepper', loadChildren: () => import('app/modules/admin/stepper-form/evaluation-stepper/evaluation-stepper.routes') },
                 ]
             },
+            {
+                path: 'sap-documents', children: [
+                    { path: 'list-of-incoming-materials', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-incoming-materials/list-of-incoming-materials.routes') },
+                    { path: 'perform-incoming-materials-qc', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-incoming-materials/perform-incoming-materials-qc/perform-incoming-materials-qc.routes') },
+                    { path: 'perform-incoming-materials-qc/:docNum', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-incoming-materials/perform-incoming-materials-qc/perform-incoming-materials-qc.routes') },
+                    { path: 'list-of-evaluation-plan-incoming-qc', loadChildren: () => import('app/modules/admin/evaluation-plan/list-of-incoming-materials/list-of-evaluation-plan-incoming-qc/list-of-evaluation-plan-incoming-qc.routes') },
+                ]
+            },
 
         ]
     },
