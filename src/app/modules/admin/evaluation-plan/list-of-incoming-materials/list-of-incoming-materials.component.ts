@@ -17,6 +17,7 @@ import { QbsConfirmationService } from '@qbs/services/confirmation';
 import { SessionStorageService } from 'app/core/other-core-services/module/session-storage.service';
 import { SAPAllServices } from 'app/core/other-core-services/module/sap-list-all-services.service';
 import { EvaluationPlanPurchaseOrderService } from 'app/core/other-core-services/module/evaluation-plan-purchase-order.service';
+import { QcSharedApiService } from 'app/core/other-core-services/module/qc-shared-api.service';
 
 interface IncomingMaterial {
   isPerformed?: boolean;
@@ -116,6 +117,7 @@ export class ListOfIncomingMaterialsComponent implements OnInit, OnDestroy {
     private _cdr: ChangeDetectorRef,
     private _snackBar: MatSnackBar,
     private _sapAllServices: SAPAllServices,
+    private _qcSharedApiService: QcSharedApiService,
     private _evaluationPurchaseOrderService: EvaluationPlanPurchaseOrderService,
   ) { }
 
@@ -183,7 +185,8 @@ export class ListOfIncomingMaterialsComponent implements OnInit, OnDestroy {
             this.dataSourceIncomingMaterials.data = rows;
             this.totalRecords = res.data.totalRecords;
             // this._cdr.detectChanges();
-            // this.fetchQualityStatusForRows(rows);
+            this.fetchQualityStatusForRows(rows);
+            this._cdr.markForCheck();
           } else {
             this.dataSourceIncomingMaterials.data = [];
             this.totalRecords = 0;
@@ -197,10 +200,10 @@ export class ListOfIncomingMaterialsComponent implements OnInit, OnDestroy {
 
   performIncomingQC(element: IncomingMaterial): void {
     const isClosed = (element as any).isClosed;
-    // if (isClosed === false) {
-    //   this.showSnack('An open QC document is already in progress, kindly complete that first.');
-    //   return;
-    // }
+    if (isClosed === 'InProgress') {
+      this.showSnack('An open QC document is already in progress, kindly complete that first.');
+      return;
+    }
     // SHALLOW COPY
     const { serialNo, qStatus, qCode, overallStatus, ...filteredIncomingQCdata } = element;
     console.log('SENDING SAP GRN DATA FOR PERFORMING INCOMING QC DATA', filteredIncomingQCdata);
@@ -219,17 +222,16 @@ export class ListOfIncomingMaterialsComponent implements OnInit, OnDestroy {
     }
     rows.forEach((row, idx) => {
       const entityName = 'incoming_qc';
-      const itemCode = row.itemCode ?? '';
+      const itemCode = row.itemCode != null ? row.itemCode : '';
       const docNumber = row.docNum != null ? String(row.docNum) : '';
-      const lineNo = row.lineNum ?? 0;
+      const lineNo = row.lineNum != null ? row.lineNum : '';
 
-
-      this._evaluationPurchaseOrderService
-        .getQualityStatusQC(entityName, itemCode, docNumber, lineNo)
+      this._qcSharedApiService
+        .getQualityStatus(entityName, itemCode, docNumber)
         .pipe(
           takeUntil(this.destroy$),
           catchError((error) => {
-            console.error(`Error fetching Q-Status for doc ${docNumber}`, error);
+            console.error(`ERROR FETCHING Q-STATUS FOR docNumber ${docNumber}`, error);
             return of({ data: { isClosed: null, overallStatus: null } });
           })
         )
@@ -255,12 +257,20 @@ export class ListOfIncomingMaterialsComponent implements OnInit, OnDestroy {
 
             currentData[foundIndex].isClosed = isClosedValue === true ? 'Closed' : isClosedValue === false ? 'InProgress' : null;
             currentData[foundIndex].overallStatus = overallStatusValue === true ? 'Passed' : overallStatusValue === false ? 'Failed' : null;
-            // currentData[foundIndex].qStatus = isPerformedValue ? 'InProgress' : 'Pending';
             currentData[foundIndex].isPerformed = isPerformedValue;
+
+            if (isPerformedValue === true && isClosedValue === false) {
+              currentData[foundIndex].qStatus = 'InProgress';
+            } else if (isPerformedValue === true && isClosedValue === true) {
+              currentData[foundIndex].qStatus = 'Pending';
+            } else {
+              currentData[foundIndex].qStatus = 'Pending';
+            }
 
             this.dataSourceIncomingMaterials.data = [...currentData];
           }
         });
+      this._cdr.markForCheck();
     });
   }
 

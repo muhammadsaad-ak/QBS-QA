@@ -38,6 +38,14 @@ export interface QcLotNoResponse {
     docDate: string;
     [key: string]: any;
 }
+// IQualityCommonFeature/GetQualityStatus
+export interface QualityStatusInterface {
+    isPerformed: boolean;
+    isPostedToSap: boolean;
+    isClosed: boolean;
+    overallStatus: boolean | null;
+    evaluationStatus: string | null;
+}
 
 @Injectable({
     providedIn: 'root',
@@ -151,5 +159,34 @@ export class QcSharedApiService {
                 'Unexpected error occurred';
             return throwError(() => new Error(msg));
         };
+    }
+    // GetQualityStatus
+    getQualityStatus(
+        entityName: string,
+        itemCode: string,
+        docNumber: string
+    ): Observable<ApiResponse<QualityStatusInterface>> {
+        const params = new HttpParams()
+            .set('entityName', entityName)
+            .set('itemCode', itemCode)
+            .set('docNumber', docNumber);
+
+        return this.http
+            .get<ApiResponse<QualityStatusInterface>>(
+                `${this.baseUrl}/IQualityCommonFeature/GetQualityStatus`,
+                { params }
+            )
+            .pipe(
+                map((res) => {
+                    // console.log('FETCHED Q-STATUS RESPONSE', res.data);
+                    return res;
+                }),
+                catchError((err) => {
+                    console.error('Error fetching quality status:', err);
+                    const apiMsg =
+                        err?.error?.message || err?.message || 'Error fetching quality status.';
+                    return throwError(() => new Error(apiMsg));
+                })
+            );
     }
 }
