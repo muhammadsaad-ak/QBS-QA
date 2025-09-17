@@ -2013,8 +2013,167 @@ export class TestingStepperComponent implements AfterViewInit {
         }
     }
     // @IAK
-    // 06052025
+    // 17092025
     submitItemsInspectionCardsForm(): void {
+        this.isValidate = true;
+        if (this.itemsInspectionCardsForm.valid) {
+            const formValues = this.itemsInspectionCardsForm.value;
+            formValues.itemCategoryCode = String(formValues.itemCategoryCode);
+            console.log('IIC FORM VALUES:', formValues);
+
+            const itemCodeForQA = formValues.itemCode;
+            console.log('itemCode for QA:', itemCodeForQA);
+
+            // Handle null values for itemU_QACard, itemCategory, itemCategoryCode
+            formValues.itemU_QACard = formValues.itemU_QACard || null;
+            formValues.itemCategory = formValues.itemCategory || null;
+            formValues.itemCategoryCode = formValues.itemCategoryCode || null;
+
+            const { intCode, id, ...payload } = formValues; // EXCLUDING intCode, id
+
+            // DEBUG: qualitativeInspectionObjects BEFORE PROCESSING
+            console.log("qualitativeInspectionObjects BEFORE PROCESSING:", payload.qualitativeInspectionObjects);
+
+            // ENSURE qualitativeInspectionObjects EXISTS BEFORE USING map
+            if (Array.isArray(payload.qualitativeInspectionObjects)) {
+                payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map((item: any) => {
+                    console.log(`PROCESSING ROW PARAMETER: ${item.parameter}`, item);
+                    item.qualitativeResultPassStatusObjects = item.qualitativeResultPassStatusObjects || [];
+
+                    // HANDLING Not Checked IN qualitativeResultPassStatusObjects                    
+                    // SET qualitativeResultPassStatusObjects DYNAMICALLY WITH listAllQualitativeResults
+                    this.listAllQualitativeResults.forEach((result: any) => {
+                        let isPassed = false;
+                        if (result.resultDescription === 'Okay' || result.resultDescription === 'Not Checked') {
+                            isPassed = true;
+                        } else if (result.resultDescription === 'Not Okay') {
+                            isPassed = false;
+                        }
+                        item.qualitativeResultPassStatusObjects.push({
+                            qualitativeResultId: result.id,
+                            isPassed: isPassed
+                        });
+                    });
+                    console.log("qualitativeResultPassStatusObjects AFTER PROCESSING:", item.qualitativeResultPassStatusObjects);
+
+                    return {
+                        inspectionCharacteristicId: item?.id ?? null,
+                        qualitativeSpec: item?.passCriteria ?? null,
+                        isMandatory: item?.mandatory ?? false,
+                        isQcCritical: item?.isQcCritical ?? false,
+                        isQcFloor: item?.isQcFloor ?? false,
+                        isQcLab: item?.isQcLab ?? false,
+                        isDispatch: item?.isDispatch ?? false,
+                        isIncoming: item?.isIncoming ?? false,
+                        isTrial: item?.isTrial ?? false,
+                        isCoA: item?.isCoA ?? false,
+                        // qualitativeResultPassStatusObjects: qualitativeResultPassStatusObjects,
+                        qualitativeResultPassStatusObjects: item.qualitativeResultPassStatusObjects,
+                        qualitativeResultFailStatusObjects: [],
+                    };
+                });
+
+                // 🔐 FREEZE EACH OBJECT TO PREVENT ACCIDENTAL MUTATION
+                payload.qualitativeInspectionObjects = payload.qualitativeInspectionObjects.map(obj => Object.freeze(obj));
+                console.log("✅ AFTER PROCESSING - qualitativeInspectionObjects:", payload.qualitativeInspectionObjects);
+            } else {
+                console.warn("⚠️ qualitativeInspectionObjects is not an array, setting empty array.");
+                payload.qualitativeInspectionObjects = [];
+            }
+
+            // DEBUG: quantitativeInspectionObjects BEFORE PROCESSING
+            console.log("🔍 quantitativeInspectionObjects BEFORE PROCESSING:", payload.quantitativeInspectionObjects);
+
+            // ENSURE quantitativeInspectionObjects EXISTS BEFORE USING map
+            if (Array.isArray(payload.quantitativeInspectionObjects)) {
+                payload.quantitativeInspectionObjects = payload.quantitativeInspectionObjects.map((item: any) => ({
+                    inspectionCharacteristicId: item?.id ?? null,
+                    quantitativeSpec: item?.passCriteria ?? null,
+                    isMandatory: item?.mandatoryQty ?? false,
+                    isQcCritical: item?.isQcCritical ?? false,
+                    isQcFloor: item?.isQcFloor ?? false,
+                    isQcLab: item?.isQcLab ?? false,
+                    isDispatch: item?.isDispatch ?? false,
+                    isIncoming: item?.isIncoming ?? false,
+                    isTrial: item?.isTrial ?? false,
+                    isCoA: item?.isCoA ?? false,
+                    uoMId: item?.uoMId ?? '',
+                    min: isNaN(parseFloat(item?.passCriteriaMin)) ? null : parseFloat(item.passCriteriaMin),
+                    max: isNaN(parseFloat(item?.passCriteriaMax)) ? null : parseFloat(item.passCriteriaMax),
+                    target: isNaN(parseFloat(item?.passCriteriaTarget)) ? null : parseFloat(item.passCriteriaTarget),
+                    lowerLimit: isNaN(parseFloat(item?.passCriteriaLowerLimit)) ? null : parseFloat(item.passCriteriaLowerLimit),
+                    upperLimit: isNaN(parseFloat(item?.passCriteriaUpperLimit)) ? null : parseFloat(item.passCriteriaUpperLimit),
+                }));
+            } else {
+                console.warn("⚠️ quantitativeInspectionObjects IS NOT AN ARRAY, SETTING EMPTY ARRAY.");
+                payload.quantitativeInspectionObjects = [];
+            }
+
+            // FINAL PAYLOAD CHECK
+            console.log('✅ IIC FINAL PAYLOAD TO API:', payload);
+            // return;
+            this.isValidate = false;
+
+            console.log('✅ FINAL qualitativeInspectionObjects before API:', payload.qualitativeInspectionObjects);
+            console.log('✅ FINAL quantitativeInspectionObjects before API:', payload.quantitativeInspectionObjects);
+            // return;
+            this._itemInspectionCardService
+                .AddItemInspectionCard(payload)
+                .subscribe({
+                    next: (response) => {
+                        if (response.isRequestSuccess) {
+                            this.isEditMode = false;
+                            console.log('✅ API RUN SUCCESSFULLY.', payload);
+                            this._snackBar.open('Inspection Card created successfully!', 'Close', {
+                                duration: 1500,
+                                panelClass: ['snackbar-success']
+                            });
+
+                            this._SAPItemsService.enableItemForQA(itemCodeForQA)
+                                .subscribe({
+                                    next: (sapResponse) => {
+                                        if (sapResponse.succeeded) {
+                                            console.log('✅ EnableItemForQA API RUN SUCCESSFULLY:', sapResponse);
+                                        } else {
+                                            console.warn('⚠️ SAP API FAILED:', sapResponse.message);
+                                            console.warn('⚠️ Response Message: Conversion failed when converting the nvarchar value  to data type int.');
+                                        }
+                                    },
+                                    error: (sapError) => {
+                                        console.error('❌ SAP API ERROR:', sapError);
+                                    }
+                                });
+
+                            setTimeout(() => {
+                                this.stepper.next();
+                            }, 1550);
+                        } else {
+                            console.warn('⚠️ API RESPONSE DID NOT SUCCEED:', response);
+                            console.error('❌ ERROR WHILE ADDING DATA.', response.message);
+                        }
+                    },
+                    error: (error) => {
+                        console.error('❌ AddItemInspectionCard API ERROR:', error);
+                        this._snackBar.open('Error creating inspection card.', 'Close', {
+                            duration: 3000,
+                            panelClass: ['snackbar-error']
+                        });
+                    }
+                });
+
+
+        } else {
+            // this.isValidate = false;
+            this._snackBar.open('Fill all the mandatory fields with valid values.', 'Close', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+            });
+            return;
+        }
+    }
+    // 06052025
+    // ARCHIVED FOR DEFAULT qualitativeResultPassStatusObjects
+    submitItemsInspectionCardsFormArchived(): void {
         this.isValidate = true;
         if (this.itemsInspectionCardsForm.valid) {
             const formValues = this.itemsInspectionCardsForm.value;
@@ -2572,6 +2731,7 @@ export class TestingStepperComponent implements AfterViewInit {
     // nextIntCountIA: number;
     // attributes: any[] = [];
     selectedIndex: number = 0;
+    public listAllQualitativeResults: any[] = [];
 
     ngOnInit(): void {
         // INSPECTION ATTRIBUTES STARTS
@@ -2986,6 +3146,10 @@ export class TestingStepperComponent implements AfterViewInit {
         console.log('this.isCloneIIC', this.isCloneIIC);
         console.log('this.isViewMode', this.isViewMode);
         console.log('this.isValidate', this.isValidate);
+
+        this._qualitativeResultsService.ListAllQualitativeResults().subscribe((results) => {
+            this.listAllQualitativeResults = (results || []).filter((activeQR: any) => activeQR.isActive);
+        });
     }
 
     ngAfterViewInit(): void {
